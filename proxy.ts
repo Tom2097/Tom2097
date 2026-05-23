@@ -17,8 +17,3 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 }
-npx @next/codemod@canary middleware-to-proxy .
-// middleware.ts -> proxy.ts
- 
-- export function middleware() {
-+ export function proxy() {
