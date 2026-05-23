@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useEffect, useState, useTransition, Suspense } from "react"
 import { motion } from "framer-motion"
 import { 
   CreditCard, 
@@ -52,6 +52,25 @@ interface Subscription {
   stripe_customer_id: string | null
 }
 
+// Separate component to use searchParams with Suspense
+function SuccessBanner() {
+  const searchParams = useSearchParams()
+  const success = searchParams.get("success")
+  
+  if (!success) return null
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-green-600"
+    >
+      <Check className="w-5 h-5" />
+      <span>Your subscription has been activated successfully!</span>
+    </motion.div>
+  )
+}
+
 export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [organization, setOrganization] = useState<Organization | null>(null)
@@ -60,8 +79,6 @@ export default function SettingsPage() {
   const [isPending, startTransition] = useTransition()
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [twoFactorAuth, setTwoFactorAuth] = useState(false)
-  const searchParams = useSearchParams()
-  const success = searchParams.get("success")
 
   useEffect(() => {
     const fetchData = async () => {
@@ -146,16 +163,9 @@ export default function SettingsPage() {
       </div>
 
       {/* Success Banner */}
-      {success && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-green-600"
-        >
-          <Check className="w-5 h-5" />
-          <span>Your subscription has been activated successfully!</span>
-        </motion.div>
-      )}
+      <Suspense fallback={null}>
+        <SuccessBanner />
+      </Suspense>
 
       <Tabs defaultValue="subscription" className="space-y-6">
         <TabsList className="bg-muted/50 p-1">

@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { motion } from "framer-motion"
-import { Check, Zap, Building2, Rocket, ChevronRight, Star, X } from "lucide-react"
+import { Check, Zap, Building2, Rocket, ChevronRight, Star, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -20,14 +20,28 @@ const tierIcons = {
   enterprise: Building2
 }
 
-export default function PricingPage() {
+// Component that uses useSearchParams
+function CanceledBanner() {
+  const searchParams = useSearchParams()
+  const canceled = searchParams.get("canceled")
+  
+  if (!canceled) return null
+  
+  return (
+    <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-3">
+      <p className="text-center text-sm text-amber-600">
+        Checkout was canceled. Feel free to try again when you&apos;re ready.
+      </p>
+    </div>
+  )
+}
+
+function PricingContent() {
   const [isAnnual, setIsAnnual] = useState(true)
   const [selectedTier, setSelectedTier] = useState<string | null>(null)
   const [showCheckout, setShowCheckout] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const canceled = searchParams.get("canceled")
 
   useEffect(() => {
     const supabase = createClient()
@@ -87,13 +101,9 @@ export default function PricingPage() {
       </header>
 
       {/* Canceled Banner */}
-      {canceled && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-3">
-          <p className="text-center text-sm text-amber-600">
-            Checkout was canceled. Feel free to try again when you&apos;re ready.
-          </p>
-        </div>
-      )}
+      <Suspense fallback={null}>
+        <CanceledBanner />
+      </Suspense>
 
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
@@ -383,4 +393,8 @@ export default function PricingPage() {
       )}
     </div>
   )
+}
+
+export default function PricingPage() {
+  return <PricingContent />
 }
