@@ -17,7 +17,6 @@ import {
   Sparkles
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useState } from 'react'
 
 const modules = [
   { id: 'analytics', title: 'AI Analytics', icon: BarChart3, href: '/analytics' },
@@ -28,9 +27,13 @@ const modules = [
   { id: 'pharma', title: 'Pharma Intelligence', icon: Pill, href: '/pharma' },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  isCollapsed: boolean
+  onToggle: () => void
+}
+
+export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const pathname = usePathname()
-  const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
     <aside 
@@ -59,7 +62,7 @@ export function Sidebar() {
             </Link>
           )}
           <button 
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={onToggle}
             className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >

@@ -13,6 +13,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [isAIOpen, setIsAIOpen] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   return (
     <div className="relative min-h-screen bg-background">
@@ -21,10 +22,17 @@ export default function DashboardLayout({
       <div className="pointer-events-none fixed inset-0 digit-grid-bg opacity-30" />
       
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar 
+        isCollapsed={isSidebarCollapsed} 
+        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+      />
       
       {/* Main Content */}
-      <div className="ml-64 transition-all duration-300">
+      <div 
+        className={`transition-all duration-300 ease-in-out ${
+          isSidebarCollapsed ? 'ml-16' : 'ml-64'
+        }`}
+      >
         <Navbar onOpenAI={() => setIsAIOpen(true)} />
         <main className="relative min-h-[calc(100vh-4rem)] p-6">
           {children}
