@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
@@ -8,19 +8,63 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, Loader2, Zap } from "lucide-react"
+import { AlertCircle, Loader2, Zap, Eye, EyeOff, Check, X, Shield } from "lucide-react"
+
+function getPasswordStrength(password: string) {
+  let score = 0
+  const checks = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+  }
+
+  if (checks.length) score++
+  if (checks.uppercase) score++
+  if (checks.lowercase) score++
+  if (checks.number) score++
+  if (checks.special) score++
+
+  let label = "Very weak"
+  let color = "bg-destructive"
+  if (score >= 5) { label = "Very strong"; color = "bg-green-500" }
+  else if (score >= 4) { label = "Strong"; color = "bg-green-400" }
+  else if (score >= 3) { label = "Fair"; color = "bg-amber-400" }
+  else if (score >= 2) { label = "Weak"; color = "bg-orange-500" }
+
+  return { score, checks, label, color }
+}
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [fullName, setFullName] = useState("")
   const [companyName, setCompanyName] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  const strength = useMemo(() => getPasswordStrength(password), [password])
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword
+  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.")
+      return
+    }
+
+    if (strength.score < 3) {
+      setError("Please choose a stronger password.")
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
@@ -116,23 +160,119 @@ export default function SignUpPage() {
                 className="bg-secondary/50"
               />
             </div>
+
+            {/* Password with strength indicator */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Create a strong password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-                className="bg-secondary/50"
-              />
-              <p className="text-xs text-muted-foreground">Minimum 8 characters</p>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Create a strong password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  className="bg-secondary/50 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Strength meter */}
+              {password.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                          i <= strength.score ? strength.color : "bg-muted"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className={`text-xs ${
+                    strength.score >= 4 ? "text-green-500" : 
+                    strength.score >= 3 ? "text-amber-500" : "text-destructive"
+                  }`}>
+                    {strength.label}
+                  </p>
+
+                  {/* Requirement checklist */}
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { check: strength.checks.length, label: "8+ characters" },
+                      { check: strength.checks.uppercase, label: "Uppercase" },
+                      { check: strength.checks.lowercase, label: "Lowercase" },
+                      { check: strength.checks.number, label: "Number" },
+                      { check: strength.checks.special, label: "Special char" },
+                    ].map((item) => (
+                      <div key={item.label} className="flex items-center gap-1.5">
+                        {item.check ? (
+                          <Check className="w-3 h-3 text-green-500" />
+                        ) : (
+                          <X className="w-3 h-3 text-muted-foreground/50" />
+                        )}
+                        <span className={`text-xs ${item.check ? "text-green-500" : "text-muted-foreground/50"}`}>
+                          {item.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Re-enter your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className={`bg-secondary/50 pr-10 ${
+                    passwordsMatch ? "border-green-500/50 focus-visible:ring-green-500/30" : 
+                    passwordsMismatch ? "border-destructive/50 focus-visible:ring-destructive/30" : ""
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {passwordsMatch && (
+                <p className="text-xs text-green-500 flex items-center gap-1">
+                  <Check className="w-3 h-3" /> Passwords match
+                </p>
+              )}
+              {passwordsMismatch && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <X className="w-3 h-3" /> Passwords do not match
+                </p>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isLoading || passwordsMismatch || (password.length > 0 && strength.score < 3)}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -142,6 +282,13 @@ export default function SignUpPage() {
                 "Start free trial"
               )}
             </Button>
+
+            {/* Security badge */}
+            <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+              <Shield className="w-3 h-3" />
+              <span>Your data is encrypted and secure</span>
+            </div>
+
             <p className="text-sm text-muted-foreground text-center">
               Already have an account?{" "}
               <Link href="/auth/login" className="text-primary hover:underline">
