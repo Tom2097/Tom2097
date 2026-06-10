@@ -134,3 +134,51 @@ export interface PharmaData {
   complianceScore: number
   inventoryLevels: ChartDataPoint[]
 }
+
+// Multi-Tenant Types (Module #1)
+export interface TenantContext {
+  tenantId: string
+  organizationId: string
+  userId: string
+  email: string
+  role: 'admin' | 'member' | 'viewer'
+  permissions: string[]
+  organizationSlug: string
+  organizationName: string
+}
+
+export interface TenantRequest {
+  tenantId: string
+  organizationId: string
+  userId: string
+  validatedAt: number
+}
+
+export interface TenantRateLimitConfig {
+  hourlyLimit: number
+  minuteLimit: number
+  keyPrefix: string
+}
+
+export interface TenantRegistrationData {
+  organizationName: string
+  email: string
+  password: string
+  fullName: string
+  companyName?: string
+  industry?: string
+  role?: string
+}
+
+export interface TenantOnboardingResponse {
+  tenantId: string
+  organizationId: string
+  userId: string
+  jwtToken: string
+  organization: {
+    id: string
+    name: string
+    slug: string
+    createdAt: string
+  }
+}
