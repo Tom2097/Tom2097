@@ -44,6 +44,7 @@
     "@stripe/stripe-js": "^9.6.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
+    "@swc/core": "^1.15.41",
     "@upstash/search": "^0.1.7",
     "@vercel/analytics": "1.6.1",
     "@workflow/ai": "^6.0.0",
