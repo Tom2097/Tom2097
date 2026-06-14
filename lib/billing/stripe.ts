@@ -190,8 +190,9 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
 
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice
-        if (typeof invoice.subscription === "string") {
-          const subscription = await stripe.subscriptions.retrieve(invoice.subscription)
+        const invoiceSubscription = (invoice as { subscription?: unknown }).subscription
+        if (typeof invoiceSubscription === "string") {
+          const subscription = await stripe.subscriptions.retrieve(invoiceSubscription)
           const orgId = (subscription.metadata as Record<string, string>)?.organization_id
 
           if (orgId && invoice.amount_paid) {
@@ -217,8 +218,9 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice
-        if (typeof invoice.subscription === "string") {
-          const subscription = await stripe.subscriptions.retrieve(invoice.subscription)
+        const invoiceSubscription = (invoice as { subscription?: unknown }).subscription
+        if (typeof invoiceSubscription === "string") {
+          const subscription = await stripe.subscriptions.retrieve(invoiceSubscription)
           const orgId = (subscription.metadata as Record<string, string>)?.organization_id
 
           if (orgId) {
