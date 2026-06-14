@@ -77,6 +77,12 @@ export type AuthAuditAction =
   | "document.version_added"
   | "document.downloaded"
   | "document.deleted"
+  // Module #13: reporting engine
+  | "report.created"
+  | "report.updated"
+  | "report.deleted"
+  | "report.scheduled"
+  | "report.generated"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
