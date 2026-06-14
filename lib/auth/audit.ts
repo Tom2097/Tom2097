@@ -31,6 +31,10 @@ export type AuthAuditAction =
   | "rbac.team_member_removed"
   | "rbac.team_role_assigned"
   | "rbac.team_role_removed"
+  // Module #4: universal search
+  | "search.documents_indexed"
+  | "search.document_removed"
+  | "search.backfilled"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
