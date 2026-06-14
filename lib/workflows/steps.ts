@@ -43,12 +43,16 @@ export async function finalizeExecution(
 /**
  * Module #6: Step actions.
  *
- * Each action is a durable `"use step"` function: it has full Node.js access,
- * is automatically retried by the Workflow SDK, and its result is persisted
- * for replay. The engine (engine.ts) dispatches to `executeStep`, which never
- * throws — failures are captured into the returned StepResult so the engine
- * can record them and decide whether to continue.
+ * The single durable boundary is `executeStep` (a `"use step"`): the engine
+ * (engine.ts, a `"use workflow"`) calls it once per workflow step, so each
+ * workflow step maps to exactly one durable, retryable SDK step. The action
+ * helpers below are plain functions invoked *inside* that step — they have
+ * full Node.js access via the step, and keeping them out of `"use step"`
+ * avoids nested steps and keeps the heavy `ai`/Supabase/search imports out of
+ * the workflow sandbox bundle (which only sees the stripped step stubs).
  *
+ * `executeStep` never throws — failures are captured into the returned
+ * StepResult so the engine can record them and decide whether to continue.
  * All actions are tenant-scoped via `context.organizationId`.
  */
 
@@ -93,7 +97,6 @@ function resolve(value: unknown, context: StepContext): unknown {
 /* ─────────────────────────── action helpers ─────────────────────────── */
 
 async function actionCreateTask(cfg: Record<string, unknown>, context: StepContext) {
-  "use step"
   const db = createServiceClient()
   const { data, error } = await db
     .from("workflow_tasks")
@@ -114,7 +117,6 @@ async function actionCreateTask(cfg: Record<string, unknown>, context: StepConte
 }
 
 async function actionSendNotification(cfg: Record<string, unknown>, context: StepContext) {
-  "use step"
   // Record-only: the notification payload is persisted in the execution's
   // step_results. A future delivery module can consume these records.
   return {
@@ -128,7 +130,6 @@ async function actionSendNotification(cfg: Record<string, unknown>, context: Ste
 }
 
 async function actionAiGenerate(cfg: Record<string, unknown>) {
-  "use step"
   const { text } = await generateText({
     model: DEFAULT_CHAT_MODEL,
     system: cfg.system != null ? String(cfg.system) : undefined,
@@ -138,7 +139,6 @@ async function actionAiGenerate(cfg: Record<string, unknown>) {
 }
 
 async function actionSearchIndex(cfg: Record<string, unknown>, context: StepContext) {
-  "use step"
   await indexDocument({
     organizationId: context.organizationId,
     resourceType: String(cfg.resource_type ?? "workflow"),
@@ -151,7 +151,6 @@ async function actionSearchIndex(cfg: Record<string, unknown>, context: StepCont
 }
 
 async function actionHttpRequest(cfg: Record<string, unknown>) {
-  "use step"
   const method = String(cfg.method ?? "POST").toUpperCase()
   const url = String(cfg.url ?? "")
   if (!/^https?:\/\//.test(url)) throw new Error("http_request requires an absolute http(s) url")
@@ -200,6 +199,7 @@ function evaluateCondition(cfg: Record<string, unknown>): { matched: boolean } {
  * For `condition` steps, `output` is `{ matched: boolean }`.
  */
 export async function executeStep(step: WorkflowStep, context: StepContext): Promise<StepResult> {
+  "use step"
   const cfg = resolve(step.config, context) as Record<string, unknown>
   try {
     let output: unknown
