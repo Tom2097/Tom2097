@@ -62,6 +62,15 @@ export type AuthAuditAction =
   | "audit.exported"
   | "audit.retention_updated"
   | "audit.retention_cleanup"
+  // Module #11: feedback management
+  | "feedback.created"
+  | "feedback.updated"
+  | "feedback.status_changed"
+  | "feedback.assigned"
+  | "feedback.deleted"
+  | "feedback.commented"
+  | "feedback.voted"
+  | "feedback.unvoted"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
