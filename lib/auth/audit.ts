@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 
 /**
  * Auth audit logging (Module #2).
@@ -58,6 +58,10 @@ export type AuthAuditAction =
   | "billing.subscription_cancelled"
   | "billing.payment_completed"
   | "billing.payment_failed"
+  // Module #10: audit logging
+  | "audit.exported"
+  | "audit.retention_updated"
+  | "audit.retention_cleanup"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
@@ -75,7 +79,7 @@ export interface AuthAuditEntry {
  */
 export async function logAuthEvent(entry: AuthAuditEntry): Promise<void> {
   try {
-    const supabase = await createClient()
+    const supabase = await createServiceClient()
 
     const { error } = await supabase.from("audit_logs").insert({
       action: entry.action,
