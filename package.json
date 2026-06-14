@@ -46,6 +46,7 @@
     "@supabase/supabase-js": "^2.106.1",
     "@upstash/search": "^0.1.7",
     "@vercel/analytics": "1.6.1",
+    "@workflow/ai": "^6.0.0",
     "ai": "^6.0.189",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
@@ -71,6 +72,7 @@
     "tailwind-merge": "^3.3.1",
     "uuid": "^14.0.0",
     "vaul": "^1.1.2",
+    "workflow": "^4.4.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
