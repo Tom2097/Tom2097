@@ -51,6 +51,13 @@ export type AuthAuditAction =
   | "notification.created"
   | "notification.broadcast"
   | "notification.preferences_updated"
+  // Module #9: billing system
+  | "billing.session_created"
+  | "billing.subscription_created"
+  | "billing.subscription_updated"
+  | "billing.subscription_cancelled"
+  | "billing.payment_completed"
+  | "billing.payment_failed"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
