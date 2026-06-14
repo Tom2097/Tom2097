@@ -47,6 +47,10 @@ export type AuthAuditAction =
   | "analytics.report_updated"
   | "analytics.report_deleted"
   | "analytics.exported"
+  // Module #8: notification system
+  | "notification.created"
+  | "notification.broadcast"
+  | "notification.preferences_updated"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction

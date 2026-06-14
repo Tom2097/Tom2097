@@ -1,6 +1,8 @@
 import { generateText } from "ai"
 import { createServiceClient } from "@/lib/supabase/service"
 import { indexDocument } from "@/lib/search/index-helper"
+import { broadcast, createNotification } from "@/lib/notifications/engine"
+import type { BroadcastInput, NotificationInput } from "@/lib/notifications/types"
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/config"
 import type { ExecutionStatus, StepContext, StepResult, WorkflowStep } from "./types"
 
@@ -117,16 +119,34 @@ async function actionCreateTask(cfg: Record<string, unknown>, context: StepConte
 }
 
 async function actionSendNotification(cfg: Record<string, unknown>, context: StepContext) {
-  // Record-only: the notification payload is persisted in the execution's
-  // step_results. A future delivery module can consume these records.
-  return {
-    delivered: false,
-    recorded_at: new Date().toISOString(),
-    organization_id: context.organizationId,
-    user_id: (cfg.user_id as string) ?? null,
-    title: String(cfg.title ?? ""),
+  // Module #8: deliver through the notification engine. Source is "workflow"
+  // so recipients can filter automated notifications. If user_id is provided,
+  // notify that recipient; otherwise broadcast to the whole organization. The
+  // engine validates `type`/`priority` and falls back to safe defaults, so the
+  // raw config values are forwarded as-is.
+  const payload: BroadcastInput = {
+    title: String(cfg.title ?? "Notification"),
     body: cfg.body != null ? String(cfg.body) : null,
+    type: cfg.type as NotificationInput["type"],
+    category: cfg.category != null ? String(cfg.category) : "workflow",
+    priority: cfg.priority as NotificationInput["priority"],
+    action_url: cfg.action_url != null ? String(cfg.action_url) : null,
+    data:
+      (cfg.data as Record<string, unknown>) ?? {
+        workflow_id: context.workflowId,
+        execution_id: context.executionId,
+      },
+    source: "workflow",
   }
+
+  const userId = (cfg.user_id as string) ?? null
+  if (userId) {
+    const created = await createNotification(context.organizationId, { ...payload, user_id: userId })
+    return { delivered: created ? 1 : 0, suppressed: created === null, recipient: userId }
+  }
+
+  const { delivered } = await broadcast(context.organizationId, payload)
+  return { delivered, broadcast: true }
 }
 
 async function actionAiGenerate(cfg: Record<string, unknown>) {
