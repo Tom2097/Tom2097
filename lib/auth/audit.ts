@@ -71,6 +71,12 @@ export type AuthAuditAction =
   | "feedback.commented"
   | "feedback.voted"
   | "feedback.unvoted"
+  // Module #12: document management
+  | "document.uploaded"
+  | "document.updated"
+  | "document.version_added"
+  | "document.downloaded"
+  | "document.deleted"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
