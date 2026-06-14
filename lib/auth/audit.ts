@@ -42,6 +42,11 @@ export type AuthAuditAction =
   | "workflow.enabled"
   | "workflow.disabled"
   | "workflow.executed"
+  // Module #7: analytics engine
+  | "analytics.report_created"
+  | "analytics.report_updated"
+  | "analytics.report_deleted"
+  | "analytics.exported"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
