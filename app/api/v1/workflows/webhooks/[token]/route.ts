@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getWorkflowByWebhookToken } from "@/lib/workflows/store"
-import { triggerWorkflow } from "@/lib/workflows/engine"
+import { triggerWorkflow } from "@/lib/workflows/trigger"
 
 /**
  * Public webhook trigger: POST /api/v1/workflows/webhooks/{token}

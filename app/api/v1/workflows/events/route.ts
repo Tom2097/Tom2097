@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
 import { logAuthEvent, getClientIp } from "@/lib/auth/audit"
 import { listWorkflowsForEvent } from "@/lib/workflows/store"
-import { triggerWorkflow } from "@/lib/workflows/engine"
+import { triggerWorkflow } from "@/lib/workflows/trigger"
 
 /**
  * Emit an in-app event: POST /api/v1/workflows/events { event, payload }

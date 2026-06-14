@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { listDueScheduledWorkflows, advanceSchedule } from "@/lib/workflows/store"
-import { triggerWorkflow } from "@/lib/workflows/engine"
+import { triggerWorkflow } from "@/lib/workflows/trigger"
 
 /**
  * Scheduled-trigger runner: POST (or GET) /api/v1/workflows/run-scheduled

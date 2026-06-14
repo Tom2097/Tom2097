@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
 import { logAuthEvent, getClientIp } from "@/lib/auth/audit"
 import { getWorkflow } from "@/lib/workflows/store"
-import { triggerWorkflow } from "@/lib/workflows/engine"
+import { triggerWorkflow } from "@/lib/workflows/trigger"
 
 /** Manually trigger a workflow: POST /api/v1/workflows/{workflowId}/execute */
 const execute = withAuth(

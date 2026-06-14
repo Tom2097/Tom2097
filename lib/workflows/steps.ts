@@ -2,7 +2,43 @@ import { generateText } from "ai"
 import { createServiceClient } from "@/lib/supabase/service"
 import { indexDocument } from "@/lib/search/index-helper"
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/config"
-import type { StepContext, StepResult, WorkflowStep } from "./types"
+import type { ExecutionStatus, StepContext, StepResult, WorkflowStep } from "./types"
+
+/* ─────────────────────────── persistence steps ─────────────────────────── */
+
+/**
+ * Durable persistence helpers used by the workflow orchestrator.
+ *
+ * These are `"use step"` functions so their bodies (and the service-role
+ * client they use) are stripped from the workflow sandbox bundle. They write
+ * directly via the Supabase client rather than importing the store module,
+ * keeping Node-only dependencies (cron-parser, node:crypto) out of the
+ * workflow bundle entirely.
+ */
+export async function markRunning(executionId: string) {
+  "use step"
+  const db = createServiceClient()
+  await db.from("workflow_executions").update({ status: "running" }).eq("id", executionId)
+}
+
+export async function finalizeExecution(
+  executionId: string,
+  status: "completed" | "failed",
+  stepResults: StepResult[],
+  error: string | null,
+) {
+  "use step"
+  const db = createServiceClient()
+  await db
+    .from("workflow_executions")
+    .update({
+      status: status as ExecutionStatus,
+      step_results: stepResults,
+      error,
+      completed_at: new Date().toISOString(),
+    })
+    .eq("id", executionId)
+}
 
 /**
  * Module #6: Step actions.
