@@ -20,6 +20,17 @@ export type AuthAuditAction =
   | "rbac.role_revoked"
   | "rbac.permission_granted"
   | "rbac.permission_revoked"
+  // Module #3: per-role permission editing
+  | "rbac.permission_added"
+  | "rbac.permission_removed"
+  // Module #3: teams / groups
+  | "rbac.team_created"
+  | "rbac.team_updated"
+  | "rbac.team_deleted"
+  | "rbac.team_member_added"
+  | "rbac.team_member_removed"
+  | "rbac.team_role_assigned"
+  | "rbac.team_role_removed"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction

@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 
 /**
- * RBAC library (Module #2).
+ * RBAC library (Module #2, extended in Module #3).
  * Dynamic, tenant-scoped roles and permissions backed by the
  * roles / permissions / role_permissions / user_roles tables.
  */
@@ -127,4 +128,180 @@ export async function ensureDefaultRoles(organizationId: string): Promise<void> 
   if (error) {
     console.log("[v0] ensureDefaultRoles error:", error.message)
   }
+}
+
+/* ───────────────────────────── Module #3 ───────────────────────────── */
+
+export interface RoleWithPermissions extends Role {
+  permissions: string[]
+}
+
+/** Fetch a single role (org-scoped) with its permission keys. */
+export async function getRole(organizationId: string, roleId: string): Promise<RoleWithPermissions | null> {
+  const db = createServiceClient()
+  const { data: role, error } = await db
+    .from("roles")
+    .select("*")
+    .eq("id", roleId)
+    .eq("organization_id", organizationId)
+    .single()
+
+  if (error || !role) {
+    console.log("[v0] getRole error:", error?.message)
+    return null
+  }
+
+  const { data: perms } = await db
+    .from("role_permissions")
+    .select("permissions(key)")
+    .eq("role_id", roleId)
+
+  const permissions = ((perms ?? []) as Array<{ permissions: { key: string } | { key: string }[] | null }>)
+    .flatMap((r) => {
+      const p = r.permissions
+      if (!p) return []
+      return Array.isArray(p) ? p.map((x) => x.key) : [p.key]
+    })
+  return { ...role, permissions }
+}
+
+/** Create a custom role in an organization. */
+export async function createRole(
+  organizationId: string,
+  name: string,
+  description: string | null,
+): Promise<Role | null> {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("roles")
+    .insert({ organization_id: organizationId, name, description, is_system: false })
+    .select()
+    .single()
+
+  if (error) {
+    console.log("[v0] createRole error:", error.message)
+    return null
+  }
+  return data
+}
+
+/** Update a role's name/description. System roles cannot be renamed. */
+export async function updateRole(
+  organizationId: string,
+  roleId: string,
+  updates: { name?: string; description?: string | null },
+): Promise<Role | null> {
+  const db = createServiceClient()
+
+  const { data: existing } = await db
+    .from("roles")
+    .select("is_system")
+    .eq("id", roleId)
+    .eq("organization_id", organizationId)
+    .single()
+
+  if (existing?.is_system && updates.name) {
+    // Prevent renaming system roles; allow description-only updates.
+    delete updates.name
+  }
+
+  const { data, error } = await db
+    .from("roles")
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq("id", roleId)
+    .eq("organization_id", organizationId)
+    .select()
+    .single()
+
+  if (error) {
+    console.log("[v0] updateRole error:", error.message)
+    return null
+  }
+  return data
+}
+
+/** Delete a non-system role. Returns false if role is a system role or not found. */
+export async function deleteRole(organizationId: string, roleId: string): Promise<boolean> {
+  const db = createServiceClient()
+
+  const { data: existing } = await db
+    .from("roles")
+    .select("is_system")
+    .eq("id", roleId)
+    .eq("organization_id", organizationId)
+    .single()
+
+  if (!existing || existing.is_system) {
+    return false
+  }
+
+  const { error } = await db.from("roles").delete().eq("id", roleId).eq("organization_id", organizationId)
+  if (error) {
+    console.log("[v0] deleteRole error:", error.message)
+    return false
+  }
+  return true
+}
+
+/** Add a permission to a role by permission key (org-scoped). */
+export async function addPermissionToRole(
+  organizationId: string,
+  roleId: string,
+  permissionKey: string,
+): Promise<boolean> {
+  const db = createServiceClient()
+
+  // Verify role belongs to org
+  const { data: role } = await db
+    .from("roles")
+    .select("id")
+    .eq("id", roleId)
+    .eq("organization_id", organizationId)
+    .single()
+  if (!role) return false
+
+  const { data: perm } = await db.from("permissions").select("id").eq("key", permissionKey).single()
+  if (!perm) return false
+
+  const { error } = await db
+    .from("role_permissions")
+    .upsert({ role_id: roleId, permission_id: perm.id }, { onConflict: "role_id,permission_id" })
+
+  if (error) {
+    console.log("[v0] addPermissionToRole error:", error.message)
+    return false
+  }
+  return true
+}
+
+/** Remove a permission from a role by permission key (org-scoped). */
+export async function removePermissionFromRole(
+  organizationId: string,
+  roleId: string,
+  permissionKey: string,
+): Promise<boolean> {
+  const db = createServiceClient()
+
+  const { data: role } = await db
+    .from("roles")
+    .select("id")
+    .eq("id", roleId)
+    .eq("organization_id", organizationId)
+    .single()
+  if (!role) return false
+
+  const { data: perm } = await db.from("permissions").select("id").eq("key", permissionKey).single()
+  if (!perm) return false
+
+  const { error } = await db
+    .from("role_permissions")
+    .delete()
+    .eq("role_id", roleId)
+    .eq("permission_id", perm.id)
+
+  if (error) {
+    console.log("[v0] removePermissionFromRole error:", error.message)
+    return false
+  }
+  return true
 }
