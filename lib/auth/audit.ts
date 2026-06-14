@@ -35,6 +35,13 @@ export type AuthAuditAction =
   | "search.documents_indexed"
   | "search.document_removed"
   | "search.backfilled"
+  // Module #6: workflow automation
+  | "workflow.created"
+  | "workflow.updated"
+  | "workflow.deleted"
+  | "workflow.enabled"
+  | "workflow.disabled"
+  | "workflow.executed"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
