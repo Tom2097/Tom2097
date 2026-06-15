@@ -91,6 +91,13 @@ export type AuthAuditAction =
   | "incident.created"
   | "incident.updated"
   | "incident.resolved"
+  // Module #19: integration hub
+  | "integration.created"
+  | "integration.updated"
+  | "integration.deleted"
+  | "integration.tested"
+  | "integration.dispatched"
+  | "integration.delivery_failed"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
