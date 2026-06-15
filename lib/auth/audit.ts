@@ -98,6 +98,17 @@ export type AuthAuditAction =
   | "integration.tested"
   | "integration.dispatched"
   | "integration.delivery_failed"
+  // Module #17: customer CRM
+  | "crm.company_created"
+  | "crm.company_updated"
+  | "crm.company_deleted"
+  | "crm.contact_created"
+  | "crm.contact_updated"
+  | "crm.contact_deleted"
+  | "crm.deal_created"
+  | "crm.deal_updated"
+  | "crm.deal_deleted"
+  | "crm.activity_logged"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
