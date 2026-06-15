@@ -83,6 +83,14 @@ export type AuthAuditAction =
   | "report.deleted"
   | "report.scheduled"
   | "report.generated"
+  // Module #21: monitoring & reliability
+  | "monitor.created"
+  | "monitor.updated"
+  | "monitor.deleted"
+  | "monitor.checked"
+  | "incident.created"
+  | "incident.updated"
+  | "incident.resolved"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
