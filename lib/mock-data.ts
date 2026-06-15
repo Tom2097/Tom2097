@@ -28,38 +28,38 @@ export const modules: Module[] = [
     color: 'chart-2'
   },
   {
-    id: 'healthcare',
-    title: 'Healthcare AI',
-    icon: 'Heart',
-    description: 'AI systems for hospitals, clinics, and healthcare operations management.',
-    metrics: ['Patient Data', 'Resource Planning', 'AI Diagnostics', 'Care Optimization'],
+    id: 'operations',
+    title: 'Operations Workspace',
+    icon: 'LayoutGrid',
+    description: 'Configurable operational intelligence for any team or business function.',
+    metrics: ['Process Monitoring', 'Resource Planning', 'AI Insights', 'Workflow Optimization'],
     href: '/healthcare',
     color: 'chart-3'
   },
   {
-    id: 'banking',
-    title: 'Banking Intelligence',
-    icon: 'Building2',
-    description: 'Financial intelligence, fraud detection, and market analysis systems.',
-    metrics: ['Fraud Detection', 'Credit Scoring', 'Market Signals', 'Risk Assessment'],
+    id: 'performance',
+    title: 'Performance Workspace',
+    icon: 'Activity',
+    description: 'Real-time performance intelligence, anomaly detection, and trend analysis.',
+    metrics: ['Anomaly Detection', 'Scoring', 'Signal Tracking', 'Risk Assessment'],
     href: '/banking',
     color: 'chart-4'
   },
   {
-    id: 'agro',
-    title: 'Agro-Tech Systems',
-    icon: 'Wheat',
-    description: 'AI systems for agriculture, supply chain optimization, and climate analysis.',
-    metrics: ['Yield Forecasting', 'Climate Analysis', 'Smart Logistics', 'Crop Intelligence'],
+    id: 'resources',
+    title: 'Resource Workspace',
+    icon: 'Boxes',
+    description: 'AI-driven resource planning, supply optimization, and capacity forecasting.',
+    metrics: ['Demand Forecasting', 'Capacity Analysis', 'Smart Logistics', 'Inventory Intelligence'],
     href: '/agro',
     color: 'chart-5'
   },
   {
-    id: 'pharma',
-    title: 'Pharma Intelligence',
-    icon: 'Pill',
-    description: 'Pharmaceutical enterprise operations, compliance, and drug analytics.',
-    metrics: ['Drug Analytics', 'Production Monitoring', 'Compliance AI', 'Trial Management'],
+    id: 'compliance',
+    title: 'Compliance Workspace',
+    icon: 'ShieldCheck',
+    description: 'Operational compliance, quality control, and audit-readiness analytics.',
+    metrics: ['Audit Tracking', 'Quality Control', 'Compliance AI', 'Process Management'],
     href: '/pharma',
     color: 'chart-1'
   }

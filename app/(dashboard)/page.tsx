@@ -380,7 +380,7 @@ export default function DashboardPage() {
                   Unlock Full AI Power
                 </h2>
                 <p className="text-muted-foreground max-w-xl">
-                  Upgrade your plan to access all 6 industry modules, unlimited team members, 
+                  Upgrade your plan to access all 6 platform modules, unlimited team members, 
                   advanced AI predictions, and dedicated enterprise support.
                 </p>
               </div>

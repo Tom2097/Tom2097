@@ -31,7 +31,7 @@ export const pricingTiers: PricingTier[] = [
     monthlyPrice: 299,
     annualPrice: 249,
     features: [
-      "1 Industry Module",
+      "1 Platform Module",
       "5 Team Members",
       "100K Data Points/month",
       "Basic AI Assistant",
@@ -55,7 +55,7 @@ export const pricingTiers: PricingTier[] = [
     monthlyPrice: 999,
     annualPrice: 849,
     features: [
-      "3 Industry Modules",
+      "3 Platform Modules",
       "25 Team Members",
       "1M Data Points/month",
       "Advanced AI Assistant",
@@ -82,7 +82,7 @@ export const pricingTiers: PricingTier[] = [
     monthlyPrice: 4999,
     annualPrice: 4249,
     features: [
-      "All Industry Modules",
+      "All Platform Modules",
       "Unlimited Team Members",
       "Unlimited Data Points",
       "Custom AI Models",
@@ -137,11 +137,11 @@ export const addOns: AddOn[] = [
   }
 ]
 
-export const industryModules = [
+export const platformModules = [
   { id: "analytics", name: "AI Analytics", icon: "BarChart3" },
   { id: "crm", name: "CRM Intelligence", icon: "Users" },
-  { id: "healthcare", name: "Healthcare Analytics", icon: "Heart" },
-  { id: "banking", name: "Financial Services", icon: "Building2" },
-  { id: "agro", name: "Agro-Tech", icon: "Leaf" },
-  { id: "pharma", name: "Pharma Intelligence", icon: "Pill" }
+  { id: "operations", name: "Operations Workspace", icon: "LayoutGrid" },
+  { id: "performance", name: "Performance Workspace", icon: "Activity" },
+  { id: "resources", name: "Resource Workspace", icon: "Boxes" },
+  { id: "compliance", name: "Compliance Workspace", icon: "ShieldCheck" }
 ]

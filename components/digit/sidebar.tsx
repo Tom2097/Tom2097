@@ -5,10 +5,10 @@ import { usePathname } from 'next/navigation'
 import { 
   BarChart3, 
   Users, 
-  Heart, 
-  Building2, 
-  Wheat, 
-  Pill,
+  LayoutGrid,
+  Activity,
+  Boxes,
+  ShieldCheck,
   LayoutDashboard,
   ChevronLeft,
   ChevronRight,
@@ -21,10 +21,10 @@ import { cn } from '@/lib/utils'
 const modules = [
   { id: 'analytics', title: 'AI Analytics', icon: BarChart3, href: '/analytics' },
   { id: 'crm', title: 'Smart CRM', icon: Users, href: '/crm' },
-  { id: 'healthcare', title: 'Healthcare AI', icon: Heart, href: '/healthcare' },
-  { id: 'banking', title: 'Banking Intelligence', icon: Building2, href: '/banking' },
-  { id: 'agro', title: 'Agro-Tech', icon: Wheat, href: '/agro' },
-  { id: 'pharma', title: 'Pharma Intelligence', icon: Pill, href: '/pharma' },
+  { id: 'workspace-1', title: 'Operations Workspace', icon: LayoutGrid, href: '/healthcare' },
+  { id: 'workspace-2', title: 'Performance Workspace', icon: Activity, href: '/banking' },
+  { id: 'workspace-3', title: 'Resource Workspace', icon: Boxes, href: '/agro' },
+  { id: 'workspace-4', title: 'Compliance Workspace', icon: ShieldCheck, href: '/pharma' },
 ]
 
 interface SidebarProps {

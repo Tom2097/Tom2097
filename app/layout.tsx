@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'DigiT | Enterprise Intelligence Platform',
-  description: 'AI-powered operational intelligence ecosystem for enterprises. Analytics, CRM, Healthcare, Banking, Agro-Tech, and Pharma solutions.',
+  description: 'AI-powered operational intelligence platform for enterprises. Configurable analytics, CRM, and operational workspaces for any team or business function.',
   generator: 'v0.app',
   keywords: ['enterprise', 'AI', 'analytics', 'business intelligence', 'operational intelligence'],
   icons: {

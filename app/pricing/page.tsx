@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { pricingTiers, addOns, industryModules } from "@/lib/subscription-data"
+import { pricingTiers, addOns, platformModules } from "@/lib/subscription-data"
 import { Checkout } from "@/components/checkout"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
@@ -274,18 +274,18 @@ function PricingContent() {
         </div>
       </section>
 
-      {/* Industry Modules */}
+      {/* Platform Modules */}
       <section className="py-20 px-6">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Industry Modules</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-4">Platform Modules</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Specialized AI-powered intelligence for your industry vertical
+              Configurable AI-powered intelligence for any team or business function
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-4xl mx-auto">
-            {industryModules.map((module, index) => (
+            {platformModules.map((module, index) => (
               <motion.div
                 key={module.id}
                 initial={{ opacity: 0, scale: 0.9 }}
