@@ -136,6 +136,15 @@ export type AuthAuditAction =
   | "retention.policy_deleted"
   | "retention.purge_run"
   | "retention.purge_failed"
+  // Module #20: localization system
+  | "localization.locale_created"
+  | "localization.locale_updated"
+  | "localization.locale_deleted"
+  | "localization.default_changed"
+  | "localization.key_created"
+  | "localization.key_updated"
+  | "localization.key_deleted"
+  | "localization.translation_updated"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
