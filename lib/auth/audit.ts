@@ -109,6 +109,16 @@ export type AuthAuditAction =
   | "crm.deal_updated"
   | "crm.deal_deleted"
   | "crm.activity_logged"
+  // Module #18: knowledge base
+  | "kb.category_created"
+  | "kb.category_updated"
+  | "kb.category_deleted"
+  | "kb.article_created"
+  | "kb.article_updated"
+  | "kb.article_published"
+  | "kb.article_unpublished"
+  | "kb.article_deleted"
+  | "kb.article_feedback"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
