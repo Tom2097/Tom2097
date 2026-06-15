@@ -130,6 +130,12 @@ export type AuthAuditAction =
   | "legal.dsar_updated"
   | "legal.dsar_completed"
   | "legal.dsar_rejected"
+  // Module #15: data retention
+  | "retention.policy_created"
+  | "retention.policy_updated"
+  | "retention.policy_deleted"
+  | "retention.purge_run"
+  | "retention.purge_failed"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
