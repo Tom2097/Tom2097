@@ -119,6 +119,17 @@ export type AuthAuditAction =
   | "kb.article_unpublished"
   | "kb.article_deleted"
   | "kb.article_feedback"
+  // Module #14: legal & compliance
+  | "legal.document_created"
+  | "legal.document_updated"
+  | "legal.document_published"
+  | "legal.document_archived"
+  | "legal.document_deleted"
+  | "legal.consent_recorded"
+  | "legal.dsar_created"
+  | "legal.dsar_updated"
+  | "legal.dsar_completed"
+  | "legal.dsar_rejected"
 
 export interface AuthAuditEntry {
   action: AuthAuditAction
