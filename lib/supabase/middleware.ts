@@ -6,11 +6,27 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
-  // Skip Supabase auth if environment variables are not configured
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  
+
+  const protectedPaths = ['/analytics', '/crm', '/healthcare', '/banking', '/agro', '/pharma', '/settings']
+  const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
+
+  // Fail closed: if auth is not configured we cannot verify any session, so
+  // protected pages and the authenticated API surface must be blocked rather
+  // than served anonymously.
   if (!supabaseUrl || !supabaseAnonKey) {
+    if (request.nextUrl.pathname.startsWith('/api/')) {
+      return NextResponse.json(
+        { error: "Service Unavailable", message: "Authentication is not configured" },
+        { status: 503 },
+      )
+    }
+    if (isProtectedPath) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/auth/login"
+      return NextResponse.redirect(url)
+    }
     return supabaseResponse
   }
 
@@ -45,9 +61,6 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Protected routes - redirect to login if not authenticated
-  const protectedPaths = ['/analytics', '/crm', '/healthcare', '/banking', '/agro', '/pharma', '/settings']
-  const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
-  
   if (isProtectedPath && !user) {
     const url = request.nextUrl.clone()
     url.pathname = "/auth/login"

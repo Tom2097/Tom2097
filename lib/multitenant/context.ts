@@ -1,127 +1,123 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { jwtVerify } from "jose"
+import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 
-const JWT_SECRET = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET || 'your-secret-key')
+/**
+ * Tenant context (Module #1).
+ *
+ * SINGLE SOURCE OF TRUTH FOR IDENTITY:
+ *   - WHO the caller is  → the Supabase Auth session (cookie-based, verified
+ *     server-side by `supabase.auth.getUser()`).
+ *   - WHICH org they belong to + their base role → the `profiles` row keyed by
+ *     the authenticated user id.
+ *
+ * There are no hardcoded secrets, no custom JWT claims, and no client-supplied
+ * `X-Tenant-ID` headers involved in scoping. The org id is resolved server-side
+ * from `profiles` so it can never be spoofed by the caller. This is the same
+ * session the browser app already uses, so the frontend and backend share one
+ * identity model.
+ */
 
 export interface TenantContextMiddleware {
   tenantId: string
   organizationId: string
   userId: string
   email: string
-  role: 'admin' | 'member' | 'viewer'
+  role: "admin" | "member" | "viewer"
+}
+
+function normalizeRole(role: string | null | undefined): "admin" | "member" | "viewer" {
+  if (role === "admin" || role === "owner") return "admin"
+  if (role === "viewer") return "viewer"
+  return "member"
 }
 
 /**
- * Extract and validate tenant context from request headers
- * Must be called before any API route handler
+ * Resolve the authenticated tenant context for the current request.
+ *
+ * The `request` argument is accepted for backwards compatibility but identity is
+ * derived entirely from the Supabase Auth session cookie, never from request
+ * headers. Returns `null` (→ 401) when there is no valid session or the user has
+ * no organization membership. Fails closed.
  */
 export async function extractTenantContext(
-  request: NextRequest
+  _request?: NextRequest,
 ): Promise<TenantContextMiddleware | null> {
   try {
-    // Get tenant ID from custom header
-    const tenantId = request.headers.get('x-tenant-id')
-    if (!tenantId) {
-      console.warn('[v0] Missing X-Tenant-ID header')
+    const supabase = await createClient()
+
+    // 1. Verify the session against the auth server (not just decode a token).
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+
+    if (userError || !user) {
       return null
     }
 
-    // Get JWT token from Authorization header
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      console.warn('[v0] Missing or invalid Authorization header')
-      return null
-    }
+    // 2. Resolve org membership + base role from profiles (server-side, the
+    //    authoritative source). Use the service client so an incomplete RLS
+    //    policy set can never hide a user's own membership row.
+    const db = createServiceClient()
+    const { data: profile, error: profileError } = await db
+      .from("profiles")
+      .select("organization_id, email, role")
+      .eq("id", user.id)
+      .single()
 
-    const token = authHeader.substring(7)
-
-    // Verify JWT token
-    let payload: any
-    try {
-      const verified = await jwtVerify(token, JWT_SECRET)
-      payload = verified.payload
-    } catch (err) {
-      console.error('[v0] JWT verification failed:', err)
-      return null
-    }
-
-    // Validate tenant_id claim matches header
-    if (payload.tenant_id !== tenantId) {
-      console.error('[v0] Tenant ID mismatch between header and JWT')
+    if (profileError || !profile?.organization_id) {
+      console.log("[v0] extractTenantContext: no organization for user", user.id)
       return null
     }
 
     return {
-      tenantId,
-      organizationId: payload.org_id || payload.sub,
-      userId: payload.sub,
-      email: payload.email,
-      role: payload.role || 'member',
+      // tenantId is the organization id — DigiT is multi-organization, there is
+      // no separate tenants table.
+      tenantId: profile.organization_id,
+      organizationId: profile.organization_id,
+      userId: user.id,
+      email: profile.email ?? user.email ?? "",
+      role: normalizeRole(profile.role),
     }
   } catch (error) {
-    console.error('[v0] Error extracting tenant context:', error)
+    console.log("[v0] Error extracting tenant context:", error)
     return null
   }
 }
 
 /**
- * Higher-order middleware to wrap API routes with tenant validation
- * Usage: export const withTenantContext = createTenantMiddleware(handler)
+ * Higher-order middleware to wrap API routes with tenant validation.
+ * Prefer `withAuth` (Module #2) which also enforces RBAC permissions.
  */
 export function withTenantContext(
-  handler: (
-    req: NextRequest,
-    context: TenantContextMiddleware
-  ) => Promise<NextResponse>
+  handler: (req: NextRequest, context: TenantContextMiddleware) => Promise<NextResponse>,
 ) {
-  return async (req: NextRequest, ctx?: any) => {
-    // Extract tenant context
+  return async (req: NextRequest) => {
     const tenantContext = await extractTenantContext(req)
 
     if (!tenantContext) {
       return NextResponse.json(
-        {
-          error: 'Unauthorized',
-          message: 'Invalid or missing tenant context',
-        },
-        { status: 401 }
+        { error: "Unauthorized", message: "Invalid or missing tenant context" },
+        { status: 401 },
       )
     }
-
-    // Add tenant context to request for downstream access
-    ;(req as any).tenantContext = tenantContext
 
     try {
       return await handler(req, tenantContext)
     } catch (error) {
-      console.error('[v0] Error in tenant-protected route:', error)
+      console.log("[v0] Error in tenant-protected route:", error)
       return NextResponse.json(
-        {
-          error: 'Internal Server Error',
-          message: 'An error occurred processing your request',
-        },
-        { status: 500 }
+        { error: "Internal Server Error", message: "An error occurred processing your request" },
+        { status: 500 },
       )
     }
   }
 }
 
 /**
- * Inject tenant context into NextRequest for downstream use
- * Stores in request locals which are passed to route handlers
- */
-export function injectTenantContext(
-  request: NextRequest,
-  tenantContext: TenantContextMiddleware
-): NextRequest {
-  const requestWithContext = request.clone()
-  ;(requestWithContext as any).tenantContext = tenantContext
-  return requestWithContext
-}
-
-/**
- * Get tenant context from request in API routes
- * Must be called after withTenantContext middleware
+ * Get tenant context from request in API routes.
+ * Must be called after withTenantContext middleware has attached it.
  */
 export function getTenantContextFromRequest(request: NextRequest): TenantContextMiddleware | null {
   return (request as any).tenantContext || null

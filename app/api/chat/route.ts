@@ -4,6 +4,8 @@ import {
   streamText,
   UIMessage,
 } from 'ai'
+import { NextResponse } from 'next/server'
+import { extractTenantContext } from '@/lib/multitenant/context'
 
 export const maxDuration = 30
 
@@ -28,6 +30,16 @@ Be concise, professional, and data-driven in your responses. When discussing met
 Current date: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
 
 export async function POST(req: Request) {
+  // Require an authenticated session — the AI Assistant uses the same identity
+  // model as every other module. Unauthenticated callers cannot reach the LLM.
+  const context = await extractTenantContext()
+  if (!context) {
+    return NextResponse.json(
+      { error: "Unauthorized", message: "You must be signed in to use the assistant" },
+      { status: 401 },
+    )
+  }
+
   const { messages }: { messages: UIMessage[] } = await req.json()
 
   const result = streamText({
