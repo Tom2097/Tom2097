@@ -1,29 +1,51 @@
-'use client'
-
-import { useState } from 'react'
 import { LayoutGrid, Activity, FileText, Workflow } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
-import { generateTimeSeriesData, generateOperationalMetrics } from '@/lib/mock-data'
+import { extractTenantContext } from '@/lib/multitenant/context'
+import { getSystemHealth, listMonitors } from '@/lib/monitoring/engine'
+import { getOperationalMetrics } from '@/lib/dashboard/queries'
 
-const operationalStreams = [
-  { name: 'Data Pipelines', detail: 'Ingestion and sync jobs', status: 'Healthy' },
-  { name: 'Automation Runs', detail: 'Scheduled workflow executions', status: 'Healthy' },
-  { name: 'Reporting Jobs', detail: 'Generated operational reports', status: 'Running' },
-  { name: 'Integration Sync', detail: 'Connected service deliveries', status: 'Healthy' },
-]
+const STATUS_STYLES: Record<string, string> = {
+  up: 'bg-emerald-500/20 text-emerald-500',
+  degraded: 'bg-amber-500/20 text-amber-500',
+  down: 'bg-red-500/20 text-red-500',
+  unknown: 'bg-muted text-muted-foreground',
+}
 
 /**
- * Generic operational workspace used by configurable modules.
+ * Generic operational workspace used by configurable modules
+ * (operations / performance / resources / compliance).
+ *
  * DigiT is an industry-agnostic platform — this view presents neutral
- * operational intelligence rather than any vertical-specific framing.
+ * operational intelligence sourced from the tenant's live monitoring and
+ * analytics tables rather than any vertical-specific or fabricated data.
  */
-export function GenericWorkspace({ title = 'Operations Workspace' }: { title?: string }) {
-  const [throughputData] = useState(
-    generateTimeSeriesData(30, 85, 12).map((d, i) => ({ name: i + 1, value: d.value })),
-  )
-  const [performanceData] = useState(generateOperationalMetrics())
+export async function GenericWorkspace({ title = 'Operations Workspace' }: { title?: string }) {
+  const ctx = await extractTenantContext()
+  const orgId = ctx?.organizationId
+
+  const [health, monitorsResult, operational] = orgId
+    ? await Promise.all([
+        getSystemHealth(orgId).catch(() => null),
+        listMonitors(orgId, { limit: 6 }).catch(() => ({ monitors: [], total: 0 })),
+        getOperationalMetrics(orgId),
+      ])
+    : [null, { monitors: [], total: 0 }, []]
+
+  const monitors = monitorsResult.monitors
+  const uptimePct =
+    health && health.monitors.total > 0
+      ? Math.round((health.monitors.up / health.monitors.total) * 1000) / 10
+      : 100
+  const latencyValues = monitors
+    .map((m) => m.last_latency_ms)
+    .filter((v): v is number => typeof v === 'number')
+  const avgLatency =
+    latencyValues.length > 0
+      ? Math.round(latencyValues.reduce((sum, v) => sum + v, 0) / latencyValues.length)
+      : null
+  const throughputData = operational.map((d) => ({ name: d.name, value: d.value }))
 
   return (
     <div className="space-y-6">
@@ -55,48 +77,75 @@ export function GenericWorkspace({ title = 'Operations Workspace' }: { title?: s
 
       {/* Metrics */}
       <MetricGrid columns={4}>
-        <MetricCard label="Active Operations" value="184" subtitle="Running workflows" variant="highlight" />
-        <MetricCard label="Throughput" value="94.2%" change={2.1} trend="up" />
-        <MetricCard label="SLA Compliance" value="99.4%" subtitle="Rolling 30 days" change={0.6} trend="up" />
-        <MetricCard label="Avg. Response" value="12ms" change={-4} trend="down" />
+        <MetricCard
+          label="Active Monitors"
+          value={health?.monitors.total ?? 0}
+          subtitle="Enabled checks"
+          variant="highlight"
+        />
+        <MetricCard label="Uptime" value={`${uptimePct}%`} subtitle="Monitors reporting healthy" />
+        <MetricCard label="Open Incidents" value={health?.open_incidents ?? 0} subtitle="Unresolved" />
+        <MetricCard label="Avg. Latency" value={avgLatency != null ? `${avgLatency}ms` : '—'} />
       </MetricGrid>
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartContainer title="Throughput" subtitle="30-day operational throughput (%)">
-          <LiveChart data={throughputData} dataKey="value" type="line" height={280} color="hsl(var(--primary))" />
+        <ChartContainer title="Throughput" subtitle="Operational throughput series">
+          {throughputData.length > 0 ? (
+            <LiveChart data={throughputData} dataKey="value" type="line" height={280} color="hsl(var(--primary))" />
+          ) : (
+            <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
+              No throughput data recorded yet.
+            </div>
+          )}
         </ChartContainer>
 
-        <ChartContainer title="System Performance" subtitle="24-hour performance metrics">
-          <LiveChart data={performanceData} dataKey="value" type="area" height={280} />
+        <ChartContainer title="System Performance" subtitle="Operational performance metrics">
+          {operational.length > 0 ? (
+            <LiveChart data={operational} dataKey="cpu" type="area" height={280} />
+          ) : (
+            <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
+              No performance data recorded yet.
+            </div>
+          )}
         </ChartContainer>
       </div>
 
-      {/* Operational streams */}
+      {/* Monitored streams */}
       <div className="rounded-2xl border border-border/50 bg-card p-6">
         <div className="mb-4 flex items-center gap-2">
           <Activity className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold text-foreground">Operational Streams</h3>
+          <h3 className="text-lg font-semibold text-foreground">Monitored Streams</h3>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {operationalStreams.map((stream) => (
-            <div key={stream.name} className="flex items-center justify-between rounded-xl bg-secondary/30 p-4">
-              <div>
-                <p className="font-medium text-foreground">{stream.name}</p>
-                <p className="text-xs text-muted-foreground">{stream.detail}</p>
-              </div>
-              <span
-                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  stream.status === 'Running'
-                    ? 'bg-amber-500/20 text-amber-500'
-                    : 'bg-emerald-500/20 text-emerald-500'
-                }`}
-              >
-                {stream.status}
-              </span>
-            </div>
-          ))}
-        </div>
+        {monitors.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {monitors.map((monitor) => {
+              const status = monitor.last_status ?? 'unknown'
+              return (
+                <div key={monitor.id} className="flex items-center justify-between rounded-xl bg-secondary/30 p-4">
+                  <div>
+                    <p className="font-medium text-foreground">{monitor.name}</p>
+                    <p className="text-xs text-muted-foreground">{monitor.description || monitor.target}</p>
+                  </div>
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${
+                      STATUS_STYLES[status] ?? STATUS_STYLES.unknown
+                    }`}
+                  >
+                    {status}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/60 py-10 text-center">
+            <p className="font-medium text-foreground">No monitored streams yet</p>
+            <p className="text-sm text-muted-foreground">
+              Configure monitors to track operational health in this workspace.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
