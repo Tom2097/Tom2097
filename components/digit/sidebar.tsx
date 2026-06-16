@@ -14,7 +14,8 @@ import {
   ChevronRight,
   CreditCard,
   Brain,
-  Sparkles
+  Sparkles,
+  MessageSquarePlus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -25,6 +26,7 @@ const modules = [
   { id: 'workspace-2', title: 'Performance Workspace', icon: Activity, href: '/performance' },
   { id: 'workspace-3', title: 'Resource Workspace', icon: Boxes, href: '/resources' },
   { id: 'workspace-4', title: 'Compliance Workspace', icon: ShieldCheck, href: '/compliance' },
+  { id: 'feedback', title: 'Feedback', icon: MessageSquarePlus, href: '/feedback' },
 ]
 
 interface SidebarProps {
