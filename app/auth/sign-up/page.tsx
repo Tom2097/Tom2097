@@ -73,9 +73,15 @@ export default function SignUpPage() {
       email,
       password,
       options: {
+        // In production, always send users back to the live site's callback.
+        // The v0 dev redirect proxy is only used during local/preview development,
+        // otherwise the PKCE code-verifier cookie set on this origin won't be
+        // present when the code is exchanged, breaking verification.
         emailRedirectTo:
-          process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
-          `${window.location.origin}/auth/callback`,
+          process.env.NODE_ENV === "development"
+            ? (process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
+              `${window.location.origin}/auth/callback`)
+            : `${window.location.origin}/auth/callback`,
         data: {
           full_name: fullName,
           company_name: companyName,
