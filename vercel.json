@@ -3,6 +3,10 @@
     {
       "path": "/api/v1/workflows/run-scheduled",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/v1/retention/run-due",
+      "schedule": "0 3 * * *"
     }
   ]
 }

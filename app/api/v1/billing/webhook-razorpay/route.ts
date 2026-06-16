@@ -18,9 +18,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Signature verification failed" }, { status: 403 })
     }
 
-    // Parse and process the webhook event
+    // Parse and process the webhook event. The delivery id (x-razorpay-event-id)
+    // is the idempotency key used to dedupe duplicate deliveries.
     const payload = JSON.parse(body)
-    await handleRazorpayWebhook(payload)
+    const eventId = req.headers.get("x-razorpay-event-id")
+    await handleRazorpayWebhook(payload, eventId)
 
     return NextResponse.json({ received: true })
   } catch (err) {

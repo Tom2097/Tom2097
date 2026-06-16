@@ -6,6 +6,7 @@ import {
 } from 'ai'
 import { NextResponse } from 'next/server'
 import { extractTenantContext } from '@/lib/multitenant/context'
+import { checkTenantRateLimit } from '@/lib/multitenant/rate-limit'
 
 export const maxDuration = 30
 
@@ -39,6 +40,11 @@ export async function POST(req: Request) {
       { status: 401 },
     )
   }
+
+  // Abuse protection: meter the LLM proxy per tenant. The assistant is far more
+  // expensive than a normal API call, so cap it tighter than the default.
+  const rateLimited = checkTenantRateLimit(context.tenantId, 200, 20)
+  if (rateLimited) return rateLimited
 
   const { messages }: { messages: UIMessage[] } = await req.json()
 

@@ -1,6 +1,7 @@
 import Stripe from "stripe"
 import { createServiceClient } from "@/lib/supabase/service"
 import { logAuthEvent } from "@/lib/auth/audit"
+import { claimWebhookEvent } from "./idempotency"
 import type { BillingPlan } from "./types"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "")
@@ -159,6 +160,15 @@ export async function cancelStripeSubscription(organizationId: string): Promise<
 }
 
 export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
+  // Idempotency: skip events we have already processed (provider retries or two
+  // Stripe endpoints both pointing at this app). Covers both webhook routes
+  // since they share this handler.
+  const firstTime = await claimWebhookEvent("stripe", event.id, event.type)
+  if (!firstTime) {
+    console.log("[v0] Duplicate Stripe webhook skipped:", event.id)
+    return
+  }
+
   const supabase = await createServiceClient()
 
   try {

@@ -4,6 +4,7 @@ import {
   verifyAuthenticationResponse,
 } from "@simplewebauthn/server"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,9 +26,14 @@ export async function POST(req: NextRequest) {
 
       try {
         const supabase = await createClient()
+        // Passkey lookups happen BEFORE the user has a session, so RLS would
+        // hide the row. Use the service client (RLS-exempt) for the credential
+        // table; possession of the credential + the verified WebAuthn signature
+        // is the proof, not an active session.
+        const db = createServiceClient()
 
         // Get passkey from database
-        const { data: passkey, error: passkeyError } = await supabase
+        const { data: passkey, error: passkeyError } = await db
           .from("passkeys")
           .select("*")
           .eq("credential_id", credentialID)
@@ -62,7 +68,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Update counter and last_used_at
-        const { error: updateError } = await supabase
+        const { error: updateError } = await db
           .from("passkeys")
           .update({
             counter: verification.authenticationInfo?.newCounter || passkey.counter,
@@ -79,7 +85,7 @@ export async function POST(req: NextRequest) {
 
         if (userError || !user) {
           // Get user from the passkey association
-          const { data: userData, error: getUserError } = await supabase
+          const { data: userData, error: getUserError } = await db
             .from("passkeys")
             .select("user_id")
             .eq("credential_id", credentialID)

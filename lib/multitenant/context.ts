@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
@@ -33,6 +34,23 @@ function normalizeRole(role: string | null | undefined): "admin" | "member" | "v
 }
 
 /**
+ * Per-request memoized profile lookup. React's `cache()` dedupes calls with the
+ * same userId within a single server request, so multiple components/handlers
+ * resolving tenant context in one request hit the database only once. This is a
+ * lightweight, dependency-free cache scoped to the request lifecycle — no stale
+ * cross-request data is possible.
+ */
+const getProfileForUser = cache(async (userId: string) => {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("profiles")
+    .select("organization_id, email, role")
+    .eq("id", userId)
+    .single()
+  return { data, error }
+})
+
+/**
  * Resolve the authenticated tenant context for the current request.
  *
  * The `request` argument is accepted for backwards compatibility but identity is
@@ -58,13 +76,9 @@ export async function extractTenantContext(
 
     // 2. Resolve org membership + base role from profiles (server-side, the
     //    authoritative source). Use the service client so an incomplete RLS
-    //    policy set can never hide a user's own membership row.
-    const db = createServiceClient()
-    const { data: profile, error: profileError } = await db
-      .from("profiles")
-      .select("organization_id, email, role")
-      .eq("id", user.id)
-      .single()
+    //    policy set can never hide a user's own membership row. Memoized
+    //    per-request so repeated context resolution costs a single query.
+    const { data: profile, error: profileError } = await getProfileForUser(user.id)
 
     if (profileError || !profile?.organization_id) {
       console.log("[v0] extractTenantContext: no organization for user", user.id)
