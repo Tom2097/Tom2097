@@ -195,8 +195,8 @@ importers:
         specifier: ^1.7.1
         version: 1.7.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       stripe:
-        specifier: ^22.1.1
-        version: 22.1.1(@types/node@22.19.11)
+        specifier: ^18.5.0
+        version: 18.5.0(@types/node@22.19.11)
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.4.0
@@ -3948,11 +3948,11 @@ packages:
     resolution: {integrity: sha512-aulFJcD6YK8V1G7iRB5tigAP4TsHBZZrOV8pjV++zdUwmeV8uzbY7yn6h9MswN62adStNZFuCIx4haBnRuMDaw==}
     engines: {node: '>=18'}
 
-  stripe@22.1.1:
-    resolution: {integrity: sha512-cmodIYP27tBkJ8G7DuGgWw0PFuemlFZbuF3Wwr1TrjFjUa3T7NIgCe6TVwX8BO2ynu+xtTuDGfHafNDCPt9lXA==}
-    engines: {node: '>=18'}
+  stripe@18.5.0:
+    resolution: {integrity: sha512-Hp+wFiEQtCB0LlNgcFh5uVyKznpDjzyUZ+CNVEf+I3fhlYvh7rZruIg+jOwzJRCpy0ZTPMjlzm7J2/M2N6d+DA==}
+    engines: {node: '>=12.*'}
     peerDependencies:
-      '@types/node': '>=18'
+      '@types/node': '>=12.x.x'
     peerDependenciesMeta:
       '@types/node':
         optional: true
@@ -8037,7 +8037,9 @@ snapshots:
 
   strip-final-newline@4.0.0: {}
 
-  stripe@22.1.1(@types/node@22.19.11):
+  stripe@18.5.0(@types/node@22.19.11):
+    dependencies:
+      qs: 6.15.2
     optionalDependencies:
       '@types/node': 22.19.11
 
