@@ -80,6 +80,7 @@ interface Profile {
 export function Navbar({ onOpenAI }: NavbarProps) {
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchDropdown, setShowSearchDropdown] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -120,6 +121,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
           setProfile(data)
         }
       }
+      setAuthLoading(false)
     }
 
     getUser()
@@ -366,7 +368,9 @@ export function Navbar({ onOpenAI }: NavbarProps) {
         </DropdownMenu>
 
         {/* User Menu */}
-        {user ? (
+        {authLoading ? (
+          <div className="h-8 w-8 rounded-full bg-secondary animate-pulse" />
+        ) : user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
