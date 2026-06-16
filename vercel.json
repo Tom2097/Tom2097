@@ -7,6 +7,10 @@
     {
       "path": "/api/v1/retention/run-due",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/v1/monitoring/run-due",
+      "schedule": "* * * * *"
     }
   ]
 }

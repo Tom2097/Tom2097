@@ -303,6 +303,77 @@ export async function recordCheck(
   return { monitor: updated as Monitor, check: check as MonitorCheck, result }
 }
 
+/**
+ * Cross-tenant list of monitors whose next check is due. Used only by the
+ * scheduled runner (system context), so it is NOT org-scoped — each returned
+ * monitor still carries its own organization_id, which downstream calls use to
+ * preserve tenant isolation. A monitor is due when it is enabled and either has
+ * never been checked (next_check_at null) or next_check_at has passed.
+ */
+export async function listDueMonitors(limit = 200): Promise<Monitor[]> {
+  const db = createServiceClient()
+  const nowIso = new Date().toISOString()
+  const { data, error } = await db
+    .from("monitors")
+    .select("*")
+    .eq("is_enabled", true)
+    .or(`next_check_at.is.null,next_check_at.lte.${nowIso}`)
+    .order("next_check_at", { ascending: true, nullsFirst: true })
+    .limit(limit)
+  if (error) {
+    console.log("[v0] listDueMonitors failed:", error.message)
+    throw new Error("failed to list due monitors")
+  }
+  return (data ?? []) as Monitor[]
+}
+
+export interface RunChecksSummary {
+  processed: number
+  up: number
+  down: number
+  degraded: number
+  failed: number
+  results: Array<{ monitorId: string; organizationId: string; status: CheckStatus | "error"; error?: string }>
+}
+
+/**
+ * Execute all due monitor checks. Each monitor is checked independently with
+ * its own error boundary so one failure can never abort the batch. recordCheck
+ * persists the result, advances next_check_at, and drives the auto-incident
+ * lifecycle. Returns an aggregate summary for the scheduler's response/logs.
+ */
+export async function runDueChecks(limit = 200): Promise<RunChecksSummary> {
+  const due = await listDueMonitors(limit)
+  const summary: RunChecksSummary = { processed: 0, up: 0, down: 0, degraded: 0, failed: 0, results: [] }
+
+  for (const monitor of due) {
+    try {
+      const outcome = await recordCheck(monitor.organization_id, monitor.id)
+      const status = outcome?.result.status ?? "down"
+      summary.processed++
+      if (status === "up") summary.up++
+      else if (status === "down") summary.down++
+      else if (status === "degraded") summary.degraded++
+      summary.results.push({ monitorId: monitor.id, organizationId: monitor.organization_id, status })
+    } catch (e) {
+      summary.failed++
+      const message = e instanceof Error ? e.message : String(e)
+      console.log("[v0] runDueChecks: monitor", monitor.id, "failed:", message)
+      summary.results.push({
+        monitorId: monitor.id,
+        organizationId: monitor.organization_id,
+        status: "error",
+        error: message,
+      })
+    }
+  }
+
+  console.log(
+    `[v0] runDueChecks complete: processed=${summary.processed} up=${summary.up} down=${summary.down} degraded=${summary.degraded} failed=${summary.failed}`,
+  )
+  return summary
+}
+
 /** Recent check history for a monitor (scoped to org). */
 export async function listChecks(
   organizationId: string,
