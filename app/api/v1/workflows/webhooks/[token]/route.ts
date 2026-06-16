@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getWorkflowByWebhookToken } from "@/lib/workflows/store"
 import { triggerWorkflow } from "@/lib/workflows/trigger"
+import { claimWebhookEvent } from "@/lib/billing/idempotency"
 
 /**
  * Public webhook trigger: POST /api/v1/workflows/webhooks/{token}
@@ -20,6 +21,17 @@ export async function POST(req: NextRequest) {
   }
   if (!workflow.enabled) {
     return NextResponse.json({ error: "Workflow is disabled" }, { status: 409 })
+  }
+
+  // Optional idempotency: if the caller supplies an Idempotency-Key, a duplicate
+  // delivery with the same key for the same workflow is acknowledged without
+  // starting a second execution. Absent the header, behaviour is at-least-once.
+  const idempotencyKey = req.headers.get("idempotency-key")
+  if (idempotencyKey) {
+    const firstTime = await claimWebhookEvent(`workflow:${workflow.id}`, idempotencyKey)
+    if (!firstTime) {
+      return NextResponse.json({ status: "duplicate_ignored" }, { status: 200 })
+    }
   }
 
   let input: Record<string, unknown> = {}

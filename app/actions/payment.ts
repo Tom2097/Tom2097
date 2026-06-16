@@ -112,30 +112,30 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
 
   const customerId = paymentIntent.customer as string
 
+  // Create a recurring price for this plan (product created inline)
+  const price = await stripe.prices.create({
+    currency: "usd",
+    unit_amount: plan.priceInCents,
+    recurring: {
+      interval: plan.interval,
+    },
+    product_data: {
+      name: `DigiT ${plan.name} Plan`,
+    },
+  })
+
   // Create the actual subscription in Stripe
   const subscription = await stripe.subscriptions.create({
     customer: customerId,
-    items: [
-      {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: `DigiT ${plan.name} Plan`,
-            description: plan.description,
-          },
-          unit_amount: plan.priceInCents,
-          recurring: {
-            interval: plan.interval,
-          },
-        },
-      },
-    ],
+    items: [{ price: price.id }],
     default_payment_method: paymentIntent.payment_method as string,
     metadata: {
       plan_id: plan.id,
       organization_id: profile.organization_id,
     },
   })
+
+  const subscriptionItem = subscription.items.data[0]
 
   // Update the subscription in our database
   await supabase
@@ -144,8 +144,8 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
       stripe_subscription_id: subscription.id,
       plan_id: plan.id,
       status: "active",
-      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      current_period_start: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
     })
     .eq("organization_id", profile.organization_id)
 

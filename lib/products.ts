@@ -43,7 +43,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     priceInCents: 99900, // $999/month
     interval: "month",
     features: [
-      "3 industry modules",
+      "3 platform modules",
       "Up to 25 team members",
       "1M data points/month",
       "API access",
@@ -67,7 +67,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     priceInCents: 499900, // $4,999/month
     interval: "month",
     features: [
-      "All 6 industry modules",
+      "All 6 platform modules",
       "Unlimited team members",
       "Unlimited data points",
       "Dedicated account manager",

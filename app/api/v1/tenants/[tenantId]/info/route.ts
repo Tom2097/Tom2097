@@ -21,7 +21,7 @@ async function getTenantInfo(
 ) {
   try {
     // Check rate limit
-    const rateLimitResponse = checkTenantRateLimit(tenantContext.tenantId)
+    const rateLimitResponse = await checkTenantRateLimit(tenantContext.tenantId)
     if (rateLimitResponse) {
       return rateLimitResponse
     }
@@ -60,7 +60,7 @@ async function getTenantInfo(
       { status: 200 }
     )
 
-    return addRateLimitHeaders(response, tenantContext.tenantId)
+    return await addRateLimitHeaders(response, tenantContext.tenantId)
   } catch (error) {
     console.error("[v0] Error fetching tenant info:", error)
     return NextResponse.json(
@@ -86,7 +86,7 @@ async function updateTenantInfo(
 ) {
   try {
     // Check rate limit
-    const rateLimitResponse = checkTenantRateLimit(tenantContext.tenantId)
+    const rateLimitResponse = await checkTenantRateLimit(tenantContext.tenantId)
     if (rateLimitResponse) {
       return rateLimitResponse
     }
@@ -132,7 +132,7 @@ async function updateTenantInfo(
       { status: 200 }
     )
 
-    return addRateLimitHeaders(response, tenantContext.tenantId)
+    return await addRateLimitHeaders(response, tenantContext.tenantId)
   } catch (error) {
     console.error("[v0] Error updating tenant info:", error)
     return NextResponse.json(

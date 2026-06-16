@@ -20,17 +20,6 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({ api: '/api/chat' }),
-    initialMessages: [
-      {
-        id: 'welcome',
-        role: 'assistant',
-        parts: [{ 
-          type: 'text', 
-          text: 'Hello! I\'m your DigiT AI Assistant powered by Claude. I can help you analyze data, generate insights, and answer questions about your enterprise operations. How can I assist you today?' 
-        }],
-        createdAt: new Date()
-      }
-    ]
   })
 
   const isLoading = status === 'streaming' || status === 'submitted'
@@ -115,6 +104,18 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4">
             <div className="space-y-4">
+              {messages.length === 0 && (
+                <div className="flex gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                    <Bot className="h-4 w-4" />
+                  </div>
+                  <div className="max-w-[280px] rounded-2xl bg-secondary px-4 py-2.5 text-sm text-secondary-foreground">
+                    <div className="whitespace-pre-wrap">
+                      {"Hello! I'm your DigiT AI Assistant powered by Claude. I can help you analyze data, generate insights, and answer questions about your enterprise operations. How can I assist you today?"}
+                    </div>
+                  </div>
+                </div>
+              )}
               {messages.map((message) => {
                 const text = getMessageText(message)
                 if (!text) return null

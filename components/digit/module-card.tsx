@@ -6,20 +6,20 @@ import { ArrowRight } from 'lucide-react'
 import { 
   BarChart3, 
   Users, 
-  Heart, 
-  Building2, 
-  Wheat, 
-  Pill,
+  LayoutGrid,
+  Activity,
+  Boxes,
+  ShieldCheck,
   type LucideIcon
 } from 'lucide-react'
 
 const iconMap: Record<string, LucideIcon> = {
   BarChart3,
   Users,
-  Heart,
-  Building2,
-  Wheat,
-  Pill
+  LayoutGrid,
+  Activity,
+  Boxes,
+  ShieldCheck
 }
 
 interface ModuleCardProps {

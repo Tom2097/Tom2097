@@ -1,7 +1,5 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { ArrowRight, Activity, Zap, Shield, Globe, Crown, Lock, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,138 +7,107 @@ import { Card } from '@/components/ui/card'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ModuleCard, ModuleGrid } from '@/components/digit/module-card'
 import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
-import { modules, dashboardStats, generateRevenueForecast, generateOperationalMetrics, activeOperations } from '@/lib/mock-data'
-import { createClient } from '@/lib/supabase/client'
+import { modules } from '@/lib/modules'
 import { getPlanById, formatPrice } from '@/lib/products'
+import { createServiceClient } from '@/lib/supabase/service'
+import { extractTenantContext } from '@/lib/multitenant/context'
+import { getDashboardStats, getRevenueMetrics, getOperationalMetrics } from '@/lib/dashboard/queries'
+import { listMonitors } from '@/lib/monitoring/engine'
 
-interface Subscription {
-  plan_id: string
-  status: string
-  current_period_end: string | null
-}
+// Tenant-scoped, always rendered with fresh data.
+export const dynamic = 'force-dynamic'
 
-export default function DashboardPage() {
-  const [revenueData, setRevenueData] = useState(generateRevenueForecast())
-  const [operationalData, setOperationalData] = useState(generateOperationalMetrics())
-  const [stats, setStats] = useState(dashboardStats)
-  const [subscription, setSubscription] = useState<Subscription | null>(null)
-  const [loading, setLoading] = useState(true)
+export default async function DashboardPage() {
+  const ctx = await extractTenantContext()
+  if (!ctx) redirect('/auth/login')
+  const orgId = ctx.organizationId
 
-  const plan = subscription ? getPlanById(subscription.plan_id) : null
+  const db = createServiceClient()
+  const [stats, revenueData, operationalData, subResult, monitorsResult] = await Promise.all([
+    getDashboardStats(orgId),
+    getRevenueMetrics(orgId),
+    getOperationalMetrics(orgId),
+    db
+      .from('subscriptions')
+      .select('plan_id, status, current_period_end')
+      .eq('organization_id', orgId)
+      .maybeSingle(),
+    listMonitors(orgId, { enabledOnly: true, limit: 4 }).catch(() => ({ monitors: [], total: 0 })),
+  ])
+
+  const subscription = subResult.data as
+    | { plan_id: string; status: string; current_period_end: string | null }
+    | null
   const isTrialing = subscription?.status === 'trialing'
   const isActive = subscription?.status === 'active'
   const hasSubscription = isTrialing || isActive
+  const plan = subscription ? getPlanById(subscription.plan_id) : null
 
-  // Determine which modules are accessible based on plan
+  // Module access is gated by the plan's module allowance.
   const accessibleModuleCount = plan?.limits.modules || 1
   const accessibleModules = modules.slice(0, accessibleModuleCount)
   const lockedModules = modules.slice(accessibleModuleCount)
 
-  useEffect(() => {
-    const fetchSubscription = async () => {
-      const supabase = createClient()
-      
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('organization_id')
-          .eq('id', user.id)
-          .single()
-
-        if (profile?.organization_id) {
-          const { data: sub } = await supabase
-            .from('subscriptions')
-            .select('plan_id, status, current_period_end')
-            .eq('organization_id', profile.organization_id)
-            .single()
-
-          if (sub) {
-            setSubscription(sub)
-          }
-        }
-      }
-      setLoading(false)
-    }
-
-    fetchSubscription()
-  }, [])
-
-  // Simulate real-time updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStats(prev => ({
-        ...prev,
-        activeOperations: prev.activeOperations + Math.floor(Math.random() * 3) - 1,
-        responseTime: Math.max(8, Math.min(20, prev.responseTime + (Math.random() - 0.5) * 2))
-      }))
-    }, 3000)
-
-    return () => clearInterval(interval)
-  }, [])
+  const operations = monitorsResult.monitors
 
   return (
     <div className="space-y-8">
       {/* Subscription Banner */}
-      {!loading && (
-        <>
-          {isTrialing && (
-            <Card className="p-4 border-amber-500/30 bg-amber-500/10">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                    <Crown className="w-5 h-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">You&apos;re on a 14-day free trial</p>
-                    <p className="text-sm text-muted-foreground">
-                      {subscription?.current_period_end 
-                        ? `Trial ends ${new Date(subscription.current_period_end).toLocaleDateString()}`
-                        : 'Upgrade to unlock all features'}
-                    </p>
-                  </div>
-                </div>
-                <Button asChild>
-                  <Link href="/pricing">
-                    Upgrade Now
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Link>
-                </Button>
+      {isTrialing && (
+        <Card className="p-4 border-amber-500/30 bg-amber-500/10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-amber-500" />
               </div>
-            </Card>
-          )}
+              <div>
+                <p className="font-medium text-foreground">You&apos;re on a 14-day free trial</p>
+                <p className="text-sm text-muted-foreground">
+                  {subscription?.current_period_end
+                    ? `Trial ends ${new Date(subscription.current_period_end).toLocaleDateString()}`
+                    : 'Upgrade to unlock all features'}
+                </p>
+              </div>
+            </div>
+            <Button asChild>
+              <Link href="/pricing">
+                Upgrade Now
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Link>
+            </Button>
+          </div>
+        </Card>
+      )}
 
-          {isActive && plan && (
-            <Card className="p-4 border-chart-2/30 bg-chart-2/10">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-chart-2/20 flex items-center justify-center">
-                    <Crown className="w-5 h-5 text-chart-2" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-foreground">{plan.name} Plan</p>
-                      <Badge className="bg-chart-2/20 text-chart-2 border-chart-2/30">Active</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {plan.limits.modules} modules | {plan.limits.users === -1 ? 'Unlimited' : plan.limits.users} users | {formatPrice(plan.priceInCents)}/mo
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href="/settings">Manage</Link>
-                  </Button>
-                  {plan.id !== 'enterprise' && (
-                    <Button size="sm" asChild>
-                      <Link href="/pricing">Upgrade</Link>
-                    </Button>
-                  )}
-                </div>
+      {isActive && plan && (
+        <Card className="p-4 border-chart-2/30 bg-chart-2/10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-chart-2/20 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-chart-2" />
               </div>
-            </Card>
-          )}
-        </>
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-foreground">{plan.name} Plan</p>
+                  <Badge className="bg-chart-2/20 text-chart-2 border-chart-2/30">Active</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {plan.limits.modules} modules | {plan.limits.users === -1 ? 'Unlimited' : plan.limits.users} users | {formatPrice(plan.priceInCents)}/mo
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/settings">Manage</Link>
+              </Button>
+              {plan.id !== 'enterprise' && (
+                <Button size="sm" asChild>
+                  <Link href="/pricing">Upgrade</Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        </Card>
       )}
 
       {/* Hero Section */}
@@ -151,17 +118,17 @@ export default function DashboardPage() {
               <Activity className="h-4 w-4" />
               <span>Live Enterprise Intelligence</span>
             </div>
-            
+
             <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground lg:text-5xl">
               Centralized Operational Intelligence System
             </h1>
-            
+
             <p className="mt-4 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">
-              DigiT is building a connected ecosystem for AI-powered business software solutions. 
-              An intelligent framework that learns from enterprise operations, improves workflows, 
+              DigiT is building a connected ecosystem for AI-powered business software solutions.
+              An intelligent framework that learns from enterprise operations, improves workflows,
               predicts outcomes, and enables better decision-making.
             </p>
-            
+
             <div className="mt-8 flex flex-wrap gap-4">
               <Button asChild size="lg" className="gap-2 digit-glow">
                 <Link href="/analytics">
@@ -181,17 +148,12 @@ export default function DashboardPage() {
           {/* AI Core Visualization */}
           <div className="hidden lg:flex lg:justify-center">
             <div className="relative h-80 w-80">
-              {/* Animated rings */}
               <div className="absolute inset-0 animate-spin rounded-full border border-primary/30 [animation-duration:20s]" />
               <div className="absolute inset-8 animate-spin rounded-full border border-primary/40 [animation-duration:15s] [animation-direction:reverse]" />
               <div className="absolute inset-16 animate-spin rounded-full border border-primary/50 [animation-duration:10s]" />
-              
-              {/* Core */}
               <div className="absolute inset-24 flex items-center justify-center rounded-full bg-primary digit-glow-lg">
                 <span className="text-3xl font-bold text-primary-foreground">AI</span>
               </div>
-              
-              {/* Labels */}
               <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-xs font-medium text-primary">
                 AI NETWORK
               </div>
@@ -201,8 +163,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        
-        {/* Background decoration */}
+
         <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
         <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
       </section>
@@ -222,47 +183,38 @@ export default function DashboardPage() {
             <span className="text-sm font-medium text-emerald-500">Systems Operational</span>
           </div>
         </div>
-        
-        <MetricGrid columns={4}>
-          <MetricCard 
-            label="AI Accuracy" 
-            value={`${stats.aiAccuracy}%`}
-            change={2.3}
-            trend="up"
-            variant="highlight"
-          />
-          <MetricCard 
-            label="Enterprise Clients" 
-            value={`${stats.enterpriseClients}+`}
-            change={15}
-            trend="up"
-          />
-          <MetricCard 
-            label="Data Streams" 
-            value={`${(stats.dataStreams / 1000000).toFixed(0)}M+`}
-            trend="stable"
-          />
-          <MetricCard 
-            label="Active Operations" 
-            value={stats.activeOperations}
-            subtitle="Running AI workflows"
-          />
-        </MetricGrid>
+
+        {stats ? (
+          <MetricGrid columns={4}>
+            <MetricCard label="AI Accuracy" value={`${stats.ai_accuracy}%`} variant="highlight" />
+            <MetricCard label="Enterprise Clients" value={`${stats.enterprise_clients}+`} />
+            <MetricCard
+              label="Data Streams"
+              value={stats.data_streams >= 1_000_000 ? `${(stats.data_streams / 1_000_000).toFixed(0)}M+` : stats.data_streams.toLocaleString()}
+            />
+            <MetricCard label="Active Operations" value={stats.active_operations} subtitle="Running AI workflows" />
+          </MetricGrid>
+        ) : (
+          <Card className="p-6 text-sm text-muted-foreground">
+            No operational metrics recorded yet. Stats will appear here once your workspace begins reporting.
+          </Card>
+        )}
       </section>
 
       {/* Charts Section */}
       <section className="grid gap-6 lg:grid-cols-3">
-        <ChartContainer 
-          title="Enterprise Revenue Forecast" 
+        <ChartContainer
+          title="Enterprise Revenue Forecast"
           subtitle="AI prediction model indicates strong operational growth"
           className="lg:col-span-2"
         >
-          <LiveChart 
-            data={revenueData} 
-            dataKey="value" 
-            type="area"
-            height={280}
-          />
+          {revenueData.length > 0 ? (
+            <LiveChart data={revenueData} dataKey="value" type="area" height={280} />
+          ) : (
+            <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
+              No revenue data available yet.
+            </div>
+          )}
         </ChartContainer>
 
         <div className="rounded-2xl border border-border/50 bg-card p-6">
@@ -272,30 +224,36 @@ export default function DashboardPage() {
               <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-500" />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-xl bg-secondary/50 p-4 text-center">
-              <p className="text-3xl font-bold text-primary">{stats.uptime}%</p>
+              <p className="text-3xl font-bold text-primary">{stats ? stats.uptime : '--'}%</p>
               <p className="mt-1 text-xs text-muted-foreground">Uptime</p>
             </div>
             <div className="rounded-xl bg-secondary/50 p-4 text-center">
-              <p className="text-3xl font-bold text-primary">{Math.round(stats.responseTime)}ms</p>
+              <p className="text-3xl font-bold text-primary">{stats ? Math.round(stats.response_time) : '--'}ms</p>
               <p className="mt-1 text-xs text-muted-foreground">Response</p>
             </div>
           </div>
 
           <div className="mt-6">
-            <p className="mb-3 text-sm font-medium text-muted-foreground">Active AI Operations</p>
+            <p className="mb-3 text-sm font-medium text-muted-foreground">Active Monitors</p>
             <div className="space-y-2">
-              {activeOperations.slice(0, 4).map((operation, i) => (
-                <div 
-                  key={i}
-                  className="flex items-center gap-2 rounded-lg bg-secondary/30 px-3 py-2 text-sm"
-                >
-                  <Shield className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-secondary-foreground">{operation}</span>
-                </div>
-              ))}
+              {operations.length > 0 ? (
+                operations.map((monitor) => (
+                  <div
+                    key={monitor.id}
+                    className="flex items-center gap-2 rounded-lg bg-secondary/30 px-3 py-2 text-sm"
+                  >
+                    <Shield className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-secondary-foreground">{monitor.name}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="rounded-lg bg-secondary/30 px-3 py-2 text-sm text-muted-foreground">
+                  No active monitors configured.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -307,8 +265,8 @@ export default function DashboardPage() {
           <div>
             <h2 className="text-2xl font-bold text-foreground">Enterprise AI Modules</h2>
             <p className="text-sm text-muted-foreground">
-              {hasSubscription 
-                ? `You have access to ${accessibleModuleCount} of 6 modules`
+              {hasSubscription
+                ? `You have access to ${accessibleModuleCount} of ${modules.length} modules`
                 : 'Intelligent systems connected through one operational ecosystem'}
             </p>
           </div>
@@ -317,9 +275,8 @@ export default function DashboardPage() {
             View All Systems
           </Button>
         </div>
-        
+
         <ModuleGrid>
-          {/* Accessible Modules */}
           {accessibleModules.map((module) => (
             <ModuleCard
               key={module.id}
@@ -332,7 +289,6 @@ export default function DashboardPage() {
             />
           ))}
 
-          {/* Locked Modules */}
           {lockedModules.map((module) => (
             <div key={module.id} className="relative">
               <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 rounded-2xl flex flex-col items-center justify-center">
@@ -355,18 +311,16 @@ export default function DashboardPage() {
         </ModuleGrid>
       </section>
 
-      {/* Live Dashboard Preview */}
+      {/* Operational Performance */}
       <section>
-        <ChartContainer 
-          title="Operational Performance" 
-          subtitle="24-hour system performance metrics"
-        >
-          <LiveChart 
-            data={operationalData} 
-            dataKey="value" 
-            type="line"
-            height={250}
-          />
+        <ChartContainer title="Operational Performance" subtitle="24-hour system performance metrics">
+          {operationalData.length > 0 ? (
+            <LiveChart data={operationalData} dataKey="value" type="line" height={250} />
+          ) : (
+            <div className="flex h-[250px] items-center justify-center text-sm text-muted-foreground">
+              No operational performance data available yet.
+            </div>
+          )}
         </ChartContainer>
       </section>
 
@@ -376,11 +330,9 @@ export default function DashboardPage() {
           <Card className="p-8 bg-gradient-to-br from-primary/10 to-chart-2/10 border-primary/20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">
-                  Unlock Full AI Power
-                </h2>
+                <h2 className="text-2xl font-bold text-foreground mb-2">Unlock Full AI Power</h2>
                 <p className="text-muted-foreground max-w-xl">
-                  Upgrade your plan to access all 6 industry modules, unlimited team members, 
+                  Upgrade your plan to access all {modules.length} platform modules, unlimited team members,
                   advanced AI predictions, and dedicated enterprise support.
                 </p>
               </div>

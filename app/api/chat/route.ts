@@ -6,6 +6,7 @@ import {
 } from 'ai'
 import { NextResponse } from 'next/server'
 import { extractTenantContext } from '@/lib/multitenant/context'
+import { checkTenantRateLimit } from '@/lib/multitenant/rate-limit'
 
 export const maxDuration = 30
 
@@ -16,10 +17,10 @@ const DIGIT_SYSTEM_PROMPT = `You are DigiT AI, an intelligent enterprise assista
 2. **Module Guidance**: Help users navigate and utilize the platform's AI modules:
    - AI Analytics: Revenue forecasting, risk analysis, predictive modeling
    - Smart CRM: Customer intelligence, lead tracking, sales automation
-   - Healthcare AI: Patient data management, resource planning, diagnostics support
-   - Banking Intelligence: Fraud detection, credit scoring, market analysis
-   - Agro-Tech Systems: Yield forecasting, climate analysis, supply chain optimization
-   - Pharma Intelligence: Drug analytics, production monitoring, compliance tracking
+   - Operations Workspace: Process monitoring, resource planning, workflow optimization
+   - Performance Workspace: Anomaly detection, scoring, signal tracking, risk assessment
+   - Resource Workspace: Demand forecasting, capacity analysis, inventory intelligence
+   - Compliance Workspace: Audit tracking, quality control, process management
 
 3. **Predictions & Recommendations**: Provide AI-powered predictions and strategic recommendations based on enterprise data patterns.
 
@@ -39,6 +40,11 @@ export async function POST(req: Request) {
       { status: 401 },
     )
   }
+
+  // Abuse protection: meter the LLM proxy per tenant. The assistant is far more
+  // expensive than a normal API call, so cap it tighter than the default.
+  const rateLimited = await checkTenantRateLimit(context.tenantId, 200, 20)
+  if (rateLimited) return rateLimited
 
   const { messages }: { messages: UIMessage[] } = await req.json()
 

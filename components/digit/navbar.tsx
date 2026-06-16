@@ -14,10 +14,10 @@ import {
   HelpCircle,
   BarChart3,
   Users,
-  Heart,
-  Building2,
-  Wheat,
-  Pill,
+  LayoutGrid,
+  Activity,
+  Boxes,
+  ShieldCheck,
   FileText,
   Sparkles,
   Clock,
@@ -41,11 +41,12 @@ import type { User as SupabaseUser } from '@supabase/supabase-js'
 // Search items database
 const searchItems = [
   // Modules
-  { type: 'module', title: 'Banking Analytics', description: 'Financial risk and transaction analysis', icon: Building2, href: '/modules/banking', category: 'Modules' },
-  { type: 'module', title: 'Insurance Analytics', description: 'Claims processing and risk assessment', icon: Heart, href: '/modules/insurance', category: 'Modules' },
-  { type: 'module', title: 'Healthcare Analytics', description: 'Patient data and clinical insights', icon: Pill, href: '/modules/healthcare', category: 'Modules' },
-  { type: 'module', title: 'Agriculture Analytics', description: 'Crop yield and farming optimization', icon: Wheat, href: '/modules/agriculture', category: 'Modules' },
-  { type: 'module', title: 'HR Analytics', description: 'Workforce and talent management', icon: Users, href: '/modules/hr', category: 'Modules' },
+  { type: 'module', title: 'AI Analytics', description: 'Enterprise intelligence and predictive analytics', icon: BarChart3, href: '/analytics', category: 'Modules' },
+  { type: 'module', title: 'Smart CRM', description: 'Customer management and sales automation', icon: Users, href: '/crm', category: 'Modules' },
+  { type: 'module', title: 'Operations Workspace', description: 'Process monitoring and workflow optimization', icon: LayoutGrid, href: '/operations', category: 'Modules' },
+  { type: 'module', title: 'Performance Workspace', description: 'Anomaly detection and trend analysis', icon: Activity, href: '/performance', category: 'Modules' },
+  { type: 'module', title: 'Resource Workspace', description: 'Capacity planning and inventory intelligence', icon: Boxes, href: '/resources', category: 'Modules' },
+  { type: 'module', title: 'Compliance Workspace', description: 'Audit readiness and quality control', icon: ShieldCheck, href: '/compliance', category: 'Modules' },
   // Pages
   { type: 'page', title: 'Dashboard', description: 'Overview and key metrics', icon: BarChart3, href: '/', category: 'Pages' },
   { type: 'page', title: 'AI Intelligence', description: 'AI-powered insights hub', icon: Sparkles, href: '/intelligence', category: 'Pages' },
@@ -62,7 +63,7 @@ const searchItems = [
 
 const recentSearches = [
   'Revenue forecast',
-  'Banking module',
+  'Operations workspace',
   'Team settings'
 ]
 
@@ -355,7 +356,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
             </DropdownMenuItem>
             <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
               <span className="font-medium">High Risk Alert</span>
-              <span className="text-xs text-muted-foreground">Banking module detected anomaly in transactions</span>
+              <span className="text-xs text-muted-foreground">Performance workspace detected an anomaly</span>
             </DropdownMenuItem>
             <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
               <span className="font-medium">Data Sync Complete</span>

@@ -2,6 +2,7 @@ import axios from "axios"
 import crypto from "crypto"
 import { createServiceClient } from "@/lib/supabase/service"
 import { logAuthEvent } from "@/lib/auth/audit"
+import { claimWebhookEvent } from "./idempotency"
 import type { BillingPlan } from "./types"
 
 const razorpayAuth = Buffer.from(
@@ -164,7 +165,22 @@ export async function cancelRazorpaySubscription(organizationId: string): Promis
   }
 }
 
-export async function handleRazorpayWebhook(payload: Record<string, unknown>): Promise<void> {
+export async function handleRazorpayWebhook(
+  payload: Record<string, unknown>,
+  eventId?: string | null,
+): Promise<void> {
+  // Idempotency: Razorpay's delivery id is supplied via the `x-razorpay-event-id`
+  // header (passed in by the route). Duplicate deliveries are skipped.
+  const firstTime = await claimWebhookEvent(
+    "razorpay",
+    eventId,
+    typeof payload.event === "string" ? payload.event : undefined,
+  )
+  if (!firstTime) {
+    console.log("[v0] Duplicate Razorpay webhook skipped:", eventId)
+    return
+  }
+
   const supabase = await createServiceClient()
 
   try {

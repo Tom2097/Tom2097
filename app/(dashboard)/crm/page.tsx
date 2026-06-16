@@ -1,39 +1,55 @@
-'use client'
-
-import { useState } from 'react'
-import { 
-  Users, 
-  TrendingUp, 
-  Target,
-  UserPlus,
-  Mail,
-  Phone,
-  MoreHorizontal,
-  Search,
-  Filter
-} from 'lucide-react'
+import { redirect } from 'next/navigation'
+import { Users, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
-import { generatePipelineData } from '@/lib/mock-data'
+import { CrmContactsTable, type CrmContactRow } from '@/components/digit/crm-contacts-table'
+import { extractTenantContext } from '@/lib/multitenant/context'
+import { getPipelineSummary, listContacts } from '@/lib/crm/engine'
 
-const leads = [
-  { id: 1, name: 'Acme Corporation', contact: 'John Smith', email: 'john@acme.com', value: '$125,000', stage: 'Negotiation', score: 92 },
-  { id: 2, name: 'TechStart Inc', contact: 'Sarah Johnson', email: 'sarah@techstart.io', value: '$85,000', stage: 'Proposal', score: 78 },
-  { id: 3, name: 'Global Systems', contact: 'Mike Chen', email: 'mike@globalsys.com', value: '$210,000', stage: 'Qualified', score: 85 },
-  { id: 4, name: 'InnovateCo', contact: 'Emily Davis', email: 'emily@innovate.co', value: '$156,000', stage: 'Lead', score: 65 },
-  { id: 5, name: 'DataFlow Ltd', contact: 'James Wilson', email: 'james@dataflow.uk', value: '$92,000', stage: 'Proposal', score: 71 },
-]
+export const dynamic = 'force-dynamic'
 
-export default function CRMPage() {
-  const [pipelineData] = useState(generatePipelineData())
-  const [searchQuery, setSearchQuery] = useState('')
+function formatCurrency(value: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: currency || 'USD',
+      notation: value >= 10000 ? 'compact' : 'standard',
+      maximumFractionDigits: 1,
+    }).format(value)
+  } catch {
+    return `$${value.toLocaleString()}`
+  }
+}
 
-  const filteredLeads = leads.filter(lead => 
-    lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    lead.contact.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+export default async function CRMPage() {
+  const ctx = await extractTenantContext()
+  if (!ctx) redirect('/auth/login')
+  const orgId = ctx.organizationId
+
+  const [pipeline, contactsResult] = await Promise.all([
+    getPipelineSummary(orgId),
+    listContacts(orgId, { limit: 100 }),
+  ])
+
+  const pipelineData = pipeline.stages.map((s) => ({
+    name: s.stage.charAt(0).toUpperCase() + s.stage.slice(1),
+    value: Math.round(s.value),
+  }))
+  const hasPipeline = pipeline.stages.some((s) => s.count > 0)
+
+  const contacts: CrmContactRow[] = contactsResult.contacts.map((c) => ({
+    id: c.id,
+    name: [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || c.email || 'Unnamed contact',
+    email: c.email,
+    phone: c.phone,
+    title: c.title,
+    status: c.status,
+    company: null,
+  }))
+
+  const avgDealValue =
+    pipeline.open_deals > 0 ? pipeline.total_open_value / pipeline.open_deals : 0
 
   return (
     <div className="space-y-6">
@@ -48,7 +64,7 @@ export default function CRMPage() {
             <p className="text-sm text-muted-foreground">AI-driven customer management and engagement</p>
           </div>
         </div>
-        
+
         <Button className="gap-2">
           <UserPlus className="h-4 w-4" />
           Add Lead
@@ -57,150 +73,54 @@ export default function CRMPage() {
 
       {/* Metrics */}
       <MetricGrid columns={4}>
-        <MetricCard 
-          label="Total Leads" 
-          value="1,247"
-          change={12}
-          trend="up"
-          variant="highlight"
-        />
-        <MetricCard 
-          label="Conversion Rate" 
-          value="24.8%"
-          change={3.2}
-          trend="up"
-        />
-        <MetricCard 
-          label="Pipeline Value" 
-          value="$2.4M"
-          change={8}
-          trend="up"
-        />
-        <MetricCard 
-          label="Avg Deal Size" 
-          value="$45.2K"
-          change={-2}
-          trend="down"
-        />
+        <MetricCard label="Total Contacts" value={contactsResult.total} variant="highlight" />
+        <MetricCard label="Open Deals" value={pipeline.open_deals} />
+        <MetricCard label="Pipeline Value" value={formatCurrency(pipeline.total_open_value, pipeline.currency)} />
+        <MetricCard label="Avg Deal Size" value={formatCurrency(avgDealValue, pipeline.currency)} />
       </MetricGrid>
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartContainer 
-          title="Sales Pipeline" 
-          subtitle="Lead progression through sales stages"
-        >
-          <LiveChart 
-            data={pipelineData}
-            dataKey="value"
-            type="bar"
-            height={280}
-            color="hsl(var(--chart-2))"
-          />
+        <ChartContainer title="Sales Pipeline" subtitle="Deal value by stage">
+          {hasPipeline ? (
+            <LiveChart data={pipelineData} dataKey="value" type="bar" height={280} color="hsl(var(--chart-2))" />
+          ) : (
+            <div className="flex h-[280px] items-center justify-center text-center text-sm text-muted-foreground">
+              No deals in the pipeline yet. Add a deal to see stage progression.
+            </div>
+          )}
         </ChartContainer>
 
         <div className="rounded-2xl border border-border/50 bg-card p-6">
-          <h3 className="mb-4 text-lg font-semibold text-foreground">AI Recommendations</h3>
-          <div className="space-y-3">
-            {[
-              { action: 'Follow up with Acme Corp', priority: 'High', reason: 'No contact in 5 days' },
-              { action: 'Send proposal to TechStart', priority: 'Medium', reason: 'Showed high interest' },
-              { action: 'Schedule demo for Global Systems', priority: 'High', reason: 'Decision maker engaged' },
-            ].map((rec, i) => (
-              <div key={i} className="flex items-center justify-between rounded-xl bg-secondary/30 p-4">
-                <div>
-                  <p className="font-medium text-foreground">{rec.action}</p>
-                  <p className="text-sm text-muted-foreground">{rec.reason}</p>
-                </div>
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  rec.priority === 'High' ? 'bg-red-500/20 text-red-500' : 'bg-amber-500/20 text-amber-500'
-                }`}>
-                  {rec.priority}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Leads Table */}
-      <div className="rounded-2xl border border-border/50 bg-card p-6">
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-foreground">Active Leads</h3>
-          <div className="flex gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input 
-                placeholder="Search leads..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-64 pl-10"
-              />
-            </div>
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border/50">
-                <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Company</th>
-                <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Contact</th>
-                <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Value</th>
-                <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Stage</th>
-                <th className="pb-3 text-left text-sm font-medium text-muted-foreground">AI Score</th>
-                <th className="pb-3 text-right text-sm font-medium text-muted-foreground">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {filteredLeads.map((lead) => (
-                <tr key={lead.id} className="hover:bg-secondary/30">
-                  <td className="py-4">
-                    <p className="font-medium text-foreground">{lead.name}</p>
-                  </td>
-                  <td className="py-4">
-                    <p className="text-sm text-foreground">{lead.contact}</p>
-                    <p className="text-xs text-muted-foreground">{lead.email}</p>
-                  </td>
-                  <td className="py-4 text-sm font-medium text-foreground">{lead.value}</td>
-                  <td className="py-4">
-                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                      {lead.stage}
+          <h3 className="mb-4 text-lg font-semibold text-foreground">Pipeline Breakdown</h3>
+          {hasPipeline ? (
+            <div className="space-y-3">
+              {pipeline.stages
+                .filter((s) => s.count > 0)
+                .map((s) => (
+                  <div key={s.stage} className="flex items-center justify-between rounded-xl bg-secondary/30 p-4">
+                    <div>
+                      <p className="font-medium capitalize text-foreground">{s.stage}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {s.count} {s.count === 1 ? 'deal' : 'deals'} · weighted {formatCurrency(s.weighted_value, pipeline.currency)}
+                      </p>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      {formatCurrency(s.value, pipeline.currency)}
                     </span>
-                  </td>
-                  <td className="py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-12 overflow-hidden rounded-full bg-secondary">
-                        <div 
-                          className={`h-full ${lead.score >= 80 ? 'bg-emerald-500' : lead.score >= 60 ? 'bg-amber-500' : 'bg-red-500'}`}
-                          style={{ width: `${lead.score}%` }} 
-                        />
-                      </div>
-                      <span className="text-xs text-muted-foreground">{lead.score}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Mail className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Phone className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <div className="flex h-[200px] items-center justify-center text-center text-sm text-muted-foreground">
+              Pipeline insights will appear once deals are added.
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Contacts Table */}
+      <CrmContactsTable contacts={contacts} />
     </div>
   )
 }

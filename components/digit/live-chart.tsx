@@ -47,6 +47,8 @@ interface LiveChartProps {
   showGrid?: boolean
   showLegend?: boolean
   className?: string
+  // When true (default) values render as currency. Set false for plain counts.
+  currency?: boolean
 }
 
 // Bright cyan color that's visible on dark backgrounds
@@ -62,7 +64,8 @@ export function LiveChart({
   color = CHART_CYAN,
   showGrid = true,
   showLegend = false,
-  className
+  className,
+  currency = true
 }: LiveChartProps) {
   const ChartComponent = type === 'area' ? AreaChart : type === 'line' ? LineChart : BarChart
 
@@ -104,8 +107,9 @@ export function LiveChart({
               fontSize: '12px'
             }}
             formatter={(value: number) => {
-              if (value >= 1000000) return [`$${(value / 1000000).toFixed(2)}M`, dataKey]
-              if (value >= 1000) return [`$${(value / 1000).toFixed(0)}K`, dataKey]
+              const prefix = currency ? '$' : ''
+              if (value >= 1000000) return [`${prefix}${(value / 1000000).toFixed(2)}M`, dataKey]
+              if (value >= 1000) return [`${prefix}${(value / 1000).toFixed(0)}K`, dataKey]
               return [value, dataKey]
             }}
           />

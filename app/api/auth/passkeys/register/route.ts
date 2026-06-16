@@ -65,11 +65,11 @@ export async function POST(req: NextRequest) {
         }
 
         // Store passkey in database
-        const credentialID = Buffer.from(
-          verification.registrationInfo.credentialID
-        ).toString("base64")
+        const { credential: registeredCredential } =
+          verification.registrationInfo
+        const credentialID = registeredCredential.id
         const publicKey = Buffer.from(
-          verification.registrationInfo.credentialPublicKey
+          registeredCredential.publicKey
         ).toString("base64")
 
         const { data: passkey, error } = await supabase
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
             user_id: user.id,
             credential_id: credentialID,
             public_key: publicKey,
-            counter: verification.registrationInfo.counter,
+            counter: registeredCredential.counter,
             device_name: deviceName || "Unknown Device",
             transports: credential.response?.transports || [],
           })
