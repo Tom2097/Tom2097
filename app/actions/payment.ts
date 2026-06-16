@@ -3,6 +3,7 @@
 import { stripe } from "@/lib/stripe"
 import { getPlanById } from "@/lib/products"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 
 export async function createPaymentIntent(planId: string) {
   const plan = getPlanById(planId)
@@ -10,7 +11,7 @@ export async function createPaymentIntent(planId: string) {
     throw new Error("Invalid plan selected")
   }
 
-  // Get current user
+  // Verify the requesting user via their session cookie (anon client)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
@@ -18,28 +19,30 @@ export async function createPaymentIntent(planId: string) {
     throw new Error("You must be logged in to subscribe")
   }
 
-  // Get user's profile and organization
-  const { data: profile } = await supabase
+  // All database writes use the service client to bypass RLS
+  const db = createServiceClient()
+
+  const { data: profile } = await db
     .from("profiles")
     .select("organization_id")
     .eq("id", user.id)
     .single()
 
   if (!profile?.organization_id) {
-    throw new Error("No organization found")
+    throw new Error("No organization found for this account")
   }
 
-  // Check for existing subscription
-  const { data: existingSub } = await supabase
+  // Check for existing subscription row (created at org setup)
+  const { data: existingSub } = await db
     .from("subscriptions")
-    .select("stripe_customer_id")
+    .select("id, stripe_customer_id")
     .eq("organization_id", profile.organization_id)
-    .single()
+    .maybeSingle()
 
-  let customerId = existingSub?.stripe_customer_id
+  let customerId = existingSub?.stripe_customer_id ?? null
 
   if (!customerId) {
-    // Create new Stripe customer
+    // Create a Stripe customer for this org
     const customer = await stripe.customers.create({
       email: user.email,
       metadata: {
@@ -49,14 +52,28 @@ export async function createPaymentIntent(planId: string) {
     })
     customerId = customer.id
 
-    // Update subscription with customer ID
-    await supabase
-      .from("subscriptions")
-      .update({ stripe_customer_id: customerId })
-      .eq("organization_id", profile.organization_id)
+    if (existingSub?.id) {
+      // Row exists, update it
+      await db
+        .from("subscriptions")
+        .update({ stripe_customer_id: customerId })
+        .eq("id", existingSub.id)
+    } else {
+      // No subscription row yet — create one
+      await db.from("subscriptions").insert({
+        organization_id: profile.organization_id,
+        stripe_customer_id: customerId,
+        plan_id: planId,
+        status: "incomplete",
+      })
+    }
   }
 
-  // Create a PaymentIntent for the subscription setup
+  // Guard: should never be null at this point
+  if (!customerId) {
+    throw new Error("Failed to resolve Stripe customer. Please try again.")
+  }
+
   const paymentIntent = await stripe.paymentIntents.create({
     amount: plan.priceInCents,
     currency: "usd",
@@ -72,6 +89,10 @@ export async function createPaymentIntent(planId: string) {
     description: `DigiT ${plan.name} Plan - Monthly Subscription`,
     receipt_email: user.email || undefined,
   })
+
+  if (!paymentIntent.client_secret) {
+    throw new Error("Payment session could not be created. Please try again.")
+  }
 
   return { 
     clientSecret: paymentIntent.client_secret,
@@ -93,7 +114,9 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
     throw new Error("Not authenticated")
   }
 
-  const { data: profile } = await supabase
+  const db = createServiceClient()
+
+  const { data: profile } = await db
     .from("profiles")
     .select("organization_id")
     .eq("id", user.id)
@@ -103,7 +126,6 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
     throw new Error("No organization found")
   }
 
-  // Retrieve the payment intent to verify it succeeded
   const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
   
   if (paymentIntent.status !== "succeeded") {
@@ -112,7 +134,6 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
 
   const customerId = paymentIntent.customer as string
 
-  // Create a recurring price for this plan (product created inline)
   const price = await stripe.prices.create({
     currency: "usd",
     unit_amount: plan.priceInCents,
@@ -124,7 +145,6 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
     },
   })
 
-  // Create the actual subscription in Stripe
   const subscription = await stripe.subscriptions.create({
     customer: customerId,
     items: [{ price: price.id }],
@@ -137,8 +157,7 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
 
   const subscriptionItem = subscription.items.data[0]
 
-  // Update the subscription in our database
-  await supabase
+  await db
     .from("subscriptions")
     .update({
       stripe_subscription_id: subscription.id,
