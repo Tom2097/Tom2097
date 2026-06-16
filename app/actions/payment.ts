@@ -54,18 +54,30 @@ export async function createPaymentIntent(planId: string) {
 
     if (existingSub?.id) {
       // Row exists, update it
-      await db
+      const { error: updateError } = await db
         .from("subscriptions")
         .update({ stripe_customer_id: customerId })
         .eq("id", existingSub.id)
+      
+      if (updateError) {
+        console.error("[payment] Subscription customer ID update failed:", updateError)
+        throw new Error(`Failed to save Stripe customer: ${updateError.message}`)
+      }
     } else {
-      // No subscription row yet — create one
-      await db.from("subscriptions").insert({
+      // No subscription row yet — create one using upsert to handle race conditions
+      const { error: insertError } = await db.from("subscriptions").upsert({
         organization_id: profile.organization_id,
         stripe_customer_id: customerId,
         plan_id: planId,
         status: "incomplete",
+      }, {
+        onConflict: "organization_id"
       })
+      
+      if (insertError) {
+        console.error("[payment] Subscription row creation failed:", insertError)
+        throw new Error(`Failed to create subscription record: ${insertError.message}`)
+      }
     }
   }
 
@@ -157,16 +169,25 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
 
   const subscriptionItem = subscription.items.data[0]
 
-  await db
+  // Use upsert to ensure the row is created if it doesn't exist
+  const { error: upsertError } = await db
     .from("subscriptions")
-    .update({
+    .upsert({
+      organization_id: profile.organization_id,
       stripe_subscription_id: subscription.id,
+      stripe_customer_id: customerId,
       plan_id: plan.id,
       status: "active",
       current_period_start: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
       current_period_end: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
+    }, {
+      onConflict: "organization_id"
     })
-    .eq("organization_id", profile.organization_id)
+
+  if (upsertError) {
+    console.error("[payment] Subscription upsert failed:", upsertError)
+    throw new Error(`Failed to save subscription: ${upsertError.message}`)
+  }
 
   return { success: true, subscriptionId: subscription.id }
 }
