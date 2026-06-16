@@ -64,17 +64,17 @@ export async function createPaymentIntent(planId: string) {
         throw new Error(`Failed to save Stripe customer: ${updateError.message}`)
       }
     } else {
-      // No subscription row yet — create one using upsert to handle race conditions
-      const { error: insertError } = await db.from("subscriptions").upsert({
+      // No subscription row yet — create one
+      // Since there's no unique constraint on organization_id, we'll insert and handle conflicts gracefully
+      const { error: insertError } = await db.from("subscriptions").insert({
         organization_id: profile.organization_id,
         stripe_customer_id: customerId,
         plan_id: planId,
         status: "incomplete",
-      }, {
-        onConflict: "organization_id"
       })
       
-      if (insertError) {
+      // If insert fails due to existing row, that's okay - the row will be updated in confirmSubscription
+      if (insertError && !insertError.message.includes("duplicate")) {
         console.error("[payment] Subscription row creation failed:", insertError)
         throw new Error(`Failed to create subscription record: ${insertError.message}`)
       }
@@ -169,24 +169,54 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
 
   const subscriptionItem = subscription.items.data[0]
 
-  // Use upsert to ensure the row is created if it doesn't exist
-  const { error: upsertError } = await db
+  // Update the subscription row - it should exist from createPaymentIntent or be created here
+  const { data: existingRow, error: selectError } = await db
     .from("subscriptions")
-    .upsert({
-      organization_id: profile.organization_id,
-      stripe_subscription_id: subscription.id,
-      stripe_customer_id: customerId,
-      plan_id: plan.id,
-      status: "active",
-      current_period_start: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
-    }, {
-      onConflict: "organization_id"
-    })
+    .select("id")
+    .eq("organization_id", profile.organization_id)
+    .maybeSingle()
 
-  if (upsertError) {
-    console.error("[payment] Subscription upsert failed:", upsertError)
-    throw new Error(`Failed to save subscription: ${upsertError.message}`)
+  if (selectError && !selectError.message.includes("no rows")) {
+    console.error("[payment] Failed to check subscription row:", selectError)
+    throw new Error(`Failed to check subscription: ${selectError.message}`)
+  }
+
+  if (existingRow) {
+    // Row exists, update it
+    const { error: updateError } = await db
+      .from("subscriptions")
+      .update({
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: customerId,
+        plan_id: plan.id,
+        status: "active",
+        current_period_start: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
+        current_period_end: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
+      })
+      .eq("organization_id", profile.organization_id)
+
+    if (updateError) {
+      console.error("[payment] Subscription update failed:", updateError)
+      throw new Error(`Failed to save subscription: ${updateError.message}`)
+    }
+  } else {
+    // Row doesn't exist, create it
+    const { error: insertError } = await db
+      .from("subscriptions")
+      .insert({
+        organization_id: profile.organization_id,
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: customerId,
+        plan_id: plan.id,
+        status: "active",
+        current_period_start: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
+        current_period_end: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
+      })
+
+    if (insertError) {
+      console.error("[payment] Subscription insert failed:", insertError)
+      throw new Error(`Failed to create subscription: ${insertError.message}`)
+    }
   }
 
   return { success: true, subscriptionId: subscription.id }
