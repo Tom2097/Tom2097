@@ -21,10 +21,10 @@ import { cn } from '@/lib/utils'
 const modules = [
   { id: 'analytics', title: 'AI Analytics', icon: BarChart3, href: '/analytics' },
   { id: 'crm', title: 'Smart CRM', icon: Users, href: '/crm' },
-  { id: 'workspace-1', title: 'Operations Workspace', icon: LayoutGrid, href: '/healthcare' },
-  { id: 'workspace-2', title: 'Performance Workspace', icon: Activity, href: '/banking' },
-  { id: 'workspace-3', title: 'Resource Workspace', icon: Boxes, href: '/agro' },
-  { id: 'workspace-4', title: 'Compliance Workspace', icon: ShieldCheck, href: '/pharma' },
+  { id: 'workspace-1', title: 'Operations Workspace', icon: LayoutGrid, href: '/operations' },
+  { id: 'workspace-2', title: 'Performance Workspace', icon: Activity, href: '/performance' },
+  { id: 'workspace-3', title: 'Resource Workspace', icon: Boxes, href: '/resources' },
+  { id: 'workspace-4', title: 'Compliance Workspace', icon: ShieldCheck, href: '/compliance' },
 ]
 
 interface SidebarProps {

@@ -66,7 +66,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: "What analytics modules are available?",
-    answer: "DigiT offers 6 industry-specific modules: Analytics (core BI), CRM Intelligence, Healthcare Analytics, Banking & Finance, Agro-Tech, and Pharmaceutical Analytics. Each module is tailored with industry-specific KPIs and AI models.",
+    answer: "DigiT offers 6 configurable modules: AI Analytics (core BI), Smart CRM, Operations, Performance, Resource, and Compliance workspaces. Each workspace adapts to any team or business function with configurable KPIs and AI models.",
     category: "Features"
   },
   {

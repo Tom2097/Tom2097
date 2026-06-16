@@ -33,7 +33,7 @@ export const modules: Module[] = [
     icon: 'LayoutGrid',
     description: 'Configurable operational intelligence for any team or business function.',
     metrics: ['Process Monitoring', 'Resource Planning', 'AI Insights', 'Workflow Optimization'],
-    href: '/healthcare',
+    href: '/operations',
     color: 'chart-3'
   },
   {
@@ -42,7 +42,7 @@ export const modules: Module[] = [
     icon: 'Activity',
     description: 'Real-time performance intelligence, anomaly detection, and trend analysis.',
     metrics: ['Anomaly Detection', 'Scoring', 'Signal Tracking', 'Risk Assessment'],
-    href: '/banking',
+    href: '/performance',
     color: 'chart-4'
   },
   {
@@ -51,7 +51,7 @@ export const modules: Module[] = [
     icon: 'Boxes',
     description: 'AI-driven resource planning, supply optimization, and capacity forecasting.',
     metrics: ['Demand Forecasting', 'Capacity Analysis', 'Smart Logistics', 'Inventory Intelligence'],
-    href: '/agro',
+    href: '/resources',
     color: 'chart-5'
   },
   {
@@ -60,7 +60,7 @@ export const modules: Module[] = [
     icon: 'ShieldCheck',
     description: 'Operational compliance, quality control, and audit-readiness analytics.',
     metrics: ['Audit Tracking', 'Quality Control', 'Compliance AI', 'Process Management'],
-    href: '/pharma',
+    href: '/compliance',
     color: 'chart-1'
   }
 ]

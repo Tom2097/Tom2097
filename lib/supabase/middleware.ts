@@ -9,7 +9,7 @@ export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  const protectedPaths = ['/analytics', '/crm', '/healthcare', '/banking', '/agro', '/pharma', '/settings']
+  const protectedPaths = ['/analytics', '/crm', '/operations', '/performance', '/resources', '/compliance', '/settings']
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
   // Fail closed: if auth is not configured we cannot verify any session, so
