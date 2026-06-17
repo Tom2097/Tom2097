@@ -2,7 +2,6 @@ import { generateText, streamText } from "ai"
 import { z } from "zod"
 import { DEFAULT_CHAT_MODEL, BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
 import { createServiceClient } from "@/lib/supabase/service"
-import { put } from "@vercel/blob"
 import { randomUUID } from "crypto"
 
 /**
@@ -551,7 +550,7 @@ export async function storeFileMetadata(
 }
 
 /**
- * Upload file to Vercel Blob storage
+ * Upload file to Supabase Storage
  */
 export async function uploadToBlobStorage(
   organizationId: string,
@@ -562,21 +561,43 @@ export async function uploadToBlobStorage(
   }
 ): Promise<{ url: string; path: string } | null> {
   try {
+    const db = createServiceClient()
     const path = `analytics/${organizationId}/uploads/${randomUUID()}-${file.filename}`
     
-    const blobUpload = await put(path, file.content, {
-      access: "public",
-      addRandomSuffix: false,
-      contentType: file.contentType,
-    })
+    // Convert content to Blob or Buffer for Supabase Storage
+    let content: Blob | Buffer
+    if (typeof file.content === 'string') {
+      content = Buffer.from(file.content, 'utf-8')
+    } else if (file.content instanceof ArrayBuffer) {
+      content = Buffer.from(file.content)
+    } else {
+      content = file.content as Buffer
+    }
+    
+    const { data, error } = await db.storage
+      .from('analytics')
+      .upload(path, content, {
+        contentType: file.contentType,
+        upsert: true,
+      })
+    
+    if (error || !data) {
+      console.error("[File Upload] Error uploading to Supabase Storage:", error?.message)
+      return null
+    }
+    
+    // Get the public URL
+    const { data: urlData } = db.storage
+      .from('analytics')
+      .getPublicUrl(path)
     
     return {
-      url: blobUpload.url,
+      url: urlData.publicUrl,
       path,
     }
     
   } catch (error) {
-    console.error("[File Upload] Error uploading to blob storage:", error)
+    console.error("[File Upload] Error uploading to storage:", error)
     return null
   }
 }
