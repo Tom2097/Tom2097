@@ -1,42 +1,43 @@
 /**
  * TOTP (Time-based One-Time Password) Service
  * Implements RFC 6238 for 2FA verification
+ * Uses speakeasy (pure Node.js crypto)
  */
-import { authenticator } from 'otplib'
+import speakeasy from 'speakeasy'
 import qrcode from 'qrcode'
 import {
   TOTPSecret,
   TOTPVerification,
   TOTPOptions,
-  TwoFAError,
-  TwoFAErrorCode,
 } from './types'
 import { createHash } from './utils'
 
-// Configure OTP library
-authenticator.options = {
-  step: 30, // 30-second window
-  window: 1, // Allow 1 window before/after
+// TOTP options
+const TOTP_OPTIONS = {
   algorithm: 'sha1',
   digits: 6,
+  step: 30,
+  window: 1,
 }
 
 /**
  * Generate a new TOTP secret
  */
 export function generateTOTPSecret(options: TOTPOptions = { issuer: 'DigiT', accountName: '' }): TOTPSecret {
-  const secret = authenticator.generateSecret()
+  const secret = speakeasy.generateSecret({
+    length: 20,
+    name: `${options.issuer}:${options.accountName || 'user'}`,
+    issuer: options.issuer,
+  })
   
   // Create OTP auth URI
-  const issuer = encodeURIComponent(options.issuer)
-  const accountName = encodeURIComponent(options.accountName || 'user')
-  const uri = `otpauth://totp/${issuer}:${accountName}?secret=${secret}&issuer=${issuer}`
+  const uri = secret.otpauth_url || `otpauth://totp/${encodeURIComponent(options.issuer)}:${encodeURIComponent(options.accountName || 'user')}?secret=${secret.base32}&issuer=${encodeURIComponent(options.issuer)}`
   
   // Generate QR code as data URL
   const qrCode = qrcode.toDataURL(uri)
   
   return {
-    secret,
+    secret: secret.base32,
     uri,
     qrCode,
   }
@@ -47,12 +48,31 @@ export function generateTOTPSecret(options: TOTPOptions = { issuer: 'DigiT', acc
  */
 export function verifyTOTPCode(secret: string, code: string): TOTPVerification {
   try {
-    const isValid = authenticator.check(code, secret)
+    const verified = speakeasy.totp.verify({
+      secret: secret,
+      encoding: 'base32',
+      token: code,
+      window: TOTP_OPTIONS.window,
+      step: TOTP_OPTIONS.step,
+      algorithm: TOTP_OPTIONS.algorithm,
+      digits: TOTP_OPTIONS.digits,
+    })
     
-    if (isValid) {
-      // Calculate delta (time difference)
-      const token = authenticator.token(secret)
-      const delta = authenticator.timeUsed()
+    if (verified) {
+      // Calculate delta (time difference in steps)
+      const token = speakeasy.totp({
+        secret: secret,
+        encoding: 'base32',
+        step: TOTP_OPTIONS.step,
+        algorithm: TOTP_OPTIONS.algorithm,
+        digits: TOTP_OPTIONS.digits,
+      })
+      
+      // Get current time and calculate delta
+      const now = Math.floor(Date.now() / 1000)
+      const currentStep = Math.floor(now / TOTP_OPTIONS.step)
+      const tokenTime = currentStep * TOTP_OPTIONS.step
+      const delta = now - tokenTime
       
       return { valid: true, delta }
     }
@@ -64,42 +84,11 @@ export function verifyTOTPCode(secret: string, code: string): TOTPVerification {
 }
 
 /**
- * Verify TOTP code with custom options
- */
-export function verifyTOTPCodeWithOptions(
-  secret: string,
-  code: string,
-  options?: {
-    window?: number
-    algorithm?: 'sha1' | 'sha256' | 'sha512'
-    step?: number
-  }
-): TOTPVerification {
-  const originalOptions = authenticator.options
-  
-  try {
-    if (options) {
-      authenticator.options = {
-        ...authenticator.options,
-        ...options,
-      }
-    }
-    
-    const isValid = authenticator.check(code, secret)
-    const delta = isValid ? authenticator.timeUsed() : undefined
-    
-    return { valid: isValid, delta }
-  } finally {
-    authenticator.options = originalOptions
-  }
-}
-
-/**
  * Generate backup codes
  */
 export function generateBackupCodes(count: number = 10, length: number = 10): string[] {
   const codes: string[] = []
-  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Excluding similar characters
+  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   
   for (let i = 0; i < count; i++) {
     let code = ''
@@ -193,23 +182,19 @@ export class TwoFARateLimiter {
 
   constructor(
     maxAttempts: number = 5,
-    lockoutDuration: number = 15 * 60 * 1000, // 15 minutes
-    windowMs: number = 5 * 60 * 1000 // 5 minutes
+    lockoutDuration: number = 15 * 60 * 1000,
+    windowMs: number = 5 * 60 * 1000
   ) {
     this.maxAttempts = maxAttempts
     this.lockoutDuration = lockoutDuration
     this.windowMs = windowMs
   }
 
-  /**
-   * Check if user can attempt 2FA verification
-   */
   canAttempt(userId: string): { allowed: boolean; remainingAttempts: number; lockedUntil?: Date } {
     const now = Date.now()
     const userRecord = this.attempts.get(userId)
     
     if (userRecord) {
-      // Check if user is locked out
       if (userRecord.lockedUntil && now < userRecord.lockedUntil) {
         return {
           allowed: false,
@@ -218,41 +203,27 @@ export class TwoFARateLimiter {
         }
       }
       
-      // Reset if window has passed
       if (now - userRecord.lastAttempt > this.windowMs) {
         this.attempts.delete(userId)
         return { allowed: true, remainingAttempts: this.maxAttempts }
       }
       
-      // Check remaining attempts
       if (userRecord.count >= this.maxAttempts) {
-        // Lock out the user
         const lockedUntil = now + this.lockoutDuration
         this.attempts.set(userId, {
           count: userRecord.count + 1,
           lastAttempt: now,
           lockedUntil,
         })
-        
-        return {
-          allowed: false,
-          remainingAttempts: 0,
-          lockedUntil: new Date(lockedUntil),
-        }
+        return { allowed: false, remainingAttempts: 0, lockedUntil: new Date(lockedUntil) }
       }
       
-      return {
-        allowed: true,
-        remainingAttempts: this.maxAttempts - userRecord.count,
-      }
+      return { allowed: true, remainingAttempts: this.maxAttempts - userRecord.count }
     }
     
     return { allowed: true, remainingAttempts: this.maxAttempts }
   }
 
-  /**
-   * Record a failed attempt
-   */
   recordAttempt(userId: string): void {
     const now = Date.now()
     const userRecord = this.attempts.get(userId)
@@ -264,33 +235,19 @@ export class TwoFARateLimiter {
         lockedUntil: userRecord.lockedUntil,
       })
     } else {
-      this.attempts.set(userId, {
-        count: 1,
-        lastAttempt: now,
-      })
+      this.attempts.set(userId, { count: 1, lastAttempt: now })
     }
   }
 
-  /**
-   * Clear attempts for a user (e.g., after successful verification)
-   */
   clearAttempts(userId: string): void {
     this.attempts.delete(userId)
   }
 
-  /**
-   * Get rate limit status for a user
-   */
-  getStatus(userId: string): TwoFARateLimit {
+  getStatus(userId: string): { attempts: number; lastAttempt: Date; lockedUntil?: Date } {
     const userRecord = this.attempts.get(userId)
-    
     if (!userRecord) {
-      return {
-        attempts: 0,
-        lastAttempt: new Date(0),
-      }
+      return { attempts: 0, lastAttempt: new Date(0) }
     }
-    
     return {
       attempts: userRecord.count,
       lastAttempt: new Date(userRecord.lastAttempt),
@@ -299,7 +256,4 @@ export class TwoFARateLimiter {
   }
 }
 
-/**
- * Singleton rate limiter instance
- */
 export const twoFARateLimiter = new TwoFARateLimiter()
