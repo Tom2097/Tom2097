@@ -1,9 +1,87 @@
 /**
  * Session Utilities
  */
-import { UserAgent } from '@simplewebauthn/typescript-types'
 import type { NextRequest } from 'next/server'
 import { DeviceInfo } from './types'
+
+/**
+ * Simple user agent parser (replaces @simplewebauthn/browser UserAgent)
+ */
+class SimpleUserAgent {
+  private ua: string
+
+  constructor(userAgent: string) {
+    this.ua = userAgent.toLowerCase()
+  }
+
+  get isMobile(): boolean {
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(this.ua)
+  }
+
+  get isTablet(): boolean {
+    return /ipad|android(?!.*mobile)|silk|tablet|kindle|playbook/i.test(this.ua)
+  }
+
+  get os(): { name: string | null; version?: string } {
+    const osList = [
+      { name: 'Windows', regex: /windows nt (\d+\.\d+)/, versionIndex: 1 },
+      { name: 'Mac OS', regex: /mac os x (\d+[._]\d+)/, versionIndex: 1 },
+      { name: 'iOS', regex: /iphone os (\d+_\d+)/, versionIndex: 1 },
+      { name: 'Android', regex: /android (\d+\.\d+)/, versionIndex: 1 },
+      { name: 'Linux', regex: /linux/, versionIndex: undefined },
+    ]
+
+    for (const os of osList) {
+      const match = this.ua.match(os.regex)
+      if (match) {
+        const version = os.versionIndex !== undefined ? match[os.versionIndex]?.replace('_', '.') : undefined
+        return { name: os.name, version }
+      }
+    }
+
+    return { name: null }
+  }
+
+  get browser(): { name: string | null; version?: string } {
+    const browserList = [
+      { name: 'Chrome', regex: /chrome\/([\d.]+)/, versionIndex: 1 },
+      { name: 'Firefox', regex: /firefox\/([\d.]+)/, versionIndex: 1 },
+      { name: 'Safari', regex: /safari\/([\d.]+)/, versionIndex: 1 },
+      { name: 'Edge', regex: /edg\/([\d.]+)/, versionIndex: 1 },
+      { name: 'Opera', regex: /opera\/([\d.]+)|opr\/([\d.]+)/, versionIndex: 1 },
+      { name: 'IE', regex: /msie (\d+\.\d+)|trident\/.*rv:(\d+\.\d+)/, versionIndex: 1 },
+    ]
+
+    for (const browser of browserList) {
+      const match = this.ua.match(browser.regex)
+      if (match) {
+        const version = match[1] || match[2]
+        return { name: browser.name, version }
+      }
+    }
+
+    return { name: null }
+  }
+
+  get device(): { model: string | null; type: 'mobile' | 'tablet' | 'desktop' } {
+    let type: 'mobile' | 'tablet' | 'desktop' = 'desktop'
+    let model: string | null = null
+
+    if (this.isTablet) {
+      type = 'tablet'
+    } else if (this.isMobile) {
+      type = 'mobile'
+    }
+
+    // Try to extract device model
+    const modelMatch = this.ua.match(/(iphone|ipad|ipod|android|blackberry|playbook|silk)/i)
+    if (modelMatch) {
+      model = modelMatch[0]
+    }
+
+    return { model, type }
+  }
+}
 
 /**
  * Extract IP address from request
@@ -39,21 +117,16 @@ export function extractUserAgent(request: NextRequest): string {
  * Parse device information from user agent string
  */
 export function parseDeviceInfo(userAgent: string): DeviceInfo {
-  const ua = new UserAgent(userAgent)
+  const ua = new SimpleUserAgent(userAgent)
 
   // Determine device type
-  let type: DeviceInfo['type'] = 'desktop'
-  if (ua.isMobile) {
-    type = 'mobile'
-  } else if (ua.isTablet) {
-    type = 'tablet'
-  }
-
+  const deviceInfo = ua.device
+  
   return {
-    type,
-    os: ua.os?.name || null,
-    browser: ua.browser?.name || null,
-    model: ua.device?.model || null,
+    type: deviceInfo.type,
+    os: ua.os.name || null,
+    browser: ua.browser.name || null,
+    model: deviceInfo.model || null,
   }
 }
 
