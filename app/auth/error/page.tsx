@@ -1,9 +1,53 @@
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { AlertTriangle, Zap } from "lucide-react"
+import { AlertTriangle, Zap, Clock } from "lucide-react"
+import { CAPACITY_MESSAGES } from "@/lib/platform/capacity"
 
-export default function AuthErrorPage() {
+export default async function AuthErrorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string }>
+}) {
+  const { reason } = await searchParams
+  const atCapacity = reason === "platform_at_capacity"
+
+  if (atCapacity) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(0,212,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        </div>
+        <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50 text-center">
+          <CardHeader>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-cyan-400 rounded-xl flex items-center justify-center">
+                <Zap className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">
+                DigiT
+              </span>
+            </div>
+            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <Clock className="w-8 h-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl text-balance">We&apos;re at capacity</CardTitle>
+            <CardDescription>Onboarding in controlled waves</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground text-pretty">{CAPACITY_MESSAGES.tenantsFull}</p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/">Back to home</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* Animated background */}

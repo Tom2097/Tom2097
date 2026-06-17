@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
+import { canCreateTenant } from "@/lib/platform/capacity-service"
+import { isPlatformOwnerEmail } from "@/lib/platform/owner"
 import type { EmailOtpType } from "@supabase/supabase-js"
 import { NextResponse } from "next/server"
 
@@ -39,6 +41,16 @@ export async function GET(request: Request) {
             .maybeSingle()
 
           if (!existingProfile) {
+            // Enforce the platform tenant cap. The platform owner is always
+            // allowed through so the founder can never be locked out.
+            if (!isPlatformOwnerEmail(user.email)) {
+              const cap = await canCreateTenant()
+              if (!cap.allowed) {
+                console.log("[v0] tenant cap reached:", cap.used, "/", cap.limit)
+                return buildRedirect("/auth/error?reason=platform_at_capacity")
+              }
+            }
+
             // No profile yet — create organization and profile
             const { data: org, error: orgError } = await db
               .from("organizations")
@@ -112,6 +124,15 @@ export async function GET(request: Request) {
             .maybeSingle()
 
           if (!existingProfile) {
+            // Enforce the platform tenant cap (OTP / magic-link flow).
+            if (!isPlatformOwnerEmail(user.email)) {
+              const cap = await canCreateTenant()
+              if (!cap.allowed) {
+                console.log("[v0] tenant cap reached (otp):", cap.used, "/", cap.limit)
+                return buildRedirect("/auth/error?reason=platform_at_capacity")
+              }
+            }
+
             const { data: org, error: orgError } = await db
               .from("organizations")
               .insert({
