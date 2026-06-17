@@ -133,6 +133,61 @@ export {
   DEFAULT_TEMPLATES,
 } from "./ai-reports"
 
+// File Upload and Document Analysis
+export {
+  analyzeFile,
+  processUploadedFile,
+  getUploadedFiles,
+  getUploadedFile,
+  deleteUploadedFile,
+  storeFileMetadata,
+  uploadToBlobStorage,
+  streamFileAnalysis,
+  detectFileType,
+  parseCSV,
+} from "./file-upload"
+export type {
+  FileType,
+  AnalysisType,
+  UploadedFile,
+  FileAnalysisOptions,
+  FileAnalysisResult,
+} from "./file-upload"
+
+// NLP Text Analysis
+export {
+  analyzeText,
+  analyzeSentiment,
+  extractEntities,
+  classifyText,
+  extractKeywords,
+  generateSummary,
+  detectIntent,
+  detectToxicity,
+  detectLanguage,
+  analyzeTextComprehensively,
+  analyzeDocuments,
+} from "./nlp"
+export type {
+  TextAnalysisType,
+  EntityType,
+  SentimentType,
+  ClassificationCategory,
+  IntentType,
+  NLPAnalysisOptions,
+  NLPAnalysisResult,
+  SentimentResult,
+  EntityResult,
+  ClassificationResult,
+  KeywordResult,
+  SummaryResult,
+  IntentResult,
+  ToxicityResult,
+  LanguageResult,
+  ComprehensiveResult,
+  TextDocument,
+} from "./nlp"
+
 // Reports management (existing)
 export {
   createReport,
