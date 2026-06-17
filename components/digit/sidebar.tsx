@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import useSWR from 'swr'
 import { 
   BarChart3, 
   Users, 
@@ -16,8 +17,11 @@ import {
   Brain,
   Sparkles,
   MessageSquarePlus,
+  Gauge,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 const modules = [
   { id: 'analytics', title: 'AI Analytics', icon: BarChart3, href: '/analytics' },
@@ -36,6 +40,8 @@ interface SidebarProps {
 
 export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const pathname = usePathname()
+  const { data: ownerData } = useSWR<{ isOwner: boolean }>('/api/platform/owner-check', fetcher)
+  const isOwner = ownerData?.isOwner ?? false
 
   return (
     <aside 
@@ -156,7 +162,29 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-border/50 p-3">
+        <div className="border-t border-border/50 p-3 space-y-1">
+          {isOwner && (
+            <Link
+              href="/platform/capacity"
+              className={cn(
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                pathname === '/platform/capacity'
+                  ? "bg-primary/10 text-primary digit-glow-sm"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              )}
+              title={isCollapsed ? 'Platform Capacity' : undefined}
+            >
+              <Gauge className="h-5 w-5 shrink-0" />
+              {!isCollapsed && (
+                <span className="flex items-center gap-2">
+                  Platform Capacity
+                  <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                    Owner
+                  </span>
+                </span>
+              )}
+            </Link>
+          )}
           <Link
             href="/pricing"
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
