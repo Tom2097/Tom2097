@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
+import { withValidation, type ValidationResult } from './validate-request'
+import type { ZodSchema } from 'zod'
 
 // Type definitions for rate limit configurations
 export interface RateLimitConfig {
@@ -257,7 +259,6 @@ export function withMiddleware(
   
   // Apply validation
   if (options.body || options.query || options.params) {
-    const { withValidation } = await import('./validate-request')
     wrapped = withValidation(wrapped, {
       body: options.body,
       query: options.query,
