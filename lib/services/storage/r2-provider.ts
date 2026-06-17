@@ -1,17 +1,8 @@
 /**
  * Cloudflare R2 Storage Provider
  * Production-ready S3-compatible storage
+ * Uses dynamic imports to avoid AWS SDK initialization at module level
  */
-import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-  DeleteObjectCommand,
-  ListObjectsV2Command,
-  HeadObjectCommand,
-  type S3ClientConfig,
-} from '@aws-sdk/client-s3'
-import { getSignedUrl as getS3SignedUrl } from '@aws-sdk/s3-request-presigner'
 import {
   UploadOptions,
   UploadResult,
@@ -35,13 +26,27 @@ interface R2StorageConfig {
   publicDomain?: string
 }
 
+// Lazy load AWS SDK modules to avoid initialization errors
+let s3ClientModule: typeof import('@aws-sdk/client-s3') | null = null
+let presignerModule: typeof import('@aws-sdk/s3-request-presigner') | null = null
+
+async function loadS3Modules() {
+  if (!s3ClientModule) {
+    s3ClientModule = await import('@aws-sdk/client-s3')
+  }
+  if (!presignerModule) {
+    presignerModule = await import('@aws-sdk/s3-request-presigner')
+  }
+  return { s3ClientModule, presignerModule }
+}
+
 /**
  * Cloudflare R2 Storage Provider
  * S3-compatible API with Cloudflare's R2
  */
 export class R2StorageProvider implements StorageProvider {
-  private client: S3Client
   private config: R2StorageConfig
+  private clientPromise: Promise<any> | null = null
 
   constructor(config: R2StorageConfig) {
     if (!config.accountId || !config.accessKeyId || !config.secretAccessKey || !config.bucketName) {
@@ -52,31 +57,32 @@ export class R2StorageProvider implements StorageProvider {
     }
 
     this.config = config
-
-    const s3Config: S3ClientConfig = {
-      region: 'auto',
-      endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId: config.accessKeyId,
-        secretAccessKey: config.secretAccessKey,
-      },
-    }
-
-    this.client = new S3Client(s3Config)
   }
 
-  /**
-   * Get the S3 key for a file
-   */
+  private async getClient() {
+    if (!this.clientPromise) {
+      const { s3ClientModule } = await loadS3Modules()
+      
+      const s3Config = {
+        region: 'auto',
+        endpoint: `https://${this.config.accountId}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: this.config.accessKeyId,
+          secretAccessKey: this.config.secretAccessKey,
+        },
+      }
+
+      this.clientPromise = Promise.resolve(new s3ClientModule.S3Client(s3Config))
+    }
+    return this.clientPromise
+  }
+
   private getS3Key(folder: string | undefined, filename: string): string {
     const sanitizedFilename = sanitizeFilename(filename)
     const uniqueFilename = generateUniqueFilename(sanitizedFilename)
     return folder ? `${folder}/${uniqueFilename}` : uniqueFilename
   }
 
-  /**
-   * Get the public URL for a file
-   */
   private getPublicUrl(key: string): string {
     if (this.config.publicDomain) {
       return `https://${this.config.publicDomain}/${key}`
@@ -86,10 +92,13 @@ export class R2StorageProvider implements StorageProvider {
 
   async upload(options: UploadOptions): Promise<UploadResult> {
     try {
+      const client = await this.getClient()
       const fileBuffer = await toBuffer(options.file)
       const key = this.getS3Key(options.folder, options.filename)
 
-      const command = new PutObjectCommand({
+      const { s3ClientModule } = await loadS3Modules()
+
+      const command = new s3ClientModule.PutObjectCommand({
         Bucket: this.config.bucketName,
         Key: key,
         Body: fileBuffer,
@@ -98,7 +107,7 @@ export class R2StorageProvider implements StorageProvider {
         ...(options.access === 'public' && { ACL: 'public-read' }),
       })
 
-      await this.client.send(command)
+      await client.send(command)
 
       return {
         success: true,
@@ -121,12 +130,15 @@ export class R2StorageProvider implements StorageProvider {
 
   async download(key: string): Promise<Buffer | null> {
     try {
-      const command = new GetObjectCommand({
+      const client = await this.getClient()
+      const { s3ClientModule } = await loadS3Modules()
+
+      const command = new s3ClientModule.GetObjectCommand({
         Bucket: this.config.bucketName,
         Key: key,
       })
 
-      const response = await this.client.send(command)
+      const response = await client.send(command)
       const chunks: Uint8Array[] = []
 
       for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
@@ -141,12 +153,15 @@ export class R2StorageProvider implements StorageProvider {
 
   async getFileInfo(key: string): Promise<FileInfo | null> {
     try {
-      const command = new HeadObjectCommand({
+      const client = await this.getClient()
+      const { s3ClientModule } = await loadS3Modules()
+
+      const command = new s3ClientModule.HeadObjectCommand({
         Bucket: this.config.bucketName,
         Key: key,
       })
 
-      const response = await this.client.send(command)
+      const response = await client.send(command)
 
       return {
         key,
@@ -164,12 +179,15 @@ export class R2StorageProvider implements StorageProvider {
 
   async delete(options: DeleteOptions): Promise<boolean> {
     try {
-      const command = new DeleteObjectCommand({
+      const client = await this.getClient()
+      const { s3ClientModule } = await loadS3Modules()
+
+      const command = new s3ClientModule.DeleteObjectCommand({
         Bucket: this.config.bucketName,
         Key: options.key,
       })
 
-      await this.client.send(command)
+      await client.send(command)
       return true
     } catch (error) {
       if (options.quiet) {
@@ -185,13 +203,16 @@ export class R2StorageProvider implements StorageProvider {
 
   async list(options: { prefix?: string; limit?: number }): Promise<FileInfo[]> {
     try {
-      const command = new ListObjectsV2Command({
+      const client = await this.getClient()
+      const { s3ClientModule } = await loadS3Modules()
+
+      const command = new s3ClientModule.ListObjectsV2Command({
         Bucket: this.config.bucketName,
         Prefix: options.prefix,
         MaxKeys: options.limit,
       })
 
-      const response = await this.client.send(command)
+      const response = await client.send(command)
       const files: FileInfo[] = []
 
       if (response.Contents) {
@@ -217,26 +238,25 @@ export class R2StorageProvider implements StorageProvider {
 
   async getSignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
     try {
-      const command = new GetObjectCommand({
+      const client = await this.getClient()
+      const { s3ClientModule, presignerModule } = await loadS3Modules()
+
+      const command = new s3ClientModule.GetObjectCommand({
         Bucket: this.config.bucketName,
         Key: key,
       })
 
-      const signedUrl = await getS3SignedUrl(this.client, command, {
+      const signedUrl = await presignerModule.getSignedUrl(client, command, {
         expiresIn,
       })
 
       return signedUrl
     } catch {
-      // Fallback to public URL
       return this.getPublicUrl(key)
     }
   }
 }
 
-/**
- * Create an R2 storage provider from environment variables
- */
 export function createR2StorageProvider(): R2StorageProvider | null {
   const config: R2StorageConfig = {
     accountId: process.env.CLOUDFLARE_R2_ACCOUNT_ID || '',
@@ -246,7 +266,6 @@ export function createR2StorageProvider(): R2StorageProvider | null {
     publicDomain: process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN,
   }
 
-  // Validate required fields
   if (!config.accountId || !config.accessKeyId || !config.secretAccessKey || !config.bucketName) {
     console.warn('[R2Storage] Missing configuration, falling back to local storage')
     return null
@@ -255,9 +274,6 @@ export function createR2StorageProvider(): R2StorageProvider | null {
   return new R2StorageProvider(config)
 }
 
-/**
- * Singleton instance (created on first use)
- */
 let r2Instance: R2StorageProvider | null = null
 
 export function getR2StorageProvider(): R2StorageProvider | null {
