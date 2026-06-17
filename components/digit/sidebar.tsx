@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils'
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 const modules = [
-  { id: 'analytics', title: 'AI Analytics', icon: BarChart3, href: '/analytics' },
+  { id: 'analytics', title: 'AI Analytics', icon: BarChart3, href: '/analytics/ai' },
   { id: 'crm', title: 'Smart CRM', icon: Users, href: '/crm' },
   { id: 'workspace-1', title: 'Operations Workspace', icon: LayoutGrid, href: '/operations' },
   { id: 'workspace-2', title: 'Performance Workspace', icon: Activity, href: '/performance' },
