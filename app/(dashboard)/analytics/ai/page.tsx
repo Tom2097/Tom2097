@@ -112,6 +112,7 @@ export default function AIAnalyticsPage() {
       const response = await fetch('/api/v1/analytics/files', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       })
 
       if (!response.ok) {
@@ -154,6 +155,7 @@ export default function AIAnalyticsPage() {
           text: nlpText,
           analysisType: nlpAnalysisType,
         }),
+        credentials: 'include',
       })
 
       if (!response.ok) {
