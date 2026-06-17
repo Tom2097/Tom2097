@@ -1,10 +1,30 @@
-import Stripe from "stripe"
 import { createServiceClient } from "@/lib/supabase/service"
 import { logAuthEvent } from "@/lib/auth/audit"
 import { claimWebhookEvent } from "./idempotency"
 import type { BillingPlan } from "./types"
+import type Stripe from "stripe"
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "")
+// Lazy load Stripe to avoid build-time evaluation
+let stripeInstance: Stripe | null = null
+
+async function getStripeInstance(): Promise<Stripe> {
+  if (!stripeInstance) {
+    const StripeModule = await import('stripe')
+    const StripeClass = StripeModule.default || StripeModule
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY
+    
+    if (!stripeSecretKey) {
+      throw new Error("Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable.")
+    }
+    
+    stripeInstance = new StripeClass(stripeSecretKey, {
+      apiVersion: "2025-08-27.basil",
+      typescript: true,
+    })
+  }
+  
+  return stripeInstance
+}
 
 // Stripe plan configuration
 const STRIPE_PLANS: Record<string, { priceId: string; name: string }> = {
@@ -27,6 +47,7 @@ export async function createStripeSession(
 ): Promise<string | null> {
   try {
     const supabase = await createServiceClient()
+    const stripe = await getStripeInstance()
 
     // Get or create Stripe customer
     const { data: sub } = await supabase
@@ -68,7 +89,6 @@ export async function createStripeSession(
       metadata: { organization_id: organizationId, plan: plan.id },
     })
 
-    // Log the session creation
     await logAuthEvent({
       action: "billing.session_created",
       userId,
@@ -91,8 +111,8 @@ export async function updateStripeSubscription(
 ): Promise<boolean> {
   try {
     const supabase = await createServiceClient()
+    const stripe = await getStripeInstance()
 
-    // Get current subscription
     const { data: sub } = await supabase
       .from("subscriptions")
       .select("stripe_subscription_id")
@@ -101,20 +121,16 @@ export async function updateStripeSubscription(
 
     if (!sub?.stripe_subscription_id) return false
 
-    // Get the new plan price ID
     const planConfig = STRIPE_PLANS[newPlan.id]
     if (!planConfig) throw new Error(`Invalid plan: ${newPlan.id}`)
 
-    // Update subscription
     const subscription = await stripe.subscriptions.retrieve(sub.stripe_subscription_id)
-
     if (!subscription.items.data[0]) throw new Error("No subscription items found")
 
     await stripe.subscriptions.update(sub.stripe_subscription_id, {
       items: [{ id: subscription.items.data[0].id, price: planConfig.priceId }],
     })
 
-    // Log the update
     await logAuthEvent({
       action: "billing.subscription_updated",
       organizationId,
@@ -133,6 +149,7 @@ export async function updateStripeSubscription(
 export async function cancelStripeSubscription(organizationId: string): Promise<boolean> {
   try {
     const supabase = await createServiceClient()
+    const stripe = await getStripeInstance()
 
     const { data: sub } = await supabase
       .from("subscriptions")
@@ -160,9 +177,6 @@ export async function cancelStripeSubscription(organizationId: string): Promise<
 }
 
 export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
-  // Idempotency: skip events we have already processed (provider retries or two
-  // Stripe endpoints both pointing at this app). Covers both webhook routes
-  // since they share this handler.
   const firstTime = await claimWebhookEvent("stripe", event.id, event.type)
   if (!firstTime) {
     console.log("[v0] Duplicate Stripe webhook skipped:", event.id)
@@ -170,6 +184,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
   }
 
   const supabase = await createServiceClient()
+  const stripe = await getStripeInstance()
 
   try {
     switch (event.type) {
@@ -202,7 +217,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
         const invoice = event.data.object as Stripe.Invoice
         const invoiceSubscription = (invoice as { subscription?: unknown }).subscription
         if (typeof invoiceSubscription === "string") {
-          const subscription = await stripe.subscriptions.retrieve(invoiceSubscription)
+          const subscription = await stripe.subscriptions.retrieve(invoiceSubscription as string)
           const orgId = (subscription.metadata as Record<string, string>)?.organization_id
 
           if (orgId && invoice.amount_paid) {
@@ -230,7 +245,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
         const invoice = event.data.object as Stripe.Invoice
         const invoiceSubscription = (invoice as { subscription?: unknown }).subscription
         if (typeof invoiceSubscription === "string") {
-          const subscription = await stripe.subscriptions.retrieve(invoiceSubscription)
+          const subscription = await stripe.subscriptions.retrieve(invoiceSubscription as string)
           const orgId = (subscription.metadata as Record<string, string>)?.organization_id
 
           if (orgId) {
