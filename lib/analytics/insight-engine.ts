@@ -472,17 +472,17 @@ export async function detectInsights(
   
   try {
     // 1. Get summary data for overall metrics
-    const summary = await querySummary(organizationId, startDate, endDate)
+    const analyticsSummary = await querySummary(organizationId, startDate, endDate)
     
     // Detect insights from summary
-    if (summary.total_events > 0) {
+    if (analyticsSummary.total_events > 0) {
       const eventInsight: Insight = {
         id: `summary_events_${Date.now()}`,
         type: "milestone",
-        title: `📊 ${summary.total_events.toLocaleString()} total events`,
-        description: `${summary.unique_users.toLocaleString()} unique users, ${summary.distinct_events} distinct event types`,
+        title: `📊 ${analyticsSummary.total_events.toLocaleString()} total events`,
+        description: `${analyticsSummary.unique_users.toLocaleString()} unique users, ${analyticsSummary.distinct_events} distinct event types`,
         metric: "events",
-        value: summary.total_events,
+        value: analyticsSummary.total_events,
         confidence: 90,
         importance: "high",
         dateRange,
@@ -577,14 +577,14 @@ export async function detectInsights(
     const finalInsights = filteredInsights.slice(0, 20)
     
     // Generate summary statistics
-    const summary = {
+    const insightSummary = {
       total: finalInsights.length,
       high: finalInsights.filter(i => i.importance === "high").length,
       medium: finalInsights.filter(i => i.importance === "medium").length,
       low: finalInsights.filter(i => i.importance === "low").length,
     }
     
-    return { insights: finalInsights, summary }
+    return { insights: finalInsights, summary: insightSummary }
     
   } catch (error) {
     console.error("[Insight Engine] Error detecting insights:", error)
