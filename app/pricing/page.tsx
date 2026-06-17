@@ -351,10 +351,10 @@ function PricingContent() {
               </span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-              <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-              <a href="#" className="hover:text-foreground transition-colors">Security</a>
-              <a href="#" className="hover:text-foreground transition-colors">Status</a>
+              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+              <Link href="/security" className="hover:text-foreground transition-colors">Security</Link>
+              <Link href="/status" className="hover:text-foreground transition-colors">Status</Link>
             </div>
           </div>
         </div>
