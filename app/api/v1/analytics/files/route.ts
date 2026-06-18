@@ -136,8 +136,7 @@ const postHandler = withAuth(
         { status: 500 }
       )
     }
-  },
-  { requireAll: ["analytics:read", "analytics:write"] }
+  }
 )
 
 /**
@@ -193,8 +192,7 @@ const getHandler = withAuth(
         { status: 500 }
       )
     }
-  },
-  { requireAll: ["analytics:read"] }
+  }
 )
 
 export { getHandler as GET, postHandler as POST }

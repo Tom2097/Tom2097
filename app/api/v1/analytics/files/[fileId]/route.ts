@@ -70,8 +70,7 @@ const getHandler = withAuth(
         { status: 500 }
       )
     }
-  },
-  { requireAll: ["analytics:read"] }
+  }
 )
 
 /**
@@ -120,8 +119,7 @@ const deleteHandler = withAuth(
         { status: 500 }
       )
     }
-  },
-  { requireAll: ["analytics:write"] }
+  }
 )
 
 export { getHandler as GET, deleteHandler as DELETE }
