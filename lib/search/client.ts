@@ -35,14 +35,14 @@ const INDEX_NAME = "digit-universal"
 
 let cachedClient: Search | null = null
 
-function getClient(): Search {
+function getClient(): Search | null {
   if (cachedClient) return cachedClient
 
   const url = process.env.UPSTASH_SEARCH_REST_URL
   const token = process.env.UPSTASH_SEARCH_REST_TOKEN
 
   if (!url || !token) {
-    throw new Error("Upstash Search env vars are not configured")
+    return null
   }
 
   cachedClient = new Search({ url, token })
@@ -51,7 +51,11 @@ function getClient(): Search {
 
 /** Access the shared universal index with typed content + metadata. */
 export function getSearchIndex() {
-  return getClient().index<SearchContent, SearchMetadata>(INDEX_NAME)
+  const client = getClient()
+  if (!client) {
+    return null as any
+  }
+  return client.index<SearchContent, SearchMetadata>(INDEX_NAME)
 }
 
 /**
