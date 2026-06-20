@@ -43,7 +43,8 @@ export async function createStripeSession(
   userId: string,
   plan: BillingPlan,
   successUrl: string,
-  cancelUrl: string
+  cancelUrl: string,
+  isTrial?: boolean
 ): Promise<string | null> {
   try {
     const supabase = await createServiceClient()
@@ -52,7 +53,7 @@ export async function createStripeSession(
     // Get or create Stripe customer
     const { data: sub } = await supabase
       .from("subscriptions")
-      .select("stripe_customer_id")
+      .select("stripe_customer_id, trial_ends_at")
       .eq("organization_id", organizationId)
       .maybeSingle()
 
@@ -76,6 +77,19 @@ export async function createStripeSession(
       customerId = customer.id
     }
 
+    // Check if trial is active
+    const isTrialActive = sub?.trial_ends_at && new Date(sub.trial_ends_at) > new Date()
+    if (isTrial && !isTrialActive) {
+      // Update subscription to set trial end date
+      await supabase
+        .from("subscriptions")
+        .update({
+          trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          status: "trialing"
+        })
+        .eq("organization_id", organizationId)
+    }
+
     // Create checkout session
     const planConfig = STRIPE_PLANS[plan.id]
     if (!planConfig) throw new Error(`Invalid plan: ${plan.id}`)
@@ -87,6 +101,7 @@ export async function createStripeSession(
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: { organization_id: organizationId, plan: plan.id },
+      ...(isTrial && !isTrialActive ? { subscription_data: { trial_end: "now" } } : {}),
     })
 
     await logAuthEvent({

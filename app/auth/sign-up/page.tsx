@@ -69,14 +69,10 @@ export default function SignUpPage() {
     setError(null)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
+    const { data: { user }, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        // In production, always send users back to the live site's callback.
-        // The v0 dev redirect proxy is only used during local/preview development,
-        // otherwise the PKCE code-verifier cookie set on this origin won't be
-        // present when the code is exchanged, breaking verification.
         emailRedirectTo:
           process.env.NODE_ENV === "development"
             ? (process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
@@ -92,8 +88,29 @@ export default function SignUpPage() {
     if (error) {
       setError(error.message)
       setIsLoading(false)
-    } else {
-      router.push("/auth/sign-up-success")
+    } else if (user) {
+      // Create organization and subscription with trial
+      try {
+        const response = await fetch('/api/auth/create-trial', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            email,
+            fullName,
+            companyName,
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to create trial')
+        }
+
+        router.push("/auth/sign-up-success")
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to create trial')
+        setIsLoading(false)
+      }
     }
   }
 
@@ -119,8 +136,8 @@ export default function SignUpPage() {
               DigiT
             </span>
           </div>
-          <CardTitle className="text-2xl">Start your free trial</CardTitle>
-          <CardDescription>14 days free, no credit card required</CardDescription>
+  <CardTitle className="text-2xl">Start your 7-day free trial</CardTitle>
+  <CardDescription>No credit card required. Upgrade anytime.</CardDescription>
         </CardHeader>
         <form onSubmit={handleSignUp}>
           <CardContent className="space-y-4">
