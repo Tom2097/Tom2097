@@ -26,17 +26,22 @@ async function getStripeInstance(): Promise<Stripe> {
   return stripeInstance
 }
 
-// Stripe plan configuration
+// Stripe plan configuration (optional - fallback to trial-only mode if missing)
 const STRIPE_PLANS: Record<string, { priceId: string; name: string }> = {
   pro: {
-    priceId: process.env.STRIPE_PRO_PRICE_ID || "price_1234567890",
+    priceId: process.env.STRIPE_PRO_PRICE_ID || "",
     name: "Pro",
   },
   enterprise: {
-    priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || "price_0987654321",
+    priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || "",
     name: "Enterprise",
   },
-}
+};
+
+// Check if Stripe is configured
+export const isStripeConfigured = () => {
+  return !!process.env.STRIPE_SECRET_KEY && !!STRIPE_PLANS.pro.priceId && !!STRIPE_PLANS.enterprise.priceId;
+};
 
 export async function createStripeSession(
   organizationId: string,
@@ -46,9 +51,14 @@ export async function createStripeSession(
   cancelUrl: string,
   isTrial?: boolean
 ): Promise<string | null> {
+  if (!isStripeConfigured()) {
+    console.warn("[Stripe] Skipping session creation - Stripe is not configured");
+    return null;
+  }
+
   try {
-    const supabase = await createServiceClient()
-    const stripe = await getStripeInstance()
+    const supabase = await createServiceClient();
+    const stripe = await getStripeInstance();
 
     // Get or create Stripe customer
     const { data: sub } = await supabase

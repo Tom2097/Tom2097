@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
+import { isStripeConfigured } from "@/lib/billing/stripe"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -46,7 +47,12 @@ export default function SignUpPage() {
   const [companyName, setCompanyName] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isStripeEnabled, setIsStripeEnabled] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    setIsStripeEnabled(isStripeConfigured());
+  }, []);
 
   const strength = useMemo(() => getPasswordStrength(password), [password])
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword
@@ -137,7 +143,9 @@ export default function SignUpPage() {
             </span>
           </div>
   <CardTitle className="text-2xl">Start your 7-day free trial</CardTitle>
-  <CardDescription>No credit card required. Upgrade anytime.</CardDescription>
+  <CardDescription>
+    {isStripeEnabled ? "No credit card required. Upgrade anytime." : "Start your 7-day free trial."}
+  </CardDescription>
         </CardHeader>
         <form onSubmit={handleSignUp}>
           <CardContent className="space-y-4">

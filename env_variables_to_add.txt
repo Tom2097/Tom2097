@@ -1,0 +1,11 @@
+# Environment Variables to Add in Vercel
+
+## Supabase
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+
+## Stripe
+STRIPE_PRO_PRICE_ID=your_stripe_pro_price_id_here
+STRIPE_ENTERPRISE_PRICE_ID=your_stripe_enterprise_price_id_here
+
+## Next.js (Optional)
+NEXT_PUBLIC_SITE_URL=https://v0-digit.vercel.app

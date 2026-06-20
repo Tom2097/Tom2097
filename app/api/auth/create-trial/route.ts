@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { createStripeSession } from '@/lib/billing/stripe'
+import { isStripeConfigured } from '@/lib/billing/stripe'
 
 export async function POST(request: Request) {
   try {
@@ -22,13 +22,14 @@ export async function POST(request: Request) {
       throw new Error(orgError?.message || 'Failed to create organization')
     }
 
-    // Create subscription with trial
+    // Create subscription with trial (skip Stripe if not configured)
     const { error: subError } = await supabase
       .from('subscriptions')
       .insert({
         organization_id: org.id,
         status: 'trialing',
         trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        stripe_customer_id: isStripeConfigured() ? "pending" : undefined,
         created_by: userId,
       })
 
