@@ -1,7 +1,26 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { extractTenantContext } from '@/lib/multitenant/context'
-import * as XLSX from 'xlsx'
+
+function parseCSV(text: string): Record<string, unknown>[] {
+  const lines = text.split('\n').filter(l => l.trim())
+  if (lines.length < 2) return []
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''))
+  return lines.slice(1).map(line => {
+    const values: string[] = []
+    let current = ''
+    let inQuotes = false
+    for (const ch of line) {
+      if (ch === '"') inQuotes = !inQuotes
+      else if (ch === ',' && !inQuotes) { values.push(current.trim()); current = '' }
+      else current += ch
+    }
+    values.push(current.trim())
+    const row: Record<string, unknown> = {}
+    headers.forEach((h, i) => { row[h] = values[i] ?? null })
+    return row
+  })
+}
 
 export async function POST(request: Request) {
   try {
@@ -52,22 +71,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Failed to decode file' }, { status: 400 })
       }
 
-      // Attempt spreadsheet parsing for supported types
-      if (
-        fileType === 'text/csv' ||
-        name.endsWith('.csv') ||
-        fileType.includes('spreadsheet') ||
-        name.endsWith('.xlsx') ||
-        name.endsWith('.xls')
-      ) {
+      // Parse CSV manually — no eval-heavy libraries
+      if (fileType === 'text/csv' || name.endsWith('.csv')) {
         try {
-          const buffer = Buffer.from(arrayBuffer)
-          const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: false, raw: true })
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
-          const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: '' })
-          rawData = jsonData as Record<string, unknown>[]
+          rawData = parseCSV(content)
         } catch (e) {
-          console.error('[upload] XLSX parse failed, keeping as text:', e)
+          console.error('[upload] CSV parse failed, keeping as text:', e)
         }
       }
     } else {
