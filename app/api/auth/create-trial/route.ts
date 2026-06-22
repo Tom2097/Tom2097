@@ -1,11 +1,20 @@
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createServiceClient } from '@/lib/supabase/service'
-import { isStripeConfigured } from '@/lib/billing/stripe'
+
+const trialSchema = z.object({
+  userId: z.string().uuid(),
+  email: z.string().email(),
+  fullName: z.string().min(1).optional(),
+  companyName: z.string().min(1),
+})
 
 export async function POST(request: Request) {
   try {
-    const { userId, email, fullName, companyName } = await request.json()
-    const supabase = await createServiceClient()
+    const body = await request.json()
+    const { userId, email, companyName } = trialSchema.parse(body)
+
+    const supabase = createServiceClient()
 
     // Create organization
     const { data: org, error: orgError } = await supabase
@@ -29,8 +38,7 @@ export async function POST(request: Request) {
         organization_id: org.id,
         status: 'trialing',
         trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        stripe_customer_id: isStripeConfigured() ? "pending" : null,
-        created_by: userId,
+        user_id: userId,
       })
 
     if (subError) {
@@ -39,6 +47,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: error.errors },
+        { status: 400 }
+      )
+    }
     console.error('[create-trial] Error:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create trial' },

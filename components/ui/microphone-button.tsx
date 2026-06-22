@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Mic, MicOff } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 interface MicrophoneButtonProps {
   onTranscript: (transcript: string) => void
@@ -13,52 +13,62 @@ export function MicrophoneButton({ onTranscript, className }: MicrophoneButtonPr
   const [isListening, setIsListening] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const onTranscriptRef = useRef(onTranscript)
+
+  onTranscriptRef.current = onTranscript
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-      
+
       if (!SpeechRecognition) {
         setError('Speech recognition is not supported in your browser.')
         return
       }
-      
+
       const recognition = new SpeechRecognition()
       recognition.continuous = false
       recognition.interimResults = false
       recognition.lang = 'en-US'
-      
+
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript
-        onTranscript(transcript)
+        onTranscriptRef.current(transcript)
         setIsListening(false)
       }
-      
+
       recognition.onerror = (event) => {
         setError(event.error)
         setIsListening(false)
       }
-      
+
       recognition.onend = () => {
-        if (isListening) {
-          recognition.start()
-        }
+        setIsListening(false)
       }
-      
+
       recognitionRef.current = recognition
     }
-  }, [isListening])
 
-  const toggleListening = () => {
+    return () => {
+      recognitionRef.current?.abort()
+      recognitionRef.current = null
+    }
+  }, [])
+
+  const toggleListening = useCallback(() => {
     if (isListening) {
       recognitionRef.current?.stop()
       setIsListening(false)
     } else {
-      recognitionRef.current?.start()
-      setIsListening(true)
       setError(null)
+      try {
+        recognitionRef.current?.start()
+        setIsListening(true)
+      } catch {
+        setError('Failed to start microphone')
+      }
     }
-  }
+  }, [isListening])
 
   return (
     <div className={className}>
