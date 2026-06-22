@@ -96,29 +96,37 @@ export async function POST(request: Request) {
       fileSize = new TextEncoder().encode(body.text).length
     }
 
-    const supabase = createServiceClient()
-    const { data: doc, error } = await supabase
-      .from('documents')
-      .insert({
-        organization_id: orgId,
-        name,
-        type: fileType,
-        content,
-        raw_data: rawData,
-        file_size: fileSize,
-      })
-      .select('id, name, type, file_size, created_at')
-      .single()
-
-    if (error) {
-      throw new Error(error.message)
+    let doc: Record<string, unknown> | null = null
+    try {
+      const supabase = createServiceClient()
+      const result = await supabase
+        .from('documents')
+        .insert({
+          organization_id: orgId,
+          name,
+          type: fileType,
+          content,
+          raw_data: rawData,
+          file_size: fileSize,
+        })
+        .select('id, name, type, file_size, created_at')
+        .single()
+      doc = result.data
+      if (result.error) {
+        throw new Error(result.error.message)
+      }
+    } catch (e: unknown) {
+      console.error('[upload] DB insert failed:', e)
+      throw e
     }
 
     return NextResponse.json({ success: true, document: doc })
   } catch (error) {
-    console.error('[upload] Error:', error)
+    const msg = error instanceof Error ? error.message : 'Failed to upload document'
+    const stack = error instanceof Error ? error.stack : ''
+    console.error('[upload] Unhandled error:', msg, stack)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to upload document' },
+      { error: msg },
       { status: 500 }
     )
   }
