@@ -26,7 +26,7 @@ async function getStripeInstance(): Promise<Stripe> {
   return stripeInstance
 }
 
-// Stripe plan configuration (optional - fallback to trial-only mode if missing)
+// Stripe plan configuration
 const STRIPE_PLANS: Record<string, { priceId: string; name: string }> = {
   pro: {
     priceId: process.env.STRIPE_PRO_PRICE_ID || "",
@@ -38,9 +38,13 @@ const STRIPE_PLANS: Record<string, { priceId: string; name: string }> = {
   },
 };
 
-// Check if Stripe is configured
+// Check if Stripe is fully configured
 export const isStripeConfigured = () => {
-  return !!process.env.STRIPE_SECRET_KEY && !!STRIPE_PLANS.pro.priceId && !!STRIPE_PLANS.enterprise.priceId;
+  return !!(
+    process.env.STRIPE_SECRET_KEY && 
+    STRIPE_PLANS.pro.priceId && 
+    STRIPE_PLANS.enterprise.priceId
+  );
 };
 
 export async function createStripeSession(

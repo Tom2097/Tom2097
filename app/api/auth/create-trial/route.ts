@@ -22,14 +22,14 @@ export async function POST(request: Request) {
       throw new Error(orgError?.message || 'Failed to create organization')
     }
 
-    // Create subscription with trial (skip Stripe if not configured)
+    // Create subscription with trial
     const { error: subError } = await supabase
       .from('subscriptions')
       .insert({
         organization_id: org.id,
         status: 'trialing',
         trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        stripe_customer_id: isStripeConfigured() ? "pending" : undefined,
+        stripe_customer_id: isStripeConfigured() ? "pending" : null,
         created_by: userId,
       })
 
