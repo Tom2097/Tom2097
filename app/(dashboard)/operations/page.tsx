@@ -3,11 +3,9 @@ import { DocumentUploadSection } from '@/components/digit/operations/document-up
 
 export default function OperationsPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <DocumentUploadSection />
       <GenericWorkspace title="Operations Workspace" />
-      <div className="rounded-xl border border-border/50 bg-card p-6">
-        <DocumentUploadSection />
-      </div>
     </div>
   )
 }

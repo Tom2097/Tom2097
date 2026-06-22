@@ -9,10 +9,12 @@ const DocumentUpload = dynamic(
 
 export function DocumentUploadSection() {
   return (
-    <div>
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-foreground">Documents</h2>
-        <p className="text-sm text-muted-foreground">Upload files or paste text to analyze and generate reports</p>
+    <div className="rounded-xl border border-border/50 bg-card p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Upload & Analyze Documents</h2>
+          <p className="text-sm text-muted-foreground">Upload files, paste text, or drop content below to generate instant reports</p>
+        </div>
       </div>
       <DocumentUpload />
     </div>
