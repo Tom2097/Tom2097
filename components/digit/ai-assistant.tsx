@@ -6,6 +6,7 @@ import { DefaultChatTransport } from 'ai'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Bot, User, Sparkles, Minimize2, Maximize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { MicrophoneButton } from '@/components/ui/microphone-button'
 import { cn } from '@/lib/utils'
 
 interface AIAssistantProps {
@@ -200,6 +201,12 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
                 placeholder="Ask about your enterprise data..."
                 className="flex-1 rounded-xl border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 disabled={isLoading}
+              />
+              <MicrophoneButton
+                onTranscript={(transcript) => {
+                  setInput(transcript)
+                  sendMessage({ text: transcript })
+                }}
               />
               <Button 
                 type="submit" 
