@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   HelpCircle, 
@@ -112,6 +112,37 @@ export function HelpSupport() {
   const [chatInput, setChatInput] = useState("")
   const [ticketForm, setTicketForm] = useState({ subject: "", description: "", priority: "medium" })
   const [ticketSubmitted, setTicketSubmitted] = useState(false)
+  const [files, setFiles] = useState<File[]>([])
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles(prev => [...prev, ...Array.from(e.target.files!)])
+    }
+  }
+
+  const handleRemoveFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }, [])
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    if (e.dataTransfer.files.length > 0) {
+      setFiles(prev => [...prev, ...Array.from(e.dataTransfer.files)])
+    }
+  }, [])
   const [showSearchDropdown, setShowSearchDropdown] = useState(false)
 
   const filteredFaqs = faqs.filter(faq => {
@@ -697,12 +728,58 @@ export function HelpSupport() {
 
                           <div>
                             <label className="mb-2 block text-sm font-medium">Attachments (optional)</label>
-                            <div className="rounded-lg border border-dashed border-border p-6 text-center">
+                            <div
+                              onDragOver={handleDragOver}
+                              onDragLeave={handleDragLeave}
+                              onDrop={handleDrop}
+                              onClick={() => fileInputRef.current?.click()}
+                              className={cn(
+                                "rounded-lg border-2 border-dashed p-6 text-center transition-colors cursor-pointer",
+                                isDragging
+                                  ? "border-primary bg-primary/5"
+                                  : "border-border hover:border-primary/50"
+                              )}
+                            >
+                              <input
+                                ref={fileInputRef}
+                                type="file"
+                                multiple
+                                onChange={handleFileChange}
+                                className="hidden"
+                              />
                               <Paperclip className="mx-auto h-8 w-8 text-muted-foreground" />
                               <p className="mt-2 text-sm text-muted-foreground">
-                                Drag files here or click to upload
+                                {isDragging ? "Drop files here" : "Drag files here or click to upload"}
                               </p>
                             </div>
+                            {files.length > 0 && (
+                              <div className="mt-3 space-y-2">
+                                {files.map((file, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center justify-between rounded-lg border border-border bg-card/50 px-3 py-2"
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                      <span className="truncate text-sm">{file.name}</span>
+                                      <span className="shrink-0 text-xs text-muted-foreground">
+                                        ({(file.size / 1024).toFixed(1)} KB)
+                                      </span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleRemoveFile(index)
+                                      }}
+                                      className="ml-2 text-muted-foreground hover:text-destructive"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
 
                           <Button className="w-full" onClick={handleSubmitTicket}>
