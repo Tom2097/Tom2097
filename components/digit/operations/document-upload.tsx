@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Upload,
@@ -39,21 +39,27 @@ export function DocumentUpload() {
   const [loading, setLoading] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const fetchDocuments = useCallback(async () => {
-    try {
-      const res = await fetch('/api/operations/documents')
-      const data = await res.json()
-      if (data.documents) {
-        setDocuments(data.documents)
-      }
-    } catch {
-      console.error('Failed to fetch documents')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  useEffect(() => {
+    let mounted = true
 
-  useState(() => { fetchDocuments() })
+    async function load() {
+      try {
+        const res = await fetch('/api/operations/documents')
+        const data = await res.json()
+        if (mounted && data.documents) {
+          setDocuments(data.documents)
+        }
+      } catch {
+        console.error('Failed to fetch documents')
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+
+    load()
+
+    return () => { mounted = false }
+  }, [])
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -78,7 +84,11 @@ export function DocumentUpload() {
 
       if (!res.ok) throw new Error('Upload failed')
 
-      await fetchDocuments()
+      const data = await fetch('/api/operations/documents')
+      const result = await data.json()
+      if (result.documents) {
+        setDocuments(result.documents)
+      }
     } catch (err) {
       console.error('Upload error:', err)
     } finally {
