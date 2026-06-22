@@ -777,9 +777,9 @@ export default function CheckoutPage() {
                       <Clock className="w-4 h-4 text-emerald-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">14-Day Free Trial</p>
+                      <p className="font-medium text-foreground">7-Day Free Trial</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Start with full access today. You won&apos;t be charged until day 15.
+                        Start with full access today. You won&apos;t be charged until day 8.
                       </p>
                     </div>
                   </div>
