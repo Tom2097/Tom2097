@@ -11,43 +11,45 @@ interface MicrophoneButtonProps {
 
 export function MicrophoneButton({ onTranscript, className }: MicrophoneButtonProps) {
   const [isListening, setIsListening] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) return 'Speech recognition is not supported in your browser.'
+    return null
+  })
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const onTranscriptRef = useRef(onTranscript)
 
-  onTranscriptRef.current = onTranscript
+  useEffect(() => {
+    onTranscriptRef.current = onTranscript
+  }, [onTranscript])
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
 
-      if (!SpeechRecognition) {
-        setError('Speech recognition is not supported in your browser.')
-        return
-      }
+    if (!SpeechRecognition) return
 
-      const recognition = new SpeechRecognition()
-      recognition.continuous = false
-      recognition.interimResults = false
-      recognition.lang = 'en-US'
+    const recognition = new SpeechRecognition()
+    recognition.continuous = false
+    recognition.interimResults = false
+    recognition.lang = 'en-US'
 
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript
-        onTranscriptRef.current(transcript)
-        setIsListening(false)
-      }
-
-      recognition.onerror = (event) => {
-        setError(event.error)
-        setIsListening(false)
-      }
-
-      recognition.onend = () => {
-        setIsListening(false)
-      }
-
-      recognitionRef.current = recognition
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript
+      onTranscriptRef.current(transcript)
+      setIsListening(false)
     }
+
+    recognition.onerror = (event) => {
+      setError(event.error)
+      setIsListening(false)
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+    }
+
+    recognitionRef.current = recognition
 
     return () => {
       recognitionRef.current?.abort()

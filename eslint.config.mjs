@@ -8,6 +8,7 @@ const config = [
       "**/*.config.js",
       "**/*.config.mjs",
       ".well-known/**",
+      "app/.well-known/**",
       "app/(dashboard)/feedback/page.tsx",
       "app/auth/login/page.tsx",
       "app/onboarding/page.tsx",
