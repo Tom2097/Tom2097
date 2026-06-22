@@ -43,16 +43,26 @@ export async function POST(request: Request) {
         name.endsWith('.xlsx') ||
         name.endsWith('.xls')
       ) {
-        const workbook = XLSX.read(buffer, { type: 'buffer' })
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet)
-        rawData = jsonData as Record<string, unknown>[]
-        content = JSON.stringify(rawData, null, 2)
+        try {
+          const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: false, raw: true })
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: '' })
+          rawData = jsonData as Record<string, unknown>[]
+          content = JSON.stringify(rawData, null, 2)
+        } catch {
+          // Fallback: treat as plain text if spreadsheet parsing fails
+          content = buffer.toString('utf-8')
+        }
       } else {
         content = buffer.toString('utf-8')
       }
     } else {
-      const body = await request.json()
+      let body: { text?: string; name?: string }
+      try {
+        body = await request.json()
+      } catch {
+        return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+      }
       if (!body.text || !body.name) {
         return NextResponse.json({ error: 'Text content and name required' }, { status: 400 })
       }
