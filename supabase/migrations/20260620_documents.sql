@@ -1,21 +1,14 @@
--- Add content column safely if it doesn't exist
+-- Add missing columns safely
 do $$
 begin
-  if not exists (
-    select 1 from information_schema.columns
-    where table_name = 'documents' and column_name = 'content'
-  ) then
+  if not exists (select 1 from information_schema.columns where table_name = 'documents' and column_name = 'content') then
     alter table documents add column content text;
   end if;
-end $$;
-
-do $$
-begin
-  if not exists (
-    select 1 from information_schema.columns
-    where table_name = 'documents' and column_name = 'raw_data'
-  ) then
+  if not exists (select 1 from information_schema.columns where table_name = 'documents' and column_name = 'raw_data') then
     alter table documents add column raw_data jsonb;
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name = 'documents' and column_name = 'file_size') then
+    alter table documents add column file_size integer;
   end if;
 end $$;
 
