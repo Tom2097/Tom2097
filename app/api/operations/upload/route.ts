@@ -21,22 +21,39 @@ export async function POST(request: Request) {
     let fileSize = 0
 
     if (contentType.includes('multipart/form-data')) {
-      const formData = await request.formData()
+      let formData: FormData
+      try {
+        formData = await request.formData()
+      } catch (e) {
+        console.error('[upload] formData() failed:', e)
+        return NextResponse.json({ error: 'Failed to parse upload' }, { status: 400 })
+      }
       const file = formData.get('file') as File | null
 
       if (!file) {
         return NextResponse.json({ error: 'No file provided' }, { status: 400 })
       }
 
-      const arrayBuffer = await file.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
+      let arrayBuffer: ArrayBuffer
+      try {
+        arrayBuffer = await file.arrayBuffer()
+      } catch (e) {
+        console.error('[upload] arrayBuffer() failed:', e)
+        return NextResponse.json({ error: 'Failed to read file' }, { status: 400 })
+      }
       name = file.name
       fileType = file.type || name.split('.').pop()?.toLowerCase() || 'unknown'
       fileSize = file.size
 
-      if (fileType === 'text/plain' || name.endsWith('.txt') || name.endsWith('.md')) {
-        content = buffer.toString('utf-8')
-      } else if (
+      try {
+        content = new TextDecoder().decode(arrayBuffer)
+      } catch (e) {
+        console.error('[upload] TextDecoder failed:', e)
+        return NextResponse.json({ error: 'Failed to decode file' }, { status: 400 })
+      }
+
+      // Attempt spreadsheet parsing for supported types
+      if (
         fileType === 'text/csv' ||
         name.endsWith('.csv') ||
         fileType.includes('spreadsheet') ||
@@ -44,23 +61,21 @@ export async function POST(request: Request) {
         name.endsWith('.xls')
       ) {
         try {
+          const buffer = Buffer.from(arrayBuffer)
           const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: false, raw: true })
           const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
           const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: '' })
           rawData = jsonData as Record<string, unknown>[]
-          content = JSON.stringify(rawData, null, 2)
-        } catch {
-          // Fallback: treat as plain text if spreadsheet parsing fails
-          content = buffer.toString('utf-8')
+        } catch (e) {
+          console.error('[upload] XLSX parse failed, keeping as text:', e)
         }
-      } else {
-        content = buffer.toString('utf-8')
       }
     } else {
       let body: { text?: string; name?: string }
       try {
         body = await request.json()
-      } catch {
+      } catch (e) {
+        console.error('[upload] JSON parse failed:', e)
         return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
       }
       if (!body.text || !body.name) {
