@@ -9,7 +9,6 @@ import {
   Book, 
   FileQuestion, 
   Mail, 
-  Phone,
   Video,
   Search,
   ChevronRight,
@@ -79,26 +78,26 @@ const faqs: FAQItem[] = [
 const categories = ["All", "Getting Started", "Features", "AI Features", "Billing", "Team Management", "Security"]
 
 const quickLinks = [
-  { title: "Documentation", icon: Book, href: "/docs", description: "Comprehensive guides and tutorials" },
-  { title: "API Reference", icon: FileQuestion, href: "/docs/api", description: "Developer documentation" },
-  { title: "Video Tutorials", icon: Video, href: "https://youtube.com/@digit-ai", description: "Step-by-step walkthroughs", external: true },
-  { title: "Community Forum", icon: MessageCircle, href: "https://community.digit.ai", description: "Connect with other users", external: true },
+  { title: "Intelligence", icon: Sparkles, href: "/intelligence", description: "AI-powered insights and analytics" },
+  { title: "Settings", icon: Headphones, href: "/settings", description: "Manage account and preferences" },
+  { title: "Pricing", icon: ExternalLink, href: "/pricing", description: "Compare plans and features" },
+  { title: "Security", icon: CheckCircle2, href: "/security", description: "Security overview and compliance" },
 ]
 
 // Searchable help topics for live search
 const helpTopics = [
-  { title: "Getting Started Guide", category: "Documentation", icon: Book, href: "/docs/getting-started" },
-  { title: "Connect Data Sources", category: "Tutorial", icon: FileQuestion, href: "/docs/data-sources" },
-  { title: "AI Analysis Setup", category: "AI Features", icon: Sparkles, href: "/docs/ai-setup" },
-  { title: "Invite Team Members", category: "Team", icon: MessageCircle, href: "/settings?tab=team" },
+  { title: "AI Analytics", category: "Features", icon: Sparkles, href: "/intelligence" },
+  { title: "Operations Dashboard", category: "Documentation", icon: Book, href: "/operations" },
+  { title: "CRM Workspace", category: "Features", icon: MessageCircle, href: "/crm" },
+  { title: "Invite Team Members", category: "Team", icon: MessageCircle, href: "/settings" },
   { title: "Upgrade Subscription", category: "Billing", icon: ExternalLink, href: "/pricing" },
-  { title: "API Authentication", category: "Developer", icon: FileQuestion, href: "/docs/api/auth" },
-  { title: "Export Reports", category: "Features", icon: Book, href: "/docs/exports" },
-  { title: "Dashboard Customization", category: "Features", icon: Video, href: "/docs/dashboard" },
-  { title: "Security Settings", category: "Security", icon: HelpCircle, href: "/settings?tab=security" },
-  { title: "Billing & Invoices", category: "Billing", icon: Mail, href: "/settings?tab=subscription" },
-  { title: "Module Configuration", category: "Features", icon: Book, href: "/docs/modules" },
-  { title: "Webhook Integration", category: "Developer", icon: FileQuestion, href: "/docs/webhooks" },
+  { title: "Compliance Center", category: "Security", icon: FileQuestion, href: "/compliance" },
+  { title: "Export Reports", category: "Features", icon: Book, href: "/analytics" },
+  { title: "Performance Metrics", category: "Features", icon: Video, href: "/performance" },
+  { title: "Security Settings", category: "Security", icon: HelpCircle, href: "/settings" },
+  { title: "Resource Management", category: "Features", icon: Book, href: "/resources" },
+  { title: "Platform Capacity", category: "Features", icon: FileQuestion, href: "/platform/capacity" },
+  { title: "Feedback & Requests", category: "Developer", icon: Mail, href: "/feedback" },
 ]
 
 export function HelpSupport() {
@@ -453,18 +452,10 @@ export function HelpSupport() {
                     {/* Contact Options */}
                     <div>
                       <h3 className="mb-3 text-sm font-semibold">Contact Us</h3>
-                      <div className="flex gap-3">
-                        <Button variant="outline" className="flex-1" onClick={() => setActiveTab("contact")}>
-                          <Mail className="mr-2 h-4 w-4" />
-                          Email
-                        </Button>
-                        <Button variant="outline" className="flex-1" asChild>
-                          <a href="tel:+18003448248">
-                            <Phone className="mr-2 h-4 w-4" />
-                            Call
-                          </a>
-                        </Button>
-                      </div>
+                      <Button variant="outline" className="w-full" onClick={() => setActiveTab("contact")}>
+                        <Mail className="mr-2 h-4 w-4" />
+                        Send us an Email
+                      </Button>
                     </div>
 
                     {/* Support Hours */}
@@ -731,17 +722,6 @@ export function HelpSupport() {
                               <div>
                                 <p className="font-medium">Email Support</p>
                                 <p className="text-sm text-muted-foreground">support@digit.ai</p>
-                              </div>
-                              <ExternalLink className="ml-auto h-4 w-4 text-muted-foreground" />
-                            </a>
-                            <a
-                              href="tel:+1-800-DIGIT-AI"
-                              className="flex items-center gap-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 hover:bg-card"
-                            >
-                              <Phone className="h-5 w-5 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">Phone Support</p>
-                                <p className="text-sm text-muted-foreground">+1-800-DIGIT-AI (Enterprise)</p>
                               </div>
                               <ExternalLink className="ml-auto h-4 w-4 text-muted-foreground" />
                             </a>
