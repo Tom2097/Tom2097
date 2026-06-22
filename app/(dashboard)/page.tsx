@@ -61,7 +61,7 @@ export default async function DashboardPage() {
                 <Crown className="w-5 h-5 text-amber-500" />
               </div>
               <div>
-                <p className="font-medium text-foreground">You&apos;re on a 14-day free trial</p>
+                <p className="font-medium text-foreground">You&apos;re on a 7-day free trial</p>
                 <p className="text-sm text-muted-foreground">
                   {subscription?.current_period_end
                     ? `Trial ends ${new Date(subscription.current_period_end).toLocaleDateString()}`

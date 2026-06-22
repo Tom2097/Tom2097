@@ -125,8 +125,8 @@ function PricingContent() {
               </span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-              Choose the plan that scales with your business. All plans include a 14-day free trial 
-              with full access to features.
+               Choose the plan that scales with your business. All plans include a 7-day free trial 
+               with full access to features.
             </p>
 
             {/* Billing Toggle */}
@@ -313,7 +313,7 @@ function PricingContent() {
                 Ready to Transform Your Enterprise?
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-                Start your 14-day free trial today. No credit card required. 
+                Start your 7-day free trial today. No credit card required. 
                 Get full access to all features and dedicated onboarding support.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

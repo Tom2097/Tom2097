@@ -214,7 +214,7 @@ export default function SettingsPage() {
                   <p className="text-sm text-muted-foreground">
                     {currentPlan 
                       ? `${formatPrice(currentPlan.priceInCents)}/month`
-                      : "14-day free trial with full access"
+                      : "7-day free trial with full access"
                     }
                   </p>
                 </div>
@@ -245,7 +245,7 @@ export default function SettingsPage() {
                   <p className="text-sm font-medium text-muted-foreground mb-3">Plan Features</p>
                   <ul className="space-y-2">
                     {(currentPlan?.features || [
-                      "14-day free trial",
+                      "7-day free trial",
                       "Access to all features",
                       "Full AI capabilities",
                       "Priority support"
