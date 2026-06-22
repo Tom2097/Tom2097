@@ -12,38 +12,54 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 403 })
     }
 
-    const formData = await request.formData()
-    const file = formData.get('file') as File | null
+    const contentType = request.headers.get('content-type') || ''
 
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
-    }
-
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-    const fileName = file.name
-    const fileType = file.type || fileName.split('.').pop()?.toLowerCase() || 'unknown'
-    const fileSize = file.size
-
+    let name = ''
+    let fileType = ''
     let content = ''
     let rawData: Record<string, unknown>[] | null = null
+    let fileSize = 0
 
-    if (fileType === 'text/plain' || fileName.endsWith('.txt') || fileName.endsWith('.md')) {
-      content = buffer.toString('utf-8')
-    } else if (
-      fileType === 'text/csv' ||
-      fileName.endsWith('.csv') ||
-      fileType.includes('spreadsheet') ||
-      fileName.endsWith('.xlsx') ||
-      fileName.endsWith('.xls')
-    ) {
-      const workbook = XLSX.read(buffer, { type: 'buffer' })
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
-      const jsonData = XLSX.utils.sheet_to_json(firstSheet)
-      rawData = jsonData as Record<string, unknown>[]
-      content = JSON.stringify(rawData, null, 2)
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData()
+      const file = formData.get('file') as File | null
+
+      if (!file) {
+        return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+      }
+
+      const arrayBuffer = await file.arrayBuffer()
+      const buffer = Buffer.from(arrayBuffer)
+      name = file.name
+      fileType = file.type || name.split('.').pop()?.toLowerCase() || 'unknown'
+      fileSize = file.size
+
+      if (fileType === 'text/plain' || name.endsWith('.txt') || name.endsWith('.md')) {
+        content = buffer.toString('utf-8')
+      } else if (
+        fileType === 'text/csv' ||
+        name.endsWith('.csv') ||
+        fileType.includes('spreadsheet') ||
+        name.endsWith('.xlsx') ||
+        name.endsWith('.xls')
+      ) {
+        const workbook = XLSX.read(buffer, { type: 'buffer' })
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet)
+        rawData = jsonData as Record<string, unknown>[]
+        content = JSON.stringify(rawData, null, 2)
+      } else {
+        content = buffer.toString('utf-8')
+      }
     } else {
-      content = buffer.toString('utf-8')
+      const body = await request.json()
+      if (!body.text || !body.name) {
+        return NextResponse.json({ error: 'Text content and name required' }, { status: 400 })
+      }
+      name = body.name
+      fileType = 'text'
+      content = body.text
+      fileSize = new TextEncoder().encode(body.text).length
     }
 
     const supabase = createServiceClient()
@@ -51,7 +67,7 @@ export async function POST(request: Request) {
       .from('documents')
       .insert({
         organization_id: orgId,
-        name: fileName,
+        name,
         type: fileType,
         content,
         raw_data: rawData,

@@ -1,11 +1,11 @@
 import { GenericWorkspace } from '@/components/digit/generic-workspace'
-import { DocumentUploadClient } from '@/components/digit/operations/document-upload-client'
+import { DocumentUploadSection } from '@/components/digit/operations/document-upload-section'
 
 export default function OperationsPage() {
   return (
     <div className="space-y-8">
       <GenericWorkspace title="Operations Workspace" />
-      <DocumentUploadClient />
+      <DocumentUploadSection />
     </div>
   )
 }
