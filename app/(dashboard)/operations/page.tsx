@@ -5,7 +5,9 @@ export default function OperationsPage() {
   return (
     <div className="space-y-8">
       <GenericWorkspace title="Operations Workspace" />
-      <DocumentUploadSection />
+      <div className="rounded-xl border border-border/50 bg-card p-6">
+        <DocumentUploadSection />
+      </div>
     </div>
   )
 }
