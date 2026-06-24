@@ -39,13 +39,15 @@ export function CommandPalette() {
       })
     : commands
 
+  const close = useCallback(() => { setIsOpen(false); setQuery("") }, [])
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "k") {
       e.preventDefault()
-      setIsOpen((prev) => !prev)
+      setIsOpen((prev) => { if (!prev) return true; setQuery(""); return false })
     }
-    if (e.key === "Escape") setIsOpen(false)
-  }, [])
+    if (e.key === "Escape") close()
+  }, [close])
 
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown)
@@ -54,7 +56,6 @@ export function CommandPalette() {
 
   useEffect(() => {
     if (isOpen) setTimeout(() => inputRef.current?.focus(), 50)
-    else setQuery("")
   }, [isOpen])
 
   const execute = (cmd: CommandItem) => {
@@ -70,7 +71,7 @@ export function CommandPalette() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-background/60 backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
+          onClick={close}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
