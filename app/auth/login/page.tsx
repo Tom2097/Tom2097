@@ -93,7 +93,7 @@ function LoginForm() {
       const credential = await startAuthentication({ optionsJSON: options })
 
       // 3. Verify with server
-      const verifyRes = await fetch("/api/auth/passkey/authenticate", {
+      const verifyRes = await fetch("/api/auth/passkeys/authenticate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "verify", credential }),

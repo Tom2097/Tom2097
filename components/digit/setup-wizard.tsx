@@ -8,50 +8,53 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Check, Building2, Users, Bell, Shield, Database, Rocket } from "lucide-react"
+import { Check, Building2, SlidersHorizontal, Database, Puzzle, Shield, Rocket } from "lucide-react"
+import { ComplianceFrameworkPanel, ResourcesFrameworkPanel, PerformanceFrameworkPanel, OperationalFrameworkPanel } from "@/components/digit/wizard-panels"
 
 const steps = [
-  { id: "organization", title: "Organization", icon: Building2 },
-  { id: "team", title: "Team Setup", icon: Users },
-  { id: "notifications", title: "Notifications", icon: Bell },
-  { id: "security", title: "Security", icon: Shield },
-  { id: "data", title: "Data Sources", icon: Database },
-  { id: "launch", title: "Launch", icon: Rocket },
+  { id: "general", title: "General", icon: Building2 },
+  { id: "framework", title: "Framework", icon: SlidersHorizontal },
+  { id: "data", title: "Data & Integrations", icon: Database },
+  { id: "features", title: "Features & Automations", icon: Puzzle },
+  { id: "roles", title: "Roles & Access", icon: Shield },
+  { id: "review", title: "Review & Activate", icon: Rocket },
 ]
 
-const industries = [
-  "Technology", "Healthcare", "Finance", "Legal", "Education",
-  "Manufacturing", "Retail", "Real Estate", "Energy", "Media",
-]
+const verticals = ["Compliance", "Resources", "Performance", "Operational"]
 
 interface SetupWizardProps {
   onComplete: () => void
+  initialVertical?: string
 }
 
-export function SetupWizard({ onComplete }: SetupWizardProps) {
+export function SetupWizard({ onComplete, initialVertical = "compliance" }: SetupWizardProps) {
   const [currentStep, setCurrentStep] = useState(0)
-  const [formData, setFormData] = useState({
+  const [vertical, setVertical] = useState(initialVertical)
+  const [formData, setFormData] = useState<Record<string, unknown>>({
     name: "",
-    industry: "",
-    size: "",
-    teamSize: "1-10",
-    emailNotifications: true,
-    slackWebhook: "",
-    mfaEnabled: true,
-    sessionTimeout: "60",
-    importData: false,
+    description: "",
+    vertical: initialVertical,
+    owner: "",
+    dataSources: [] as string[],
+    autoClassify: true,
+    autoRoute: true,
+    hitlEnabled: true,
+    teamRoles: "admin,editor,viewer",
     acceptTerms: false,
   })
 
-  const update = (key: keyof typeof formData, value: unknown) => {
+  const update = (key: string, value: unknown) => {
+    setFormData((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const updateFramework = (key: string, value: unknown) => {
     setFormData((prev) => ({ ...prev, [key]: value }))
   }
 
   const canProceed = () => {
     switch (currentStep) {
-      case 0: return formData.name.trim().length > 0 && formData.industry.length > 0
-      case 4: return true
-      case 5: return formData.acceptTerms
+      case 0: return String(formData.name).trim().length > 0
+      case 5: return formData.acceptTerms as boolean
       default: return true
     }
   }
@@ -66,6 +69,16 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   }
 
   const Step = steps[currentStep]
+
+  const frameworkPanel = () => {
+    switch (vertical) {
+      case "compliance": return <ComplianceFrameworkPanel data={formData} onChange={updateFramework} />
+      case "resources": return <ResourcesFrameworkPanel data={formData} onChange={updateFramework} />
+      case "performance": return <PerformanceFrameworkPanel data={formData} onChange={updateFramework} />
+      case "operational": return <OperationalFrameworkPanel data={formData} onChange={updateFramework} />
+      default: return null
+    }
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
@@ -101,113 +114,111 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               {currentStep === 0 && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="org-name">Organization Name</Label>
-                    <Input id="org-name" placeholder="Acme Inc." value={formData.name} onChange={(e) => update("name", e.target.value)} />
+                    <Label htmlFor="ws-name">Workspace Name</Label>
+                    <Input id="ws-name" placeholder="My Workspace" value={formData.name as string} onChange={(e) => update("name", e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Industry</Label>
-                    <Select value={formData.industry} onValueChange={(v) => update("industry", v)}>
-                      <SelectTrigger><SelectValue placeholder="Select industry" /></SelectTrigger>
+                    <Label htmlFor="ws-desc">Description</Label>
+                    <Input id="ws-desc" placeholder="What is this workspace for?" value={formData.description as string} onChange={(e) => update("description", e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Vertical</Label>
+                    <Select value={vertical} onValueChange={(v) => { setVertical(v); update("vertical", v) }}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {industries.map((ind) => <SelectItem key={ind} value={ind.toLowerCase()}>{ind}</SelectItem>)}
+                        {verticals.map((v) => <SelectItem key={v.toLowerCase()} value={v.toLowerCase()}>{v}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Company Size</Label>
-                    <Select value={formData.size} onValueChange={(v) => update("size", v)}>
-                      <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="startup">1-10 employees</SelectItem>
-                        <SelectItem value="small">11-50 employees</SelectItem>
-                        <SelectItem value="mid">51-200 employees</SelectItem>
-                        <SelectItem value="large">201-1000 employees</SelectItem>
-                        <SelectItem value="enterprise">1000+ employees</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label>Workspace Owner</Label>
+                    <Input placeholder="user@example.com" value={formData.owner as string} onChange={(e) => update("owner", e.target.value)} />
                   </div>
                 </>
               )}
 
-              {currentStep === 1 && (
-                <div className="space-y-2">
-                  <Label>Team Size</Label>
-                  <Select value={formData.teamSize} onValueChange={(v) => update("teamSize", v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1-10">1-10 members</SelectItem>
-                      <SelectItem value="11-50">11-50 members</SelectItem>
-                      <SelectItem value="51-200">51-200 members</SelectItem>
-                      <SelectItem value="200+">200+ members</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              {currentStep === 1 && frameworkPanel()}
 
               {currentStep === 2 && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label>Email Notifications</Label>
-                    <Switch checked={formData.emailNotifications} onCheckedChange={(v) => update("emailNotifications", v)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Slack Webhook URL (optional)</Label>
-                    <Input placeholder="https://hooks.slack.com/..." value={formData.slackWebhook} onChange={(e) => update("slackWebhook", e.target.value)} />
-                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">Connect external data sources to this workspace:</p>
+                  {["Gmail", "Google Drive", "Slack", "SharePoint", "Dropbox", "Custom API"].map((source) => (
+                    <div key={source} className="flex items-center justify-between">
+                      <Label>{source}</Label>
+                      <Switch
+                        checked={((formData.dataSources as string[]) ?? []).includes(source)}
+                        onCheckedChange={(v) => {
+                          const current = (formData.dataSources as string[]) ?? []
+                          update("dataSources", v ? [...current, source] : current.filter((s) => s !== source))
+                        }}
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
 
               {currentStep === 3 && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Label>Require Multi-Factor Auth</Label>
-                    <Switch checked={formData.mfaEnabled} onCheckedChange={(v) => update("mfaEnabled", v)} />
+                    <Label>Auto-classify documents</Label>
+                    <Switch checked={formData.autoClassify as boolean} onCheckedChange={(v) => update("autoClassify", v)} />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Session Timeout (minutes)</Label>
-                    <Select value={formData.sessionTimeout} onValueChange={(v) => update("sessionTimeout", v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
-                        <SelectItem value="60">1 hour</SelectItem>
-                        <SelectItem value="480">8 hours</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="flex items-center justify-between">
+                    <Label>Auto-route to workspace</Label>
+                    <Switch checked={formData.autoRoute as boolean} onCheckedChange={(v) => update("autoRoute", v)} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Human-in-the-loop review</Label>
+                    <Switch checked={formData.hitlEnabled as boolean} onCheckedChange={(v) => update("hitlEnabled", v)} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Auto-create tasks from classification</Label>
+                    <Switch checked={formData.autoCreateTasks as boolean} onCheckedChange={(v) => update("autoCreateTasks", v)} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Generate workflows from documents</Label>
+                    <Switch checked={formData.docToWorkflow as boolean} onCheckedChange={(v) => update("docToWorkflow", v)} />
                   </div>
                 </div>
               )}
 
               {currentStep === 4 && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label>Import existing data</Label>
-                    <Switch checked={formData.importData} onCheckedChange={(v) => update("importData", v)} />
+                  <div className="space-y-2">
+                    <Label>Roles (comma-separated)</Label>
+                    <Input value={formData.teamRoles as string} onChange={(e) => update("teamRoles", e.target.value)} />
+                    <p className="text-xs text-muted-foreground">Define roles for this workspace</p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    You can connect external data sources later from the Settings panel.
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <Label>Enforce MFA for sensitive actions</Label>
+                    <Switch checked={formData.mfaEnforced as boolean} onCheckedChange={(v) => update("mfaEnforced", v)} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Audit logging</Label>
+                    <Switch checked={true} disabled />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>IP whitelist enforcement</Label>
+                    <Switch checked={formData.ipWhitelist as boolean} onCheckedChange={(v) => update("ipWhitelist", v)} />
+                  </div>
                 </div>
               )}
 
               {currentStep === 5 && (
                 <div className="space-y-4 text-center">
                   <Rocket className="h-12 w-12 mx-auto text-primary" />
-                  <p className="text-lg font-medium">Ready to launch!</p>
-                  <p className="text-sm text-muted-foreground">
-                    Your workspace is configured. You can change any setting later.
-                  </p>
+                  <p className="text-lg font-medium">Ready to activate!</p>
+                  <div className="rounded-xl bg-secondary/30 p-4 text-left text-sm space-y-1">
+                    <p><strong>Workspace:</strong> {formData.name as string}</p>
+                    <p><strong>Vertical:</strong> {vertical}</p>
+                    <p><strong>Auto-classify:</strong> {formData.autoClassify ? "Yes" : "No"}</p>
+                    <p><strong>Auto-route:</strong> {formData.autoRoute ? "Yes" : "No"}</p>
+                    <p><strong>HITL:</strong> {formData.hitlEnabled ? "Yes" : "No"}</p>
+                  </div>
                   <div className="flex items-center justify-center gap-2 pt-2">
-                    <input
-                      type="checkbox"
-                      id="terms"
-                      checked={formData.acceptTerms}
-                      onChange={(e) => update("acceptTerms", e.target.checked)}
-                      className="rounded border-border"
-                    />
-                    <Label htmlFor="terms" className="text-sm">
-                      I agree to the Terms of Service and Privacy Policy
-                    </Label>
+                    <input type="checkbox" id="terms" checked={formData.acceptTerms as boolean}
+                      onChange={(e) => update("acceptTerms", e.target.checked)} className="rounded border-border" />
+                    <Label htmlFor="terms" className="text-sm">I agree to the Terms of Service</Label>
                   </div>
                 </div>
               )}
@@ -215,11 +226,9 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
           </AnimatePresence>
 
           <div className="flex justify-between mt-8">
-            <Button variant="outline" onClick={prev} disabled={currentStep === 0}>
-              Back
-            </Button>
+            <Button variant="outline" onClick={prev} disabled={currentStep === 0}>Back</Button>
             <Button onClick={next} disabled={!canProceed()}>
-              {currentStep === steps.length - 1 ? "Get Started" : "Continue"}
+              {currentStep === steps.length - 1 ? "Activate" : "Continue"}
             </Button>
           </div>
         </CardContent>
