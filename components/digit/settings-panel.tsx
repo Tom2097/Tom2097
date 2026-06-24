@@ -157,6 +157,13 @@ export function SettingsPanel() {
     router.push("/auth/login")
   }
 
+  const [workspaceColors, setWorkspaceColors] = useState({
+    compliance: "teal",
+    resources: "blue",
+    performance: "amber",
+    operational: "indigo",
+  })
+
   const updateSetting = <K extends keyof typeof settings>(key: K, value: typeof settings[K]) => {
     setSettings(prev => {
       const next = { ...prev, [key]: value }
@@ -175,6 +182,25 @@ export function SettingsPanel() {
         }
         persist()
       }
+      return next
+    })
+  }
+
+  const updateWorkspaceColor = (workspace: keyof typeof workspaceColors, color: string) => {
+    setWorkspaceColors(prev => {
+      const next = { ...prev, [workspace]: color }
+      const persist = async () => {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await supabase.from("workspace_config").upsert({
+            organization_id: user.id,
+            workspace,
+            accent_color: color,
+          }, { onConflict: "organization_id,workspace" })
+        }
+      }
+      persist()
       return next
     })
   }
@@ -433,7 +459,7 @@ export function SettingsPanel() {
                     </div>
 
                     <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Accent Color</h3>
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Global Accent Color</h3>
                       <div className="flex gap-2">
                         {["cyan", "blue", "purple", "pink", "orange", "green"].map(color => (
                           <button
@@ -452,6 +478,31 @@ export function SettingsPanel() {
                           />
                         ))}
                       </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Per-Workspace Colors</h3>
+                      {(Object.entries(workspaceColors) as [string, string][]).map(([workspace, color]) => (
+                        <div key={workspace} className="flex items-center justify-between">
+                          <span className="text-sm capitalize">{workspace}</span>
+                          <div className="flex gap-1">
+                            {["teal", "blue", "amber", "indigo", "purple", "emerald", "rose", "cyan"].map((c) => (
+                              <button
+                                key={c}
+                                onClick={() => updateWorkspaceColor(workspace as keyof typeof workspaceColors, c)}
+                                className={cn(
+                                  "w-5 h-5 rounded-full border transition-transform",
+                                  color === c ? "scale-125 border-foreground" : "border-transparent",
+                                  c === "teal" && "bg-teal-500", c === "blue" && "bg-blue-500",
+                                  c === "amber" && "bg-amber-500", c === "indigo" && "bg-indigo-500",
+                                  c === "purple" && "bg-purple-500", c === "emerald" && "bg-emerald-500",
+                                  c === "rose" && "bg-rose-500", c === "cyan" && "bg-cyan-500",
+                                )}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
                     <div className="space-y-4">

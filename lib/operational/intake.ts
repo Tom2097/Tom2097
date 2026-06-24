@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { classifyText } from "@/lib/analytics/nlp"
 import { dispatchDocumentEvent } from "@/lib/documents/events"
+import { runOcr } from "@/lib/ocr/engine"
 
 type IntakeSource = "email" | "voice" | "photo" | "audio" | "url" | "bulk" | "manual"
 
@@ -66,7 +67,12 @@ export async function ingestPhotoOcr(
     storage_path: storagePath, mime_type: "image/png",
     metadata: { source: "photo_scan", needs_ocr: true },
   }).select("id").single()
-  if (doc) return doc.id as string
+  if (doc) {
+    const docId = doc.id as string
+    // Fire-and-forget OCR processing
+    runOcr(docId, organizationId).catch(() => {})
+    return docId
+  }
   return null
 }
 
