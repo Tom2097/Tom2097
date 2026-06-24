@@ -256,7 +256,7 @@ export async function getPaymentMethods() {
   })
 
   return {
-    paymentMethods: paymentMethods.data.map((pm) => ({
+    paymentMethods: paymentMethods.data.map((pm: any) => ({
       id: pm.id,
       brand: pm.card?.brand,
       last4: pm.card?.last4,

@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { withRateLimit, DEFAULT_RATE_LIMITS } from '@/lib/middleware/rate-limit'
 
 /**
  * Health check endpoint
@@ -29,7 +28,7 @@ async function checkDatabase(): Promise<{ healthy: boolean; latency?: number }> 
   try {
     // Import Supabase client
     const { createClient } = await import('@/lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const start = Date.now()
     const { data, error } = await supabase.rpc('version')
@@ -80,7 +79,7 @@ async function checkStorage(): Promise<{ healthy: boolean; latency?: number }> {
         endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
         credentials: {
           accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
-          secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+          secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY ?? '',
         },
       })
       
@@ -118,7 +117,7 @@ async function checkStorage(): Promise<{ healthy: boolean; latency?: number }> {
  * Get application version
  */
 function getVersion(): string {
-  return process.env.nxt?.APP_VERSION || process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'
+  return (process.env as Record<string, string>)['NEXT_PUBLIC_APP_VERSION'] || '1.0.0'
 }
 
 /**
@@ -181,45 +180,36 @@ async function generateHealthStatus(): Promise<HealthStatus> {
  * GET /api/health
  * Health check endpoint for monitoring and load balancers
  */
-export const GET = withRateLimit(
-  async () => {
-    try {
-      const health = await generateHealthStatus()
-      
-      // Return appropriate status code
-      const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 200 : 503
-      
-      return NextResponse.json(health, {
-        status: statusCode,
-        headers: {
-          'Cache-Control': 'no-store',
-          'Content-Type': 'application/json',
-        },
-      })
-    } catch (error) {
-      console.error('[Health] Error:', error)
-      return NextResponse.json(
-        {
-          status: 'unhealthy' as const,
-          timestamp: new Date().toISOString(),
-          uptime: process.uptime(),
-          version: getVersion(),
-          services: {},
-          checks: { database: false, redis: false, storage: false },
-          error: error instanceof Error ? error.message : 'Unknown error',
-        },
-        { status: 500 }
-      )
-    }
-  },
-  // Health checks should not be rate limited in production
-  // But we add a high limit to prevent abuse
-  {
-    ...DEFAULT_RATE_LIMITS.global,
-    maxRequests: 1000,
-    windowMs: 60,
+export async function GET() {
+  try {
+    const health = await generateHealthStatus()
+    
+    // Return appropriate status code
+    const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 200 : 503
+    
+    return NextResponse.json(health, {
+      status: statusCode,
+      headers: {
+        'Cache-Control': 'no-store',
+        'Content-Type': 'application/json',
+      },
+    })
+  } catch (error) {
+    console.error('[Health] Error:', error)
+    return NextResponse.json(
+      {
+        status: 'unhealthy' as const,
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        version: getVersion(),
+        services: {},
+        checks: { database: false, redis: false, storage: false },
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    )
   }
-)
+}
 
 /**
  * GET /api/health/simple

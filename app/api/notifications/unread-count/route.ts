@@ -9,7 +9,7 @@ export async function GET() {
   }
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from("notifications")
       .select("id", { count: "exact", head: true })
