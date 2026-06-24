@@ -58,7 +58,7 @@ export interface FileAnalysisOptions {
   /** Include raw extracted text */
   includeRawText?: boolean
   /** Maximum tokens for AI analysis */
-  maxTokens?: number
+  maxOutputTokens?: number
   /** Temperature for AI creativity (0-1) */
   temperature?: number
 }
@@ -131,7 +131,7 @@ const DEFAULT_ANALYSIS_OPTIONS: Required<Omit<FileAnalysisOptions, "analysisType
   extractFields: [],
   outputFormat: "json",
   includeRawText: false,
-  maxTokens: 4000,
+  maxOutputTokens: 4000,
   temperature: 0.3,
 }
 
@@ -327,7 +327,7 @@ export async function analyzeFile(
     system: systemPrompt,
     prompt: userPrompt,
     temperature: options.temperature,
-    maxTokens: options.maxTokens,
+    maxOutputTokens: options.maxOutputTokens,
   })
   
   const processingTime = Date.now() - startTime
@@ -487,7 +487,7 @@ export async function* streamFileAnalysis(
       system: systemPrompt,
       prompt: userPrompt,
       temperature: options.temperature,
-      maxTokens: Math.min(options.maxTokens, 2000),
+      maxOutputTokens: Math.min(options.maxOutputTokens, 2000),
     })
     
     let chunkResult = ""

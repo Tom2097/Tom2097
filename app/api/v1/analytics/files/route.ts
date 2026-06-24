@@ -92,7 +92,7 @@ const postHandler = withAuth(
         extractFields,
         outputFormat,
         includeRawText,
-        maxTokens: 4000,
+        maxOutputTokens: 4000,
         temperature: 0.3,
       }
       

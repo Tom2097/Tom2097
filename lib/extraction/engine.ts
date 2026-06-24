@@ -72,7 +72,7 @@ If a field cannot be found, omit it from the array.`
     system: systemPrompt,
     prompt: `Document text:\n"""\n${text.slice(0, 15000)}\n"""\n\nExtract fields for schema "${schema.name}":`,
     temperature: 0.1,
-    maxTokens: 2000,
+    maxOutputTokens: 2000,
   })
 
   try {

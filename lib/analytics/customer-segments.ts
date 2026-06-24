@@ -795,7 +795,7 @@ Return ONLY a JSON object with:
         system: AI_SYSTEM_PROMPT,
         prompt: prompt,
         temperature: 0.3,
-        maxTokens: 1000,
+        maxOutputTokens: 1000,
       })
       
       // Parse response

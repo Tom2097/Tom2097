@@ -93,7 +93,7 @@ export interface NLPAnalysisOptions {
   /** Temperature (0-1) */
   temperature?: number
   /** Maximum tokens */
-  maxTokens?: number
+  maxOutputTokens?: number
 }
 
 // Sentiment analysis result
@@ -235,7 +235,7 @@ const DEFAULT_OPTIONS: Required<Omit<NLPAnalysisOptions, "analysisType">> = {
   summaryLength: "medium",
   model: FAST_MODEL,
   temperature: 0.2,
-  maxTokens: 2000,
+  maxOutputTokens: 2000,
 }
 
 /**
@@ -274,7 +274,7 @@ Analyze both the overall sentiment and the sentiment of individual sentences.`
     system: systemPrompt,
     prompt: `Text to analyze:\n\n"""\n${text}\n"""\n\nProvide sentiment analysis:`,
     temperature: opts.temperature,
-    maxTokens: opts.maxTokens,
+    maxOutputTokens: opts.maxOutputTokens,
   })
 
   try {
@@ -346,7 +346,7 @@ Be thorough and accurate. Include character positions (start and end) for each e
     system: systemPrompt,
     prompt: `Text to analyze:\n\n"""\n${text}\n"""\n\nExtract entities:`,
     temperature: opts.temperature,
-    maxTokens: opts.maxTokens,
+    maxOutputTokens: opts.maxOutputTokens,
   })
 
   try {
@@ -409,7 +409,7 @@ Provide confidence scores for each category. The primary category should have th
     system: systemPrompt,
     prompt: `Text to classify:\n\n"""\n${text}\n"""\n\nClassify this text:`,
     temperature: opts.temperature,
-    maxTokens: opts.maxTokens,
+    maxOutputTokens: opts.maxOutputTokens,
   })
 
   try {
@@ -471,7 +471,7 @@ Extract 5-10 keywords that best represent the main topics. Keywords should be 1-
     system: systemPrompt,
     prompt: `Text to analyze:\n\n"""\n${text}\n"""\n\nExtract keywords:`,
     temperature: opts.temperature,
-    maxTokens: opts.maxTokens,
+    maxOutputTokens: opts.maxOutputTokens,
   })
 
   try {
@@ -531,7 +531,7 @@ Create a summary that captures the main points and essence of the text.`
     system: systemPrompt,
     prompt: `Text to summarize:\n\n"""\n${text}\n"""\n\nGenerate summary:`,
     temperature: opts.temperature,
-    maxTokens: opts.maxTokens,
+    maxOutputTokens: opts.maxOutputTokens,
   })
 
   try {
@@ -595,7 +595,7 @@ Consider intents like: question, command, statement, request, complaint, complim
     system: systemPrompt,
     prompt: `Text to analyze:\n\n"""\n${text}\n"""\n\nDetect intent:`,
     temperature: opts.temperature,
-    maxTokens: opts.maxTokens,
+    maxOutputTokens: opts.maxOutputTokens,
   })
 
   try {
@@ -659,7 +659,7 @@ Only flag categories with scores > 0.5.`
     system: systemPrompt,
     prompt: `Text to analyze:\n\n"""\n${text}\n"""\n\nDetect toxicity:`,
     temperature: opts.temperature,
-    maxTokens: opts.maxTokens,
+    maxOutputTokens: opts.maxOutputTokens,
   })
 
   try {
@@ -731,7 +731,7 @@ If you cannot determine the language with high confidence, use "unknown" as both
     system: systemPrompt,
     prompt: `Text to analyze:\n\n"""\n${text}\n"""\n\nDetect language:`,
     temperature: opts.temperature,
-    maxTokens: 500,
+    maxOutputTokens: 500,
   })
 
   try {

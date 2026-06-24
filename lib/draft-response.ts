@@ -47,7 +47,7 @@ Return ONLY a JSON object with this structure:
     system: systemPrompt,
     prompt: `Content to respond to:\n"""\n${request.content}\n"""\nTone: ${request.tone}${contextBlock}\n\nGenerate draft response:`,
     temperature: 0.4,
-    maxTokens: 1500,
+    maxOutputTokens: 1500,
   })
 
   try {

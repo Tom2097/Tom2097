@@ -506,7 +506,7 @@ Data for "${metric}":`
       system: AI_SYSTEM_PROMPT,
       prompt: prompt,
       temperature: 0.2,
-      maxTokens: 2000,
+      maxOutputTokens: 2000,
     })
 
     // Parse AI response

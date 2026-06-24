@@ -386,7 +386,7 @@ async function generateReportSection(
     system: systemPrompt,
     prompt: `Write the "${sectionType}" section of the report:\n\n${sectionPrompt}`,
     temperature: 0.3,
-    maxTokens: options.depth === "comprehensive" ? 2000 : 1000,
+    maxOutputTokens: options.depth === "comprehensive" ? 2000 : 1000,
   })
 
   const section: ReportSection = {
@@ -808,7 +808,7 @@ async function generateReportSummary(
       system: systemPrompt,
       prompt: summaryPrompt,
       temperature: 0.2,
-      maxTokens: 500,
+      maxOutputTokens: 500,
     })
 
     return result.text
@@ -1052,7 +1052,7 @@ export async function* streamReport(
     system: buildReportSystemPrompt(opts),
     prompt: `Write a brief executive summary for a ${type} report covering period ${period.start} to ${period.end}. Key metrics: ${summary.total_events.toLocaleString()} events, ${summary.unique_users.toLocaleString()} users, $${summary.total_value.toLocaleString()} value. Top insights: ${insights.map(i => i.title).join(", ")}.`,
     temperature: 0.2,
-    maxTokens: 500,
+    maxOutputTokens: 500,
   })
 
   for await (const chunk of summaryStream.textStream) {
@@ -1112,7 +1112,7 @@ export async function generateCustomReport(
     system: systemPrompt,
     prompt: customPrompt,
     temperature: 0.3,
-    maxTokens: 4000,
+    maxOutputTokens: 4000,
   })
 
   // Create report structure

@@ -35,7 +35,7 @@ import type {
  *     "summaryLength"?: "short" | "medium" | "long",
  *     "model"?: string,
  *     "temperature"?: number,
- *     "maxTokens"?: number
+ *     "maxOutputTokens"?: number
  *   }
  * }
  * 

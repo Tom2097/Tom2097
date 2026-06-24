@@ -113,7 +113,7 @@ export async function parseNaturalLanguageQuery(
     system: NLQ_SYSTEM_PROMPT,
     prompt: userPrompt,
     temperature: 0.2, // Low temperature for more deterministic output
-    maxTokens: 1000,
+    maxOutputTokens: 1000,
   })
 
   // Parse the LLM response

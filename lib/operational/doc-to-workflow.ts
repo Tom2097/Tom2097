@@ -28,7 +28,7 @@ Return ONLY a JSON object:
   const result = await generateText({
     model: DEFAULT_CHAT_MODEL, system: systemPrompt,
     prompt: `Document (${docName}):\n"""\n${content.slice(0, 10000)}\n"""\n\nGenerate workflow:`,
-    temperature: 0.2, maxTokens: 2000,
+    temperature: 0.2, maxOutputTokens: 2000,
   })
 
   try {

@@ -30,7 +30,11 @@ const statusColors: Record<string, string> = {
   actioned: "text-muted-foreground bg-muted",
 }
 
-export function DocumentFeed() {
+interface DocumentFeedProps {
+  onSelectDoc?: (doc: { id: string; name: string; content?: string; extracted_entities?: Record<string, unknown> }) => void
+}
+
+export function DocumentFeed({ onSelectDoc }: DocumentFeedProps) {
   const [items, setItems] = useState<FeedItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -59,6 +63,7 @@ export function DocumentFeed() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.03 }}
             className="flex items-center gap-3 p-3 hover:bg-muted/30 transition-colors cursor-pointer"
+            onClick={() => onSelectDoc?.({ id: item.id, name: item.name })}
           >
             <div className="text-muted-foreground">{sourceIcons[item.type] ?? <FileText className="h-4 w-4" />}</div>
             <div className="flex-1 min-w-0">

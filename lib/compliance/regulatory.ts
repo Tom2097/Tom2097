@@ -20,7 +20,7 @@ Return ONLY a JSON array:
   const result = await generateText({
     model: DEFAULT_CHAT_MODEL, system: systemPrompt,
     prompt: `Text:\n"""\n${text.slice(0, 8000)}\n"""\n\nClassify regulatory relevance:`,
-    temperature: 0.1, maxTokens: 1500,
+    temperature: 0.1, maxOutputTokens: 1500,
   })
 
   try {

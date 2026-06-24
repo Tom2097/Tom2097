@@ -416,7 +416,7 @@ Be specific, data-driven, and concise. Focus on actionable insights.`
       system: AI_SYSTEM_PROMPT,
       prompt: dataDescription,
       temperature: 0.3,
-      maxTokens: 1500,
+      maxOutputTokens: 1500,
     })
     
     // Parse AI response

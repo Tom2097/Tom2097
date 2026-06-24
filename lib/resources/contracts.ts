@@ -18,7 +18,7 @@ Return ONLY a JSON array:
   const result = await generateText({
     model: DEFAULT_CHAT_MODEL, system: systemPrompt,
     prompt: `Contract:\n"""\n${text.slice(0, 15000)}\n"""\n\nExtract clauses:`,
-    temperature: 0.1, maxTokens: 2000,
+    temperature: 0.1, maxOutputTokens: 2000,
   })
 
   try { const m = result.text.match(/\[[\s\S]*\]/); if (m) return JSON.parse(m[0]) } catch {}

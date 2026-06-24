@@ -56,8 +56,8 @@ export async function runOcr(documentId: string, organizationId: string): Promis
       }
     }
 
-    // Fallback: basic placeholder
-    return { text: "[OCR unavailable - no API key configured]", confidence: 0, blocks: [], language: "en" }
+    // Fallback: no OCR available
+    return null
   } catch (err) {
     console.log("[v0] OCR failed:", err)
     return null
