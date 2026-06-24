@@ -1,5 +1,6 @@
 // DigiT Enterprise Platform - API Client for External Integrations
 
+import { createHmac, timingSafeEqual } from "node:crypto"
 import type { APIClientConfig, APIResponse, EnterpriseDataSource } from './types'
 
 /**
@@ -180,11 +181,12 @@ export function validateWebhookSignature(
   signature: string,
   secret: string
 ): boolean {
-  // Implement HMAC signature validation for production
-  // This is a placeholder for the actual implementation
   if (!signature || !secret) return false
-  
-  // In production, use crypto.subtle or a library like crypto
-  // to validate HMAC-SHA256 signatures
-  return true
+
+  const expected = createHmac("sha256", secret).update(payload).digest("hex")
+  const expectedBuf = Buffer.from(expected, "hex")
+  const sigBuf = Buffer.from(signature, "hex")
+
+  if (expectedBuf.length !== sigBuf.length) return false
+  return timingSafeEqual(expectedBuf, sigBuf)
 }

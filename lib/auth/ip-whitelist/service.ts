@@ -2,6 +2,7 @@
  * IP Whitelisting Service
  * Manages IP address whitelists for organizations and users
  */
+import { createServiceClient } from "@/lib/supabase/service"
 import type { NextRequest } from 'next/server'
 import type {
   IPAddress,
@@ -13,6 +14,8 @@ import type {
   UpdateWhitelistEntryOptions,
 } from './types'
 import { IPWhitelistError, IPWhitelistErrorCode, IPWhitelistDenyReason, IPv4_PATTERN, IPv6_PATTERN } from './types'
+
+const TABLE = "ip_whitelist_entries"
 
 /**
  * IP to number for range comparisons (IPv4 only for now)
@@ -31,8 +34,6 @@ function ipToNumber(ip: string): number {
  */
 function isInRange(ip: string, range: IPRange): boolean {
   if (range.type === 'ipv6') {
-    // IPv6 range checking is more complex
-    // For now, just check if IP starts with range start
     return ip.startsWith(range.start)
   }
   
@@ -43,37 +44,50 @@ function isInRange(ip: string, range: IPRange): boolean {
   return ipNum >= startNum && ipNum <= endNum
 }
 
+function rowToEntry(row: Record<string, unknown>): IPWhitelistEntry {
+  return {
+    id: row.id as string,
+    organizationId: row.organization_id as string | undefined,
+    userId: row.user_id as string | undefined,
+    name: row.name as string,
+    description: row.description as string | undefined,
+    ipAddresses: (row.ip_addresses as string[]) ?? [],
+    ipRanges: (row.ip_ranges as IPRange[]) ?? [],
+    isActive: row.is_active as boolean,
+    createdAt: new Date(row.created_at as string),
+    updatedAt: new Date(row.updated_at as string),
+    createdBy: (row.created_by as string) ?? "",
+  }
+}
+
 /**
- * Simple in-memory IP whitelist store
- * In production, replace with database-backed store
+ * Database-backed IP whitelist store using Supabase.
  */
-class MemoryIPWhitelistStore {
-  private entries: Map<string, IPWhitelistEntry> = new Map()
+class DbIPWhitelistStore {
+  private db() { return createServiceClient() }
 
   async create(options: CreateWhitelistEntryOptions): Promise<IPWhitelistEntry> {
-    const entry: IPWhitelistEntry = {
-      id: this.generateId(),
-      organizationId: options.organizationId,
-      userId: options.userId,
-      name: options.name,
-      description: options.description,
-      ipAddresses: options.ipAddresses,
-      ipRanges: options.ipRanges,
-      isActive: options.isActive !== false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdBy: options.createdBy,
-    }
-
-    // Validate entries
-    this.validateEntry(entry)
-
-    this.entries.set(entry.id, entry)
-    return entry
+    const { data, error } = await this.db()
+      .from(TABLE)
+      .insert({
+        organization_id: options.organizationId,
+        user_id: options.userId ?? null,
+        name: options.name,
+        description: options.description ?? null,
+        ip_addresses: options.ipAddresses,
+        ip_ranges: options.ipRanges ?? [],
+        is_active: options.isActive !== false,
+        created_by: options.createdBy ?? null,
+      })
+      .select()
+      .single()
+    if (error) throw new IPWhitelistError(error.message, IPWhitelistErrorCode.INVALID_IP_ADDRESS)
+    return rowToEntry(data)
   }
 
   async findById(id: string): Promise<IPWhitelistEntry | null> {
-    return this.entries.get(id) || null
+    const { data } = await this.db().from(TABLE).select("*").eq("id", id).maybeSingle()
+    return data ? rowToEntry(data) : null
   }
 
   async findMany(options: {
@@ -81,113 +95,53 @@ class MemoryIPWhitelistStore {
     userId?: string
     isActive?: boolean
   }): Promise<IPWhitelistEntry[]> {
-    const results: IPWhitelistEntry[] = []
-    
-    for (const entry of this.entries.values()) {
-      if (options.organizationId && entry.organizationId !== options.organizationId) {
-        continue
-      }
-      if (options.userId && entry.userId !== options.userId) {
-        continue
-      }
-      if (options.isActive !== undefined && entry.isActive !== options.isActive) {
-        continue
-      }
-      results.push(entry)
-    }
-    
-    return results
+    let query = this.db().from(TABLE).select("*")
+    if (options.organizationId) query = query.eq("organization_id", options.organizationId)
+    if (options.userId) query = query.eq("user_id", options.userId)
+    if (options.isActive !== undefined) query = query.eq("is_active", options.isActive)
+    const { data } = await query
+    return (data ?? []).map(rowToEntry)
   }
 
   async update(options: UpdateWhitelistEntryOptions): Promise<IPWhitelistEntry | null> {
-    const existing = await this.findById(options.id)
-    if (!existing) {
-      return null
-    }
+    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
+    if (options.name !== undefined) patch.name = options.name
+    if (options.description !== undefined) patch.description = options.description
+    if (options.ipAddresses !== undefined) patch.ip_addresses = options.ipAddresses
+    if (options.ipRanges !== undefined) patch.ip_ranges = options.ipRanges
+    if (options.isActive !== undefined) patch.is_active = options.isActive
 
-    const updated: IPWhitelistEntry = {
-      ...existing,
-      ...options,
-      id: options.id,
-      updatedAt: new Date(),
-    }
-
-    this.validateEntry(updated)
-    this.entries.set(options.id, updated)
-    return updated
+    const { data, error } = await this.db()
+      .from(TABLE)
+      .update(patch)
+      .eq("id", options.id)
+      .select()
+      .maybeSingle()
+    if (error) throw new IPWhitelistError(error.message, IPWhitelistErrorCode.INVALID_IP_ADDRESS)
+    return data ? rowToEntry(data) : null
   }
 
   async delete(id: string): Promise<boolean> {
-    return this.entries.delete(id)
+    const { error } = await this.db().from(TABLE).delete().eq("id", id)
+    return !error
   }
 
   async getStats(organizationId?: string): Promise<IPWhitelistStats> {
+    let query = this.db().from(TABLE).select("organization_id, is_active", { count: "exact" })
+    if (organizationId) query = query.eq("organization_id", organizationId)
+    const { data, count } = await query
+    const rows = (data ?? []) as Array<{ organization_id: string; is_active: boolean }>
     const byOrganization: Record<string, number> = {}
-    const byUser: Record<string, number> = {}
-    let total = 0
     let active = 0
-
-    for (const entry of this.entries.values()) {
-      if (organizationId && entry.organizationId !== organizationId) {
-        continue
-      }
-
-      total++
-      if (entry.isActive) {
-        active++
-      }
-
-      if (entry.organizationId) {
-        byOrganization[entry.organizationId] = (byOrganization[entry.organizationId] || 0) + 1
-      }
-      if (entry.userId) {
-        byUser[entry.userId] = (byUser[entry.userId] || 0) + 1
-      }
+    for (const r of rows) {
+      byOrganization[r.organization_id] = (byOrganization[r.organization_id] || 0) + 1
+      if (r.is_active) active++
     }
-
     return {
-      totalEntries: total,
+      totalEntries: count ?? rows.length,
       activeEntries: active,
       byOrganization,
-      byUser,
-    }
-  }
-
-  private generateId(): string {
-    return Math.random().toString(36).substring(2) + Date.now().toString(36)
-  }
-
-  private validateEntry(entry: IPWhitelistEntry): void {
-    // Validate IP addresses
-    for (const ip of entry.ipAddresses) {
-      if (!IPv4_PATTERN.test(ip) && !IPv6_PATTERN.test(ip)) {
-        throw new IPWhitelistError(
-          `Invalid IP address: ${ip}`,
-          IPWhitelistErrorCode.INVALID_IP_ADDRESS
-        )
-      }
-    }
-
-    // Validate IP ranges
-    if (entry.ipRanges) {
-      for (const range of entry.ipRanges) {
-        if (!IPv4_PATTERN.test(range.start) || !IPv4_PATTERN.test(range.end)) {
-          throw new IPWhitelistError(
-            `Invalid IP range: ${range.start} to ${range.end}`,
-            IPWhitelistErrorCode.INVALID_IP_RANGE
-          )
-        }
-
-        const startNum = ipToNumber(range.start)
-        const endNum = ipToNumber(range.end)
-
-        if (startNum > endNum) {
-          throw new IPWhitelistError(
-            `Invalid IP range: start > end`,
-            IPWhitelistErrorCode.INVALID_IP_RANGE
-          )
-        }
-      }
+      byUser: {},
     }
   }
 }
@@ -196,10 +150,10 @@ class MemoryIPWhitelistStore {
  * IP Whitelisting Service
  */
 export class IPWhitelistService {
-  private store: MemoryIPWhitelistStore
+  private store: DbIPWhitelistStore
 
-  constructor(store?: MemoryIPWhitelistStore) {
-    this.store = store || new MemoryIPWhitelistStore()
+  constructor(store?: DbIPWhitelistStore) {
+    this.store = store || new DbIPWhitelistStore()
   }
 
   /**
@@ -222,7 +176,7 @@ export class IPWhitelistService {
       return cfConnectingIP
     }
 
-    return request.ip || '0.0.0.0'
+    return '0.0.0.0'
   }
 
   /**

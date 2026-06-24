@@ -164,3 +164,48 @@ export async function deleteReport(organizationId: string, id: string): Promise<
   }
   return true
 }
+
+/** Alias for listReports — reuses the same query logic. */
+export async function getReports(
+  organizationId: string,
+  limit = 50,
+  offset = 0,
+): Promise<{ reports: AnalyticsReport[]; total: number }> {
+  const db = createServiceClient()
+  const { data, error, count } = await db
+    .from("analytics_reports")
+    .select("*", { count: "exact" })
+    .eq("organization_id", organizationId)
+    .order("updated_at", { ascending: false })
+    .range(offset, offset + limit - 1)
+  if (error) {
+    console.log("[v0] getReports failed:", error.message)
+    return { reports: [], total: 0 }
+  }
+  return { reports: (data ?? []).map(rowToReport), total: count ?? 0 }
+}
+
+/** Execute a saved report's config against the analytics engine. */
+export async function runSavedReport(
+  organizationId: string,
+  reportId: string,
+): Promise<unknown> {
+  const report = await getReport(organizationId, reportId)
+  if (!report) throw new Error("report not found")
+  const { runQuery } = await import("./engine")
+  const cfg = report.config
+  const now = new Date()
+  const end = now.toISOString()
+  const start = new Date(now.getTime() - (cfg.range_days ?? 30) * 86400000).toISOString()
+  return runQuery(organizationId, {
+    type: cfg.type,
+    event_name: cfg.event_name,
+    event_category: cfg.event_category,
+    aggregate: cfg.aggregate,
+    granularity: cfg.granularity,
+    dimension: cfg.dimension,
+    limit: cfg.limit,
+    start,
+    end,
+  })
+}

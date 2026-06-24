@@ -237,3 +237,32 @@ export async function getUserTenants(userId: string) {
     return []
   }
 }
+
+export async function updateTenant(
+  organizationId: string,
+  updates: { name?: string; logo_url?: string },
+) {
+  try {
+    const supabase = await createClient()
+    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
+    if (updates.name) patch.name = updates.name.trim()
+    if (updates.logo_url !== undefined) patch.logo_url = updates.logo_url
+
+    const { data, error } = await supabase
+      .from("organizations")
+      .update(patch)
+      .eq("id", organizationId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error("[v0] Error updating tenant:", error)
+      return null
+    }
+
+    return data
+  } catch (error) {
+    console.error("[v0] Error in updateTenant:", error)
+    return null
+  }
+}

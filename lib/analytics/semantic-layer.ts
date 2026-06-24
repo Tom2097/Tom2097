@@ -88,7 +88,12 @@ export async function createDimension(
   return data as DimensionDefinition
 }
 
-export function buildSemanticSql(query: SemanticQuery, metrics: MetricDefinition[], dimensions: DimensionDefinition[]): string {
+export function buildSemanticSql(
+  query: SemanticQuery,
+  metrics: MetricDefinition[],
+  dimensions: DimensionDefinition[],
+  organizationId?: string,
+): string {
   const metricExprs = query.metrics.map((m) => {
     const def = metrics.find((d) => d.name === m)
     if (!def) return `0 AS ${m}`
@@ -110,5 +115,20 @@ export function buildSemanticSql(query: SemanticQuery, metrics: MetricDefinition
   const selectExprs = [...dimExprs, ...metricExprs]
   const groupBy = dimExprs.length > 0 ? `GROUP BY ${dimExprs.join(", ")}` : ""
 
-  return `SELECT ${selectExprs.join(", ")} FROM analytics_events ${groupBy} LIMIT ${query.limit ?? 100} OFFSET ${query.offset ?? 0}`
+  const whereClauses: string[] = []
+  if (organizationId) whereClauses.push(`organization_id = '${organizationId}'`)
+
+  if (query.filters) {
+    for (const f of query.filters) {
+      const val = typeof f.value === "string" ? `'${f.value}'` : String(f.value)
+      whereClauses.push(`${f.dimension} ${f.operator} ${val}`)
+    }
+  }
+
+  if (query.start) whereClauses.push(`occurred_at >= '${query.start}'`)
+  if (query.end) whereClauses.push(`occurred_at < '${query.end}'`)
+
+  const where = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : ""
+
+  return `SELECT ${selectExprs.join(", ")} FROM analytics_events ${where} ${groupBy} LIMIT ${query.limit ?? 100} OFFSET ${query.offset ?? 0}`
 }

@@ -4,7 +4,7 @@ import {
   TenantContextMiddleware,
 } from "@/lib/multitenant/context"
 import { checkTenantRateLimit, addRateLimitHeaders } from "@/lib/multitenant/rate-limit"
-import { getTenantByOrganizationId } from "@/lib/multitenant/database"
+import { getTenantByOrganizationId, updateTenant } from "@/lib/multitenant/database"
 
 /**
  * GET /api/v1/tenants/[tenantId]/info
@@ -116,8 +116,17 @@ async function updateTenantInfo(
       )
     }
 
-    // TODO: Update organization in database using Supabase service client
-    // This is left as placeholder - actual update would happen here
+    const updated = await updateTenant(tenantContext.organizationId, {
+      name,
+      logo_url: logoUrl,
+    })
+
+    if (!updated) {
+      return NextResponse.json(
+        { error: "Failed to update organization" },
+        { status: 500 }
+      )
+    }
 
     const response = NextResponse.json(
       {
@@ -125,8 +134,8 @@ async function updateTenantInfo(
         message: "Organization updated successfully",
         data: {
           tenantId: tenantContext.organizationId,
-          name,
-          logoUrl,
+          name: updated.name,
+          logoUrl: (updated as any).logo_url,
         },
       },
       { status: 200 }
