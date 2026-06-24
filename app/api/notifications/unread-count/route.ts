@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 import { extractTenantContext } from "@/lib/multitenant/context"
 
 export async function GET() {
@@ -9,7 +9,7 @@ export async function GET() {
   }
 
   try {
-    const supabase = createServerClient()
+    const supabase = createClient()
     const { data, error } = await supabase
       .from("notifications")
       .select("id", { count: "exact", head: true })
