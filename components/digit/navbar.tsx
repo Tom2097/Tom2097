@@ -84,6 +84,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchDropdown, setShowSearchDropdown] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [unreadCount, setUnreadCount] = useState(0)
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
@@ -107,19 +108,24 @@ export function Navbar({ onOpenAI }: NavbarProps) {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      setUser(currentUser)
       
-      if (user) {
+      if (currentUser) {
         const { data } = await supabase
           .from('profiles')
           .select('full_name, email, role')
-          .eq('id', user.id)
+          .eq('id', currentUser.id)
           .single()
         
         if (data) {
           setProfile(data)
         }
+
+        fetch('/api/notifications/unread-count')
+          .then(res => res.json())
+          .then(data => setUnreadCount(data.count ?? 0))
+          .catch(() => setUnreadCount(0))
       }
       setAuthLoading(false)
     }
@@ -200,7 +206,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
               setShowSearchDropdown(e.target.value.length > 0)
               setSelectedIndex(0)
             }}
-            onFocus={() => setShowSearchDropdown(searchQuery.length > 0 || true)}
+            onFocus={() => setShowSearchDropdown(true)}
             onKeyDown={handleKeyDown}
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -343,9 +349,11 @@ export function Navbar({ onOpenAI }: NavbarProps) {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                3
-              </span>
+              {unreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
               <span className="sr-only">Notifications</span>
             </Button>
           </DropdownMenuTrigger>

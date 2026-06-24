@@ -1,9 +1,8 @@
 import { redirect } from 'next/navigation'
-import { Users, UserPlus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Users } from 'lucide-react'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
-import { CrmContactsTable, type CrmContactRow } from '@/components/digit/crm-contacts-table'
+import { CrmContactsManager, type CrmContactRow } from '@/components/digit/crm-contacts-manager'
 import { extractTenantContext } from '@/lib/multitenant/context'
 import { getPipelineSummary, listContacts } from '@/lib/crm/engine'
 
@@ -38,7 +37,7 @@ export default async function CRMPage() {
   }))
   const hasPipeline = pipeline.stages.some((s) => s.count > 0)
 
-  const contacts: CrmContactRow[] = contactsResult.contacts.map((c) => ({
+  const initialContacts: CrmContactRow[] = contactsResult.contacts.map((c) => ({
     id: c.id,
     name: [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || c.email || 'Unnamed contact',
     email: c.email,
@@ -65,10 +64,7 @@ export default async function CRMPage() {
           </div>
         </div>
 
-        <Button className="gap-2">
-          <UserPlus className="h-4 w-4" />
-          Add Lead
-        </Button>
+        <CrmContactsManager initialContacts={initialContacts} />
       </div>
 
       {/* Metrics */}
@@ -118,9 +114,6 @@ export default async function CRMPage() {
           )}
         </div>
       </div>
-
-      {/* Contacts Table */}
-      <CrmContactsTable contacts={contacts} />
     </div>
   )
 }

@@ -3,6 +3,7 @@ export interface SubscriptionPlan {
   name: string
   description: string
   priceInCents: number
+  annualPriceInCents: number
   interval: "month" | "year"
   features: string[]
   limits: {
@@ -20,6 +21,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     name: "Starter",
     description: "Perfect for small teams getting started with AI analytics",
     priceInCents: 29900, // $299/month
+    annualPriceInCents: 24900, // $249/month billed annually
     interval: "month",
     features: [
       "1 industry module",
@@ -41,6 +43,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     name: "Professional",
     description: "For growing businesses that need advanced analytics",
     priceInCents: 99900, // $999/month
+    annualPriceInCents: 84900, // $849/month billed annually
     interval: "month",
     features: [
       "3 platform modules",
@@ -65,6 +68,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     name: "Enterprise",
     description: "Full platform access with dedicated support",
     priceInCents: 499900, // $4,999/month
+    annualPriceInCents: 424900, // $4,249/month billed annually
     interval: "month",
     features: [
       "All 6 platform modules",

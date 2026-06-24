@@ -1,3 +1,5 @@
+import { SUBSCRIPTION_PLANS } from "./products"
+
 export interface PricingTier {
   id: string
   name: string
@@ -23,88 +25,52 @@ export interface AddOn {
   unit: string
 }
 
-export const pricingTiers: PricingTier[] = [
-  {
-    id: "starter",
-    name: "Starter",
-    description: "Perfect for small teams getting started with AI-powered analytics",
-    monthlyPrice: 299,
-    annualPrice: 249,
-    features: [
-      "1 Platform Module",
-      "5 Team Members",
-      "100K Data Points/month",
-      "Basic AI Assistant",
-      "Email Support",
-      "Standard Dashboards",
-      "7-day Data Retention",
-      "Community Access"
-    ],
-    limits: {
-      users: 5,
-      dataPoints: "100K",
-      modules: 1,
-      apiCalls: "1,000/month"
-    },
-    cta: "Start Free Trial"
-  },
-  {
-    id: "professional",
-    name: "Professional",
-    description: "Advanced analytics for growing businesses with complex needs",
-    monthlyPrice: 999,
-    annualPrice: 849,
-    features: [
-      "3 Platform Modules",
-      "25 Team Members",
-      "1M Data Points/month",
-      "Advanced AI Assistant",
-      "Priority Support",
-      "Custom Dashboards",
-      "90-day Data Retention",
-      "API Access",
-      "Webhook Integrations",
-      "Export to CSV/PDF"
-    ],
-    limits: {
-      users: 25,
-      dataPoints: "1M",
-      modules: 3,
-      apiCalls: "10,000/month"
-    },
-    highlighted: true,
-    cta: "Start Free Trial"
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    description: "Full-scale deployment with dedicated support and custom solutions",
-    monthlyPrice: 4999,
-    annualPrice: 4249,
-    features: [
-      "All Platform Modules",
-      "Unlimited Team Members",
-      "Unlimited Data Points",
-      "Custom AI Models",
-      "Dedicated Success Manager",
-      "White-label Option",
-      "Unlimited Data Retention",
-      "Full API Access",
-      "SSO/SAML Integration",
-      "Custom Integrations",
-      "SLA Guarantee (99.9%)",
-      "On-premise Deployment Option",
-      "Compliance (SOC2, HIPAA)"
-    ],
-    limits: {
-      users: "unlimited",
-      dataPoints: "Unlimited",
-      modules: "all",
-      apiCalls: "Unlimited"
-    },
-    cta: "Contact Sales"
+export const pricingTiers: PricingTier[] = SUBSCRIPTION_PLANS.map((plan) => {
+  const base: PricingTier = {
+    id: plan.id,
+    name: plan.name,
+    description: plan.description,
+    monthlyPrice: plan.priceInCents / 100,
+    annualPrice: plan.annualPriceInCents / 100,
+    features: plan.features,
+    cta: plan.id === "enterprise" ? "Contact Sales" : "Start Free Trial",
   }
-]
+  switch (plan.id) {
+    case "starter":
+      return {
+        ...base,
+        limits: {
+          users: plan.limits.users,
+          dataPoints: "100K",
+          modules: plan.limits.modules,
+          apiCalls: "1,000/month",
+        },
+      }
+    case "professional":
+      return {
+        ...base,
+        limits: {
+          users: plan.limits.users,
+          dataPoints: "1M",
+          modules: plan.limits.modules,
+          apiCalls: "10,000/month",
+        },
+        highlighted: true,
+      }
+    case "enterprise":
+      return {
+        ...base,
+        limits: {
+          users: "unlimited" as const,
+          dataPoints: "Unlimited",
+          modules: "all" as const,
+          apiCalls: "Unlimited",
+        },
+      }
+    default:
+      return base
+  }
+})
 
 export const addOns: AddOn[] = [
   {

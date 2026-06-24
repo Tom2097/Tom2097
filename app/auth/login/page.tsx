@@ -76,7 +76,7 @@ function LoginForm() {
 
     try {
       // 1. Get authentication options from server
-      const optionsRes = await fetch("/api/auth/passkey/authenticate", {
+      const optionsRes = await fetch("/api/auth/passkeys/authenticate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "options" }),
