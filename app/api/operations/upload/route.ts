@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { extractTenantContext } from '@/lib/multitenant/context'
+import { classifyText, extractEntities } from '@/lib/analytics/nlp'
+import { dispatchDocumentEvent } from '@/lib/documents/events'
+import { populateCrmFromExtraction } from '@/lib/documents/populate-crm'
 
 function parseCSV(text: string): Record<string, unknown>[] {
   const lines = text.split('\n').filter(l => l.trim())
@@ -119,6 +122,39 @@ export async function POST(request: Request) {
       console.error('[upload] DB insert failed:', e)
       throw e
     }
+
+    // Auto-classify document content
+    const classificationPromise =
+      content && content.length < 50000
+        ? classifyText(content.slice(0, 10000)).then(async (result) => {
+            const supabase = createServiceClient()
+            await supabase.from("documents").update({ classification: result.primary }).eq("id", doc?.id)
+          }).catch(() => {})
+        : Promise.resolve()
+
+    // Extract entities from content for CRM population
+    const entitiesPromise =
+      content && content.length < 50000
+        ? extractEntities(content.slice(0, 10000)).then(async (result) => {
+            if (result.entities.length > 0) {
+              const supabase = createServiceClient()
+              await supabase.from("documents").update({ extracted_entities: result }).eq("id", doc?.id)
+              // Auto-populate CRM contacts/companies from extracted entities
+              await populateCrmFromExtraction(orgId, doc?.id as string, result).catch(() => {})
+            }
+          }).catch(() => {})
+        : Promise.resolve()
+
+    await Promise.allSettled([classificationPromise, entitiesPromise])
+
+    // Dispatch creation event
+    dispatchDocumentEvent({
+      type: "document.created",
+      organization_id: orgId,
+      document_id: doc?.id as string,
+      actor_id: null,
+      metadata: { name, fileType, fileSize, classification: doc?.classification ?? null },
+    }).catch(() => {})
 
     return NextResponse.json({ success: true, document: doc })
   } catch (error) {

@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { indexDocument, removeDocument } from "@/lib/search/index-helper"
+import { dispatchDocumentEvent } from "@/lib/documents/events"
 import {
   DOCUMENT_BUCKET,
   DOCUMENT_STATUSES,
@@ -157,7 +158,16 @@ export async function confirmUpload(
     throw new Error("failed to confirm upload")
   }
   const doc = (data as DocumentRecord) ?? null
-  if (doc) await indexDocumentRecord(doc)
+  if (doc) {
+    await indexDocumentRecord(doc)
+    dispatchDocumentEvent({
+      type: "document.uploaded",
+      organization_id: doc.organization_id,
+      document_id: doc.id,
+      actor_id: null,
+      metadata: { size_bytes: doc.size_bytes, mime_type: doc.mime_type },
+    }).catch(() => {})
+  }
   return doc
 }
 
@@ -175,6 +185,8 @@ export async function listDocuments(
     query = opts.folderId === null ? query.is("folder_id", null) : query.eq("folder_id", opts.folderId)
   }
   if (opts.status) query = query.eq("status", opts.status)
+  if (opts.legalHold === true) query = query.eq("legal_hold", true)
+  if (opts.legalHold === false) query = query.eq("legal_hold", false)
   if (opts.tag) query = query.contains("tags", [opts.tag])
   if (opts.search && opts.search.trim()) {
     const term = opts.search.trim().replace(/[%,]/g, " ")
@@ -414,6 +426,129 @@ export async function deleteDocument(
     }
   }
   return deleted
+}
+
+/** Place a document on legal hold. */
+export async function placeLegalHold(
+  organizationId: string,
+  documentId: string,
+  userId: string,
+): Promise<DocumentRecord | null> {
+  const doc = await getDocument(organizationId, documentId)
+  if (!doc) return null
+  const result = await updateDocument(organizationId, documentId, {
+    legal_hold: true,
+    metadata: { ...doc.metadata, legal_hold_at: new Date().toISOString(), legal_hold_by: userId },
+    status: "legal_hold",
+  } as any)
+  if (result) {
+    dispatchDocumentEvent({
+      type: "document.legal_hold_placed",
+      organization_id: organizationId,
+      document_id: documentId,
+      actor_id: userId,
+    }).catch(() => {})
+  }
+  return result
+}
+
+/** Release a document from legal hold. */
+export async function releaseLegalHold(
+  organizationId: string,
+  documentId: string,
+): Promise<DocumentRecord | null> {
+  const doc = await getDocument(organizationId, documentId)
+  if (!doc) return null
+  const result = await updateDocument(organizationId, documentId, {
+    legal_hold: false,
+    metadata: { ...doc.metadata, legal_hold_released_at: new Date().toISOString() },
+    status: "ready",
+  } as any)
+  if (result) {
+    dispatchDocumentEvent({
+      type: "document.legal_hold_released",
+      organization_id: organizationId,
+      document_id: documentId,
+      actor_id: null,
+    }).catch(() => {})
+  }
+  return result
+}
+
+/** Create an e-signature request for a document. */
+export async function requestSignature(
+  organizationId: string,
+  documentId: string,
+  requesterId: string,
+  signerEmail: string,
+  signerName?: string,
+): Promise<{ id: string } | null> {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("signature_requests")
+    .insert({
+      organization_id: organizationId,
+      document_id: documentId,
+      requester_id: requesterId,
+      signer_email: signerEmail,
+      signer_name: signerName ?? null,
+      status: "pending",
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    })
+    .select("id")
+    .single()
+  if (error) {
+    console.log("[v0] requestSignature failed:", error.message)
+    return null
+  }
+  await updateDocument(organizationId, documentId, {
+    signature_status: "pending",
+    signature_request_id: data.id,
+  } as any)
+  dispatchDocumentEvent({
+    type: "document.signature_requested",
+    organization_id: organizationId,
+    document_id: documentId,
+    actor_id: requesterId,
+    metadata: { signer_email: signerEmail },
+  }).catch(() => {})
+  return data
+}
+
+/** Mark a signature request as completed. */
+export async function confirmSignature(
+  organizationId: string,
+  signatureRequestId: string,
+  signed: boolean,
+): Promise<boolean> {
+  const db = createServiceClient()
+  const now = new Date().toISOString()
+  const status = signed ? "signed" : "rejected"
+  const { data: req, error: fetchErr } = await db
+    .from("signature_requests")
+    .select("*")
+    .eq("id", signatureRequestId)
+    .eq("organization_id", organizationId)
+    .single()
+  if (fetchErr || !req) return false
+  const { error } = await db
+    .from("signature_requests")
+    .update({ status, signed_at: signed ? now : null })
+    .eq("id", signatureRequestId)
+  if (error) return false
+  await updateDocument(organizationId, req.document_id, {
+    signature_status: status,
+    signed_at: signed ? now : null,
+    signed_by: signed ? req.signer_email : null,
+  } as any)
+  dispatchDocumentEvent({
+    type: "document.signature_completed",
+    organization_id: organizationId,
+    document_id: req.document_id,
+    actor_id: null,
+    metadata: { status, signature_request_id: signatureRequestId },
+  }).catch(() => {})
+  return true
 }
 
 /** Index a document record for universal search (best-effort). */

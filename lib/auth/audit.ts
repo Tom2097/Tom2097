@@ -1,4 +1,10 @@
+import { createHash } from "node:crypto"
 import { createServiceClient } from "@/lib/supabase/service"
+
+function computeAuditHash(entry: AuthAuditEntry, previousHash: string | null): string {
+  const data = JSON.stringify({ ...entry, previousHash })
+  return createHash("sha256").update(data).digest("hex")
+}
 
 /**
  * Auth audit logging (Module #2).
@@ -164,6 +170,14 @@ export async function logAuthEvent(entry: AuthAuditEntry): Promise<void> {
   try {
     const supabase = await createServiceClient()
 
+    const { data: lastEntry } = await supabase
+      .from("audit_logs")
+      .select("hash")
+      .order("created_at", { ascending: false })
+      .limit(1)
+    const previousHash = (lastEntry?.[0]?.hash as string) ?? null
+    const hash = computeAuditHash(entry, previousHash)
+
     const { error } = await supabase.from("audit_logs").insert({
       action: entry.action,
       user_id: entry.userId ?? null,
@@ -172,6 +186,8 @@ export async function logAuthEvent(entry: AuthAuditEntry): Promise<void> {
       resource_id: entry.resourceId ?? null,
       metadata: entry.metadata ?? {},
       ip_address: entry.ipAddress ?? null,
+      hash,
+      previous_hash: previousHash,
     })
 
     if (error) {

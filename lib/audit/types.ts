@@ -12,6 +12,8 @@ export interface AuditLogEntry {
   resource_id: string | null
   metadata: Record<string, unknown>
   ip_address: string | null
+  hash: string | null
+  previous_hash: string | null
   created_at: string
 }
 

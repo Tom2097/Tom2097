@@ -6,7 +6,7 @@
 
 export const DOCUMENT_BUCKET = "documents"
 
-export const DOCUMENT_STATUSES = ["pending", "ready", "archived"] as const
+export const DOCUMENT_STATUSES = ["pending", "ready", "archived", "legal_hold"] as const
 export type DocumentStatus = (typeof DOCUMENT_STATUSES)[number]
 
 export interface DocumentFolder {
@@ -31,6 +31,16 @@ export interface DocumentRecord {
   status: DocumentStatus
   tags: string[]
   metadata: Record<string, unknown>
+  classification: string | null
+  summary: string | null
+  extracted_entities: Record<string, unknown> | null
+  legal_hold: boolean
+  legal_hold_at: string | null
+  legal_hold_by: string | null
+  signature_status: "none" | "pending" | "signed" | "rejected"
+  signature_request_id: string | null
+  signed_at: string | null
+  signed_by: string | null
   uploaded_by: string | null
   created_at: string
   updated_at: string
@@ -74,6 +84,26 @@ export interface DocumentUpdate {
   tags?: string[]
   status?: DocumentStatus
   metadata?: Record<string, unknown>
+  classification?: string | null
+  summary?: string | null
+  extracted_entities?: Record<string, unknown> | null
+  legal_hold?: boolean
+  signature_status?: "none" | "pending" | "signed" | "rejected"
+  signature_request_id?: string | null
+}
+
+export interface SignatureRequest {
+  id: string
+  document_id: string
+  organization_id: string
+  requester_id: string
+  signer_email: string
+  signer_name: string | null
+  status: "pending" | "sent" | "signed" | "rejected" | "expired"
+  signed_at: string | null
+  expires_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface ListDocumentsOptions {
@@ -81,6 +111,7 @@ export interface ListDocumentsOptions {
   status?: DocumentStatus
   tag?: string
   search?: string
+  legalHold?: boolean | null
   limit: number
   offset: number
 }

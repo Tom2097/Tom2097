@@ -28,7 +28,7 @@ export async function listAuditLogs(
   let query = supabase
     .from("audit_logs")
     .select(
-      "id, organization_id, user_id, action, resource_type, resource_id, metadata, ip_address, created_at",
+      "id, organization_id, user_id, action, resource_type, resource_id, metadata, ip_address, hash, previous_hash, created_at",
       { count: "exact" }
     )
     .eq("organization_id", organizationId)

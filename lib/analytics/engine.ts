@@ -11,6 +11,22 @@ import {
   type TimeseriesPoint,
 } from "./types"
 
+export interface FunnelStep {
+  step: number
+  name: string
+  event_name: string
+  count: number
+  conversion_rate: number
+  drop_rate: number
+}
+
+export interface RetentionCohort {
+  cohort_date: string
+  period: number
+  users: number
+  retention: number
+}
+
 /**
  * Module #7: Analytics engine.
  *
@@ -156,6 +172,69 @@ export async function querySummary(
     distinct_events: Number(row.distinct_events ?? 0),
     total_value: Number(row.total_value ?? 0),
   }
+}
+
+/** Run a funnel analysis: count users progressing through ordered event steps. */
+export async function queryFunnel(
+  organizationId: string,
+  steps: { name: string; event_name: string }[],
+  start: string,
+  end: string,
+): Promise<FunnelStep[]> {
+  const db = createServiceClient()
+  const result: FunnelStep[] = []
+
+  for (let i = 0; i < steps.length; i++) {
+    const { data, error } = await db.rpc("analytics_event_funnel_step", {
+      p_org: organizationId,
+      p_event: steps[i].event_name,
+      p_step: i + 1,
+      p_steps: steps.map((s) => s.event_name),
+      p_start: start,
+      p_end: end,
+    })
+    if (error) {
+      console.log("[v0] queryFunnel failed at step", i, error.message)
+      break
+    }
+    const count = Number((data as any)?.[0]?.count ?? 0)
+    const previous = result[i - 1]?.count ?? 0
+    result.push({
+      step: i + 1,
+      name: steps[i].name,
+      event_name: steps[i].event_name,
+      count,
+      conversion_rate: previous > 0 ? Math.round((count / previous) * 100) / 100 : 100,
+      drop_rate: previous > 0 ? Math.round(((previous - count) / previous) * 100) / 100 : 0,
+    })
+  }
+
+  return result
+}
+
+/** Run a retention cohort analysis. */
+export async function queryRetention(
+  organizationId: string,
+  eventName: string,
+  start: string,
+  end: string,
+): Promise<RetentionCohort[]> {
+  const db = createServiceClient()
+  const { data, error } = await db.rpc("analytics_event_retention", {
+    p_org: organizationId,
+    p_event: eventName,
+    p_start: start,
+    p_end: end,
+  })
+  if (error) {
+    console.log("[v0] queryRetention failed:", error.message)
+    return []
+  }
+  return ((data ?? []) as RetentionCohort[]).map((r) => ({
+    ...r,
+    retention: Number(r.retention),
+    users: Number(r.users),
+  }))
 }
 
 /** Dispatch a normalized query to the right engine function. */

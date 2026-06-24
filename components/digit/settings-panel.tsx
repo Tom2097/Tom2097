@@ -158,7 +158,25 @@ export function SettingsPanel() {
   }
 
   const updateSetting = <K extends keyof typeof settings>(key: K, value: typeof settings[K]) => {
-    setSettings(prev => ({ ...prev, [key]: value }))
+    setSettings(prev => {
+      const next = { ...prev, [key]: value }
+      // Persist accent color + theme to DB
+      if (key === "accentColor" || key === "theme") {
+        const persist = async () => {
+          const supabase = createClient()
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user) {
+            await supabase.from("user_preferences").upsert({
+              user_id: user.id,
+              key: key === "accentColor" ? "accent_color" : "theme",
+              value,
+            }, { onConflict: "user_id,key" })
+          }
+        }
+        persist()
+      }
+      return next
+    })
   }
 
   return (

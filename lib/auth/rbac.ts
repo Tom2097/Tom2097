@@ -274,6 +274,83 @@ export async function addPermissionToRole(
   return true
 }
 
+/* ───────────────────── ABAC Conditions (Module #3) ───────────────────── */
+
+export type AbacConditionOperator = "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "in" | "not_in" | "contains" | "starts_with" | "ends_with"
+
+export interface AbacCondition {
+  field: string
+  operator: AbacConditionOperator
+  value: unknown
+}
+
+export interface AbacRule {
+  id: string
+  permission_key: string
+  conditions: AbacCondition[]
+  effect: "allow" | "deny"
+  priority: number
+}
+
+/**
+ * Evaluate a set of ABAC conditions against a resource context.
+ * All conditions must match for the rule to apply.
+ */
+export function evaluateAbacConditions(conditions: AbacCondition[], context: Record<string, unknown>): boolean {
+  return conditions.every((c) => {
+    const actual = getNestedValue(context, c.field)
+    switch (c.operator) {
+      case "eq": return actual === c.value
+      case "neq": return actual !== c.value
+      case "gt": return typeof actual === "number" && typeof c.value === "number" && actual > c.value
+      case "gte": return typeof actual === "number" && typeof c.value === "number" && actual >= c.value
+      case "lt": return typeof actual === "number" && typeof c.value === "number" && actual < c.value
+      case "lte": return typeof actual === "number" && typeof c.value === "number" && actual <= c.value
+      case "in": return Array.isArray(c.value) && c.value.includes(actual)
+      case "not_in": return Array.isArray(c.value) && !c.value.includes(actual)
+      case "contains": return typeof actual === "string" && typeof c.value === "string" && actual.includes(c.value)
+      case "starts_with": return typeof actual === "string" && typeof c.value === "string" && actual.startsWith(c.value)
+      case "ends_with": return typeof actual === "string" && typeof c.value === "string" && actual.endsWith(c.value)
+      default: return false
+    }
+  })
+}
+
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  return path.split(".").reduce((acc: unknown, key: string) => {
+    if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[key]
+    return undefined
+  }, obj)
+}
+
+/**
+ * Check if a user has access to a specific resource given ABAC context.
+ * First verifies the user has the base permission, then evaluates ABAC rules.
+ */
+export async function checkAbacAccess(
+  userId: string,
+  permissionKey: string,
+  context: Record<string, unknown>,
+): Promise<boolean> {
+  if (!(await hasPermission(userId, permissionKey))) return false
+
+  const db = createServiceClient()
+  const { data: rules } = await db
+    .from("abac_rules")
+    .select("*")
+    .eq("permission_key", permissionKey)
+    .order("priority", { ascending: true })
+
+  if (!rules || rules.length === 0) return true
+
+  for (const rule of rules as AbacRule[]) {
+    const matches = evaluateAbacConditions(rule.conditions, context)
+    if (matches) return rule.effect === "allow"
+  }
+
+  return true
+}
+
 /** Remove a permission from a role by permission key (org-scoped). */
 export async function removePermissionFromRole(
   organizationId: string,
