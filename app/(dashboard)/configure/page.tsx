@@ -1,0 +1,90 @@
+"use client"
+
+import { useState } from "react"
+import { SetupWizard } from "@/components/digit/setup-wizard"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Settings, Plus, LayoutDashboard, Shield, Boxes, Activity, Wifi, CheckCircle2, ArrowRight } from "lucide-react"
+import Link from "next/link"
+
+const existingWorkspaces = [
+  { id: "ops", name: "Operations Workspace", vertical: "operational", href: "/operations", color: "text-indigo-500", bg: "bg-indigo-500/10" },
+  { id: "perf", name: "Performance Workspace", vertical: "performance", href: "/performance", color: "text-amber-500", bg: "bg-amber-500/10" },
+  { id: "res", name: "Resource Workspace", vertical: "resources", href: "/resources", color: "text-blue-500", bg: "bg-blue-500/10" },
+  { id: "comp", name: "Compliance Workspace", vertical: "compliance", href: "/compliance", color: "text-teal-500", bg: "bg-teal-500/10" },
+]
+
+const verticalIcons: Record<string, React.ReactNode> = {
+  operational: <Wifi className="h-5 w-5" />,
+  performance: <Activity className="h-5 w-5" />,
+  resources: <Boxes className="h-5 w-5" />,
+  compliance: <Shield className="h-5 w-5" />,
+}
+
+export default function ConfigurePage() {
+  const [showWizard, setShowWizard] = useState(false)
+
+  if (showWizard) {
+    return <SetupWizard onComplete={() => setShowWizard(false)} />
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Settings className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Configure Workspace</h1>
+            <p className="text-sm text-muted-foreground">Set up and customize your workspaces for each vertical</p>
+          </div>
+        </div>
+        <Button onClick={() => setShowWizard(true)}>
+          <Plus className="h-4 w-4 mr-2" />New Workspace
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {existingWorkspaces.map((ws) => (
+          <Card key={ws.id} className="hover:border-primary/50 transition-colors group">
+            <CardHeader className="p-5 pb-3">
+              <div className="flex items-start justify-between">
+                <div className={`p-2.5 rounded-xl ${ws.bg} ${ws.color}`}>
+                  {verticalIcons[ws.vertical]}
+                </div>
+                <Badge variant="secondary" className="text-[10px]">{ws.vertical}</Badge>
+              </div>
+              <CardTitle className="text-base mt-3">{ws.name}</CardTitle>
+              <CardDescription className="text-xs">
+                Configure frameworks, data sources, and automation rules
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-5 pt-0 flex items-center gap-2">
+              <Button size="sm" variant="outline" className="text-xs" asChild>
+                <Link href={ws.href}>
+                  <LayoutDashboard className="h-3 w-3 mr-1" />Open
+                </Link>
+              </Button>
+              <Button size="sm" variant="ghost" className="text-xs" onClick={() => setShowWizard(true)}>
+                <Settings className="h-3 w-3 mr-1" />Reconfigure
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+
+        <Card className="border-dashed hover:border-primary/50 transition-colors cursor-pointer group" onClick={() => setShowWizard(true)}>
+          <CardContent className="p-8 flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3 group-hover:bg-primary/10 transition-colors">
+              <Plus className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <p className="text-sm font-medium">Create New Workspace</p>
+            <p className="text-xs text-muted-foreground mt-1">Set up a workspace for a new vertical</p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}

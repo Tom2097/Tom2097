@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Check, Building2, SlidersHorizontal, Database, Puzzle, Shield, Rocket } from "lucide-react"
+import { Check, Building2, SlidersHorizontal, Database, Puzzle, Shield, Rocket, Loader2 } from "lucide-react"
 import { ComplianceFrameworkPanel, ResourcesFrameworkPanel, PerformanceFrameworkPanel, OperationalFrameworkPanel } from "@/components/digit/wizard-panels"
 
 const steps = [
@@ -30,6 +30,8 @@ interface SetupWizardProps {
 export function SetupWizard({ onComplete, initialVertical = "compliance" }: SetupWizardProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [vertical, setVertical] = useState(initialVertical)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
   const [formData, setFormData] = useState<Record<string, unknown>>({
     name: "",
     description: "",
@@ -59,9 +61,25 @@ export function SetupWizard({ onComplete, initialVertical = "compliance" }: Setu
     }
   }
 
+  const save = async () => {
+    setSaving(true)
+    try {
+      const res = await fetch("/api/v1/configure/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+      const json = await res.json()
+      if (json.success) {
+        setSaved(true)
+        setTimeout(() => onComplete(), 1500)
+      }
+    } catch {} finally { setSaving(false) }
+  }
+
   const next = () => {
     if (currentStep < steps.length - 1) setCurrentStep((s) => s + 1)
-    else onComplete()
+    else save()
   }
 
   const prev = () => {
@@ -227,8 +245,9 @@ export function SetupWizard({ onComplete, initialVertical = "compliance" }: Setu
 
           <div className="flex justify-between mt-8">
             <Button variant="outline" onClick={prev} disabled={currentStep === 0}>Back</Button>
-            <Button onClick={next} disabled={!canProceed()}>
-              {currentStep === steps.length - 1 ? "Activate" : "Continue"}
+            <Button onClick={next} disabled={!canProceed() || saving}>
+              {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              {saving ? "Saving..." : saved ? "Saved!" : currentStep === steps.length - 1 ? "Activate" : "Continue"}
             </Button>
           </div>
         </CardContent>

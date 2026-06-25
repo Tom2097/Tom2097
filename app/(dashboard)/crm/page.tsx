@@ -1,10 +1,17 @@
 import { redirect } from 'next/navigation'
-import { Users } from 'lucide-react'
+import { Users, Target, Phone, Mail, FileText, Heart, BarChart3 } from 'lucide-react'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
 import { CrmContactsManager, type CrmContactRow } from '@/components/digit/crm-contacts-manager'
+import { CrmLeadInbox } from '@/components/digit/crm-lead-inbox'
+import { CrmTimeline } from '@/components/digit/crm-timeline'
+import { CrmTasks } from '@/components/digit/crm-tasks'
+import { CrmCommunicationHub } from '@/components/digit/crm-communication-hub'
+import { CrmQuotes } from '@/components/digit/crm-quotes'
+import { CrmCustomerSuccess } from '@/components/digit/crm-customer-success'
 import { extractTenantContext } from '@/lib/multitenant/context'
 import { getPipelineSummary, listContacts } from '@/lib/crm/engine'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,8 +54,7 @@ export default async function CRMPage() {
     company: null,
   }))
 
-  const avgDealValue =
-    pipeline.open_deals > 0 ? pipeline.total_open_value / pipeline.open_deals : 0
+  const avgDealValue = pipeline.open_deals > 0 ? pipeline.total_open_value / pipeline.open_deals : 0
 
   return (
     <div className="space-y-6">
@@ -63,19 +69,21 @@ export default async function CRMPage() {
             <p className="text-sm text-muted-foreground">AI-driven customer management and engagement</p>
           </div>
         </div>
-
-        <CrmContactsManager initialContacts={initialContacts} />
+        <div className="flex items-center gap-2">
+          <CrmContactsManager initialContacts={initialContacts} />
+        </div>
       </div>
 
       {/* Metrics */}
-      <MetricGrid columns={4}>
+      <MetricGrid columns={5}>
         <MetricCard label="Total Contacts" value={contactsResult.total} variant="highlight" />
         <MetricCard label="Open Deals" value={pipeline.open_deals} />
         <MetricCard label="Pipeline Value" value={formatCurrency(pipeline.total_open_value, pipeline.currency)} />
         <MetricCard label="Avg Deal Size" value={formatCurrency(avgDealValue, pipeline.currency)} />
+        <MetricCard label="Win Rate" value={pipeline.stages.find(s => s.stage === 'won')?.count ? `${Math.round(pipeline.stages.find(s => s.stage === 'won')!.count / Math.max(1, pipeline.open_deals + pipeline.stages.find(s => s.stage === 'won')!.count) * 100)}%` : '0%'} />
       </MetricGrid>
 
-      {/* Charts */}
+      {/* Pipeline Chart */}
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartContainer title="Sales Pipeline" subtitle="Deal value by stage">
           {hasPipeline ? (
@@ -114,6 +122,59 @@ export default async function CRMPage() {
           )}
         </div>
       </div>
+
+      {/* All CRM Tabs */}
+      <Tabs defaultValue="leads" className="w-full">
+        <TabsList className="w-full justify-start overflow-x-auto">
+          <TabsTrigger value="leads" className="gap-1"><BarChart3 className="w-4 h-4" /> Lead Inbox</TabsTrigger>
+          <TabsTrigger value="contacts" className="gap-1"><Users className="w-4 h-4" /> Contacts</TabsTrigger>
+          <TabsTrigger value="timeline" className="gap-1"><Phone className="w-4 h-4" /> Timeline</TabsTrigger>
+          <TabsTrigger value="tasks" className="gap-1"><Target className="w-4 h-4" /> Tasks</TabsTrigger>
+          <TabsTrigger value="communications" className="gap-1"><Mail className="w-4 h-4" /> Communications</TabsTrigger>
+          <TabsTrigger value="quotes" className="gap-1"><FileText className="w-4 h-4" /> Quotes</TabsTrigger>
+          <TabsTrigger value="success" className="gap-1"><Heart className="w-4 h-4" /> Customer Success</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="leads" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmLeadInbox />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="contacts" className="mt-4">
+          <CrmContactsManager initialContacts={initialContacts} />
+        </TabsContent>
+
+        <TabsContent value="timeline" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmTimeline />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="tasks" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmTasks />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="communications" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmCommunicationHub />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="quotes" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmQuotes />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="success" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmCustomerSuccess />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

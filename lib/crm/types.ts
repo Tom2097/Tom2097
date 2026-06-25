@@ -199,3 +199,278 @@ export interface PipelineSummary {
   open_deals: number
   stages: PipelineStageSummary[]
 }
+
+// ── Quotes & Proposals ───────────────────────────────────────────────────────
+
+export const QUOTE_STATUSES = ["draft", "sent", "viewed", "accepted", "rejected", "expired"] as const
+export type QuoteStatus = (typeof QUOTE_STATUSES)[number]
+
+export interface Quote {
+  id: string
+  organization_id: string
+  deal_id: string | null
+  contact_id: string | null
+  company_id: string | null
+  title: string
+  status: QuoteStatus
+  value: number
+  currency: string
+  line_items: QuoteLineItem[]
+  notes: string | null
+  valid_until: string | null
+  sent_at: string | null
+  accepted_at: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface QuoteLineItem {
+  description: string
+  quantity: number
+  unit_price: number
+  total: number
+}
+
+export interface QuoteInput {
+  deal_id?: string | null
+  contact_id?: string | null
+  company_id?: string | null
+  title: string
+  value?: number
+  currency?: string
+  line_items?: QuoteLineItem[]
+  notes?: string | null
+  valid_until?: string | null
+}
+
+export type QuoteUpdateInput = Partial<QuoteInput & { status?: QuoteStatus }>
+
+// ── Engagement Timeline ───────────────────────────────────────────────────────
+
+export const TIMELINE_ENTRY_TYPES = [
+  "note", "call", "email", "meeting", "task_completed",
+  "deal_stage_change", "quote_sent", "quote_accepted",
+  "email_opened", "link_clicked", "form_submitted", "whatsapp",
+] as const
+export type TimelineEntryType = (typeof TIMELINE_ENTRY_TYPES)[number]
+
+export interface TimelineEntry {
+  id: string
+  organization_id: string
+  entity_type: CrmEntityType
+  entity_id: string
+  entry_type: TimelineEntryType
+  title: string
+  description: string | null
+  metadata: Record<string, unknown> | null
+  occurred_at: string
+  created_by: string | null
+  created_at: string
+}
+
+export interface TimelineEntryInput {
+  entity_type: CrmEntityType
+  entity_id: string
+  entry_type: TimelineEntryType
+  title: string
+  description?: string | null
+  metadata?: Record<string, unknown> | null
+  occurred_at?: string
+}
+
+// ── CRM Tasks / Cadences ──────────────────────────────────────────────────────
+
+export const TASK_PRIORITIES = ["low", "medium", "high", "urgent"] as const
+export type TaskPriority = (typeof TASK_PRIORITIES)[number]
+
+export const TASK_STATUSES = ["pending", "in_progress", "completed", "cancelled"] as const
+export type TaskStatus = (typeof TASK_STATUSES)[number]
+
+export interface CrmTask {
+  id: string
+  organization_id: string
+  entity_type: CrmEntityType | null
+  entity_id: string | null
+  title: string
+  description: string | null
+  priority: TaskPriority
+  status: TaskStatus
+  due_at: string | null
+  completed_at: string | null
+  assigned_to: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CrmTaskInput {
+  entity_type?: CrmEntityType | null
+  entity_id?: string | null
+  title: string
+  description?: string | null
+  priority?: TaskPriority
+  due_at?: string | null
+  assigned_to?: string | null
+}
+
+export type CrmTaskUpdateInput = Partial<CrmTaskInput & { status?: TaskStatus }>
+
+// ── Communication Hub ─────────────────────────────────────────────────────────
+
+export const COMMUNICATION_CHANNELS = ["email", "whatsapp", "sms"] as const
+export type CommunicationChannel = (typeof COMMUNICATION_CHANNELS)[number]
+
+export const COMMUNICATION_DIRECTIONS = ["outbound", "inbound"] as const
+export type CommunicationDirection = (typeof COMMUNICATION_DIRECTIONS)[number]
+
+export interface Communication {
+  id: string
+  organization_id: string
+  channel: CommunicationChannel
+  direction: CommunicationDirection
+  subject: string
+  body: string
+  from_address: string
+  to_address: string
+  contact_id: string | null
+  deal_id: string | null
+  status: "sent" | "delivered" | "read" | "failed"
+  template_id: string | null
+  sent_at: string
+  read_at: string | null
+  created_by: string | null
+}
+
+export interface CommunicationInput {
+  channel: CommunicationChannel
+  direction: CommunicationDirection
+  subject: string
+  body: string
+  from_address: string
+  to_address: string
+  contact_id?: string | null
+  deal_id?: string | null
+  template_id?: string | null
+}
+
+// ── Communication Templates ───────────────────────────────────────────────────
+
+export interface CommTemplate {
+  id: string
+  organization_id: string
+  name: string
+  channel: CommunicationChannel
+  subject: string
+  body: string
+  variables: string[]
+  category: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CommTemplateInput {
+  name: string
+  channel: CommunicationChannel
+  subject: string
+  body: string
+  variables?: string[]
+  category?: string | null
+}
+
+// ── Customer Success ──────────────────────────────────────────────────────────
+
+export const ACCOUNT_HEALTH_STATUSES = ["healthy", "at_risk", "churned"] as const
+export type AccountHealthStatus = (typeof ACCOUNT_HEALTH_STATUSES)[number]
+
+export interface CustomerAccount {
+  id: string
+  organization_id: string
+  company_id: string
+  health_status: AccountHealthStatus
+  health_score: number
+  health_score_breakdown: Record<string, number> | null
+  onboarding_completed: boolean
+  onboarding_step: string | null
+  renewal_date: string | null
+  upsell_potential: "low" | "medium" | "high" | null
+  last_activity_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CustomerAccountUpdateInput {
+  health_status?: AccountHealthStatus
+  health_score?: number
+  health_score_breakdown?: Record<string, number> | null
+  onboarding_completed?: boolean
+  onboarding_step?: string | null
+  renewal_date?: string | null
+  upsell_potential?: "low" | "medium" | "high" | null
+  last_activity_at?: string | null
+}
+
+// ── Lead Scoring ──────────────────────────────────────────────────────────────
+
+export interface LeadScore {
+  contact_id: string
+  score: number
+  factors: LeadScoreFactor[]
+  last_updated: string
+}
+
+export interface LeadScoreFactor {
+  name: string
+  weight: number
+  value: number
+  description: string
+}
+
+// ── List options for new entities ─────────────────────────────────────────────
+
+export interface ListQuotesOptions {
+  limit?: number
+  offset?: number
+  status?: QuoteStatus
+  dealId?: string
+}
+
+export interface ListTimelineOptions {
+  limit?: number
+  offset?: number
+  entityType?: CrmEntityType
+  entityId?: string
+  entryType?: TimelineEntryType
+}
+
+export interface ListTasksOptions {
+  limit?: number
+  offset?: number
+  status?: TaskStatus
+  priority?: TaskPriority
+  assignedTo?: string
+  entityType?: CrmEntityType
+  entityId?: string
+}
+
+export interface ListCommunicationsOptions {
+  limit?: number
+  offset?: number
+  channel?: CommunicationChannel
+  contactId?: string
+  dealId?: string
+}
+
+export interface ListCustomerAccountsOptions {
+  limit?: number
+  offset?: number
+  healthStatus?: AccountHealthStatus
+  companyId?: string
+}
+
+export interface ListTemplatesOptions {
+  limit?: number
+  offset?: number
+  channel?: CommunicationChannel
+  category?: string
+}
