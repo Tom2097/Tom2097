@@ -10,7 +10,6 @@ import { Switch } from "@/components/ui/switch"
 import { pricingTiers, addOns, platformModules } from "@/lib/subscription-data"
 import { Checkout } from "@/components/checkout"
 import { createClient } from "@/lib/supabase/client"
-import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
@@ -302,7 +301,7 @@ function PricingContent() {
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <Image src="/logo.jpeg" alt="DigiT" height={24} width={55} className="object-contain" />
+              <Logo size="sm" />
               <span className="text-sm text-muted-foreground">
                 © 2026 DigiT Enterprise Intelligence. All rights reserved.
               </span>

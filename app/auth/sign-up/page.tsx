@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, Loader2, Eye, EyeOff, Check, X, Shield } from "lucide-react"
-import Image from "next/image"
+import { Logo } from "@/components/digit/logo"
 
 function getPasswordStrength(password: string) {
   let score = 0
@@ -130,7 +130,7 @@ export default function SignUpPage() {
       <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Image src="/logo.jpeg" alt="DigiT" height={40} width={92} className="object-contain" priority />
+            <Logo size="lg" />
           </div>
   <CardTitle className="text-2xl">Start your 7-day free trial</CardTitle>
   <CardDescription>

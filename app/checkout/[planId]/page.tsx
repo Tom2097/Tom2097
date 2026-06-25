@@ -10,7 +10,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js"
-import Image from "next/image"
+import { Logo } from "@/components/digit/logo"
 import { 
   ArrowLeft, 
   Check, 
@@ -453,7 +453,7 @@ export default function CheckoutPage() {
               </Link>
             </Button>
             <div className="flex items-center gap-3">
-              <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
+              <Logo size="md" />
               <p className="text-xs text-muted-foreground ml-2 hidden sm:block">Secure Checkout</p>
             </div>
           </div>

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, ArrowLeft, Check } from "lucide-react"
-import Image from "next/image"
+import { Logo } from "@/components/digit/logo"
 
 function PasswordStrengthMeter({ password }: { password: string }) {
   const getStrength = () => {
@@ -117,7 +117,7 @@ function ResetPasswordForm() {
         <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50">
           <CardHeader className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
+              <Logo size="md" />
             </div>
             <CardTitle className="text-2xl">Create New Password</CardTitle>
             <CardDescription>Make sure to use a strong and unique password</CardDescription>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import Image from "next/image"
+import { Logo } from "@/components/digit/logo"
 import { ArrowLeft, CheckCircle2 } from "lucide-react"
 
 export const metadata: Metadata = {
@@ -25,7 +25,7 @@ export default function StatusPage() {
       <header className="relative border-b border-border/50">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
           <Link href="/">
-            <Image src="/logo.jpeg" alt="DigiT" height={32} width={74} className="object-contain" priority />
+            <Logo size="sm" />
           </Link>
           <Link
             href="/pricing"

@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   generator: 'v0.app',
   keywords: ['enterprise', 'AI', 'analytics', 'business intelligence', 'operational intelligence'],
   icons: {
-    icon: '/logo.jpeg',
-    apple: '/logo.jpeg',
+    icon: '/icon.svg',
+    apple: '/icon.svg',
   },
 }
 

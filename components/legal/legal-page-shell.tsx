@@ -1,6 +1,6 @@
 import Link from "next/link"
-import Image from "next/image"
 import { ArrowLeft } from "lucide-react"
+import { Logo } from "@/components/digit/logo"
 
 interface LegalPageShellProps {
   title: string
@@ -18,9 +18,7 @@ export function LegalPageShell({ title, description, lastUpdated, children }: Le
       {/* Header */}
       <header className="relative border-b border-border/50">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
-          <Link href="/">
-            <Image src="/logo.jpeg" alt="DigiT" height={32} width={74} className="object-contain" priority />
-          </Link>
+          <Logo size="sm" link />
           <Link
             href="/pricing"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"

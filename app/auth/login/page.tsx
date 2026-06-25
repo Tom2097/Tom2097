@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, Loader2, Eye, EyeOff, Fingerprint, Shield } from "lucide-react"
-import Image from "next/image"
+import { Logo } from "@/components/digit/logo"
 import { startAuthentication } from "@simplewebauthn/browser"
 
 function LoginForm() {
@@ -126,7 +126,7 @@ function LoginForm() {
     <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50">
       <CardHeader className="text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
+          <Logo size="md" />
         </div>
         <CardTitle className="text-2xl">Welcome back</CardTitle>
         <CardDescription>Sign in to your enterprise dashboard</CardDescription>
@@ -261,7 +261,7 @@ function LoginFormFallback() {
     <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50">
       <CardHeader className="text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
+          <Logo size="md" />
         </div>
         <CardTitle className="text-2xl">Welcome back</CardTitle>
         <CardDescription>Sign in to your enterprise dashboard</CardDescription>

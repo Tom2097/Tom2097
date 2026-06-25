@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, Clock } from "lucide-react"
-import Image from "next/image"
+import { Logo } from "@/components/digit/logo"
 import { CAPACITY_MESSAGES } from "@/lib/platform/capacity"
 
 export default async function AuthErrorPage({
@@ -23,7 +23,7 @@ export default async function AuthErrorPage({
         <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50 text-center">
           <CardHeader>
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
+              <Logo size="md" />
             </div>
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Clock className="w-8 h-8 text-primary" />
@@ -56,7 +56,7 @@ export default async function AuthErrorPage({
       <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50 text-center">
         <CardHeader>
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
+            <Logo size="md" />
           </div>
           <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
             <AlertTriangle className="w-8 h-8 text-destructive" />

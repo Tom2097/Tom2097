@@ -14,7 +14,7 @@ import {
   Download,
   Loader2
 } from "lucide-react"
-import Image from "next/image"
+import { Logo } from "@/components/digit/logo"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -100,7 +100,7 @@ function CheckoutSuccessContent() {
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
+            <Logo size="md" />
           </Link>
         </div>
       </header>
