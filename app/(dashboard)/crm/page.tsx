@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { Users, Target, Phone, Mail, FileText, Heart, BarChart3 } from 'lucide-react'
+import { Users, Target, Phone, Mail, FileText, Heart, BarChart3, Sparkles, Zap, AlertTriangle, MessageSquare, Copy, UserPlus } from 'lucide-react'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
 import { CrmContactsManager, type CrmContactRow } from '@/components/digit/crm-contacts-manager'
@@ -9,6 +9,13 @@ import { CrmTasks } from '@/components/digit/crm-tasks'
 import { CrmCommunicationHub } from '@/components/digit/crm-communication-hub'
 import { CrmQuotes } from '@/components/digit/crm-quotes'
 import { CrmCustomerSuccess } from '@/components/digit/crm-customer-success'
+import { CrmAiSdr } from '@/components/digit/crm-ai-sdr'
+import { CrmNextBestAction } from '@/components/digit/crm-next-best-action'
+import { CrmDealHealthRadar } from '@/components/digit/crm-deal-health'
+import { CrmAskYourCrm } from '@/components/digit/crm-ask-your-crm'
+import { CrmDuplicateDetection } from '@/components/digit/crm-duplicate-detection'
+import { CrmConversationIntelligence } from '@/components/digit/crm-conversation-intelligence'
+import { CrmAutoProvision } from '@/components/digit/crm-auto-provision'
 import { extractTenantContext } from '@/lib/multitenant/context'
 import { getPipelineSummary, listContacts } from '@/lib/crm/engine'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -123,17 +130,70 @@ export default async function CRMPage() {
         </div>
       </div>
 
+      {/* Smart CRM Intelligence Section */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="p-4 rounded-2xl border border-border/50 bg-card">
+          <CrmAiSdr />
+        </div>
+        <div className="p-4 rounded-2xl border border-border/50 bg-card">
+          <CrmNextBestAction />
+        </div>
+        <div className="p-4 rounded-2xl border border-border/50 bg-card">
+          <CrmDealHealthRadar />
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <CrmAskYourCrm />
+        <CrmAutoProvision />
+      </div>
+
       {/* All CRM Tabs */}
-      <Tabs defaultValue="leads" className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto">
+      <Tabs defaultValue="ai-sdr" className="w-full">
+        <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
+          <TabsTrigger value="ai-sdr" className="gap-1"><Sparkles className="w-4 h-4" /> AI SDR</TabsTrigger>
+          <TabsTrigger value="next-best-action" className="gap-1"><Zap className="w-4 h-4" /> Next Actions</TabsTrigger>
+          <TabsTrigger value="deal-health" className="gap-1"><AlertTriangle className="w-4 h-4" /> Deal Health</TabsTrigger>
+          <TabsTrigger value="conversations" className="gap-1"><MessageSquare className="w-4 h-4" /> Conversations</TabsTrigger>
+          <TabsTrigger value="duplicates" className="gap-1"><Copy className="w-4 h-4" /> Duplicates</TabsTrigger>
           <TabsTrigger value="leads" className="gap-1"><BarChart3 className="w-4 h-4" /> Lead Inbox</TabsTrigger>
           <TabsTrigger value="contacts" className="gap-1"><Users className="w-4 h-4" /> Contacts</TabsTrigger>
           <TabsTrigger value="timeline" className="gap-1"><Phone className="w-4 h-4" /> Timeline</TabsTrigger>
           <TabsTrigger value="tasks" className="gap-1"><Target className="w-4 h-4" /> Tasks</TabsTrigger>
-          <TabsTrigger value="communications" className="gap-1"><Mail className="w-4 h-4" /> Communications</TabsTrigger>
+          <TabsTrigger value="communications" className="gap-1"><Mail className="w-4 h-4" /> Comm</TabsTrigger>
           <TabsTrigger value="quotes" className="gap-1"><FileText className="w-4 h-4" /> Quotes</TabsTrigger>
-          <TabsTrigger value="success" className="gap-1"><Heart className="w-4 h-4" /> Customer Success</TabsTrigger>
+          <TabsTrigger value="success" className="gap-1"><Heart className="w-4 h-4" /> CS</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="ai-sdr" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmAiSdr />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="next-best-action" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmNextBestAction />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="deal-health" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmDealHealthRadar />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="conversations" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmConversationIntelligence />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="duplicates" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmDuplicateDetection />
+          </div>
+        </TabsContent>
 
         <TabsContent value="leads" className="mt-4">
           <div className="rounded-2xl border border-border/50 bg-card p-6">
