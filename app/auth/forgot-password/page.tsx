@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, Loader2, Zap, CheckCircle2, ArrowLeft } from "lucide-react"
+import { AlertCircle, Loader2, CheckCircle2, ArrowLeft } from "lucide-react"
+import Image from "next/image"
 
 function ForgotPasswordForm() {
   const [email, setEmail] = useState("")
@@ -40,15 +41,7 @@ function ForgotPasswordForm() {
         <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50">
           <CardHeader className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-cyan-400 rounded-xl flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-primary-foreground" />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-br from-primary to-cyan-400 rounded-xl blur-lg opacity-50" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">
-                DigiT
-              </span>
+              <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
             </div>
             <CardTitle className="text-2xl">Forgot Password?</CardTitle>
             <CardDescription>Enter your email and we&apos;ll send you a link to reset it</CardDescription>

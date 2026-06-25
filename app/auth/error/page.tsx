@@ -1,7 +1,8 @@
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { AlertTriangle, Zap, Clock } from "lucide-react"
+import { AlertTriangle, Clock } from "lucide-react"
+import Image from "next/image"
 import { CAPACITY_MESSAGES } from "@/lib/platform/capacity"
 
 export default async function AuthErrorPage({
@@ -22,12 +23,7 @@ export default async function AuthErrorPage({
         <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50 text-center">
           <CardHeader>
             <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-cyan-400 rounded-xl flex items-center justify-center">
-                <Zap className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">
-                DigiT
-              </span>
+              <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
             </div>
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Clock className="w-8 h-8 text-primary" />
@@ -60,15 +56,7 @@ export default async function AuthErrorPage({
       <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50 text-center">
         <CardHeader>
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-cyan-400 rounded-xl flex items-center justify-center">
-                <Zap className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-br from-primary to-cyan-400 rounded-xl blur-lg opacity-50" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">
-              DigiT
-            </span>
+            <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
           </div>
           <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
             <AlertTriangle className="w-8 h-8 text-destructive" />

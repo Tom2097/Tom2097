@@ -10,9 +10,11 @@ import { Switch } from "@/components/ui/switch"
 import { pricingTiers, addOns, platformModules } from "@/lib/subscription-data"
 import { Checkout } from "@/components/checkout"
 import { createClient } from "@/lib/supabase/client"
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
+import { Logo } from "@/components/digit/logo"
 
 const tierIcons = {
   starter: Rocket,
@@ -63,18 +65,7 @@ function PricingContent() {
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">D</span>
-              </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-chart-2 rounded-full animate-pulse" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">DigiT</h1>
-              <p className="text-xs text-muted-foreground">Enterprise Intelligence</p>
-            </div>
-          </Link>
+          <Logo size="md" link />
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Dashboard
@@ -311,9 +302,7 @@ function PricingContent() {
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">D</span>
-              </div>
+              <Image src="/logo.jpeg" alt="DigiT" height={24} width={55} className="object-contain" />
               <span className="text-sm text-muted-foreground">
                 © 2026 DigiT Enterprise Intelligence. All rights reserved.
               </span>

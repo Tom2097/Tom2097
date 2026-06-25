@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { ArrowLeft, Zap } from "lucide-react"
+import Image from "next/image"
+import { ArrowLeft } from "lucide-react"
 
 interface LegalPageShellProps {
   title: string
@@ -17,13 +18,8 @@ export function LegalPageShell({ title, description, lastUpdated, children }: Le
       {/* Header */}
       <header className="relative border-b border-border/50">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-cyan-400">
-              <Zap className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-xl font-bold text-transparent">
-              DigiT
-            </span>
+          <Link href="/">
+            <Image src="/logo.jpeg" alt="DigiT" height={32} width={74} className="object-contain" priority />
           </Link>
           <Link
             href="/pricing"

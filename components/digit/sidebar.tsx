@@ -20,6 +20,7 @@ import {
   Gauge,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Logo, LogoIcon } from '@/components/digit/logo'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -54,19 +55,11 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
         {/* Logo */}
         <div className="flex h-16 items-center justify-between border-b border-border/50 px-4">
           {!isCollapsed && (
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary digit-glow-sm">
-                <span className="text-sm font-bold text-primary-foreground">D</span>
-              </div>
-              <div>
-                <h1 className="text-lg font-bold tracking-wider text-foreground">DigiT</h1>
-                <p className="text-[10px] text-muted-foreground">Enterprise Intelligence</p>
-              </div>
-            </Link>
+            <Logo size="sm" link />
           )}
           {isCollapsed && (
-            <Link href="/" className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-primary digit-glow-sm">
-              <span className="text-sm font-bold text-primary-foreground">D</span>
+            <Link href="/" className="mx-auto">
+              <LogoIcon size="sm" />
             </Link>
           )}
           <button 

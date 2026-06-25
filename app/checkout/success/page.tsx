@@ -9,12 +9,12 @@ import {
   Sparkles, 
   BarChart3,
   Users,
-  Zap,
   Mail,
   Calendar,
   Download,
   Loader2
 } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -100,13 +100,7 @@ function CheckoutSuccessContent() {
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">D</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">DigiT</h1>
-              <p className="text-xs text-muted-foreground">Enterprise Intelligence</p>
-            </div>
+            <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
           </Link>
         </div>
       </header>

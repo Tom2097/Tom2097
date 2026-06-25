@@ -10,13 +10,13 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js"
+import Image from "next/image"
 import { 
   ArrowLeft, 
   Check, 
   Shield, 
   CreditCard, 
   Lock,
-  Zap,
   Building2,
   Rocket,
   AlertCircle,
@@ -453,13 +453,8 @@ export default function CheckoutPage() {
               </Link>
             </Button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">D</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">DigiT</h1>
-                <p className="text-xs text-muted-foreground">Secure Checkout</p>
-              </div>
+              <Image src="/logo.jpeg" alt="DigiT" height={36} width={82} className="object-contain" priority />
+              <p className="text-xs text-muted-foreground ml-2 hidden sm:block">Secure Checkout</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
