@@ -33,7 +33,7 @@ export const pricingTiers: PricingTier[] = SUBSCRIPTION_PLANS.map((plan) => {
     monthlyPrice: plan.priceInCents / 100,
     annualPrice: plan.annualPriceInCents / 100,
     features: plan.features,
-    cta: plan.id === "enterprise" ? "Contact Sales" : "Start Free Trial",
+    cta: "Select",
   }
   switch (plan.id) {
     case "starter":

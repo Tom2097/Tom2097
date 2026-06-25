@@ -119,15 +119,10 @@ export default async function DashboardPage() {
               <span>Live Enterprise Intelligence</span>
             </div>
 
-            <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground lg:text-5xl">
-              Centralized Operational Intelligence System
-            </h1>
-
-            <p className="mt-4 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">
-              DigiT is building a connected ecosystem for AI-powered business software solutions.
-              An intelligent framework that learns from enterprise operations, improves workflows,
+              <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground lg:text-5xl">
+              DigiT is an intelligent framework that learns from enterprise operations, improves workflows,
               predicts outcomes, and enables better decision-making.
-            </p>
+            </h1>
 
             <div className="mt-8 flex flex-wrap gap-4">
               <Button asChild size="lg" className="gap-2 digit-glow">
@@ -324,28 +319,7 @@ export default async function DashboardPage() {
         </ChartContainer>
       </section>
 
-      {/* Upgrade CTA for Trial Users */}
-      {isTrialing && (
-        <section>
-          <Card className="p-8 bg-gradient-to-br from-primary/10 to-chart-2/10 border-primary/20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">Unlock Full AI Power</h2>
-                <p className="text-muted-foreground max-w-xl">
-                  Upgrade your plan to access all {modules.length} platform modules, unlimited team members,
-                  advanced AI predictions, and dedicated enterprise support.
-                </p>
-              </div>
-              <Button size="lg" asChild>
-                <Link href="/pricing">
-                  View Pricing
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-            </div>
-          </Card>
-        </section>
-      )}
+
     </div>
   )
 }

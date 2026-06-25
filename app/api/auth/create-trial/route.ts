@@ -31,13 +31,15 @@ export async function POST(request: Request) {
       throw new Error(orgError?.message || 'Failed to create organization')
     }
 
+    const trialEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
     // Create subscription with trial
     const { error: subError } = await supabase
       .from('subscriptions')
       .insert({
         organization_id: org.id,
         status: 'trialing',
-        trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        trial_ends_at: trialEnd,
+        current_period_end: trialEnd,
         user_id: userId,
       })
 

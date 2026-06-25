@@ -304,39 +304,7 @@ function PricingContent() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto">
-          <Card className="max-w-4xl mx-auto p-12 bg-gradient-to-br from-primary/10 to-chart-2/10 border-primary/20">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-foreground mb-4">
-                Ready to Transform Your Enterprise?
-              </h2>
-              <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-                Start your 7-day free trial today. No credit card required. 
-                Get full access to all features and dedicated onboarding support.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button size="lg" className="w-full sm:w-auto" asChild>
-                  <Link href="/auth/sign-up">
-                    Start Free Trial
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Link>
-                </Button>
-                <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  Schedule Demo
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-6">
-                Questions? Contact our sales team at{" "}
-                <a href="mailto:sales@digit-enterprise.com" className="text-primary hover:underline">
-                  sales@digit-enterprise.com
-                </a>
-              </p>
-            </div>
-          </Card>
-        </div>
-      </section>
+
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-12 px-6">

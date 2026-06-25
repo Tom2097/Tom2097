@@ -113,19 +113,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
             )}
           </Link>
 
-          {/* Onboarding Link */}
-          <Link
-            href="/onboarding"
-            className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all border border-dashed",
-              pathname === '/onboarding'
-                ? "bg-primary/10 text-primary border-primary digit-glow-sm"
-                : "text-muted-foreground border-muted-foreground/30 hover:bg-secondary hover:text-foreground hover:border-primary/50"
-            )}
-          >
-            <Sparkles className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Setup Wizard</span>}
-          </Link>
+
 
           {/* Separator */}
           {!isCollapsed && (
