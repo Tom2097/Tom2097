@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { Users, Target, Phone, Mail, FileText, Heart, BarChart3, Sparkles, Zap, AlertTriangle, MessageSquare, Copy, UserPlus } from 'lucide-react'
+import { Users, Target, Phone, Mail, FileText, Heart, BarChart3, Sparkles, Zap, AlertTriangle, MessageSquare, Copy, UserPlus, Sun, Globe, DollarSign, TrendingUp as TrendingUpIcon, Layers } from 'lucide-react'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
 import { CrmContactsManager, type CrmContactRow } from '@/components/digit/crm-contacts-manager'
@@ -16,6 +16,14 @@ import { CrmAskYourCrm } from '@/components/digit/crm-ask-your-crm'
 import { CrmDuplicateDetection } from '@/components/digit/crm-duplicate-detection'
 import { CrmConversationIntelligence } from '@/components/digit/crm-conversation-intelligence'
 import { CrmAutoProvision } from '@/components/digit/crm-auto-provision'
+import { CrmWhatsAppNurture } from '@/components/digit/crm-whatsapp-nurture'
+import { CrmVerticalSignals } from '@/components/digit/crm-vertical-signals'
+import { CrmLeadSourceRoi } from '@/components/digit/crm-lead-source-roi'
+import { CrmFoundersBriefing } from '@/components/digit/crm-founders-briefing'
+import { CrmEventInstrumentation } from '@/components/digit/crm-event-instrumentation'
+import { CrmPipelineBoard } from '@/components/digit/crm-pipeline-board'
+import { CrmAccountsHierarchy } from '@/components/digit/crm-accounts-hierarchy'
+import { CrmForecastReports } from '@/components/digit/crm-forecast-reports'
 import { extractTenantContext } from '@/lib/multitenant/context'
 import { getPipelineSummary, listContacts } from '@/lib/crm/engine'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -82,7 +90,7 @@ export default async function CRMPage() {
       </div>
 
       {/* Metrics */}
-      <MetricGrid columns={5}>
+      <MetricGrid columns={4}>
         <MetricCard label="Total Contacts" value={contactsResult.total} variant="highlight" />
         <MetricCard label="Open Deals" value={pipeline.open_deals} />
         <MetricCard label="Pipeline Value" value={formatCurrency(pipeline.total_open_value, pipeline.currency)} />
@@ -163,6 +171,14 @@ export default async function CRMPage() {
           <TabsTrigger value="communications" className="gap-1"><Mail className="w-4 h-4" /> Comm</TabsTrigger>
           <TabsTrigger value="quotes" className="gap-1"><FileText className="w-4 h-4" /> Quotes</TabsTrigger>
           <TabsTrigger value="success" className="gap-1"><Heart className="w-4 h-4" /> CS</TabsTrigger>
+          <TabsTrigger value="nurture" className="gap-1"><MessageSquare className="w-4 h-4" /> Nurture</TabsTrigger>
+          <TabsTrigger value="vertical-signals" className="gap-1"><TrendingUpIcon className="w-4 h-4" /> Signals</TabsTrigger>
+          <TabsTrigger value="lead-roi" className="gap-1"><DollarSign className="w-4 h-4" /> Lead ROI</TabsTrigger>
+          <TabsTrigger value="briefing" className="gap-1"><Sun className="w-4 h-4" /> Briefing</TabsTrigger>
+          <TabsTrigger value="events" className="gap-1"><Layers className="w-4 h-4" /> Events</TabsTrigger>
+          <TabsTrigger value="pipeline" className="gap-1"><Target className="w-4 h-4" /> Pipeline</TabsTrigger>
+          <TabsTrigger value="hierarchy" className="gap-1"><Users className="w-4 h-4" /> Hierarchy</TabsTrigger>
+          <TabsTrigger value="forecast" className="gap-1"><BarChart3 className="w-4 h-4" /> Forecast</TabsTrigger>
         </TabsList>
 
         <TabsContent value="ai-sdr" className="mt-4">
@@ -232,6 +248,50 @@ export default async function CRMPage() {
         <TabsContent value="success" className="mt-4">
           <div className="rounded-2xl border border-border/50 bg-card p-6">
             <CrmCustomerSuccess />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="nurture" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmWhatsAppNurture />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="vertical-signals" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmVerticalSignals />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="lead-roi" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmLeadSourceRoi />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="briefing" className="mt-4">
+          <CrmFoundersBriefing />
+        </TabsContent>
+
+        <TabsContent value="events" className="mt-4">
+          <CrmEventInstrumentation />
+        </TabsContent>
+
+        <TabsContent value="pipeline" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmPipelineBoard />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="hierarchy" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmAccountsHierarchy />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="forecast" className="mt-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-6">
+            <CrmForecastReports />
           </div>
         </TabsContent>
       </Tabs>
