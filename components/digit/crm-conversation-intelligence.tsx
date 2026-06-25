@@ -93,7 +93,7 @@ export function CrmConversationIntelligence() {
                   </div>
                   <div className="p-2 rounded-lg bg-muted/30 border border-border/30">
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
-                      <RefreshCw className="h-3 w-3" />Objection: "{t.objection}"
+                      <RefreshCw className="h-3 w-3" />Objection: &ldquo;{t.objection}&rdquo;
                     </div>
                     <p className="text-xs">{t.rebuttal}</p>
                     <Button size="sm" variant="ghost" className="h-6 text-[10px] mt-1">

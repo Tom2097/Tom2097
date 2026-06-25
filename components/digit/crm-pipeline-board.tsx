@@ -35,18 +35,14 @@ export function CrmPipelineBoard() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    fetchDeals()
+    const load = async () => {
+      try {
+        const res = await fetch("/api/v1/crm/deals")
+        if (res.ok) { const json = await res.json(); setDeals(json.deals ?? []) }
+      } catch {} finally { setLoading(false) }
+    }
+    load()
   }, [])
-
-  const fetchDeals = async () => {
-    try {
-      const res = await fetch("/api/v1/crm/deals")
-      if (res.ok) {
-        const json = await res.json()
-        setDeals(json.deals ?? [])
-      }
-    } catch {} finally { setLoading(false) }
-  }
 
   const grouped = STAGES.map((s) => ({
     ...s,
@@ -118,21 +114,17 @@ export function CrmPipelineBoard() {
             </div>
 
             <div className="space-y-2">
-              <AnimatePresence>
+                  <AnimatePresence>
                 {stage.deals.map((deal) => (
-                  <motion.div
+                  <div
                     key={deal.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
                     draggable
                     onDragStart={(e) => {
                       setDraggingId(deal.id)
                       e.dataTransfer.setData("dealId", deal.id)
                     }}
                     onDragEnd={() => setDraggingId(null)}
-                    className={`p-2.5 rounded-lg bg-card border border-border/50 cursor-grab active:cursor-grabbing hover:border-primary/30 transition-all ${draggingId === deal.id ? "opacity-50" : ""}`}
+                    className={`p-2.5 rounded-lg bg-card border border-border/50 cursor-grab active:cursor-grabbing hover:border-primary/30 transition-all animate-in fade-in slide-in-from-bottom-1 ${draggingId === deal.id ? "opacity-50" : ""}`}
                   >
                     <p className="text-xs font-medium truncate">{deal.title}</p>
                     <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
@@ -144,7 +136,7 @@ export function CrmPipelineBoard() {
                         <Calendar className="h-3 w-3" />{new Date(deal.expected_close_date).toLocaleDateString()}
                       </p>
                     )}
-                  </motion.div>
+                  </div>
                 ))}
               </AnimatePresence>
 

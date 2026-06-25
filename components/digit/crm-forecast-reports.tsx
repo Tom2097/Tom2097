@@ -116,7 +116,7 @@ export function CrmForecastReports() {
           <ChartContainer title="Revenue Forecast" subtitle="Actual vs forecasted revenue">
             <LiveChart
               data={monthlyData}
-              dataKey={["actual", "forecast"]} type="bar" height={300}
+              dataKey="actual" type="bar" height={300}
               color="hsl(var(--chart-2))"
             />
           </ChartContainer>

@@ -61,7 +61,7 @@ export function CrmFoundersBriefing() {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
             <Sun className="h-4 w-4 text-amber-500" />
-            Founder's Daily Briefing
+            Founder&apos;s Daily Briefing
             <Badge variant="secondary" className="text-[10px]">AI-generated</Badge>
           </div>
           {briefing && (
