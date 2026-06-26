@@ -73,10 +73,10 @@ export async function runPipeline(
   const logId = logEntry?.id
 
   try {
-    const columnMap = (pipeline as any).column_map as Record<string, string>
-    const batchSize = (pipeline as any).batch_size ?? 100
-    const sourceTable = (pipeline as any).source_table
-    const targetTable = (pipeline as any).target_table
+    const columnMap = pipeline.column_map
+    const batchSize = pipeline.batch_size ?? 100
+    const sourceTable = pipeline.source_table
+    const targetTable = pipeline.target_table
 
     const sourceColumns = Object.keys(columnMap)
     const targetColumns = Object.values(columnMap)
@@ -136,8 +136,8 @@ export async function runPipeline(
       type: "operational.record_populated",
       organization_id: organizationId,
       data: { entity_type: "elt_pipeline", entity_id: pipelineId, source_document: "" },
-    } as any)
-
+    })
+ 
     return runLog
   } catch (error) {
     runLog.status = "failed"

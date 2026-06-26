@@ -65,7 +65,7 @@ export async function executeRecipe(
         case "extract": {
           const schema = step.config.schema === "invoice" ? INVOICE_SCHEMA : CONTRACT_SCHEMA
           const fields = await extractFields(content.slice(0, 10000), schema)
-          await db.from("documents").update({ extracted_entities: fields as any }).eq("id", documentId)
+          await db.from("documents").update({ extracted_entities: fields as unknown as Record<string, unknown> }).eq("id", documentId)
           results.push(`extracted:${fields.length} fields`)
           break
         }

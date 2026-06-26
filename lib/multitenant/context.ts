@@ -134,5 +134,5 @@ export function withTenantContext(
  * Must be called after withTenantContext middleware has attached it.
  */
 export function getTenantContextFromRequest(request: NextRequest): TenantContextMiddleware | null {
-  return (request as any).tenantContext || null
+  return (request as NextRequest & { tenantContext?: TenantContextMiddleware }).tenantContext || null
 }

@@ -82,7 +82,7 @@ export async function extractDocumentFields(
 
   if (fields.length > 0) {
     const db = createServiceClient()
-    await db.from("documents").update({ extracted_entities: fields as any }).eq("id", documentId)
+    await db.from("documents").update({ extracted_entities: fields as unknown as Record<string, unknown> }).eq("id", documentId)
 
     await dispatchDocumentEvent({
       type: "document.extracted",

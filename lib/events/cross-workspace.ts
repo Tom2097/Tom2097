@@ -1,5 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
-import { publish } from "@/lib/events/bus"
+import { type DomainEvent, publish } from "@/lib/events/bus"
 
 export type CrossWorkspaceEventType =
   | "workspace.document_routed"
@@ -45,10 +45,10 @@ export async function emitCrossWorkspaceEvent(
 
     for (const target of event.target_workspaces) {
       await publish({
-        type: event.type as any,
+        type: event.type as unknown as DomainEvent["type"],
         organization_id: event.organization_id,
-        data: event.payload as any,
-      })
+        data: event.payload,
+      } as DomainEvent)
     }
 
     return true
@@ -72,9 +72,9 @@ export async function getCorrelationChain(
 
   return {
     correlation_id: correlationId,
-    source: (events[0] as any).source_workspace,
-    timestamp: new Date((events[0] as any).created_at),
-    chain: (events as any[]).map((e) => ({
+    source: (events[0] as Record<string, unknown>).source_workspace as string,
+    timestamp: new Date((events[0] as Record<string, unknown>).created_at as string),
+    chain: (events as Array<Record<string, unknown>>).map((e) => ({
       event: e.event_type,
       workspace: e.source_workspace,
       timestamp: new Date(e.created_at),

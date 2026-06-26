@@ -197,7 +197,7 @@ export async function queryFunnel(
       console.log("[v0] queryFunnel failed at step", i, error.message)
       break
     }
-    const count = Number((data as any)?.[0]?.count ?? 0)
+    const count = Number((data as Array<{ count: number }> | null)?.[0]?.count ?? 0)
     const previous = result[i - 1]?.count ?? 0
     result.push({
       step: i + 1,

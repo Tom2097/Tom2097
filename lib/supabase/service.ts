@@ -56,7 +56,7 @@ export function createServiceClient() {
           remove: async (paths: string[]) => ({ data: [], error: { message: "Supabase not configured" } }),
         }),
       },
-    } as any
+    } as unknown as ReturnType<typeof createClient>
   }
 
   return createClient(url, serviceKey, {

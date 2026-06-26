@@ -440,7 +440,7 @@ export async function placeLegalHold(
     legal_hold: true,
     metadata: { ...doc.metadata, legal_hold_at: new Date().toISOString(), legal_hold_by: userId },
     status: "legal_hold",
-  } as any)
+  } as DocumentUpdate)
   if (result) {
     dispatchDocumentEvent({
       type: "document.legal_hold_placed",
@@ -463,7 +463,7 @@ export async function releaseLegalHold(
     legal_hold: false,
     metadata: { ...doc.metadata, legal_hold_released_at: new Date().toISOString() },
     status: "ready",
-  } as any)
+  } as DocumentUpdate)
   if (result) {
     dispatchDocumentEvent({
       type: "document.legal_hold_released",
@@ -504,7 +504,7 @@ export async function requestSignature(
   await updateDocument(organizationId, documentId, {
     signature_status: "pending",
     signature_request_id: data.id,
-  } as any)
+  } as DocumentUpdate)
   dispatchDocumentEvent({
     type: "document.signature_requested",
     organization_id: organizationId,
@@ -540,7 +540,7 @@ export async function confirmSignature(
     signature_status: status,
     signed_at: signed ? now : null,
     signed_by: signed ? req.signer_email : null,
-  } as any)
+  } as DocumentUpdate)
   dispatchDocumentEvent({
     type: "document.signature_completed",
     organization_id: organizationId,

@@ -135,7 +135,7 @@ async function updateTenantInfo(
         data: {
           tenantId: tenantContext.organizationId,
           name: updated.name,
-          logoUrl: (updated as any).logo_url,
+          logoUrl: (updated as Record<string, unknown>).logo_url as string | null,
         },
       },
       { status: 200 }

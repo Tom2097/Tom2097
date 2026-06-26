@@ -38,7 +38,7 @@ export async function dispatchDocumentEvent(event: DocumentEvent): Promise<void>
     })
 
     await logAuthEvent({
-      action: event.type.replace("document.", "document_") as any,
+      action: event.type.replace("document.", "document_") as unknown as "document_uploaded",
       userId: event.actor_id,
       organizationId: event.organization_id,
       resourceType: "document",
@@ -71,5 +71,5 @@ export async function getDocumentEvents(
     .eq("document_id", documentId)
     .order("created_at", { ascending: false })
     .limit(limit)
-  return (data ?? []) as any
+  return (data ?? []) as Array<{ id: string; event_type: string; actor_id: string | null; metadata: Record<string, unknown>; created_at: string }>
 }

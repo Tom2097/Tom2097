@@ -36,5 +36,5 @@ export async function getCorrelatedEvents(correlationId: string): Promise<Array<
     .select("source, event, metadata, created_at")
     .eq("correlation_id", correlationId)
     .order("created_at", { ascending: true })
-  return (data ?? []) as any
+  return (data ?? []) as Array<{ source: string; event: string; metadata: Record<string, unknown>; created_at: string }>
 }

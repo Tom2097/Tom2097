@@ -34,9 +34,9 @@ export async function completeOnboardingStep(planId: string, stepId: string): Pr
   const db = createServiceClient()
   const { data: plan } = await db.from("onboarding_plans").select("*").eq("id", planId).single()
   if (!plan) return false
-  const steps = (plan as any).steps as Array<any>
-  const updated = steps.map((s: any) => s.id === stepId ? { ...s, status: "completed", completed_at: new Date().toISOString() } : s)
-  const allDone = updated.every((s: any) => s.status === "completed")
+  const steps = (plan as OnboardingPlan).steps
+  const updated = steps.map((s) => s.id === stepId ? { ...s, status: "completed", completed_at: new Date().toISOString() } : s)
+  const allDone = updated.every((s) => s.status === "completed")
   const { error } = await db.from("onboarding_plans").update({
     steps: updated, status: allDone ? "completed" : "in_progress",
   }).eq("id", planId)

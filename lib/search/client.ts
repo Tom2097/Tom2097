@@ -50,11 +50,9 @@ function getClient(): Search | null {
 }
 
 /** Access the shared universal index with typed content + metadata. */
-export function getSearchIndex() {
+export function getSearchIndex(): ReturnType<Search["index"]> | null {
   const client = getClient()
-  if (!client) {
-    return null as any
-  }
+  if (!client) return null
   return client.index<SearchContent, SearchMetadata>(INDEX_NAME)
 }
 

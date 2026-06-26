@@ -16,7 +16,7 @@ export function verifyChain(entries: AuditEntry[]): { valid: boolean; brokenAt?:
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i]
     const { hash: _, id: _id, ...rest } = entry
-    const expectedHash = computeHash(rest as any)
+    const expectedHash = computeHash(rest as Omit<AuditEntry, "hash" | "id">)
     if (entry.hash !== expectedHash) return { valid: false, brokenAt: i }
     if (i > 0 && entry.previousHash !== entries[i - 1].hash) return { valid: false, brokenAt: i }
   }

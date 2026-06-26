@@ -541,7 +541,7 @@ export async function storeFileMetadata(
       return file
     }
     
-    return { ...file, ...(data as any) }
+    return { ...file, ...(data as Record<string, unknown>) }
     
   } catch (error) {
     console.error("[File Upload] Error storing file metadata:", error)
