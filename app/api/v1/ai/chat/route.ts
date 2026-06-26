@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { streamText, convertToCoreMessages, type UIMessage } from "ai"
+import { streamText, convertToModelMessages, type UIMessage } from "ai"
 import { extractTenantContext } from "@/lib/multitenant/context"
 import { BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
 import { mistralModel } from "@/lib/ai/mistral"
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   const result = streamText({
     model: mistralModel,
     system,
-    messages: await convertToCoreMessages(merged),
+    messages: await convertToModelMessages(merged),
   })
 
   return result.toUIMessageStreamResponse({

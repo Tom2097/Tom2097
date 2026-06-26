@@ -1,6 +1,6 @@
 import {
   consumeStream,
-  convertToCoreMessages,
+  convertToModelMessages,
   streamText,
   UIMessage,
 } from 'ai'
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   const result = streamText({
     model: mistralModel,
     system: DIGIT_SYSTEM_PROMPT,
-    messages: await convertToCoreMessages(messages),
+    messages: await convertToModelMessages(messages),
     abortSignal: req.signal,
   })
 
