@@ -1,47 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Building2, Users, Plus, ChevronRight, ChevronDown, Building, Search, Mail, Phone } from "lucide-react"
+import { Building2, Users, Plus, ChevronRight, ChevronDown, Building, Search, Mail, Phone, Loader2 } from "lucide-react"
+
+interface AccountContact {
+  id: string; name: string; email: string | null; phone: string | null; title: string | null
+}
 
 interface AccountNode {
   id: string; name: string; domain: string | null; industry: string | null
-  contacts: Array<{ id: string; name: string; email: string | null; phone: string | null; title: string | null }>
-  children?: AccountNode[]
+  contacts: AccountContact[]; children?: AccountNode[]
 }
-
-const sampleAccounts: AccountNode[] = [
-  {
-    id: "acme-corp", name: "Acme Corp", domain: "acme.com", industry: "Manufacturing",
-    contacts: [
-      { id: "c1", name: "John Smith", email: "john@acme.com", phone: "+1-555-0101", title: "CEO" },
-      { id: "c2", name: "Sarah Chen", email: "sarah@acme.com", phone: "+1-555-0102", title: "CTO" },
-    ],
-    children: [
-      {
-        id: "acme-eu", name: "Acme Europe GmbH", domain: "acme-eu.de", industry: "Manufacturing",
-        contacts: [
-          { id: "c3", name: "Hans Mueller", email: "hans@acme-eu.de", phone: "+49-30-1234", title: "Managing Director" },
-        ],
-      },
-      {
-        id: "acme-asia", name: "Acme Asia Pte Ltd", domain: "acme-asia.sg", industry: "Manufacturing",
-        contacts: [
-          { id: "c4", name: "Lin Wei", email: "lin@acme-asia.sg", phone: "+65-6789-0123", title: "Regional Head" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "green-energy", name: "Green Energy Inc", domain: "greenenergy.io", industry: "Renewable Energy",
-    contacts: [
-      { id: "c5", name: "Emma Rodriguez", email: "emma@greenenergy.io", phone: "+1-555-0201", title: "VP Operations" },
-    ],
-  },
-]
 
 function AccountNodeView({ node, depth = 0 }: { node: AccountNode; depth?: number }) {
   const [expanded, setExpanded] = useState(true)
@@ -111,6 +84,24 @@ function AccountNodeView({ node, depth = 0 }: { node: AccountNode; depth?: numbe
 }
 
 export function CrmAccountsHierarchy() {
+  const [accounts, setAccounts] = useState<AccountNode[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [search, setSearch] = useState("")
+
+  useEffect(() => {
+    setLoading(true)
+    const params = new URLSearchParams()
+    if (search) params.set("search", search)
+    params.set("limit", "50")
+
+    fetch(`/api/v1/crm/companies?${params}`)
+      .then((r) => { if (!r.ok) throw new Error("Failed"); return r.json() })
+      .then((data) => setAccounts(data.companies ?? data ?? []))
+      .catch(() => setError("Could not load accounts"))
+      .finally(() => setLoading(false))
+  }, [search])
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -121,19 +112,24 @@ export function CrmAccountsHierarchy() {
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <input className="h-8 w-48 rounded-md border border-input bg-background pl-8 pr-3 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder="Search accounts..." />
+            <input className="h-8 w-48 rounded-md border border-input bg-background pl-8 pr-3 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder="Search accounts..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <Button size="sm" className="h-8"><Plus className="h-3.5 w-3.5 mr-1" />Add Account</Button>
         </div>
       </div>
 
-      <div className="border border-border/50 rounded-xl divide-y divide-border/50">
-        {sampleAccounts.map((account) => (
-          <div key={account.id} className="p-3">
-            <AccountNodeView node={account} />
-          </div>
-        ))}
-      </div>
+      {loading ? <div className="flex justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+      : error ? <div className="text-xs text-red-500 p-4 text-center">{error}</div>
+      : accounts.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No accounts found</p>
+      : (
+        <div className="border border-border/50 rounded-xl divide-y divide-border/50">
+          {accounts.map((account) => (
+            <div key={account.id} className="p-3">
+              <AccountNodeView node={account} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -1,35 +1,56 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { BarChart3, Users, TrendingUp, CalendarDays, Layers } from "lucide-react"
+import { BarChart3, Users, TrendingUp, CalendarDays, Layers, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { LiveChart } from "@/components/digit/live-chart"
 
+interface FunnelStep {
+  step: string; count: number
+}
+
+interface RetentionPoint {
+  week: string; rate: number
+}
+
+interface CohortData {
+  name: string; data: RetentionPoint[]
+}
+
 export function CrmEventInstrumentation() {
   const [activeView, setActiveView] = useState<"funnel" | "retention">("funnel")
+  const [funnelData, setFunnelData] = useState<FunnelStep[]>([])
+  const [retentionData, setRetentionData] = useState<RetentionPoint[]>([])
+  const [cohorts, setCohorts] = useState<CohortData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
-  const funnelData = [
-    { step: "Signup", count: 1240 },
-    { step: "Demo", count: 892 },
-    { step: "Trial", count: 567 },
-    { step: "Proposal", count: 345 },
-    { step: "Closed Won", count: 218 },
-  ]
+  useEffect(() => {
+    setLoading(true)
+    setError("")
+    fetch("/api/v1/ai/crm-query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: "Generate CRM event instrumentation data. Return ONLY valid JSON with: funnel (array of {step: string, count: number}), retention (array of {week: string, rate: number}), cohorts (array of {name: string, data: [{week: string, rate: number}]}). No markdown.",
+      }),
+    }).then((r) => { if (!r.ok) throw new Error("Failed"); return r.json() })
+      .then((data) => {
+        const parsed = JSON.parse(data.response)
+        setFunnelData(parsed.funnel ?? [])
+        setRetentionData(parsed.retention ?? [])
+        setCohorts(parsed.cohorts ?? [])
+      })
+      .catch(() => setError("Could not load event data"))
+      .finally(() => setLoading(false))
+  }, [])
 
-  const retentionData = [
-    { week: "W1", rate: 100 }, { week: "W2", rate: 72 }, { week: "W3", rate: 58 },
-    { week: "W4", rate: 49 }, { week: "W5", rate: 43 }, { week: "W6", rate: 38 },
-  ]
-
-  const cohorts = [
-    { name: "Jan 2024", data: [{ week: "W1", rate: 100 }, { week: "W2", rate: 74 }, { week: "W3", rate: 61 }, { week: "W4", rate: 52 }] },
-    { name: "Feb 2024", data: [{ week: "W1", rate: 100 }, { week: "W2", rate: 71 }, { week: "W3", rate: 56 }, { week: "W4", rate: 47 }] },
-    { name: "Mar 2024", data: [{ week: "W1", rate: 100 }, { week: "W2", rate: 78 }, { week: "W3", rate: 63 }, { week: "W4", rate: 55 }] },
-  ]
+  if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
   return (
     <Card>
@@ -52,7 +73,8 @@ export function CrmEventInstrumentation() {
       </CardHeader>
       <CardContent className="p-4">
         {activeView === "funnel" ? (
-          <div className="space-y-3">
+          funnelData.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No funnel data</p>
+          : <div className="space-y-3">
             <div className="h-[250px]">
               <LiveChart data={funnelData.map((d) => ({ name: d.step, count: d.count }))} dataKey="count" type="bar" height={250} color="hsl(var(--chart-2))" />
             </div>
@@ -71,10 +93,11 @@ export function CrmEventInstrumentation() {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="h-[250px]">
+            {retentionData.length > 0 && <div className="h-[250px]">
               <LiveChart data={retentionData.map((d) => ({ name: d.week, rate: d.rate }))} dataKey="rate" type="area" height={250} color="hsl(var(--chart-2))" />
-            </div>
-            <div className="space-y-2">
+            </div>}
+            {cohorts.length === 0 ? <p className="text-xs text-muted-foreground text-center py-4">No cohort data</p>
+            : <div className="space-y-2">
               {cohorts.map((cohort) => (
                 <div key={cohort.name} className="p-2 rounded-lg border border-border/50">
                   <p className="text-xs font-medium mb-2">{cohort.name} Cohort</p>
@@ -89,7 +112,7 @@ export function CrmEventInstrumentation() {
                   </div>
                 </div>
               ))}
-            </div>
+            </div>}
           </div>
         )}
       </CardContent>

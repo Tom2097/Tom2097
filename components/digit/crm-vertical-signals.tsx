@@ -1,20 +1,43 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, Users, Building2, DollarSign, ArrowUp, ArrowDown } from "lucide-react"
+import { TrendingUp, Users, Building2, DollarSign, ArrowUp, ArrowDown, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const verticals = [
-  { name: "Manufacturing", deals: 12, value: 480000, growth: 23, signals: ["IIoT adoption surge", "Supply chain digitization", "Quality compliance mandates"], trend: "up" as const },
-  { name: "Healthcare", deals: 8, value: 320000, growth: 15, signals: ["HIPAA audit season", "Telehealth expansion", "AI diagnostics adoption"], trend: "up" as const },
-  { name: "Finance", deals: 6, value: 520000, growth: -5, signals: ["Regulatory tightening", "Fintech competition", "Open banking requirements"], trend: "down" as const },
-  { name: "Technology", deals: 15, value: 680000, growth: 31, signals: ["AI/ML investment boom", "Remote workforce tools", "Cybersecurity spending up"], trend: "up" as const },
-  { name: "Energy", deals: 4, value: 195000, growth: 8, signals: ["Green energy subsidies", "Grid modernization", "Carbon reporting mandates"], trend: "up" as const },
-]
+interface VerticalData {
+  name: string; deals: number; value: number; growth: number
+  signals: string[]; trend: "up" | "down"
+}
 
 export function CrmVerticalSignals() {
+  const [verticals, setVerticals] = useState<VerticalData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    setLoading(true)
+    setError("")
+    fetch("/api/v1/ai/crm-query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: "Analyze CRM pipeline by vertical industry. Return ONLY valid JSON array. Each item: {name: string (industry name), deals: number, value: number, growth: number, signals: string[], trend: \"up\"/\"down\"}. No markdown.",
+      }),
+    }).then((r) => { if (!r.ok) throw new Error("Failed"); return r.json() })
+      .then((data) => {
+        const parsed = JSON.parse(data.response)
+        setVerticals(Array.isArray(parsed) ? parsed : [])
+      })
+      .catch(() => setError("Could not load vertical signals"))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -25,7 +48,8 @@ export function CrmVerticalSignals() {
         <Badge variant="secondary" className="text-[10px]">Market intelligence</Badge>
       </div>
 
-      <div className="space-y-2">
+      {verticals.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No vertical data yet</p>
+      : <div className="space-y-2">
         {verticals.map((v, i) => (
           <motion.div key={v.name} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
             className="p-3 rounded-xl border border-border/50 hover:border-primary/30 transition-colors"
@@ -46,19 +70,17 @@ export function CrmVerticalSignals() {
 
             <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
               <span className="flex items-center gap-1"><Users className="h-3 w-3" />{v.deals} deals</span>
-              <span className="flex items-center gap-1"><DollarSign className="h-3 w-3" />${(v.value / v.deals / 1000).toFixed(0)}K avg</span>
+              <span className="flex items-center gap-1"><DollarSign className="h-3 w-3" />${v.deals > 0 ? (v.value / v.deals / 1000).toFixed(0) : 0}K avg</span>
             </div>
 
             <div className="flex flex-wrap gap-1.5">
               {v.signals.map((s) => (
-                <Badge key={s} variant="secondary" className="text-[10px]">
-                  {s}
-                </Badge>
+                <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
               ))}
             </div>
           </motion.div>
         ))}
-      </div>
+      </div>}
     </div>
   )
 }

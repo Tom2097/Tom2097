@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Mail, Phone, Sparkles, ArrowRight, Star, Clock, MoreHorizontal, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -20,14 +20,6 @@ interface Lead {
   created_at: string
 }
 
-const mockLeads: Lead[] = [
-  { id: "1", name: "Rahul Sharma", email: "rahul@techcorp.com", phone: "+91 98765 43210", title: "CTO", company: "TechCorp India", score: 92, status: "lead", created_at: new Date().toISOString() },
-  { id: "2", name: "Priya Patel", email: "priya@greenenergy.in", phone: "+91 87654 32109", title: "VP Engineering", company: "GreenEnergy Solutions", score: 88, status: "lead", created_at: new Date().toISOString() },
-  { id: "3", name: "Amit Singh", email: "amit@pharmalabs.com", phone: "+91 76543 21098", title: "Quality Head", company: "PharmaLabs Ltd", score: 75, status: "lead", created_at: new Date(Date.now() - 3 * 86400000).toISOString() },
-  { id: "4", name: "Sneha Reddy", email: "sneha@logistics.in", phone: "+91 65432 10987", title: "Operations Director", company: "FastTrack Logistics", score: 62, status: "lead", created_at: new Date(Date.now() - 10 * 86400000).toISOString() },
-  { id: "5", name: "Vikram Joshi", email: "vikram@fintech.com", phone: "+91 54321 09876", title: "Analyst", company: "FinTech Ventures", score: 45, status: "lead", created_at: new Date(Date.now() - 20 * 86400000).toISOString() },
-]
-
 function getScoreColor(score: number): string {
   if (score >= 80) return "text-emerald-500"
   if (score >= 60) return "text-amber-500"
@@ -41,13 +33,39 @@ function getScoreBg(score: number): string {
 }
 
 export function CrmLeadInbox() {
-  const [leads] = useState(mockLeads)
+  const [leads, setLeads] = useState<Lead[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const [search, setSearch] = useState("")
   const [sortBy, setSortBy] = useState<"score" | "recent">("score")
+
+  useEffect(() => {
+    fetch("/api/v1/crm/contacts?status=lead")
+      .then((r) => r.ok ? r.json() : Promise.reject("Failed"))
+      .then((data) => {
+        const items = (data.contacts || data.data || []).map((c: any) => ({
+          id: c.id,
+          name: `${c.first_name || ""} ${c.last_name || ""}`.trim() || c.name || c.email || "Unknown",
+          email: c.email || null,
+          phone: c.phone || null,
+          title: c.title || null,
+          company: c.company || c.company_name || null,
+          score: c.score || c.lead_score || 0,
+          status: c.status || "lead",
+          created_at: c.created_at || new Date().toISOString(),
+        }))
+        setLeads(items)
+        setLoading(false)
+      })
+      .catch(() => { setError("Failed to load leads"); setLoading(false) })
+  }, [])
 
   const filtered = leads
     .filter((l) => !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.company?.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => sortBy === "score" ? b.score - a.score : new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center">Loading leads...</div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
   return (
     <div className="space-y-4">
@@ -91,7 +109,7 @@ export function CrmLeadInbox() {
                     {lead.score >= 80 && <Star className="w-3 h-3 fill-amber-500 text-amber-500" />}
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 capitalize">{lead.status}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{lead.title} at {lead.company}</p>
+                  <p className="text-sm text-muted-foreground">{lead.title ? `${lead.title} at ${lead.company}` : lead.company || ""}</p>
                   <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
                     {lead.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{lead.email}</span>}
                     {lead.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{lead.phone}</span>}

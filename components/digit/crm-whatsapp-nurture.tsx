@@ -1,42 +1,75 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MessageSquare, Send, Clock, CheckCircle2, Phone, Mail, Calendar, ArrowRight } from "lucide-react"
+import { MessageSquare, Send, Clock, CheckCircle2, Phone, Mail, Calendar, ArrowRight, Loader2, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface NurtureStep {
   day: number; channel: string; subject: string; content: string; delay: string
 }
 
-const nurtureSequences = [
-  {
-    id: "w1", name: "Post-Demo Follow-up", prospect: "Acme Corp — John Smith",
-    steps: [
-      { day: 1, channel: "email", subject: "Thanks for your time", content: "Quick summary of what we covered and the recording link.", delay: "1h after demo" },
-      { day: 3, channel: "whatsapp", subject: "Quick thought", content: "Hi John! Just following up — any initial reactions to the platform?", delay: "Day 3" },
-      { day: 7, channel: "email", subject: "Case study: Similar company results", content: "How GreenEnergy achieved 40% efficiency with our platform.", delay: "Day 7" },
-      { day: 10, channel: "phone", subject: "Check-in call", content: "10-min call to answer questions and discuss next steps.", delay: "Day 10" },
-      { day: 14, channel: "whatsapp", subject: "Exclusive offer", content: "Extended trial by 14 days — no commitment needed.", delay: "Day 14" },
-    ],
-  },
-  {
-    id: "w2", name: "Cold Outreach", prospect: "MedTech — Sarah Chen",
-    steps: [
-      { day: 1, channel: "email", subject: "Idea for your compliance workflow", content: "Saw your team is expanding — we help MedTech companies automate compliance.", delay: "Day 1" },
-      { day: 3, channel: "whatsapp", subject: "Quick video", content: "2-min video showing how our compliance module works. Worth a look?", delay: "Day 3" },
-      { day: 7, channel: "email", subject: "Webinar invite", content: "Join our webinar on 'Automating Compliance in MedTech' this Thursday.", delay: "Day 7" },
-      { day: 12, channel: "whatsapp", subject: "Last chance", content: "The webinar is tomorrow — I saved you a spot. Here's the link!", delay: "Day 12" },
-    ],
-  },
-]
+interface NurtureSequence {
+  id: string; name: string; prospect: string; steps: NurtureStep[]
+}
 
 const channelIcons: Record<string, any> = { email: Mail, whatsapp: MessageSquare, phone: Phone, meeting: Calendar }
 
 export function CrmWhatsAppNurture() {
+  const [sequences, setSequences] = useState<NurtureSequence[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [sending, setSending] = useState<string | null>(null)
+
+  const fetchSequences = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const res = await fetch("/api/v1/ai/crm-query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "Generate WhatsApp nurture sequences for CRM prospects. Return ONLY valid JSON array. Each item: {id: string, name: string, prospect: string, steps: [{day: number, channel: string, subject: string, content: string, delay: string}]}. No markdown.",
+        }),
+      })
+      if (!res.ok) throw new Error("Failed")
+      const data = await res.json()
+      const parsed = JSON.parse(data.response)
+      setSequences(Array.isArray(parsed) ? parsed : [])
+    } catch {
+      setError("Could not load sequences")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchSequences() }, [])
+
+  const sendNow = async (id: string, step: NurtureStep) => {
+    setSending(`${id}-${step.day}`)
+    try {
+      await fetch("/api/v1/crm/communications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: step.channel,
+          to_address: step.channel === "email" ? "prospect@example.com" : "+1234567890",
+          subject: step.subject,
+          body: step.content,
+        }),
+      })
+    } catch {
+      setError("Failed to send")
+    } finally {
+      setSending(null)
+    }
+  }
+
+  if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchSequences} className="underline ml-1">Retry</button></div>
 
   return (
     <div className="space-y-4">
@@ -45,11 +78,12 @@ export function CrmWhatsAppNurture() {
           <MessageSquare className="h-5 w-5 text-green-500" />
           <p className="text-sm font-medium">WhatsApp Nurture Sequences</p>
         </div>
-        <Badge variant="secondary" className="text-[10px]">{nurtureSequences.length} active sequences</Badge>
+        <Badge variant="secondary" className="text-[10px]">{sequences.length} active sequences</Badge>
       </div>
 
-      <div className="space-y-3">
-        {nurtureSequences.map((seq, i) => (
+      {sequences.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No sequences yet</p>
+      : <div className="space-y-3">
+        {sequences.map((seq, i) => (
           <motion.div key={seq.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
             className="rounded-xl border border-border/50 overflow-hidden"
           >
@@ -84,7 +118,9 @@ export function CrmWhatsAppNurture() {
                         <p className="text-[11px] text-muted-foreground">{step.content}</p>
                       </div>
                       <div className="flex gap-1 shrink-0">
-                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0"><Send className="h-3 w-3" /></Button>
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => sendNow(seq.id, step)} disabled={sending === `${seq.id}-${step.day}`}>
+                          {sending === `${seq.id}-${step.day}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                        </Button>
                         <Button size="sm" variant="ghost" className="h-6 w-6 p-0"><CheckCircle2 className="h-3 w-3 text-green-500" /></Button>
                       </div>
                     </motion.div>
@@ -94,10 +130,10 @@ export function CrmWhatsAppNurture() {
             )}
           </motion.div>
         ))}
-      </div>
+      </div>}
 
       <Button variant="outline" className="w-full text-xs">
-        <MessageSquare className="h-3 w-3 mr-1" />Create New Sequence
+        <Plus className="h-3 w-3 mr-1" />Create New Sequence
       </Button>
     </div>
   )

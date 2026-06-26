@@ -1,42 +1,56 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Lightbulb, Sparkles, ThumbsUp, ThumbsDown, RefreshCw, Quote, Star } from "lucide-react"
+import { Lightbulb, Sparkles, ThumbsUp, ThumbsDown, RefreshCw, Quote, Star, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const conversationTemplates = [
-  {
-    id: "c1", name: "Discovery Call Follow-up", scenario: "After initial discovery call",
-    suggested: "Hi [Name], thanks again for the time today. Based on our conversation about [topic], I put together a brief summary of how we could help drive [outcome]. Would it make sense to schedule a deeper dive with our solution architect?",
-    objection: "We need to think about this a bit more",
-    rebuttal: "Of course — what specific areas would you like more clarity on? I can put together a quick analysis of how we compare on [specific concern].",
-  },
-  {
-    id: "c2", name: "Proposal Follow-up", scenario: "Proposal sent, no response in 7+ days",
-    suggested: "Hi [Name], checking in on the proposal I sent last week. I also came across this case study showing how [similar company] achieved [result] in just [timeframe] — thought it might be useful context. Any questions I can answer?",
-    objection: "Budget got frozen this quarter",
-    rebuttal: "Understood. Would a phased approach work — starting with a pilot in [department] at a lower commitment? Many of our customers started that way.",
-  },
-  {
-    id: "c3", name: "Competitor Defense", scenario: "Prospect mentioned evaluating a competitor",
-    suggested: "Hi [Name], glad you're evaluating options. One thing that sets us apart is [differentiator]. I'd love to walk through a side-by-side comparison focused on [key requirement]. When works for a 20-min call?",
-    objection: "Competitor X offers the same at lower cost",
-    rebuttal: "I understand price is important. The difference is [differentiator] built into our platform — which actually reduces total cost over 12 months by eliminating [hidden cost]. Let me share a TCO comparison.",
-  },
-]
+interface TemplateSuggestion {
+  id: string; name: string; scenario: string; suggested: string; objection: string; rebuttal: string
+}
 
-const playbooks = [
-  { id: "p1", name: "Cold Outreach Sequence", stages: ["Connect on LinkedIn", "Send value-first email", "Share relevant case study", "Personalized video message", "Break-up email"] },
-  { id: "p2", name: "Evaluation Defense", stages: ["Provide comparison matrix", "Offer sandbox access", "Schedule technical deep-dive", "Share ROI calculator", "Executive sponsorship call"] },
-]
+interface SentimentItem {
+  name: string; sentiment: number; trend: string; keywords: string[]
+}
 
 export function CrmConversationIntelligence() {
   const [activeTab, setActiveTab] = useState<"suggest" | "playbook" | "sentiment">("suggest")
   const [feedback, setFeedback] = useState<Record<string, "up" | "down" | null>>({})
+  const [templates, setTemplates] = useState<TemplateSuggestion[]>([])
+  const [sentiments, setSentiments] = useState<SentimentItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  const generateData = useCallback(async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const res = await fetch("/api/v1/ai/crm-query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "Generate conversation intelligence data. Return ONLY valid JSON with: templates (array of {id, name, scenario, suggested, objection, rebuttal}) and sentiments (array of {name, sentiment: 0-100, trend: \"up\"/\"down\", keywords: string[]}). No markdown.",
+        }),
+      })
+      if (!res.ok) throw new Error("Failed")
+      const data = await res.json()
+      const parsed = JSON.parse(data.response)
+      if (parsed.templates) setTemplates(parsed.templates)
+      if (parsed.sentiments) setSentiments(parsed.sentiments)
+    } catch {
+      setError("Could not generate suggestions")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { generateData() }, [generateData])
+
+  if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={generateData} className="underline ml-1">Retry</button></div>
 
   return (
     <div className="space-y-4">
@@ -57,7 +71,7 @@ export function CrmConversationIntelligence() {
       <AnimatePresence mode="wait">
         {activeTab === "suggest" && (
           <motion.div key="suggest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
-            {conversationTemplates.map((t, i) => (
+            {(templates.length === 0 ? [] : templates).map((t, i) => (
               <motion.div key={t.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
                 className="p-3 rounded-xl border border-border/50"
               >
@@ -101,12 +115,16 @@ export function CrmConversationIntelligence() {
                 </div>
               </motion.div>
             ))}
+            {templates.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">No suggestions available</p>}
           </motion.div>
         )}
 
         {activeTab === "playbook" && (
           <motion.div key="playbook" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
-            {playbooks.map((p, i) => (
+            {[
+              { id: "p1", name: "Cold Outreach Sequence", stages: ["Connect on LinkedIn", "Send value-first email", "Share relevant case study", "Personalized video message", "Break-up email"] },
+              { id: "p2", name: "Evaluation Defense", stages: ["Provide comparison matrix", "Offer sandbox access", "Schedule technical deep-dive", "Share ROI calculator", "Executive sponsorship call"] },
+            ].map((p, i) => (
               <motion.div key={p.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                 className="p-3 rounded-xl border border-border/50"
               >
@@ -129,11 +147,7 @@ export function CrmConversationIntelligence() {
 
         {activeTab === "sentiment" && (
           <motion.div key="sentiment" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
-            {[
-              { name: "GreenEnergy — Platform", sentiment: 75, trend: "up", keywords: ["pricing", "timeline", "integration"] },
-              { name: "Acme Corp — Enterprise", sentiment: 35, trend: "down", keywords: ["delay", "competitor", "budget"] },
-              { name: "MedTech — Compliance", sentiment: 90, trend: "up", keywords: ["compliance", "deadline", "approval"] },
-            ].map((conv, i) => (
+            {(sentiments.length === 0 ? [] : sentiments).map((conv, i) => (
               <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}
                 className="p-3 rounded-xl border border-border/50"
               >
@@ -161,6 +175,7 @@ export function CrmConversationIntelligence() {
                 </div>
               </motion.div>
             ))}
+            {sentiments.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">No sentiment data yet</p>}
           </motion.div>
         )}
       </AnimatePresence>

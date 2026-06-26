@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Copy, CheckCircle2, XCircle, AlertTriangle, Search, Users, Building2, FileText } from "lucide-react"
+import { Copy, CheckCircle2, XCircle, AlertTriangle, Search, Users, Building2, FileText, Loader2 } from "lucide-react"
 
 interface DuplicateItem {
   id: string; type: "contact" | "account" | "deal" | "lead"
@@ -16,43 +16,61 @@ interface DuplicateItem {
   fields: Array<{ field: string; value1: string; value2: string; match: boolean }>
 }
 
-const duplicates: DuplicateItem[] = [
-  {
-    id: "d1", type: "contact", name: "John Smith", email: "john.smith@acme.com", phone: "+1-555-0123", matchScore: 95,
-    existing: { name: "Jon Smith", email: "jon@acme-corp.com", phone: "+1-555-0123" },
-    fields: [
-      { field: "Name", value1: "John Smith", value2: "Jon Smith", match: false },
-      { field: "Email", value1: "john.smith@acme.com", value2: "jon@acme-corp.com", match: false },
-      { field: "Phone", value1: "+1-555-0123", value2: "+1-555-0123", match: true },
-    ],
-  },
-  {
-    id: "d2", type: "account", name: "Acme Corp Inc", matchScore: 88,
-    existing: { name: "Acme Corporation" },
-    fields: [
-      { field: "Name", value1: "Acme Corp Inc", value2: "Acme Corporation", match: false },
-      { field: "Domain", value1: "acme.com", value2: "acme-corp.com", match: false },
-      { field: "Industry", value1: "Technology", value2: "Technology", match: true },
-    ],
-  },
-  {
-    id: "d3", type: "lead", name: "Sarah.Johnson@email.com", email: "sarah.johnson@email.com", matchScore: 72,
-    existing: { name: "Sarah Johnson", email: "s.johnson@email.com" },
-    fields: [
-      { field: "Name", value1: "Sarah.Johnson@email.com", value2: "Sarah Johnson", match: false },
-      { field: "Email", value1: "sarah.johnson@email.com", value2: "s.johnson@email.com", match: false },
-    ],
-  },
-]
-
 const typeIcons = { contact: Users, account: Building2, deal: FileText, lead: Users }
 
 export function CrmDuplicateDetection() {
+  const [duplicates, setDuplicates] = useState<DuplicateItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const [filter, setFilter] = useState("")
+  const [merging, setMerging] = useState<string | null>(null)
+
+  const fetchDuplicates = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const res = await fetch("/api/v1/ai/crm-query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "Scan CRM for duplicate contacts, accounts, deals, or leads. Return ONLY valid JSON array. Each item: {id: string, type: \"contact\"/\"account\"/\"deal\"/\"lead\", name: string, email?: string, phone?: string, matchScore: 0-100, existing: {name: string, email?: string, phone?: string}, fields: [{field: string, value1: string, value2: string, match: boolean}]}. No markdown.",
+        }),
+      })
+      if (!res.ok) throw new Error("Failed")
+      const data = await res.json()
+      const parsed = JSON.parse(data.response)
+      setDuplicates(Array.isArray(parsed) ? parsed : [])
+    } catch {
+      setError("Could not detect duplicates")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchDuplicates() }, [])
+
+  const handleMerge = async (id: string) => {
+    setMerging(id)
+    try {
+      await fetch("/api/v1/ai/crm-query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: `Merge duplicate record ${id} in CRM.` }),
+      })
+      setDuplicates((prev) => prev.filter((d) => d.id !== id))
+    } catch {
+      setError("Merge failed")
+    } finally {
+      setMerging(null)
+    }
+  }
 
   const filtered = duplicates.filter(
     (d) => d.name.toLowerCase().includes(filter.toLowerCase()) || d.existing.name.toLowerCase().includes(filter.toLowerCase())
   )
+
+  if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchDuplicates} className="underline ml-1">Retry</button></div>
 
   return (
     <div className="space-y-4">
@@ -70,7 +88,8 @@ export function CrmDuplicateDetection() {
       </div>
 
       <ScrollArea className="h-[400px]">
-        <div className="space-y-3">
+        {filtered.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No duplicates found</p>
+        : <div className="space-y-3">
           {filtered.map((item, i) => {
             const Icon = typeIcons[item.type]
             return (
@@ -122,8 +141,9 @@ export function CrmDuplicateDetection() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button size="sm" className="h-7 text-[10px]">
-                    <CheckCircle2 className="h-3 w-3 mr-1" />Merge & Dedupe
+                  <Button size="sm" className="h-7 text-[10px]" onClick={() => handleMerge(item.id)} disabled={merging === item.id}>
+                    {merging === item.id ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle2 className="h-3 w-3 mr-1" />}
+                    Merge & Dedupe
                   </Button>
                   <Button size="sm" variant="outline" className="h-7 text-[10px]">
                     <XCircle className="h-3 w-3 mr-1" />Discard New
@@ -135,7 +155,7 @@ export function CrmDuplicateDetection() {
               </motion.div>
             )
           })}
-        </div>
+        </div>}
       </ScrollArea>
     </div>
   )

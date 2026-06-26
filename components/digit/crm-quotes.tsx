@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { FileText, Plus, Eye, Send, CheckCircle2, XCircle, Download, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -19,13 +19,6 @@ interface Quote {
   created_at: string
 }
 
-const mockQuotes: Quote[] = [
-  { id: "Q-001", title: "Professional Plan - TechCorp", status: "draft", value: 59900, currency: "USD", contact: "Rahul Sharma", company: "TechCorp India", valid_until: new Date(Date.now() + 30 * 86400000).toISOString(), created_at: new Date().toISOString() },
-  { id: "Q-002", title: "Enterprise Plan - PharmaLabs", status: "sent", value: 249900, currency: "USD", contact: "Amit Singh", company: "PharmaLabs Ltd", valid_until: new Date(Date.now() + 15 * 86400000).toISOString(), created_at: new Date(Date.now() - 2 * 86400000).toISOString() },
-  { id: "Q-003", title: "Starter Plan - GreenEnergy", status: "accepted", value: 29900, currency: "USD", contact: "Priya Patel", company: "GreenEnergy", valid_until: null, created_at: new Date(Date.now() - 10 * 86400000).toISOString() },
-  { id: "Q-004", title: "Custom - FastTrack Logistics", status: "rejected", value: 89900, currency: "USD", contact: "Sneha Reddy", company: "FastTrack Logistics", valid_until: null, created_at: new Date(Date.now() - 20 * 86400000).toISOString() },
-]
-
 const statusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
   sent: "bg-blue-500/10 text-blue-500",
@@ -40,10 +33,34 @@ function formatCurrency(value: number, currency: string) {
 }
 
 export function CrmQuotes() {
-  const [quotes] = useState(mockQuotes)
+  const [quotes, setQuotes] = useState<Quote[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const [filter, setFilter] = useState<string>("all")
 
+  useEffect(() => {
+    fetch("/api/v1/crm/quotes")
+      .then((r) => r.ok ? r.json() : Promise.reject("Failed to load"))
+      .then((data) => { setQuotes(data.quotes || []); setLoading(false) })
+      .catch(() => { setError("Failed to load quotes"); setLoading(false) })
+  }, [])
+
+  const updateStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch(`/api/v1/crm/quotes?id=${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      })
+      if (!res.ok) throw new Error()
+      setQuotes((prev) => prev.map((q) => q.id === id ? { ...q, status } : q))
+    } catch { /* ignore */ }
+  }
+
   const filtered = filter === "all" ? quotes : quotes.filter((q) => q.status === filter)
+
+  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center">Loading quotes...</div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
   return (
     <div className="space-y-4">
@@ -83,8 +100,9 @@ export function CrmQuotes() {
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-7 w-7"><Eye className="w-3.5 h-3.5" /></Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7"><Send className="w-3.5 h-3.5" /></Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateStatus(quote.id, quote.status === "draft" ? "sent" : quote.status)}>
+                  {quote.status === "draft" ? <Send className="w-3.5 h-3.5" /> : quote.status === "sent" ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                </Button>
                 <Button variant="ghost" size="icon" className="h-7 w-7"><Download className="w-3.5 h-3.5" /></Button>
               </div>
             </div>

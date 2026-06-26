@@ -1,40 +1,67 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TrendingUp, DollarSign, Target, BarChart3, ArrowUp, ArrowDown, FileText, Download } from "lucide-react"
+import { TrendingUp, DollarSign, Target, BarChart3, ArrowUp, ArrowDown, FileText, Download, Loader2 } from "lucide-react"
 import { LiveChart } from "@/components/digit/live-chart"
 import { ChartContainer } from "@/components/digit/live-chart"
 
-const stages = [
-  { name: "Lead", value: 45000, count: 12, probability: 0.2 },
-  { name: "Qualified", value: 120000, count: 8, probability: 0.4 },
-  { name: "Proposal", value: 280000, count: 5, probability: 0.6 },
-  { name: "Negotiation", value: 350000, count: 3, probability: 0.8 },
-  { name: "Won (closed)", value: 520000, count: 7, probability: 1.0 },
-  { name: "Lost (closed)", value: 90000, count: 4, probability: 0 },
-]
+interface PipelineStage {
+  name: string; value: number; count: number; probability: number
+}
 
-const monthlyData = [
-  { month: "Jan", actual: 320000, forecast: 310000 },
-  { month: "Feb", actual: 380000, forecast: 370000 },
-  { month: "Mar", actual: 420000, forecast: 400000 },
-  { month: "Apr", actual: 390000, forecast: 410000 },
-  { month: "May", actual: 450000, forecast: 430000 },
-  { month: "Jun", actual: 480000, forecast: 470000 },
-]
+interface WinLossReason {
+  reason: string; pct: number
+}
 
 export function CrmForecastReports() {
   const [period, setPeriod] = useState("q2")
+  const [stages, setStages] = useState<PipelineStage[]>([])
+  const [winReasons, setWinReasons] = useState<WinLossReason[]>([])
+  const [lossReasons, setLossReasons] = useState<WinLossReason[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    setLoading(true)
+    setError("")
+    Promise.all([
+      fetch("/api/v1/crm/pipeline").then((r) => { if (!r.ok) throw new Error("Failed"); return r.json() }),
+      fetch("/api/v1/ai/crm-query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "Return win/loss analysis for CRM. Return ONLY valid JSON with two arrays: winReasons (array of {reason: string, pct: number}) and lossReasons (array of {reason: string, pct: number}). No markdown.",
+        }),
+      }).then((r) => r.json()),
+    ]).then(([pipelineData, aiData]) => {
+      const p = pipelineData.pipeline ?? pipelineData
+      setStages(p.stages ?? [])
+      setWinReasons(p.winReasons ?? [])
+      setLossReasons(p.lossReasons ?? [])
+      try {
+        const parsed = JSON.parse(aiData.response)
+        if (parsed.winReasons) setWinReasons(parsed.winReasons)
+        if (parsed.lossReasons) setLossReasons(parsed.lossReasons)
+      } catch { /* use pipeline data */ }
+    }).catch(() => setError("Could not load forecast"))
+      .finally(() => setLoading(false))
+  }, [])
 
   const totalPipeline = stages.reduce((s, st) => s + st.value, 0)
   const weightedPipeline = stages.filter(s => s.name !== "Lost (closed)").reduce((s, st) => s + st.value * st.probability, 0)
   const wonValue = stages.find(s => s.name === "Won (closed)")?.value ?? 0
-  const winRate = Math.round((wonValue / (wonValue + (stages.find(s => s.name === "Lost (closed)")?.value ?? 0))) * 100)
+  const lostValue = stages.find(s => s.name === "Lost (closed)")?.value ?? 0
+  const winRate = (wonValue + lostValue) > 0 ? Math.round((wonValue / (wonValue + lostValue)) * 100) : 0
+  const totalDeals = stages.reduce((s, st) => s + st.count, 0)
+  const avgDealSize = totalDeals > 0 ? Math.round(totalPipeline / totalDeals / 1000) : 0
+
+  if (loading) return <div className="flex items-center justify-center p-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
   return (
     <div className="space-y-6">
@@ -63,7 +90,7 @@ export function CrmForecastReports() {
             <p className="text-xs text-muted-foreground">Total Pipeline</p>
             <p className="text-xl font-bold mt-1">${(totalPipeline / 1000).toFixed(0)}k</p>
             <div className="flex items-center gap-1 mt-1 text-xs text-green-500">
-              <ArrowUp className="h-3 w-3" />12.5% vs last period
+              <ArrowUp className="h-3 w-3" />Active pipeline
             </div>
           </CardContent>
         </Card>
@@ -72,7 +99,7 @@ export function CrmForecastReports() {
             <p className="text-xs text-muted-foreground">Weighted Forecast</p>
             <p className="text-xl font-bold mt-1">${(weightedPipeline / 1000).toFixed(0)}k</p>
             <div className="flex items-center gap-1 mt-1 text-xs text-green-500">
-              <ArrowUp className="h-3 w-3" />8.3% vs last period
+              <ArrowUp className="h-3 w-3" />Weighted by probability
             </div>
           </CardContent>
         </Card>
@@ -81,16 +108,16 @@ export function CrmForecastReports() {
             <p className="text-xs text-muted-foreground">Win Rate</p>
             <p className="text-xl font-bold mt-1">{winRate}%</p>
             <div className="flex items-center gap-1 mt-1 text-xs text-green-500">
-              <ArrowUp className="h-3 w-3" />3.2% improvement
+              <ArrowUp className="h-3 w-3" />Closed deals
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">Avg Deal Size</p>
-            <p className="text-xl font-bold mt-1">${Math.round(totalPipeline / stages.reduce((s, st) => s + st.count, 0) / 1000)}k</p>
-            <div className="flex items-center gap-1 mt-1 text-xs text-red-500">
-              <ArrowDown className="h-3 w-3" />2.1% vs last period
+            <p className="text-xl font-bold mt-1">${avgDealSize}k</p>
+            <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+              Per deal average
             </div>
           </CardContent>
         </Card>
@@ -113,10 +140,10 @@ export function CrmForecastReports() {
         </TabsContent>
 
         <TabsContent value="forecast" className="mt-4">
-          <ChartContainer title="Revenue Forecast" subtitle="Actual vs forecasted revenue">
+          <ChartContainer title="Revenue Forecast" subtitle="Projected revenue">
             <LiveChart
-              data={monthlyData}
-              dataKey="actual" type="bar" height={300}
+              data={stages.filter(s => s.name !== "Lost (closed)").map(s => ({ name: s.name, value: s.value * s.probability }))}
+              dataKey="value" type="bar" height={300}
               color="hsl(var(--chart-2))"
             />
           </ChartContainer>
@@ -158,7 +185,7 @@ export function CrmForecastReports() {
             <div>
               <h4 className="text-xs font-medium mb-2 text-muted-foreground">Top Win Reasons</h4>
               <div className="space-y-2">
-                {[{ reason: "Product fit", pct: 40 }, { reason: "Pricing competitive", pct: 25 }, { reason: "Strong relationship", pct: 20 }, { reason: "Implementation speed", pct: 15 }].map((r) => (
+                {(winReasons.length > 0 ? winReasons : [{ reason: "No data", pct: 100 }]).map((r) => (
                   <div key={r.reason} className="flex items-center gap-2">
                     <span className="text-xs w-28">{r.reason}</span>
                     <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
@@ -172,7 +199,7 @@ export function CrmForecastReports() {
             <div>
               <h4 className="text-xs font-medium mb-2 text-muted-foreground">Top Loss Reasons</h4>
               <div className="space-y-2">
-                {[{ reason: "Budget constraints", pct: 35 }, { reason: "Competitor selected", pct: 30 }, { reason: "Decision delayed", pct: 15 }, { reason: "Feature gaps", pct: 20 }].map((r) => (
+                {(lossReasons.length > 0 ? lossReasons : [{ reason: "No data", pct: 100 }]).map((r) => (
                   <div key={r.reason} className="flex items-center gap-2">
                     <span className="text-xs w-28">{r.reason}</span>
                     <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">

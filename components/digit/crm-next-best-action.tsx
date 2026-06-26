@@ -1,28 +1,52 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Lightbulb, Target, Phone, Send, Calendar, TrendingUp, Star, Zap, MessageSquare, Mail } from "lucide-react"
+import { Lightbulb, Target, Phone, Send, Calendar, TrendingUp, Star, Zap, MessageSquare, Mail, Loader2 } from "lucide-react"
 
 interface ActionSuggestion {
   id: string; deal: string; action: string; impact: "high" | "medium" | "low"
   reason: string; channel: string; value: number
 }
 
-const suggestions: ActionSuggestion[] = [
-  { id: "a1", deal: "Acme Corp — Enterprise License", action: "Schedule exec-to-exec meeting", impact: "high", reason: "Decision-maker went quiet 14 days ago", channel: "meeting", value: 120000 },
-  { id: "a2", deal: "GreenEnergy — Platform Subscription", action: "Send ROI case study follow-up", impact: "high", reason: "Proposal sent 10 days ago, no response", channel: "email", value: 85000 },
-  { id: "a3", deal: "BuildCorp — Operations Platform", action: "Create competitive comparison deck", impact: "medium", reason: "Competitor discount offer surfaced", channel: "document", value: 65000 },
-  { id: "a4", deal: "DataFlow — Analytics Add-on", action: "Identify new champion in the account", impact: "high", reason: "Champion left the company", channel: "call", value: 35000 },
-  { id: "a5", deal: "All active deals", action: "Send monthly product update newsletter", impact: "medium", reason: "Re-engage all active deal contacts", channel: "email", value: 505000 },
-]
-
 const impactColors = { high: "text-red-500 bg-red-500/10", medium: "text-amber-500 bg-amber-500/10", low: "text-green-500 bg-green-500/10" }
-const channelIcons = { email: Mail, meeting: Calendar, call: Phone, document: Star }
+const channelIcons: Record<string, React.ElementType> = { email: Mail, meeting: Calendar, call: Phone, document: Star, whatsapp: MessageSquare }
 
 export function CrmNextBestAction() {
+  const [suggestions, setSuggestions] = useState<ActionSuggestion[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  const fetchActions = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const res = await fetch("/api/v1/ai/crm-query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "Generate 5 next best actions for my CRM deals. Return ONLY valid JSON array with objects having: id (string), deal (string), action (string), impact (\"high\"/\"medium\"/\"low\"), reason (string), channel (string), value (number). No markdown.",
+        }),
+      })
+      if (!res.ok) throw new Error("Failed")
+      const data = await res.json()
+      const parsed = JSON.parse(data.response)
+      setSuggestions(Array.isArray(parsed) ? parsed : [])
+    } catch {
+      setError("Could not generate suggestions")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchActions() }, [])
+
+  if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchActions} className="underline ml-1">Retry</button></div>
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -35,7 +59,7 @@ export function CrmNextBestAction() {
 
       <div className="space-y-2">
         {suggestions.map((s, i) => {
-          const Icon = channelIcons[s.channel as keyof typeof channelIcons]
+          const Icon = channelIcons[s.channel] || Send
           return (
             <motion.div
               key={s.id}

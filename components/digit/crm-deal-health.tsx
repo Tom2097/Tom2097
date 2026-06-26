@@ -1,29 +1,53 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { AlertTriangle, CheckCircle2, Clock, TrendingUp, Zap, MessageSquare, Users, Target } from "lucide-react"
+import { AlertTriangle, CheckCircle2, Clock, TrendingUp, Zap, MessageSquare, Users, Target, Loader2 } from "lucide-react"
 
 interface DealHealthItem {
   id: string; deal: string; value: number; stage: string; risk: "high" | "medium" | "low"
   reason: string; nextAction: string; daysSinceUpdate: number
 }
 
-const atRiskDeals: DealHealthItem[] = [
-  { id: "d1", deal: "Acme Corp — Enterprise License", value: 120000, stage: "Negotiation", risk: "high", reason: "No decision-maker engaged in 14 days", nextAction: "Schedule exec-to-exec meeting", daysSinceUpdate: 14 },
-  { id: "d2", deal: "GreenEnergy — Platform Subscription", value: 85000, stage: "Proposal", risk: "medium", reason: "Proposal sent 10 days ago, no response", nextAction: "Send follow-up with case study", daysSinceUpdate: 10 },
-  { id: "d3", deal: "MedTech — Compliance Suite", value: 200000, stage: "Qualified", risk: "low", reason: "All stakeholders engaged, next meeting set", nextAction: "Prepare technical demo", daysSinceUpdate: 3 },
-  { id: "d4", deal: "BuildCorp — Operations Platform", value: 65000, stage: "Negotiation", risk: "high", reason: "Competitor discount offer surfaced", nextAction: "Create competitive comparison deck", daysSinceUpdate: 5 },
-  { id: "d5", deal: "DataFlow — Analytics Add-on", value: 35000, stage: "Proposal", risk: "medium", reason: "Budget approval pending, champion left company", nextAction: "Identify new champion in account", daysSinceUpdate: 21 },
-]
-
 const riskColors = { high: "text-red-500 bg-red-500/10", medium: "text-amber-500 bg-amber-500/10", low: "text-green-500 bg-green-500/10" }
 
 export function CrmDealHealthRadar() {
-  const highRisk = atRiskDeals.filter((d) => d.risk === "high").length
-  const mediumRisk = atRiskDeals.filter((d) => d.risk === "medium").length
+  const [deals, setDeals] = useState<DealHealthItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  const fetchHealth = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const res = await fetch("/api/v1/ai/crm-query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "Analyze my CRM pipeline and return 5 deals with their health status. Return ONLY valid JSON array with objects having: id (string), deal (string), value (number), stage (string), risk (\"high\"/\"medium\"/\"low\"), reason (string), nextAction (string), daysSinceUpdate (number). No markdown.",
+        }),
+      })
+      if (!res.ok) throw new Error("Failed")
+      const data = await res.json()
+      const parsed = JSON.parse(data.response)
+      setDeals(Array.isArray(parsed) ? parsed : [])
+    } catch {
+      setError("Could not load deal health")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchHealth() }, [])
+
+  const highRisk = deals.filter((d) => d.risk === "high").length
+  const mediumRisk = deals.filter((d) => d.risk === "medium").length
+
+  if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchHealth} className="underline ml-1">Retry</button></div>
 
   return (
     <div className="space-y-4">
@@ -39,7 +63,7 @@ export function CrmDealHealthRadar() {
       </div>
 
       <div className="space-y-2">
-        {atRiskDeals.map((deal, i) => (
+        {deals.map((deal, i) => (
           <motion.div
             key={deal.id}
             initial={{ opacity: 0, x: -10 }}

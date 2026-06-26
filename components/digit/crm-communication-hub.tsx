@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Send, Mail, MessageSquare, Phone, FileText, Plus, ChevronDown } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Send, Mail, MessageSquare, Phone, FileText, Plus, ChevronDown, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,39 +12,74 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils"
 
 interface CommMessage {
-  id: string
-  channel: string
-  direction: string
-  subject: string
-  body: string
-  to: string
-  from: string
-  timestamp: string
+  id: string; channel: string; direction: string; subject: string; body: string; to: string; from: string; timestamp: string
 }
 
-const mockMessages: CommMessage[] = [
-  { id: "1", channel: "email", direction: "outbound", subject: "Proposal for Professional Plan", body: "Dear Rahul, thank you for your interest...", to: "rahul@techcorp.com", from: "sales@digit-ai.org", timestamp: new Date(Date.now() - 1 * 3600000).toISOString() },
-  { id: "2", channel: "whatsapp", direction: "inbound", subject: "Demo follow-up", body: "Thanks for the demo! When can we start?", to: "sales@digit-ai.org", from: "+91 98765 43210", timestamp: new Date(Date.now() - 3 * 3600000).toISOString() },
-  { id: "3", channel: "email", direction: "inbound", subject: "Re: Platform inquiry", body: "We're particularly interested in the compliance module", to: "sales@digit-ai.org", from: "rahul@techcorp.com", timestamp: new Date(Date.now() - 24 * 3600000).toISOString() },
-]
-
-const templateOptions = [
-  { name: "Follow-up after demo", subject: "Thanks for your time", body: "Dear {{name}}, it was great showing you DigiT..." },
-  { name: "Proposal sent", subject: "Your proposal is ready", body: "Dear {{name}}, here is your custom proposal..." },
-  { name: "Check-in", subject: "Checking in", body: "Hi {{name}}, just checking in to see if you have any questions..." },
-]
+interface CommTemplate {
+  id: string; name: string; subject: string; body: string; channel: string
+}
 
 export function CrmCommunicationHub() {
+  const [messages, setMessages] = useState<CommMessage[]>([])
+  const [templates, setTemplates] = useState<CommTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState("")
   const [channel, setChannel] = useState<string>("email")
   const [to, setTo] = useState("")
   const [subject, setSubject] = useState("")
   const [body, setBody] = useState("")
   const [showCompose, setShowCompose] = useState(false)
 
-  const applyTemplate = (template: typeof templateOptions[0]) => {
-    setSubject(template.subject)
-    setBody(template.body)
+  const fetchData = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const [msgRes, tmplRes] = await Promise.all([
+        fetch("/api/v1/crm/communications"),
+        fetch("/api/v1/crm/templates"),
+      ])
+      if (!msgRes.ok || !tmplRes.ok) throw new Error("Failed")
+      const msgData = await msgRes.json()
+      const tmplData = await tmplRes.json()
+      setMessages(msgData.communications ?? msgData ?? [])
+      setTemplates(tmplData.templates ?? tmplData ?? [])
+    } catch {
+      setError("Could not load communications")
+    } finally {
+      setLoading(false)
+    }
   }
+
+  useEffect(() => { fetchData() }, [])
+
+  const applyTemplate = (t: CommTemplate) => {
+    setSubject(t.subject)
+    setBody(t.body)
+  }
+
+  const sendMessage = async () => {
+    if (!to || !subject || !body) return
+    setSending(true)
+    try {
+      const res = await fetch("/api/v1/crm/communications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel, to_address: to, subject, body }),
+      })
+      if (!res.ok) throw new Error("Failed")
+      await fetchData()
+      setShowCompose(false)
+      setTo(""); setSubject(""); setBody("")
+    } catch {
+      setError("Failed to send")
+    } finally {
+      setSending(false)
+    }
+  }
+
+  if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchData} className="underline ml-1">Retry</button></div>
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
@@ -67,10 +102,10 @@ export function CrmCommunicationHub() {
               ))}
             </div>
             <div className="flex gap-2">
-              <Select onValueChange={(v) => applyTemplate(templateOptions.find((t) => t.name === v)!)}>
+              <Select onValueChange={(v) => applyTemplate(templates.find((t) => t.name === v) as CommTemplate)}>
                 <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="Use template..." /></SelectTrigger>
                 <SelectContent>
-                  {templateOptions.map((t) => <SelectItem key={t.name} value={t.name} className="text-xs">{t.name}</SelectItem>)}
+                  {templates.map((t) => <SelectItem key={t.id} value={t.name} className="text-xs">{t.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -79,12 +114,16 @@ export function CrmCommunicationHub() {
               <Input placeholder="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} className="h-8 text-sm" />
               <Textarea placeholder="Write your message..." value={body} onChange={(e) => setBody(e.target.value)} rows={4} className="text-sm" />
             </div>
-            <Button className="gap-1"><Send className="w-3 h-3" /> Send via {channel}</Button>
+            <Button className="gap-1" onClick={sendMessage} disabled={sending}>
+              {sending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+              Send via {channel}
+            </Button>
           </Card>
         )}
 
         <div className="space-y-2">
-          {mockMessages.map((msg) => (
+          {messages.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">No conversations yet</p>}
+          {messages.map((msg) => (
             <Card key={msg.id} className={cn("p-3 border-border/50", msg.direction === "inbound" ? "border-l-2 border-l-primary" : "border-l-2 border-l-muted")}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -103,9 +142,10 @@ export function CrmCommunicationHub() {
 
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-foreground">Templates</h3>
+        {templates.length === 0 && <p className="text-xs text-muted-foreground">No templates yet</p>}
         <div className="space-y-2">
-          {templateOptions.map((t) => (
-            <Card key={t.name} className="p-3 border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => applyTemplate(t)}>
+          {templates.map((t) => (
+            <Card key={t.id} className="p-3 border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => applyTemplate(t)}>
               <p className="text-xs font-medium text-foreground">{t.name}</p>
               <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">{t.body}</p>
             </Card>

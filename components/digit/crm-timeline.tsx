@@ -1,26 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { Phone, Mail, MessageSquare, Calendar, FileText, CheckCircle2, ArrowRight, Plus } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Phone, Mail, MessageSquare, Calendar, FileText, CheckCircle2, ArrowRight, Plus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
 interface TimelineEvent {
-  id: string
-  type: string
-  title: string
-  description: string | null
-  timestamp: string
+  id: string; type: string; title: string; description: string | null; timestamp: string
 }
-
-const mockTimeline: TimelineEvent[] = [
-  { id: "1", type: "call", title: "Intro call with Rahul Sharma", description: "Discussed platform requirements, interested in analytics module", timestamp: new Date(Date.now() - 2 * 3600000).toISOString() },
-  { id: "2", type: "email", title: "Sent proposal for Professional plan", description: "Proposal #Q-2024-001 sent via email", timestamp: new Date(Date.now() - 24 * 3600000).toISOString() },
-  { id: "3", type: "meeting", title: "Demo session with TechCorp team", description: "Full platform demo, 4 attendees", timestamp: new Date(Date.now() - 3 * 86400000).toISOString() },
-  { id: "4", type: "deal_stage", title: "Deal moved to Proposal stage", description: "TechCorp deal valued at $50,000 moved to proposal", timestamp: new Date(Date.now() - 5 * 86400000).toISOString() },
-  { id: "5", type: "note", title: "Follow-up notes", description: "Customer interested in compliance module add-on", timestamp: new Date(Date.now() - 7 * 86400000).toISOString() },
-  { id: "6", type: "whatsapp", title: "WhatsApp check-in", description: "Sent quick update on timeline", timestamp: new Date(Date.now() - 10 * 86400000).toISOString() },
-]
 
 const iconMap: Record<string, React.ElementType> = {
   call: Phone, email: Mail, meeting: Calendar,
@@ -39,7 +26,25 @@ const colorMap: Record<string, string> = {
 }
 
 export function CrmTimeline({ entityId, entityType }: { entityId?: string; entityType?: string }) {
-  const [events] = useState(mockTimeline)
+  const [events, setEvents] = useState<TimelineEvent[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (entityId) params.set("entityId", entityId)
+    if (entityType) params.set("entityType", entityType)
+    params.set("limit", "20")
+
+    fetch(`/api/v1/crm/timeline?${params}`)
+      .then((r) => { if (!r.ok) throw new Error("Failed"); return r.json() })
+      .then((data) => setEvents(data.entries ?? data ?? []))
+      .catch(() => setError("Could not load timeline"))
+      .finally(() => setLoading(false))
+  }, [entityId, entityType])
+
+  if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
   return (
     <div className="relative">
@@ -47,6 +52,7 @@ export function CrmTimeline({ entityId, entityType }: { entityId?: string; entit
         <h3 className="text-sm font-medium text-foreground">Engagement Timeline</h3>
         <Button variant="outline" size="sm" className="gap-1 h-7 text-xs"><Plus className="w-3 h-3" /> Log Activity</Button>
       </div>
+      {events.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">No timeline events yet</p>}
       <div className="relative space-y-0">
         {events.map((event, i) => {
           const Icon = iconMap[event.type] || FileText

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Sun, TrendingUp, AlertTriangle, Target, Users, DollarSign, Zap, Sparkles, ChevronRight, RefreshCw } from "lucide-react"
+import { Sun, TrendingUp, AlertTriangle, Target, Users, DollarSign, Zap, Sparkles, ChevronRight, RefreshCw, Loader2 } from "lucide-react"
 
 interface BriefingSection {
   title: string; icon: React.ReactNode; content: string; priority: "high" | "medium" | "low"; actionItems: string[]
@@ -16,43 +16,32 @@ export function CrmFoundersBriefing() {
   const [loading, setLoading] = useState(false)
   const [briefing, setBriefing] = useState<BriefingSection[] | null>(null)
   const [selectedSection, setSelectedSection] = useState<number | null>(null)
+  const [error, setError] = useState("")
 
   const generateBriefing = async () => {
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 1500))
-    setBriefing([
-      {
-        title: "Revenue Pulse", priority: "high",
-        icon: <DollarSign className="h-4 w-4 text-emerald-500" />,
-        content: "Yesterday: $24,500 in closed deals. Pipeline at $1.22M (+8% WoW). 3 deals in negotiation worth $350K total. Weighted forecast for this month: $405K. Top performer: Emma (closed $92K yesterday).",
-        actionItems: ["Review Acme Corp negotiation strategy", "Approve GreenEnergy discount exception"],
-      },
-      {
-        title: "Deals Needing Attention", priority: "high",
-        icon: <AlertTriangle className="h-4 w-4 text-amber-500" />,
-        content: "Acme Corp ($120K) — exec went quiet 14 days. DataFlow ($35K) — champion left company. BuildCorp ($65K) — competitor discount surfaced.",
-        actionItems: ["Schedule exec-to-exec with Acme Corp CEO", "Identify new champion at DataFlow"],
-      },
-      {
-        title: "Team Performance", priority: "medium",
-        icon: <Users className="h-4 w-4 text-blue-500" />,
-        content: "Team hit 87% of weekly quota. Emma leading at 142%, Mike at 93%, Sarah at 68% (needs coaching). Avg deal cycle: 32 days (target: 28).",
-        actionItems: ["Schedule coaching session with Sarah", "Review Mike's stalled proposals"],
-      },
-      {
-        title: "Market Signals", priority: "medium",
-        icon: <TrendingUp className="h-4 w-4 text-cyan-500" />,
-        content: "Manufacturing vertical up 23% (IIoT surge). Healthcare compliance spending accelerating. Tech sector AI investment at all-time high. Energy green subsidies creating opportunity.",
-        actionItems: ["Create manufacturing targeted campaign", "Hire healthcare SDR specialist"],
-      },
-      {
-        title: "Operational Health", priority: "low",
-        icon: <Zap className="h-4 w-4 text-purple-500" />,
-        content: "3 CAPAs overdue (all in Verification stage). 92% of support tickets resolved within SLA. 5 new feature requests from enterprise prospects. System uptime: 99.97%.",
-        actionItems: ["Follow up on overdue CAPAs", "Review top 3 feature requests for roadmap"],
-      },
-    ])
-    setLoading(false)
+    setError("")
+    try {
+      const res = await fetch("/api/v1/ai/crm-query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: "Generate a daily briefing for a founder. Return ONLY valid JSON array with 5 objects. Each object: title (string), priority (\"high\"/\"medium\"/\"low\"), content (string - detailed paragraph), actionItems (array of strings). Cover: 1) Revenue Pulse, 2) Deals Needing Attention, 3) Team Performance, 4) Market Signals, 5) Operational Health. No markdown, no backticks.",
+        }),
+      })
+      if (!res.ok) throw new Error("Failed")
+      const data = await res.json()
+      const parsed = JSON.parse(data.response)
+      const sections: BriefingSection[] = (Array.isArray(parsed) ? parsed : []).map((s: any, i: number) => ({
+        ...s,
+        icon: [<DollarSign key="0" className="h-4 w-4 text-emerald-500" />, <AlertTriangle key="1" className="h-4 w-4 text-amber-500" />, <Users key="2" className="h-4 w-4 text-blue-500" />, <TrendingUp key="3" className="h-4 w-4 text-cyan-500" />, <Zap key="4" className="h-4 w-4 text-purple-500" />][i] || <Sparkles className="h-4 w-4 text-primary" />,
+      }))
+      setBriefing(sections)
+    } catch {
+      setError("Failed to generate briefing")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -73,7 +62,7 @@ export function CrmFoundersBriefing() {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0 flex-1 flex flex-col">
-        {!briefing && !loading && (
+        {!briefing && !loading && !error && (
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
             <Sparkles className="h-10 w-10 text-primary/30 mb-3" />
             <p className="text-sm font-medium mb-1">Your Daily Briefing Awaits</p>
@@ -81,18 +70,18 @@ export function CrmFoundersBriefing() {
             <Button onClick={generateBriefing}><Sparkles className="h-4 w-4 mr-1" />Generate Briefing</Button>
           </div>
         )}
-        {loading && (
+        {(loading) && (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center space-y-3">
-              <div className="flex gap-1 justify-center">
-                {[0, 1, 2].map((i) => (
-                  <motion.div key={i} className="w-2 h-2 rounded-full bg-primary"
-                    animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
-                  />
-                ))}
-              </div>
+              <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
               <p className="text-xs text-muted-foreground">Analyzing pipeline, team, and market data...</p>
             </div>
+          </div>
+        )}
+        {error && !loading && (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+            <p className="text-xs text-red-500 mb-2">{error}</p>
+            <Button size="sm" variant="outline" onClick={generateBriefing}>Retry</Button>
           </div>
         )}
         {briefing && !loading && (

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Heart, TrendingUp, AlertTriangle, CheckCircle2, Calendar, ArrowUp, Users } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,14 +16,6 @@ interface Account {
   lastActivity: string
 }
 
-const mockAccounts: Account[] = [
-  { id: "1", company: "TechCorp India", health: "healthy", score: 92, renewal: "2027-03-15", plan: "Professional", lastActivity: "2 hours ago" },
-  { id: "2", company: "GreenEnergy Solutions", health: "healthy", score: 88, renewal: "2026-12-01", plan: "Starter", lastActivity: "1 day ago" },
-  { id: "3", company: "PharmaLabs Ltd", health: "at_risk", score: 52, renewal: "2026-09-20", plan: "Enterprise", lastActivity: "2 weeks ago" },
-  { id: "4", company: "FastTrack Logistics", health: "at_risk", score: 38, renewal: "2026-08-10", plan: "Professional", lastActivity: "1 month ago" },
-  { id: "5", company: "FinTech Ventures", health: "churned", score: 12, renewal: null, plan: "Starter", lastActivity: "3 months ago" },
-]
-
 const healthStyles: Record<string, string> = {
   healthy: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
   at_risk: "bg-amber-500/10 text-amber-500 border-amber-500/20",
@@ -37,14 +29,37 @@ const healthIcons: Record<string, React.ElementType> = {
 }
 
 export function CrmCustomerSuccess() {
-  const [accounts] = useState(mockAccounts)
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const [filter, setFilter] = useState<string>("all")
 
-  const filtered = filter === "all" ? accounts : accounts.filter((a) => a.health === filter)
+  useEffect(() => {
+    fetch("/api/v1/crm/customer-success")
+      .then((r) => r.ok ? r.json() : Promise.reject("Failed"))
+      .then((data) => {
+        const items = (data.accounts || data.data || []).map((a: any) => ({
+          id: a.id,
+          company: a.company || a.name || "",
+          health: a.health || a.health_status || "healthy",
+          score: a.score || a.health_score || 0,
+          renewal: a.renewal || a.renewal_date || null,
+          plan: a.plan || a.plan_name || "",
+          lastActivity: a.last_activity || a.lastActivity || "",
+        }))
+        setAccounts(items)
+        setLoading(false)
+      })
+      .catch(() => { setError("Failed to load accounts"); setLoading(false) })
+  }, [])
 
+  const filtered = filter === "all" ? accounts : accounts.filter((a) => a.health === filter)
   const healthy = accounts.filter((a) => a.health === "healthy").length
   const atRisk = accounts.filter((a) => a.health === "at_risk").length
-  const avgScore = Math.round(accounts.reduce((s, a) => s + a.score, 0) / accounts.length)
+  const avgScore = accounts.length ? Math.round(accounts.reduce((s, a) => s + a.score, 0) / accounts.length) : 0
+
+  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center">Loading accounts...</div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
   return (
     <div className="space-y-4">

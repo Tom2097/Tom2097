@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, Circle, CheckCircle2, Clock, AlertCircle, MoreHorizontal, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -18,14 +18,6 @@ interface CrmTaskItem {
   entity: string | null
 }
 
-const mockTasks: CrmTaskItem[] = [
-  { id: "1", title: "Follow up with Rahul Sharma", description: "Send proposal and schedule demo", priority: "high", status: "pending", due_at: new Date(Date.now() + 1 * 86400000).toISOString(), assigned_to: "You", entity: "TechCorp" },
-  { id: "2", title: "Prepare compliance module demo", description: "Create custom demo for healthcare vertical", priority: "high", status: "in_progress", due_at: new Date(Date.now() + 2 * 86400000).toISOString(), assigned_to: "You", entity: "PharmaLabs" },
-  { id: "3", title: "Send thank-you email", description: "Post-meeting follow-up", priority: "medium", status: "pending", due_at: new Date(Date.now() + 3 * 86400000).toISOString(), assigned_to: null, entity: "GreenEnergy" },
-  { id: "4", title: "Update deal stage", description: "Move TechCorp deal to negotiation", priority: "medium", status: "pending", due_at: new Date(Date.now() + 5 * 86400000).toISOString(), assigned_to: "You", entity: "TechCorp" },
-  { id: "5", title: "Review pricing proposal", description: "Check discount structure for enterprise", priority: "low", status: "completed", due_at: null, assigned_to: null, entity: null },
-]
-
 const priorityStyles: Record<string, string> = {
   urgent: "text-red-500",
   high: "text-amber-500",
@@ -41,14 +33,35 @@ const statusStyles: Record<string, string> = {
 }
 
 export function CrmTasks() {
-  const [tasks, setTasks] = useState(mockTasks)
+  const [tasks, setTasks] = useState<CrmTaskItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const [filter, setFilter] = useState<string>("all")
+
+  useEffect(() => {
+    fetch("/api/v1/crm/tasks")
+      .then((r) => r.ok ? r.json() : Promise.reject("Failed"))
+      .then((data) => { setTasks(data.tasks || []); setLoading(false) })
+      .catch(() => { setError("Failed to load tasks"); setLoading(false) })
+  }, [])
+
+  const toggleComplete = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === "completed" ? "pending" : "completed"
+    try {
+      const res = await fetch(`/api/v1/crm/tasks?id=${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!res.ok) throw new Error()
+      setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: newStatus } : t))
+    } catch { /* ignore */ }
+  }
 
   const filtered = filter === "all" ? tasks : tasks.filter((t) => t.status === filter)
 
-  const toggleComplete = (id: string) => {
-    setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: t.status === "completed" ? "pending" : "completed" } : t))
-  }
+  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center">Loading tasks...</div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
   return (
     <div className="space-y-3">
@@ -70,7 +83,7 @@ export function CrmTasks() {
       <div className="space-y-2">
         {filtered.map((task) => (
           <Card key={task.id} className={cn("p-3 border-border/50 flex items-start gap-3", task.status === "completed" && "opacity-60")}>
-            <button onClick={() => toggleComplete(task.id)} className="mt-0.5 shrink-0">
+            <button onClick={() => toggleComplete(task.id, task.status)} className="mt-0.5 shrink-0">
               {task.status === "completed" ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />}
             </button>
             <div className="flex-1 min-w-0">
