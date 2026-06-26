@@ -11,6 +11,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^2.0.51",
     "@ai-sdk/react": "^3.0.191",
     "@aws-sdk/client-s3": "^3.1069.0",
     "@aws-sdk/s3-request-presigner": "^3.1069.0",
