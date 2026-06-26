@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
 import { listCustomerAccounts, updateCustomerAccount, getCustomerAccount } from "@/lib/crm/extensions"
-import type { CustomerAccountUpdateInput } from "@/lib/crm/types"
+import type { CustomerAccountUpdateInput, AccountHealthStatus } from "@/lib/crm/types"
 
 export const GET = withAuth(async (req: NextRequest, { organizationId }) => {
   const { searchParams } = new URL(req.url)
@@ -11,7 +11,7 @@ export const GET = withAuth(async (req: NextRequest, { organizationId }) => {
     return NextResponse.json(account ?? { error: "not found" }, { status: account ? 200 : 404 })
   }
   const result = await listCustomerAccounts(organizationId, {
-    healthStatus: searchParams.get("healthStatus") as any,
+    healthStatus: searchParams.get("healthStatus") as AccountHealthStatus | undefined,
     limit: Number(searchParams.get("limit")) || 50,
     offset: Number(searchParams.get("offset")) || 0,
   })

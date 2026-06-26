@@ -1,15 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
 import { createTask, listTasks, updateTask, deleteTask } from "@/lib/crm/extensions"
-import type { CrmTaskInput, CrmTaskUpdateInput } from "@/lib/crm/types"
+import type { CrmTaskInput, CrmTaskUpdateInput, TaskStatus, TaskPriority, CrmEntityType } from "@/lib/crm/types"
 
 export const GET = withAuth(async (req: NextRequest, { organizationId }) => {
   const { searchParams } = new URL(req.url)
   const result = await listTasks(organizationId, {
-    status: searchParams.get("status") as any,
-    priority: searchParams.get("priority") as any,
+    status: searchParams.get("status") as TaskStatus | undefined,
+    priority: searchParams.get("priority") as TaskPriority | undefined,
     assignedTo: searchParams.get("assignedTo") ?? undefined,
-    entityType: searchParams.get("entityType") as any,
+    entityType: searchParams.get("entityType") as CrmEntityType | undefined,
     entityId: searchParams.get("entityId") ?? undefined,
     limit: Number(searchParams.get("limit")) || 50,
     offset: Number(searchParams.get("offset")) || 0,

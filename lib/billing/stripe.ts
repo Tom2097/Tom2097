@@ -284,7 +284,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
               provider: "stripe",
               external_id: invoice.id,
               status: "failed",
-              error_message: (invoice as any).last_error?.message || "Payment failed",
+              error_message: invoice.last_finalization_error?.code || "Payment failed",
             })
           }
         }

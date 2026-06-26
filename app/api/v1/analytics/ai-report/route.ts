@@ -9,7 +9,7 @@ import {
   getAllTemplates,
   formatReport
 } from "@/lib/analytics/ai-reports"
-import type { GeneratedReport, ReportOptions, ReportFormat, ReportType } from "@/lib/analytics/ai-reports"
+import type { GeneratedReport, ReportOptions, ReportFormat, ReportType, ReportSectionType } from "@/lib/analytics/ai-reports"
 
 /**
  * GET /api/v1/analytics/ai-report
@@ -79,8 +79,8 @@ const getHandler = withAuth(
       if (depth) options.depth = depth
       if (tone) options.tone = tone
       if (includeData !== undefined) options.includeData = includeData
-      if (includeSections.length > 0) options.includeSections = includeSections as any[]
-      if (excludeSections.length > 0) options.excludeSections = excludeSections as any[]
+      if (includeSections.length > 0) options.includeSections = includeSections as ReportSectionType[]
+      if (excludeSections.length > 0) options.excludeSections = excludeSections as ReportSectionType[]
 
       // Generate report
       if (format === "json") {

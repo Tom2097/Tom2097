@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
 import { detectAnomalies, checkForAnomaly, getAnomalyStatistics } from "@/lib/analytics/anomaly-detection"
-import type { DetectedAnomaly, AnomalyDetectionOptions } from "@/lib/analytics/anomaly-detection"
+import type { DetectedAnomaly, AnomalyDetectionOptions, AnomalyDetectionMethod } from "@/lib/analytics/anomaly-detection"
 
 /**
  * GET /api/v1/analytics/anomalies
@@ -84,7 +84,7 @@ const getHandler = withAuth(
 
       // Build options
       const options: AnomalyDetectionOptions = {}
-      if (methods.length > 0) options.methods = methods as any[]
+      if (methods.length > 0) options.methods = methods as AnomalyDetectionMethod[]
       if (sensitivity !== undefined) options.sensitivity = sensitivity
       if (minConfidence !== undefined) options.minConfidence = minConfidence
       if (useAI !== undefined) options.useAI = useAI

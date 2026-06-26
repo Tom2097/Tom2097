@@ -1,12 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
 import { createQuote, listQuotes, updateQuoteStatus } from "@/lib/crm/extensions"
-import type { QuoteInput } from "@/lib/crm/types"
+import type { QuoteInput, QuoteStatus } from "@/lib/crm/types"
 
 export const GET = withAuth(async (req: NextRequest, { organizationId }) => {
   const { searchParams } = new URL(req.url)
   const result = await listQuotes(organizationId, {
-    status: searchParams.get("status") as any,
+    status: searchParams.get("status") as QuoteStatus | undefined,
     dealId: searchParams.get("dealId") ?? undefined,
     limit: Number(searchParams.get("limit")) || 50,
     offset: Number(searchParams.get("offset")) || 0,
