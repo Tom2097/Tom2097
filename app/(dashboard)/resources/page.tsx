@@ -18,7 +18,7 @@ export default async function ResourcesPage() {
       ])
     : [[], [], null, []]
 
-  const lowStock = inventory.filter((i) => (i.current_stock ?? 0) <= (i.reorder_point ?? 0))
+  const lowStock = inventory.filter((i) => (i.quantity ?? 0) <= (i.reorder_point ?? 0))
   const utilization = capacity ? Math.round(capacity.utilization_pct * 100) / 100 : 0
 
   return (

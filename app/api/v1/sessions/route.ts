@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { withAuth } from '@/lib/auth/with-auth'
+import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
 import { withRateLimit, withValidation, DEFAULT_RATE_LIMITS } from '@/lib/middleware'
 import { z } from 'zod'
 import { getSessionService } from '@/lib/auth/session'
@@ -11,7 +11,7 @@ import type { ActiveSession } from '@/lib/auth/session/types'
  */
 export const GET = withAuth(
   withRateLimit(
-    async (request, context) => {
+    async (request: NextRequest, context: AuthContext) => {
       const sessionService = getSessionService()
       const userId = context.userId
 
@@ -70,7 +70,7 @@ const sessionCreateSchema = z.object({
 export const POST = withAuth(
   withRateLimit(
     withValidation(
-      async (request, context) => {
+      async (request: NextRequest, context: AuthContext & { validatedBody?: Record<string, unknown> }) => {
         const sessionService = getSessionService()
         const userId = context.userId
 
@@ -112,7 +112,7 @@ export const POST = withAuth(
  */
 export const DELETE = withAuth(
   withRateLimit(
-    async (request, context) => {
+    async (request: NextRequest, context: AuthContext) => {
       const sessionService = getSessionService()
       const userId = context.userId
 

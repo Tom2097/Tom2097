@@ -62,7 +62,7 @@ async function createHandler(req: NextRequest, ctx: AuthContext): Promise<NextRe
 
     if (perms && perms.length > 0) {
       await supabase.from("role_permissions").insert(
-        perms.map((p) => ({ role_id: role.id, permission_id: p.id })),
+        perms.map((p: { id: string }) => ({ role_id: role.id, permission_id: p.id })),
       )
     }
   }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { withAuth } from '@/lib/auth/with-auth'
+import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
 import { withRateLimit, withValidation, DEFAULT_RATE_LIMITS } from '@/lib/middleware'
 import { z } from 'zod'
 import { getSessionService } from '@/lib/auth/session'
@@ -11,7 +11,7 @@ import { getSessionService } from '@/lib/auth/session'
 export const GET = withAuth(
   withRateLimit(
     withValidation(
-      async (request, context) => {
+      async (request: NextRequest, context: AuthContext & { validatedParams?: Record<string, unknown> }) => {
         const sessionService = getSessionService()
         const sessionId = context.validatedParams?.sessionId as string
         const userId = context.userId
@@ -87,7 +87,7 @@ export const GET = withAuth(
 export const DELETE = withAuth(
   withRateLimit(
     withValidation(
-      async (request, context) => {
+      async (request: NextRequest, context: AuthContext & { validatedParams?: Record<string, unknown> }) => {
         const sessionService = getSessionService()
         const sessionId = context.validatedParams?.sessionId as string
         const userId = context.userId
@@ -167,7 +167,7 @@ export const DELETE = withAuth(
 export const PATCH = withAuth(
   withRateLimit(
     withValidation(
-      async (request, context) => {
+      async (request: NextRequest, context: AuthContext & { validatedParams?: Record<string, unknown> }) => {
         const sessionService = getSessionService()
         const sessionId = context.validatedParams?.sessionId as string
         const userId = context.userId

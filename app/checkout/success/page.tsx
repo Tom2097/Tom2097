@@ -12,7 +12,8 @@ import {
   Mail,
   Calendar,
   Download,
-  Loader2
+  Loader2,
+  Zap
 } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 import Link from "next/link"

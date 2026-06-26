@@ -3,7 +3,7 @@ import { publish } from "@/lib/events/bus"
 
 export interface AssetNode {
   id: string; organization_id: string; parent_id: string | null
-  name: string; category: string; subcategory: string | null
+  name: string; category: string; subcategory: string | null; depth?: number
   serial_number: string | null; asset_tag: string | null
   status: "active" | "maintenance" | "retired" | "idle"
   location: string | null; purchase_date: string | null; purchase_value: number | null

@@ -275,7 +275,7 @@ export const DELETE_file = withAuth(
         }
 
         try {
-          const result = await storage.delete({ key, quiet: false })
+          const result = await storage.delete(key, false)
 
           if (!result) {
             return NextResponse.json(

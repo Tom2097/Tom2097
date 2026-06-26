@@ -18,7 +18,7 @@ export default async function PerformancePage() {
       ])
     : [[], [], [], []]
 
-  const activeObjectives = objectives.filter((o) => o.status === "active")
+  const activeObjectives = objectives.filter((o) => o.status !== "completed")
 
   return (
     <div className="space-y-6">
@@ -71,7 +71,7 @@ export default async function PerformancePage() {
               {activeObjectives.slice(0, 8).map((obj, i) => (
                 <div key={i} className="rounded-xl bg-secondary/30 p-3">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-medium">{obj.title}</p>
+                    <p className="text-sm font-medium">{obj.name}</p>
                     <span className="text-xs text-muted-foreground capitalize">{obj.owner}</span>
                   </div>
                   <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">

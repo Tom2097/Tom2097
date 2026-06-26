@@ -25,7 +25,8 @@ import {
   ChevronRight,
   BadgeCheck,
   Clock,
-  Gift
+  Gift,
+  Zap
 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
