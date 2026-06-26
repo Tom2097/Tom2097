@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createWebhookDelivery, processWebhookWithDLQ } from "@/lib/webhooks/delivery"
+import { createWebhookDelivery, deliverWebhook } from "@/lib/webhooks/delivery"
 import { calculateCompositeScore, decomposeDrivers, runWhatIfSimulation, benchmarkCohorts } from "@/lib/digit-score/composite"
-
-const dlq: any[] = []
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,7 +8,7 @@ export async function POST(req: NextRequest) {
     const { action, ...params } = body
 
     if (action === "digit-score") {
-      return NextResponse.json(calculateCompositeScore(params.organizationId))
+      return NextResponse.json(calculateCompositeScore())
     }
     if (action === "driver-decomposition") {
       return NextResponse.json(decomposeDrivers(params.targetMetric, params.currentValue, params.targetValue))
@@ -23,11 +21,8 @@ export async function POST(req: NextRequest) {
     }
     if (action === "webhook") {
       const delivery = createWebhookDelivery(params.url, params.event, params.payload, params.maxRetries)
-      const result = await processWebhookWithDLQ(delivery, dlq)
+      const result = await deliverWebhook(delivery)
       return NextResponse.json(result)
-    }
-    if (action === "dlq-status") {
-      return NextResponse.json({ dlqItems: dlq.length })
     }
     return NextResponse.json({ error: "Invalid action" }, { status: 400 })
   } catch (err) {

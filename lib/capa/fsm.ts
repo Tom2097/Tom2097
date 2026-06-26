@@ -52,7 +52,7 @@ export function createCapa(
   assignedTo: string, dueDate?: Date
 ): CapaRecord {
   return {
-    id: `capa-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: `capa-${crypto.randomUUID()}`,
     title, description, category, priority, state: "Open",
     organizationId, assignedTo, createdBy,
     createdAt: new Date(), updatedAt: new Date(),

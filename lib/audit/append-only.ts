@@ -35,7 +35,7 @@ export function createAuditEntry(
   }
   return {
     ...entry,
-    id: `audit-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: `audit-${crypto.randomUUID()}`,
     hash: computeHash(entry),
   } as AuditEntry
 }

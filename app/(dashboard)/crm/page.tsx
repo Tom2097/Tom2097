@@ -95,7 +95,7 @@ export default async function CRMPage() {
         <MetricCard label="Open Deals" value={pipeline.open_deals} />
         <MetricCard label="Pipeline Value" value={formatCurrency(pipeline.total_open_value, pipeline.currency)} />
         <MetricCard label="Avg Deal Size" value={formatCurrency(avgDealValue, pipeline.currency)} />
-        <MetricCard label="Win Rate" value={pipeline.stages.find(s => s.stage === 'won')?.count ? `${Math.round(pipeline.stages.find(s => s.stage === 'won')!.count / Math.max(1, pipeline.open_deals + pipeline.stages.find(s => s.stage === 'won')!.count) * 100)}%` : '0%'} />
+        <MetricCard label="Win Rate" value={(() => { const won = pipeline.stages.find(s => s.stage === 'won')?.count ?? 0; const lost = pipeline.stages.find(s => s.stage === 'lost')?.count ?? 0; const total = won + lost; return total > 0 ? `${Math.round((won / total) * 100)}%` : '0%' })()} />
       </MetricGrid>
 
       {/* Pipeline Chart */}
@@ -158,28 +158,31 @@ export default async function CRMPage() {
 
       {/* All CRM Tabs */}
       <Tabs defaultValue="ai-sdr" className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
-          <TabsTrigger value="ai-sdr" className="gap-1"><Sparkles className="w-4 h-4" /> AI SDR</TabsTrigger>
-          <TabsTrigger value="next-best-action" className="gap-1"><Zap className="w-4 h-4" /> Next Actions</TabsTrigger>
-          <TabsTrigger value="deal-health" className="gap-1"><AlertTriangle className="w-4 h-4" /> Deal Health</TabsTrigger>
-          <TabsTrigger value="conversations" className="gap-1"><MessageSquare className="w-4 h-4" /> Conversations</TabsTrigger>
-          <TabsTrigger value="duplicates" className="gap-1"><Copy className="w-4 h-4" /> Duplicates</TabsTrigger>
-          <TabsTrigger value="leads" className="gap-1"><BarChart3 className="w-4 h-4" /> Lead Inbox</TabsTrigger>
-          <TabsTrigger value="contacts" className="gap-1"><Users className="w-4 h-4" /> Contacts</TabsTrigger>
-          <TabsTrigger value="timeline" className="gap-1"><Phone className="w-4 h-4" /> Timeline</TabsTrigger>
-          <TabsTrigger value="tasks" className="gap-1"><Target className="w-4 h-4" /> Tasks</TabsTrigger>
-          <TabsTrigger value="communications" className="gap-1"><Mail className="w-4 h-4" /> Comm</TabsTrigger>
-          <TabsTrigger value="quotes" className="gap-1"><FileText className="w-4 h-4" /> Quotes</TabsTrigger>
-          <TabsTrigger value="success" className="gap-1"><Heart className="w-4 h-4" /> CS</TabsTrigger>
-          <TabsTrigger value="nurture" className="gap-1"><MessageSquare className="w-4 h-4" /> Nurture</TabsTrigger>
-          <TabsTrigger value="vertical-signals" className="gap-1"><TrendingUpIcon className="w-4 h-4" /> Signals</TabsTrigger>
-          <TabsTrigger value="lead-roi" className="gap-1"><DollarSign className="w-4 h-4" /> Lead ROI</TabsTrigger>
-          <TabsTrigger value="briefing" className="gap-1"><Sun className="w-4 h-4" /> Briefing</TabsTrigger>
-          <TabsTrigger value="events" className="gap-1"><Layers className="w-4 h-4" /> Events</TabsTrigger>
-          <TabsTrigger value="pipeline" className="gap-1"><Target className="w-4 h-4" /> Pipeline</TabsTrigger>
-          <TabsTrigger value="hierarchy" className="gap-1"><Users className="w-4 h-4" /> Hierarchy</TabsTrigger>
-          <TabsTrigger value="forecast" className="gap-1"><BarChart3 className="w-4 h-4" /> Forecast</TabsTrigger>
-        </TabsList>
+        <div className="relative">
+          <TabsList className="w-full justify-start overflow-x-auto flex-nowrap gap-0.5 [&>button]:px-2 [&>button]:py-1 [&>button]:text-[11px]">
+            <TabsTrigger value="ai-sdr" className="gap-0.5"><Sparkles className="w-3 h-3" /> AI</TabsTrigger>
+            <TabsTrigger value="next-best-action" className="gap-0.5"><Zap className="w-3 h-3" /> Actions</TabsTrigger>
+            <TabsTrigger value="deal-health" className="gap-0.5"><AlertTriangle className="w-3 h-3" /> Health</TabsTrigger>
+            <TabsTrigger value="conversations" className="gap-0.5"><MessageSquare className="w-3 h-3" /> Talk</TabsTrigger>
+            <TabsTrigger value="duplicates" className="gap-0.5"><Copy className="w-3 h-3" /> Dups</TabsTrigger>
+            <TabsTrigger value="leads" className="gap-0.5"><BarChart3 className="w-3 h-3" /> Leads</TabsTrigger>
+            <TabsTrigger value="pipeline" className="gap-0.5"><Target className="w-3 h-3" /> Pipe</TabsTrigger>
+            <TabsTrigger value="quotes" className="gap-0.5"><FileText className="w-3 h-3" /> Quotes</TabsTrigger>
+            <TabsTrigger value="contacts" className="gap-0.5"><Users className="w-3 h-3" /> People</TabsTrigger>
+            <TabsTrigger value="hierarchy" className="gap-0.5"><Users className="w-3 h-3" /> Orgs</TabsTrigger>
+            <TabsTrigger value="nurture" className="gap-0.5"><MessageSquare className="w-3 h-3" /> Nurture</TabsTrigger>
+            <TabsTrigger value="forecast" className="gap-0.5"><BarChart3 className="w-3 h-3" /> Forecast</TabsTrigger>
+            <TabsTrigger value="events" className="gap-0.5"><Layers className="w-3 h-3" /> Events</TabsTrigger>
+            <TabsTrigger value="briefing" className="gap-0.5"><Sun className="w-3 h-3" /> Daily</TabsTrigger>
+            <TabsTrigger value="vertical-signals" className="gap-0.5"><TrendingUpIcon className="w-3 h-3" /> Mkts</TabsTrigger>
+            <TabsTrigger value="lead-roi" className="gap-0.5"><DollarSign className="w-3 h-3" /> ROI</TabsTrigger>
+            <TabsTrigger value="communications" className="gap-0.5"><Mail className="w-3 h-3" /> Comm</TabsTrigger>
+            <TabsTrigger value="tasks" className="gap-0.5"><Target className="w-3 h-3" /> Tasks</TabsTrigger>
+            <TabsTrigger value="timeline" className="gap-0.5"><Phone className="w-3 h-3" /> Time</TabsTrigger>
+            <TabsTrigger value="success" className="gap-0.5"><Heart className="w-3 h-3" /> CS</TabsTrigger>
+          </TabsList>
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+        </div>
 
         <TabsContent value="ai-sdr" className="mt-4">
           <div className="rounded-2xl border border-border/50 bg-card p-6">

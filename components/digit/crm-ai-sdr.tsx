@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -13,37 +13,43 @@ interface EnrichmentResult {
   revenue: string; location: string; description: string; recent_news: string[]
 }
 
+function extractDomain(email: string): string | null {
+  const parts = email.split("@")
+  return parts.length === 2 ? parts[1] : null
+}
+
 export function CrmAiSdr() {
   const [query, setQuery] = useState("")
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<EnrichmentResult | null>(null)
   const [history, setHistory] = useState<Array<{ query: string; result: EnrichmentResult }>>([])
+  const [error, setError] = useState("")
 
   const enrich = async () => {
     if (!query.trim()) return
     setLoading(true)
     setResult(null)
+    setError("")
 
-    // Simulated AI enrichment
-    await new Promise((r) => setTimeout(r, 1500))
-    const mockResult: EnrichmentResult = {
-      company_name: query.includes("@") ? query.split("@")[1].split(".")[0].charAt(0).toUpperCase() + query.split("@")[1].split(".")[0].slice(1) + " Inc" : query,
-      domain: query.includes("@") ? query.split("@")[1] : `${query.toLowerCase().replace(/\s+/g, "")}.com`,
-      industry: ["Technology", "Healthcare", "Manufacturing", "Finance", "Renewable Energy"][Math.floor(Math.random() * 5)],
-      size: ["10-50", "50-200", "200-1000", "1000-5000", "5000+"][Math.floor(Math.random() * 5)],
-      revenue: ["$1M-$5M", "$5M-$20M", "$20M-$100M", "$100M-$1B", "$1B+"][Math.floor(Math.random() * 5)],
-      location: ["San Francisco, CA", "New York, NY", "London, UK", "Berlin, Germany", "Singapore"][Math.floor(Math.random() * 5)],
-      description: `${query.includes("@") ? query.split("@")[1].split(".")[0].charAt(0).toUpperCase() + query.split("@")[1].split(".")[0].slice(1) : query} is a leading provider of innovative solutions in the ${["technology", "healthcare", "manufacturing", "financial services", "renewable energy"][Math.floor(Math.random() * 5)]} sector.`,
-      recent_news: [
-        "Raised $50M Series C funding round led by Sequoia Capital",
-        "Expanded operations to 3 new markets in APAC region",
-        "Launched new AI-powered platform with 40% performance improvement",
-      ],
+    try {
+      const domain = query.includes("@") ? extractDomain(query) : query.toLowerCase().replace(/\s+/g, "")
+      if (!domain) { throw new Error("Could not extract domain from input") }
+
+      const res = await fetch("/api/v1/ai/enrich", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: query.trim(), domain }),
+      })
+      if (!res.ok) throw new Error("Enrichment failed")
+      const data = await res.json()
+
+      setResult(data)
+      setHistory((prev) => [{ query, result: data }, ...prev].slice(0, 10))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Enrichment failed")
+    } finally {
+      setLoading(false)
     }
-
-    setResult(mockResult)
-    setHistory((prev) => [{ query, result: mockResult }, ...prev].slice(0, 10))
-    setLoading(false)
   }
 
   return (
@@ -69,6 +75,8 @@ export function CrmAiSdr() {
           Research
         </Button>
       </div>
+
+      {error && <p className="text-xs text-red-500">{error}</p>}
 
       <motion.div initial={false} animate={{ height: result ? "auto" : 0 }} className="overflow-hidden">
         {result && (

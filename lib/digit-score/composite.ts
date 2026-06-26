@@ -6,7 +6,7 @@ export interface CompositeDigitScore {
   dimensions: DigitScoreDimension[]; recommendations: string[]
 }
 
-export function calculateCompositeScore(organizationId: string): CompositeDigitScore {
+export function calculateCompositeScore(_organizationId?: string): CompositeDigitScore {
   const dimensions: DigitScoreDimension[] = [
     { name: "Quality", weight: 0.25, score: 82, maxScore: 100, trend: "up" },
     { name: "Velocity", weight: 0.20, score: 74, maxScore: 100, trend: "stable" },

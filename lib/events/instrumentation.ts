@@ -68,7 +68,7 @@ export function trackEvent(
   sessionId: string, properties?: Record<string, unknown>
 ): TrackedEvent {
   return {
-    id: `evt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: `evt-${crypto.randomUUID()}`,
     event, userId, organizationId, sessionId,
     timestamp: new Date(),
     properties: properties || {},
