@@ -1,3 +1,5 @@
+import { createHash } from "crypto"
+
 export interface AuditEntry {
   id: string; tableName: string; recordId: string; action: "INSERT" | "UPDATE" | "DELETE"
   oldData: Record<string, unknown> | null; newData: Record<string, unknown> | null
@@ -7,8 +9,7 @@ export interface AuditEntry {
 
 export function computeHash(entry: Omit<AuditEntry, "hash" | "id">): string {
   const content = `${entry.previousHash || "genesis"}|${entry.tableName}|${entry.recordId}|${entry.action}|${JSON.stringify(entry.oldData)}|${JSON.stringify(entry.newData)}|${entry.changedBy}|${entry.changedAt.toISOString()}|${entry.organizationId}`
-  const chars = content.split("").reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0)
-  return `0x${Math.abs(chars).toString(16).padStart(8, "0")}`
+  return createHash("sha256").update(content).digest("hex")
 }
 
 export function verifyChain(entries: AuditEntry[]): { valid: boolean; brokenAt?: number } {

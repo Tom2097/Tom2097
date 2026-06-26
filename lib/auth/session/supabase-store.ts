@@ -224,7 +224,9 @@ export class SupabaseSessionStore implements SessionStore {
       }
 
       if (options.offset) {
-        query = query.offset(options.offset)
+        const start = options.offset
+        const end = options.limit ? start + options.limit - 1 : start + 99
+        query = query.range(start, end)
       }
 
       // Order by last activity (most recent first)
@@ -244,8 +246,10 @@ export class SupabaseSessionStore implements SessionStore {
 
   async update(id: string, data: Partial<UserSession>): Promise<UserSession | null> {
     try {
+      const existing = await this.findById(id)
+      if (!existing) return null
       const record = this.sessionToRecord({
-        ...(await this.findById(id))!,
+        ...existing,
         ...data,
         id,
       })

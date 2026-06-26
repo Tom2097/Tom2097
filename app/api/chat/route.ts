@@ -1,12 +1,13 @@
 import {
   consumeStream,
-  convertToModelMessages,
+  convertToCoreMessages,
   streamText,
   UIMessage,
 } from 'ai'
 import { NextResponse } from 'next/server'
 import { extractTenantContext } from '@/lib/multitenant/context'
 import { checkTenantRateLimit } from '@/lib/multitenant/rate-limit'
+import { mistralModel } from '@/lib/ai/mistral'
 
 export const maxDuration = 30
 
@@ -49,9 +50,9 @@ export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json()
 
   const result = streamText({
-    model: 'anthropic/claude-sonnet-4-20250514',
+    model: mistralModel,
     system: DIGIT_SYSTEM_PROMPT,
-    messages: await convertToModelMessages(messages),
+    messages: await convertToCoreMessages(messages),
     abortSignal: req.signal,
   })
 

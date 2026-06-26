@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { streamText, convertToModelMessages, type UIMessage } from "ai"
+import { streamText, convertToCoreMessages, type UIMessage } from "ai"
 import { extractTenantContext } from "@/lib/multitenant/context"
-import { DEFAULT_CHAT_MODEL, BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
+import { BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
+import { mistralModel } from "@/lib/ai/mistral"
 import { retrieveContext } from "@/lib/ai/rag"
 import {
   createConversation,
@@ -72,9 +73,9 @@ export async function POST(req: NextRequest) {
   const system = contextBlock ? `${BASE_SYSTEM_PROMPT}\n\n${contextBlock}` : BASE_SYSTEM_PROMPT
 
   const result = streamText({
-    model: DEFAULT_CHAT_MODEL,
+    model: mistralModel,
     system,
-    messages: await convertToModelMessages(merged),
+    messages: await convertToCoreMessages(merged),
   })
 
   return result.toUIMessageStreamResponse({

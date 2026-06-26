@@ -1,48 +1,34 @@
-import { createServerClient } from "@supabase/ssr"
+import { createServerClient, type SupabaseClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
-export async function createClient() {
+function createMockClient(): SupabaseClient {
+  const builder: Record<string, unknown> = {}
+  const mkChain = (): Record<string, unknown> => new Proxy(builder, {
+    get: (_, prop) => {
+      if (prop === "then") return async (onFulfill?: (v: unknown) => unknown) => onFulfill?.({ data: [], error: { message: "Supabase not configured" } })
+      if (prop === "single" || prop === "maybeSingle") return async () => ({ data: null, error: { message: "Supabase not configured" } })
+      return () => mkChain()
+    },
+  })
+  return {
+    auth: {
+      getUser: async () => ({ data: { user: null }, error: { message: "Supabase not configured" } }),
+      signInWithPassword: async () => ({ data: { user: null, session: null }, error: { message: "Supabase not configured" } }),
+      signOut: async () => ({ error: { message: "Supabase not configured" } }),
+    },
+    rpc: async () => ({ data: null, error: { message: "Supabase not configured" } }),
+    from: () => mkChain(),
+  } as unknown as SupabaseClient
+}
+
+export async function createClient(): Promise<SupabaseClient> {
   const cookieStore = await cookies()
   
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   
   if (!supabaseUrl || !supabaseAnonKey) {
-    // Mock client for when Supabase is not configured
-    function createMockQueryBuilder() {
-      const builder: any = {
-        select: (columns: string = "*") => builder,
-        from: (table: string) => builder,
-        eq: (column: string, value: any) => builder,
-        neq: (column: string, value: any) => builder,
-        or: (condition: string) => builder,
-        and: (condition: string) => builder,
-        order: (column: string, options: any) => builder,
-        limit: (num: number) => builder,
-        offset: (num: number) => builder,
-        range: (start: number, end: number) => builder,
-        single: async () => ({ data: null, error: { message: "Supabase not configured" } }),
-        maybeSingle: async () => ({ data: null, error: { message: "Supabase not configured" } }),
-      }
-      
-      builder.then = async (onFulfill: any, onReject?: any) => {
-        const result = { data: [], error: { message: "Supabase not configured" } }
-        return onFulfill ? onFulfill(result) : result
-      }
-      
-      return builder
-    }
-    
-    return {
-      auth: {
-        getUser: async () => ({ data: { user: null }, error: { message: "Supabase not configured" } }),
-        signInWithPassword: async () => ({ data: { user: null, session: null }, error: { message: "Supabase not configured" } }),
-        signOut: async () => ({ error: { message: "Supabase not configured" } }),
-      },
-      rpc: async (fn: string, params: any = {}) => ({ data: null, error: { message: "Supabase not configured" } }),
-      from: (table: string) => createMockQueryBuilder().from(table),
-      select: (columns: string = "*") => createMockQueryBuilder().select(columns),
-    } as any
+    return createMockClient()
   }
 
   return createServerClient(
