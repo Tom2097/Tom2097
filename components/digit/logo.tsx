@@ -9,25 +9,54 @@ interface LogoProps {
 }
 
 const sizeMap = {
-  sm: { icon: 22, text: "text-sm", sub: "text-[8px]" },
-  md: { icon: 28, text: "text-lg", sub: "text-[10px]" },
-  lg: { icon: 34, text: "text-xl", sub: "text-[11px]" },
+  sm: { icon: 22, sub: "text-[8px]" },
+  md: { icon: 28, sub: "text-[10px]" },
+  lg: { icon: 34, sub: "text-[11px]" },
 }
+
+const aspect = 250 / 100
 
 function LogoSvg({ size: iconSize, className }: { size: number; className?: string }) {
   return (
-    <svg width={iconSize} height={iconSize} viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("shrink-0", className)}>
-      <defs>
-        <linearGradient id={`lg-${iconSize}`} x1="0" y1="0" x2="44" y2="44">
-          <stop offset="0%" stopColor="#06b6d4"/>
-          <stop offset="50%" stopColor="#3b82f6"/>
-          <stop offset="100%" stopColor="#6366f1"/>
-        </linearGradient>
-      </defs>
-      <rect x="0.5" y="0.5" width="43" height="43" rx="10" fill={`url(#lg-${iconSize})`}/>
-      <rect x="0.5" y="0.5" width="43" height="43" rx="10" stroke="rgba(255,255,255,0.2)" strokeWidth="1"/>
-      <path d="M8 34V16h8c6.5 0 11 3 11 9s-4.5 9-11 9H8z" fill="white" opacity="0.15"/>
-      <path d="M12 18h6c5 0 8 2.5 8 7s-3 7-8 7h-6V18z" fill="white"/>
+    <svg width={iconSize} height={iconSize / aspect} viewBox="0 0 250 100" xmlns="http://www.w3.org/2000/svg" className={cn("shrink-0", className)}>
+      <g transform="translate(20, 75)">
+        <text fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fontWeight="800" fontSize="56" fill="currentColor">
+          <tspan x="0">D</tspan>
+          <tspan x="42">i</tspan>
+          <tspan x="58">g</tspan>
+        </text>
+        <rect x="98" y="-40" width="11" height="41" fill="currentColor" />
+        <text fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fontWeight="800" fontSize="56" fill="currentColor">
+          <tspan x="116">T</tspan>
+        </text>
+        <circle cx="86.5" cy="-56" r="6" fill="#78d6c7" />
+        <circle cx="103.5" cy="-56" r="6" fill="#00c875" />
+        <circle cx="120.5" cy="-56" r="6" fill="#1a56db" />
+      </g>
+    </svg>
+  )
+}
+
+function LogoSvgIcon({ size: iconSize, className }: { size: number; className?: string }) {
+  const dotR = 6
+  const cx1 = 86.5, cx2 = 103.5, cx3 = 120.5, cy = -56
+  const minX = cx1 - dotR
+  const maxX = cx3 + dotR
+  const minY = cy - dotR
+  const maxY = cy + dotR
+  const iconW = maxX - minX
+  const iconH = maxY - minY
+  const scale = iconSize / Math.max(iconW, iconH)
+  const offsetX = (iconSize - iconW * scale) / 2 - minX * scale
+  const offsetY = (iconSize - iconH * scale) / 2 - minY * scale
+
+  return (
+    <svg width={iconSize} height={iconSize} viewBox="0 0 250 100" xmlns="http://www.w3.org/2000/svg" className={cn("shrink-0", className)}>
+      <g transform={`translate(${offsetX}, ${offsetY}) scale(${scale})`}>
+        <circle cx={cx1} cy={cy} r={dotR} fill="#78d6c7" />
+        <circle cx={cx2} cy={cy} r={dotR} fill="#00c875" />
+        <circle cx={cx3} cy={cy} r={dotR} fill="#1a56db" />
+      </g>
     </svg>
   )
 }
@@ -40,7 +69,6 @@ export function Logo({ size = "md", showText = true, className, link }: LogoProp
       <LogoSvg size={s.icon} />
       {showText && (
         <div>
-          <h1 className={cn("font-extrabold tracking-tight text-foreground", s.text)}>DigiT</h1>
           <p className={cn("text-muted-foreground/60 leading-tight tracking-wider", s.sub)}>ENTERPRISE INTELLIGENCE</p>
         </div>
       )}
@@ -53,5 +81,5 @@ export function Logo({ size = "md", showText = true, className, link }: LogoProp
 
 export function LogoIcon({ size = "md", className }: { size?: "sm" | "md" | "lg"; className?: string }) {
   const s = sizeMap[size]
-  return <LogoSvg size={s.icon} className={className} />
+  return <LogoSvgIcon size={s.icon} className={className} />
 }
