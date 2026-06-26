@@ -25,8 +25,6 @@ export function CrmWhatsAppNurture() {
   const [sending, setSending] = useState<string | null>(null)
 
   const fetchSequences = async () => {
-    setLoading(true)
-    setError("")
     try {
       const res = await fetch("/api/v1/ai/crm-query", {
         method: "POST",
@@ -46,7 +44,18 @@ export function CrmWhatsAppNurture() {
     }
   }
 
-  useEffect(() => { fetchSequences() }, [])
+  useEffect(() => {
+    fetch("/api/v1/ai/crm-query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: "Generate WhatsApp nurture sequences for CRM prospects. Return ONLY valid JSON array. Each item: {id: string, name: string, prospect: string, steps: [{day: number, channel: string, subject: string, content: string, delay: string}]}. No markdown.",
+      }),
+    }).then((r) => r.ok ? r.json() : Promise.reject()).then((data) => {
+      const parsed = JSON.parse(data.response)
+      setSequences(Array.isArray(parsed) ? parsed : [])
+    }).catch(() => setError("Could not load sequences"))
+  }, [])
 
   const sendNow = async (id: string, step: NurtureStep) => {
     setSending(`${id}-${step.day}`)

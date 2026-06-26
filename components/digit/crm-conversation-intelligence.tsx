@@ -25,8 +25,6 @@ export function CrmConversationIntelligence() {
   const [error, setError] = useState("")
 
   const generateData = useCallback(async () => {
-    setLoading(true)
-    setError("")
     try {
       const res = await fetch("/api/v1/ai/crm-query", {
         method: "POST",
@@ -47,7 +45,19 @@ export function CrmConversationIntelligence() {
     }
   }, [])
 
-  useEffect(() => { generateData() }, [generateData])
+  useEffect(() => {
+    fetch("/api/v1/ai/crm-query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: "Generate conversation intelligence data. Return ONLY valid JSON with: templates (array of {id, name, scenario, suggested, objection, rebuttal}) and sentiments (array of {name, sentiment: 0-100, trend: \"up\"/\"down\", keywords: string[]}). No markdown.",
+      }),
+    }).then((r) => r.ok ? r.json() : Promise.reject()).then((data) => {
+      const parsed = JSON.parse(data.response)
+      if (parsed.templates) setTemplates(parsed.templates)
+      if (parsed.sentiments) setSentiments(parsed.sentiments)
+    }).catch(() => setError("Could not generate suggestions"))
+  }, [])
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
   if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={generateData} className="underline ml-1">Retry</button></div>

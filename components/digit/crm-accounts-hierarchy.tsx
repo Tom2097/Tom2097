@@ -90,14 +90,13 @@ export function CrmAccountsHierarchy() {
   const [search, setSearch] = useState("")
 
   useEffect(() => {
-    setLoading(true)
     const params = new URLSearchParams()
     if (search) params.set("search", search)
     params.set("limit", "50")
 
     fetch(`/api/v1/crm/companies?${params}`)
       .then((r) => { if (!r.ok) throw new Error("Failed"); return r.json() })
-      .then((data) => setAccounts(data.companies ?? data ?? []))
+      .then((data) => { setAccounts(data.companies ?? data ?? []); setError("") })
       .catch(() => setError("Could not load accounts"))
       .finally(() => setLoading(false))
   }, [search])

@@ -21,8 +21,6 @@ export function CrmNextBestAction() {
   const [error, setError] = useState("")
 
   const fetchActions = async () => {
-    setLoading(true)
-    setError("")
     try {
       const res = await fetch("/api/v1/ai/crm-query", {
         method: "POST",
@@ -42,7 +40,18 @@ export function CrmNextBestAction() {
     }
   }
 
-  useEffect(() => { fetchActions() }, [])
+  useEffect(() => {
+    fetch("/api/v1/ai/crm-query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: "Generate 5 next best actions for my CRM deals. Return ONLY valid JSON array with objects having: id (string), deal (string), action (string), impact (\"high\"/\"medium\"/\"low\"), reason (string), channel (string), value (number). No markdown.",
+      }),
+    }).then((r) => r.ok ? r.json() : Promise.reject()).then((data) => {
+      const parsed = JSON.parse(data.response)
+      setSuggestions(Array.isArray(parsed) ? parsed : [])
+    }).catch(() => setError("Could not generate suggestions"))
+  }, [])
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
   if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchActions} className="underline ml-1">Retry</button></div>

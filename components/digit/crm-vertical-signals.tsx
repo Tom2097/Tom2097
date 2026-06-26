@@ -18,8 +18,6 @@ export function CrmVerticalSignals() {
   const [error, setError] = useState("")
 
   useEffect(() => {
-    setLoading(true)
-    setError("")
     fetch("/api/v1/ai/crm-query", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -32,8 +32,6 @@ export function CrmCommunicationHub() {
   const [showCompose, setShowCompose] = useState(false)
 
   const fetchData = async () => {
-    setLoading(true)
-    setError("")
     try {
       const [msgRes, tmplRes] = await Promise.all([
         fetch("/api/v1/crm/communications"),
@@ -51,7 +49,14 @@ export function CrmCommunicationHub() {
     }
   }
 
-  useEffect(() => { fetchData() }, [])
+  useEffect(() => {
+    fetch("/api/v1/crm/communications").then((r) => r.ok ? r.json() : Promise.reject()).then((msgData) => {
+      setMessages(msgData.communications ?? msgData ?? [])
+      return fetch("/api/v1/crm/templates").then((r) => r.ok ? r.json() : Promise.reject())
+    }).then((tmplData) => {
+      setTemplates(tmplData.templates ?? tmplData ?? [])
+    }).catch(() => setError("Could not load communications"))
+  }, [])
 
   const applyTemplate = (t: CommTemplate) => {
     setSubject(t.subject)

@@ -27,8 +27,6 @@ export function CrmForecastReports() {
   const [error, setError] = useState("")
 
   useEffect(() => {
-    setLoading(true)
-    setError("")
     Promise.all([
       fetch("/api/v1/crm/pipeline").then((r) => { if (!r.ok) throw new Error("Failed"); return r.json() }),
       fetch("/api/v1/ai/crm-query", {
