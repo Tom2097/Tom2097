@@ -1,6 +1,7 @@
 "use server"
 
 import { streamText, generateText } from "ai"
+import { mistralModel } from "@/lib/ai/mistral"
 import { z } from "zod"
 
 // Types for the AI Business Analyzer
@@ -169,7 +170,7 @@ Respond in this exact JSON format:
 
   try {
     const result = await generateText({
-      model: "anthropic/claude-sonnet-4-20250514",
+      model: mistralModel,
       system: SYSTEM_PROMPT,
       prompt,
       temperature: 0.3,
@@ -225,7 +226,7 @@ Respond in JSON format:
 
   try {
     const result = await generateText({
-      model: "anthropic/claude-sonnet-4-20250514",
+      model: mistralModel,
       system: "You are an industry research analyst providing actionable business intelligence. Always respond in valid JSON.",
       prompt,
       temperature: 0.5,
@@ -253,7 +254,7 @@ Challenges: ${profile.currentChallenges.join(', ')}.
 Provide a conversational analysis of their needs and initial recommendations.`
 
   return streamText({
-    model: "anthropic/claude-sonnet-4-20250514",
+    model: mistralModel,
     system: SYSTEM_PROMPT,
     prompt,
     temperature: 0.4,

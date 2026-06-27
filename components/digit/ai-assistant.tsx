@@ -74,7 +74,7 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
             <h3 className="font-semibold text-foreground">DigiT AI Assistant</h3>
             {!isMinimized && (
               <p className="text-xs text-muted-foreground">
-                {isLoading ? 'Thinking...' : 'Powered by Claude'}
+                {isLoading ? 'Thinking...' : 'Powered by Mistral Large'}
               </p>
             )}
           </div>
@@ -112,7 +112,7 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
                   </div>
                   <div className="max-w-[280px] rounded-2xl bg-secondary px-4 py-2.5 text-sm text-secondary-foreground">
                     <div className="whitespace-pre-wrap">
-                      {"Hello! I'm your DigiT AI Assistant powered by Claude. I can help you analyze data, generate insights, and answer questions about your enterprise operations. How can I assist you today?"}
+                      {"Hello! I'm your DigiT AI Assistant powered by Mistral Large. I can help you analyze data, generate insights, and answer questions about your enterprise operations. How can I assist you today?"}
                     </div>
                   </div>
                 </div>
