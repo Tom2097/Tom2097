@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
 import { withRateLimit, withValidation, DEFAULT_RATE_LIMITS } from '@/lib/middleware'
 import { z } from 'zod'
@@ -11,10 +11,11 @@ import { getSessionService } from '@/lib/auth/session'
 export const GET = withAuth(
   withRateLimit(
     withValidation(
-      async (request: NextRequest, context: AuthContext & { validatedParams?: Record<string, unknown> }) => {
+      async (request: NextRequest, context) => {
         const sessionService = getSessionService()
-        const sessionId = context.validatedParams?.sessionId as string
-        const userId = context.userId
+        const ctx = context as AuthContext & { validatedParams?: Record<string, unknown> }
+        const sessionId = ctx.validatedParams?.sessionId as string
+        const userId = ctx.userId
 
         if (!sessionId) {
           return NextResponse.json(
@@ -87,10 +88,11 @@ export const GET = withAuth(
 export const DELETE = withAuth(
   withRateLimit(
     withValidation(
-      async (request: NextRequest, context: AuthContext & { validatedParams?: Record<string, unknown> }) => {
+      async (request: NextRequest, context) => {
         const sessionService = getSessionService()
-        const sessionId = context.validatedParams?.sessionId as string
-        const userId = context.userId
+        const ctx = context as AuthContext & { validatedParams?: Record<string, unknown> }
+        const sessionId = ctx.validatedParams?.sessionId as string
+        const userId = ctx.userId
 
         if (!sessionId) {
           return NextResponse.json(
@@ -103,7 +105,6 @@ export const DELETE = withAuth(
         }
 
         try {
-          // Verify the session belongs to the user
           const session = await sessionService.getUserSessions(userId)
             .then(sessions => sessions.find(s => s.id === sessionId))
 
@@ -117,8 +118,6 @@ export const DELETE = withAuth(
             )
           }
 
-          // Don't allow revoking the current session through this endpoint
-          // (use the bulk revoke endpoint for that)
           const success = await sessionService.revokeSession(sessionId)
 
           if (!success) {
@@ -167,10 +166,11 @@ export const DELETE = withAuth(
 export const PATCH = withAuth(
   withRateLimit(
     withValidation(
-      async (request: NextRequest, context: AuthContext & { validatedParams?: Record<string, unknown> }) => {
+      async (request: NextRequest, context) => {
         const sessionService = getSessionService()
-        const sessionId = context.validatedParams?.sessionId as string
-        const userId = context.userId
+        const ctx = context as AuthContext & { validatedParams?: Record<string, unknown> }
+        const sessionId = ctx.validatedParams?.sessionId as string
+        const userId = ctx.userId
 
         if (!sessionId) {
           return NextResponse.json(

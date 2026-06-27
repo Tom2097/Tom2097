@@ -24,7 +24,7 @@ export interface WithAuthOptions {
   requireAny?: string[]
 }
 
-type AuthHandler = (req: NextRequest, context: AuthContext & { params?: Record<string, string> }) => Promise<NextResponse>
+type AuthHandler = (req: NextRequest, context: AuthContext & { params: Record<string, string> }) => Promise<NextResponse>
 
 /**
  * Wrap an API route handler with authentication + authorization.
@@ -33,7 +33,9 @@ type AuthHandler = (req: NextRequest, context: AuthContext & { params?: Record<s
  *   export const GET = withAuth(handler, { requireAll: ["roles:read"] })
  */
 export function withAuth(handler: AuthHandler, options: WithAuthOptions = {}) {
-  return async (req: NextRequest, routeContext?: { params: Record<string, string> }): Promise<NextResponse> => {
+  return async (req: NextRequest, routeContext?: { params: Record<string, string> | Promise<Record<string, string>> }): Promise<NextResponse> => {
+    const resolvedParams = routeContext?.params ? await Promise.resolve(routeContext.params) : {}
+    const resolvedContext = { params: resolvedParams }
     // 1. Validate tenant context + identity (Module #1)
     const tenantContext = await extractTenantContext(req)
 
@@ -80,7 +82,7 @@ export function withAuth(handler: AuthHandler, options: WithAuthOptions = {}) {
 
     // 4. Invoke the handler with the enriched auth context
     const authContext: AuthContext = { ...tenantContext, permissions }
-    const mergedContext = { ...authContext, ...routeContext }
+    const mergedContext = { ...authContext, ...resolvedContext }
 
     try {
       return await handler(req, mergedContext)

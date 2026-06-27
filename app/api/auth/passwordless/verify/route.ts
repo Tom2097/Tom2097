@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createServiceClient } from "@/lib/supabase/service"
-import { verifyMagicLink } from "@/lib/auth/passwordless/service"
+import { createClient } from "@/lib/supabase/server"
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,19 +11,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL("/auth/login?error=invalid_link", request.url))
     }
 
-    const userId = await verifyMagicLink(token, email)
-    if (!userId) {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: "magiclink" })
+
+    if (error) {
       return NextResponse.redirect(new URL("/auth/login?error=invalid_or_expired", request.url))
     }
 
-    const supabase = await createServiceClient()
-    const { data: session } = await supabase.auth.admin.createSession({ user_id: userId })
-    const sessionCookie = `sb-session=${session?.id || ""}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`
-
-    const redirect = new URL("/dashboard", request.url)
-    const res = NextResponse.redirect(redirect)
-    res.headers.set("Set-Cookie", sessionCookie)
-    return res
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   } catch (err) {
     console.error("[passwordless] Verify error:", err)
     return NextResponse.redirect(new URL("/auth/login?error=verification_failed", request.url))

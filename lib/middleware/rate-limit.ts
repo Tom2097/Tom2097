@@ -80,7 +80,7 @@ function getRedis(): Redis {
  * Create a rate limiter instance
  */
 export function createRateLimiter(config: RateLimitConfig): Ratelimit {
-  return new Ratelimit({
+  return new (Ratelimit as any)({
     redis: getRedis(),
     limiter: config.key,
     max: config.maxRequests,
@@ -110,8 +110,7 @@ export function getClientIP(request: NextRequest): string {
     return cfConnectingIP
   }
   
-  // Fallback to remote address (won't work in Vercel, but safe)
-  return request.ip || 'unknown'
+  return 'unknown'
 }
 
 /**
@@ -161,21 +160,18 @@ export function getRequestIdentifier(
  * )
  * ```
  */
-export function withRateLimit(
-  handler: (request: NextRequest, context?: { params: Record<string, string> }) => Promise<NextResponse>,
+export function withRateLimit<C = { params: Record<string, string> }>(
+  handler: (request: NextRequest, context?: C) => Promise<NextResponse>,
   config: RateLimitConfig = DEFAULT_RATE_LIMITS.global
 ) {
-  return async (request: NextRequest, context?: { params: Record<string, string> }) => {
+  return async (request: NextRequest, context?: C): Promise<NextResponse> => {
     try {
-      // Create rate limiter instance
       const limiter = createRateLimiter(config)
       
-      // Get identifier for rate limiting
       const identifier = config.identifier
         ? config.identifier(request)
         : getRequestIdentifier(request, 'user')
       
-      // Check rate limit
       const { success, limit, remaining, reset } = await limiter.limit(identifier)
       
       if (!success) {
@@ -191,7 +187,6 @@ export function withRateLimit(
           { status: config.statusCode || 429 }
         )
         
-        // Add rate limit headers
         if (config.includeHeaders !== false) {
           response.headers.set('X-RateLimit-Limit', limit.toString())
           response.headers.set('X-RateLimit-Remaining', '0')
@@ -202,7 +197,6 @@ export function withRateLimit(
         return response
       }
       
-      // Add rate limit headers to successful responses
       const response = await handler(request, context)
       
       if (config.includeHeaders !== false) {
@@ -213,7 +207,6 @@ export function withRateLimit(
       
       return response
     } catch (error) {
-      // If rate limiting fails (e.g., Redis connection error), allow the request
       console.error('[RateLimit] Error:', error)
       return handler(request, context)
     }
@@ -245,9 +238,9 @@ export function withMiddleware(
   handler: (request: NextRequest, context?: { params: Record<string, string> }) => Promise<NextResponse>,
   options: {
     rateLimit?: RateLimitConfig
-    body?: ZodSchema<unknown>
-    query?: ZodSchema<unknown>
-    params?: ZodSchema<unknown>
+    body?: ZodSchema<Record<string, unknown>>
+    query?: ZodSchema<Record<string, unknown>>
+    params?: ZodSchema<Record<string, unknown>>
   } = {}
 ) {
   let wrapped = handler
@@ -277,9 +270,9 @@ export function createProtectedRoute(
   handler: (request: NextRequest, context?: { params: Record<string, string> }) => Promise<NextResponse>,
   options: {
     rateLimit?: RateLimitConfig
-    body?: ZodSchema<unknown>
-    query?: ZodSchema<unknown>
-    params?: ZodSchema<unknown>
+    body?: ZodSchema<Record<string, unknown>>
+    query?: ZodSchema<Record<string, unknown>>
+    params?: ZodSchema<Record<string, unknown>>
   } = {}
 ) {
   const wrapped = withMiddleware(handler, options)

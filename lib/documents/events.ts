@@ -38,7 +38,7 @@ export async function dispatchDocumentEvent(event: DocumentEvent): Promise<void>
     })
 
     await logAuthEvent({
-      action: event.type.replace("document.", "document_") as unknown as "document_uploaded",
+      action: event.type as any,
       userId: event.actor_id,
       organizationId: event.organization_id,
       resourceType: "document",

@@ -103,7 +103,7 @@ export function extractIP(request: NextRequest): string {
     return cfConnectingIP
   }
 
-  return request.ip || '0.0.0.0'
+  return '0.0.0.0'
 }
 
 /**
@@ -234,7 +234,7 @@ export function createSessionToken(payload: {
 }): string {
   // This is a simplified token creation
   // In production, use jsonwebtoken or jose library
-  const expiresAt = Date.now() + expiresIn * 1000
+  const expiresAt = Date.now() + payload.expiresIn * 1000
   const tokenPayload = {
     sessionId: payload.sessionId,
     userId: payload.userId,

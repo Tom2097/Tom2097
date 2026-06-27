@@ -34,7 +34,7 @@ export function validateFileType(
   // Check file extension
   const extension = file.name.split('.').pop()?.toLowerCase()
   if (
-    allowedTypes.allowedExtensions !== ['*'] &&
+    allowedTypes.allowedExtensions[0] !== '*' &&
     extension &&
     !allowedTypes.allowedExtensions.includes(extension)
   ) {
@@ -50,7 +50,7 @@ export function validateFileType(
 
   // Check MIME type
   if (
-    allowedTypes.allowedTypes !== ['*'] &&
+    allowedTypes.allowedTypes[0] !== '*' &&
     file.type &&
     !allowedTypes.allowedTypes.includes(file.type)
   ) {

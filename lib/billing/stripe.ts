@@ -115,7 +115,7 @@ export async function createStripeSession(
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: { organization_id: organizationId, plan: plan.id },
-      ...(isTrial && !isTrialActive ? { subscription_data: { trial_end: "now" } } : {}),
+      ...(isTrial && !isTrialActive ? { subscription_data: { trial_end: Math.floor(Date.now() / 1000) } } : {}),
     })
 
     await logAuthEvent({

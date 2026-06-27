@@ -98,7 +98,7 @@ export async function runPipeline(
     for (const row of rows) {
       const mappedRow: Record<string, unknown> = {}
       for (const [srcCol, tgtCol] of Object.entries(columnMap)) {
-        mappedRow[tgtCol] = row[srcCol]
+        mappedRow[tgtCol as string] = row[srcCol]
       }
       mappedRow.organization_id = organizationId
 

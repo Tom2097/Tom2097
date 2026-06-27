@@ -793,9 +793,4 @@ export async function getAnomalyStatistics(
   }
 }
 
-export {
-  calculateStatistics,
-  AnomalyDetectionMethod,
-  AnomalySeverity,
-  AnomalyType,
-}
+export { calculateStatistics }

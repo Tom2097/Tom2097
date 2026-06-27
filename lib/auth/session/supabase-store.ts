@@ -127,7 +127,7 @@ export class SupabaseSessionStore implements SessionStore {
    * Create the sessions table
    */
   private async createSessionsTable(): Promise<void> {
-    await this.supabase.rpc('create_sessions_table', {
+    await (this.supabase as any).rpc('create_sessions_table', {
       table_name: this.tableName,
     })
   }
@@ -141,7 +141,7 @@ export class SupabaseSessionStore implements SessionStore {
 
       const { data, error } = await this.supabase
         .from(this.tableName)
-        .insert(record as SessionRecord)
+        .insert(record as any)
         .select()
         .single()
 
@@ -254,7 +254,7 @@ export class SupabaseSessionStore implements SessionStore {
         id,
       })
 
-      const { data: result, error } = await this.supabase
+      const { data: result, error } = await (this.supabase as any)
         .from(this.tableName)
         .update(record)
         .eq('id', id)

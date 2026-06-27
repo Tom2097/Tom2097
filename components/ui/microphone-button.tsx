@@ -17,7 +17,7 @@ export function MicrophoneButton({ onTranscript, className }: MicrophoneButtonPr
     if (!SpeechRecognition) return 'Speech recognition is not supported in your browser.'
     return null
   })
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<any>(null)
   const onTranscriptRef = useRef(onTranscript)
 
   useEffect(() => {
@@ -34,13 +34,13 @@ export function MicrophoneButton({ onTranscript, className }: MicrophoneButtonPr
     recognition.interimResults = false
     recognition.lang = 'en-US'
 
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript
       onTranscriptRef.current(transcript)
       setIsListening(false)
     }
 
-    recognition.onerror = (event) => {
+    recognition.onerror = (event: any) => {
       setError(event.error)
       setIsListening(false)
     }

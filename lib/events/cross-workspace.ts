@@ -72,12 +72,12 @@ export async function getCorrelationChain(
 
   return {
     correlation_id: correlationId,
-    source: (events[0] as Record<string, unknown>).source_workspace as string,
-    timestamp: new Date((events[0] as Record<string, unknown>).created_at as string),
+    source: String((events[0] as Record<string, unknown>).source_workspace ?? ""),
+    timestamp: new Date(String((events[0] as Record<string, unknown>).created_at ?? "")),
     chain: (events as Array<Record<string, unknown>>).map((e) => ({
-      event: e.event_type,
-      workspace: e.source_workspace,
-      timestamp: new Date(e.created_at),
+      event: e.event_type as string,
+      workspace: e.source_workspace as string,
+      timestamp: new Date(e.created_at as string),
     })),
   }
 }

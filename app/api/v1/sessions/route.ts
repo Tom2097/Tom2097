@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
 import { withRateLimit, withValidation, DEFAULT_RATE_LIMITS } from '@/lib/middleware'
 import { z } from 'zod'
@@ -11,9 +11,9 @@ import type { ActiveSession } from '@/lib/auth/session/types'
  */
 export const GET = withAuth(
   withRateLimit(
-    async (request: NextRequest, context: AuthContext) => {
+    async (request: NextRequest, context) => {
       const sessionService = getSessionService()
-      const userId = context.userId
+      const userId = (context as AuthContext).userId
 
       try {
         const sessions = await sessionService.getUserSessions(userId)
@@ -70,9 +70,9 @@ const sessionCreateSchema = z.object({
 export const POST = withAuth(
   withRateLimit(
     withValidation(
-      async (request: NextRequest, context: AuthContext & { validatedBody?: Record<string, unknown> }) => {
+      async (request: NextRequest, context) => {
         const sessionService = getSessionService()
-        const userId = context.userId
+        const userId = (context as AuthContext & { validatedBody?: Record<string, unknown> }).userId
 
         try {
           const session = await sessionService.createSession(request, userId, context.organizationId)
@@ -112,13 +112,11 @@ export const POST = withAuth(
  */
 export const DELETE = withAuth(
   withRateLimit(
-    async (request: NextRequest, context: AuthContext) => {
+    async (request: NextRequest, context) => {
       const sessionService = getSessionService()
-      const userId = context.userId
+      const userId = (context as AuthContext).userId
 
-      // Get current session ID from context or headers
-      const authHeader = request.headers.get('authorization')
-      const currentSessionId = context.sessionId
+      const currentSessionId = (context as unknown as Record<string, string>).sessionId ?? ''
 
       try {
         // Revoke all sessions except the current one

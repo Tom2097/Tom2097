@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createServiceClient } from "@/lib/supabase/service"
-import { exchangeCodeForToken, fetchUserProfile, findOrCreateUser } from "@/lib/auth/oauth/service"
+import { createClient } from "@/lib/supabase/server"
 
 export async function GET(
   request: NextRequest,
@@ -10,9 +9,9 @@ export async function GET(
     const { provider } = await params
     const url = new URL(request.url)
     const code = url.searchParams.get("code")
-    const error = url.searchParams.get("error")
+    const errorParam = url.searchParams.get("error")
 
-    if (error) {
+    if (errorParam) {
       return NextResponse.redirect(new URL("/auth/login?error=oauth_denied", request.url))
     }
 
@@ -20,20 +19,14 @@ export async function GET(
       return NextResponse.redirect(new URL("/auth/login?error=missing_code", request.url))
     }
 
-    const token = await exchangeCodeForToken(provider, code)
-    const profile = await fetchUserProfile(provider, token)
-    const userId = await findOrCreateUser(profile)
+    const supabase = await createClient()
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-    const supabase = await createServiceClient()
-    const { data: session } = await supabase.auth.admin.createSession({
-      user_id: userId,
-    })
-    const sessionCookie = `sb-session=${session?.id || ""}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`
+    if (error) {
+      return NextResponse.redirect(new URL("/auth/login?error=oauth_failed", request.url))
+    }
 
-    const redirectUrl = new URL("/dashboard", request.url)
-    const response = NextResponse.redirect(redirectUrl)
-    response.headers.set("Set-Cookie", sessionCookie)
-    return response
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   } catch (err) {
     console.error("[oauth] Callback error:", err)
     return NextResponse.redirect(new URL("/auth/login?error=oauth_failed", request.url))

@@ -89,7 +89,7 @@ export class SessionService {
       lastActivityAt: now,
       expiresAt,
       isActive: true,
-      location,
+      location: location ?? undefined,
     }
 
     // Store session

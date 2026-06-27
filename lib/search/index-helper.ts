@@ -31,6 +31,7 @@ export async function indexDocuments(docs: IndexableDocument[]): Promise<number>
   if (docs.length === 0) return 0
 
   const index = getSearchIndex()
+  if (!index) return 0
 
   const payload = docs.map((doc) => {
     const content: SearchContent = {
@@ -70,6 +71,7 @@ export async function removeDocument(
   resourceId: string,
 ): Promise<void> {
   const index = getSearchIndex()
+  if (!index) return
   await index.delete({ ids: [buildDocumentId(organizationId, resourceType, resourceId)] })
 }
 
@@ -80,6 +82,7 @@ export async function removeDocuments(
 ): Promise<void> {
   if (items.length === 0) return
   const index = getSearchIndex()
+  if (!index) return
   const ids = items.map((i) => buildDocumentId(organizationId, i.resourceType, i.resourceId))
   await index.delete({ ids })
 }

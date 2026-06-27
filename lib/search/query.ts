@@ -67,6 +67,7 @@ export async function search(options: SearchQueryOptions): Promise<SearchHit[]> 
   if (!query.trim()) return []
 
   const index = getSearchIndex()
+  if (!index) return []
   const results = await index.search({
     query,
     limit,

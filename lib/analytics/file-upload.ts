@@ -138,7 +138,7 @@ const DEFAULT_ANALYSIS_OPTIONS: Required<Omit<FileAnalysisOptions, "analysisType
 /**
  * Parse CSV text into structured data
  */
-function parseCSV(text: string): { headers: string[]; rows: Record<string, string>[] } {
+export function parseCSV(text: string): { headers: string[]; rows: Record<string, string>[] } {
   const lines = text.split('\n')
   
   if (lines.length < 2) {
@@ -181,7 +181,7 @@ function parseJSON(text: string): any {
 /**
  * Detect file type from filename and content
  */
-function detectFileType(filename: string, contentType: string, content: string): FileType {
+export function detectFileType(filename: string, contentType: string, content: string): FileType {
   const ext = filename.toLowerCase().split('.').pop() || ""
   
   const typeMap: Record<string, FileType> = {
@@ -341,7 +341,7 @@ export async function analyzeFile(
     processedAt: new Date().toISOString(),
     processingTime,
     modelUsed: DEFAULT_CHAT_MODEL,
-    tokensUsed: result.tokens || 0,
+    tokensUsed: (result as unknown as { usage?: { totalTokens?: number } }).usage?.totalTokens ?? 0,
   }
   
   try {
@@ -487,7 +487,7 @@ export async function* streamFileAnalysis(
       system: systemPrompt,
       prompt: userPrompt,
       temperature: options.temperature,
-      maxOutputTokens: Math.min(options.maxOutputTokens, 2000),
+      maxOutputTokens: Math.min(options.maxOutputTokens ?? 4000, 2000),
     })
     
     let chunkResult = ""
@@ -699,7 +699,7 @@ export async function getUploadedFiles(
       .order("uploaded_at", { ascending: false })
     
     if (options.limit) query = query.limit(options.limit)
-    if (options.offset) query = query.offset(options.offset)
+    if (options.offset) query = (query as any).offset(options.offset)
     if (options.status) query = query.eq("status", options.status)
     if (options.analysisType) query = query.eq("analysis_type", options.analysisType)
     if (options.userId) query = query.eq("user_id", options.userId)

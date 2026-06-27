@@ -856,8 +856,8 @@ export async function getCustomerSegment(
   
   // Assign segment
   const segment = assignSegment(scores, profile, opts.customSegments?.length ? opts.customSegments : DEFAULT_RFM_SEGMENTS)
-  
-  return { profile, segment, rfmScores: scores }
+
+  return { profile, segment: segment ?? undefined, rfmScores: scores }
 }
 
 /**
@@ -958,29 +958,32 @@ export async function createCustomSegments(
   
   for (const segment of segments) {
     const matchingProfiles = filteredProfiles.filter(profile => {
-      const conditions = segment.conditions || {}
+      const conditions = (segment.conditions || {}) as Record<string, number | string | string[] | undefined>
       
-      if (conditions.minRecency && profile.recency < conditions.minRecency) return false
-      if (conditions.maxRecency && profile.recency > conditions.maxRecency) return false
-      if (conditions.minFrequency && profile.frequency < conditions.minFrequency) return false
-      if (conditions.maxFrequency && profile.frequency > conditions.maxFrequency) return false
-      if (conditions.minMonetary && profile.monetary < conditions.minMonetary) return false
-      if (conditions.maxMonetary && profile.monetary > conditions.maxMonetary) return false
-      if (conditions.minTotalEvents && profile.totalEvents < conditions.minTotalEvents) return false
-      if (conditions.maxTotalEvents && profile.totalEvents > conditions.maxTotalEvents) return false
+      if (conditions.minRecency && (profile.recency as number) < (conditions.minRecency as number)) return false
+      if (conditions.maxRecency && (profile.recency as number) > (conditions.maxRecency as number)) return false
+      if (conditions.minFrequency && (profile.frequency as number) < (conditions.minFrequency as number)) return false
+      if (conditions.maxFrequency && (profile.frequency as number) > (conditions.maxFrequency as number)) return false
+      if (conditions.minMonetary && (profile.monetary as number) < (conditions.minMonetary as number)) return false
+      if (conditions.maxMonetary && (profile.monetary as number) > (conditions.maxMonetary as number)) return false
+      if (conditions.minTotalEvents && (profile.totalEvents as number) < (conditions.minTotalEvents as number)) return false
+      if (conditions.maxTotalEvents && (profile.totalEvents as number) > (conditions.maxTotalEvents as number)) return false
       
-      if (conditions.tags) {
-        const hasTag = profile.tags && conditions.tags.some(tag => profile.tags!.includes(tag))
+      const tags = conditions.tags as string[] | undefined
+      const mustHaveTags = conditions.mustHaveTags as string[] | undefined
+      const mustNotHaveTags = conditions.mustNotHaveTags as string[] | undefined
+      if (tags) {
+        const hasTag = profile.tags && tags.some(tag => profile.tags!.includes(tag))
         if (!hasTag) return false
       }
       
-      if (conditions.mustHaveTags) {
-        const hasAllTags = profile.tags && conditions.mustHaveTags.every(tag => profile.tags!.includes(tag))
+      if (mustHaveTags) {
+        const hasAllTags = profile.tags && mustHaveTags.every(tag => profile.tags!.includes(tag))
         if (!hasAllTags) return false
       }
       
-      if (conditions.mustNotHaveTags) {
-        const hasNoTags = profile.tags && conditions.mustNotHaveTags.every(tag => !profile.tags!.includes(tag))
+      if (mustNotHaveTags) {
+        const hasNoTags = profile.tags && mustNotHaveTags.every(tag => !profile.tags!.includes(tag))
         if (!hasNoTags) return false
       }
       

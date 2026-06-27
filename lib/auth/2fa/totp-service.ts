@@ -23,18 +23,16 @@ const TOTP_OPTIONS = {
 /**
  * Generate a new TOTP secret
  */
-export function generateTOTPSecret(options: TOTPOptions = { issuer: 'DigiT', accountName: '' }): TOTPSecret {
+export async function generateTOTPSecret(options: TOTPOptions = { issuer: 'DigiT', accountName: '' }): Promise<TOTPSecret> {
   const secret = speakeasy.generateSecret({
     length: 20,
     name: `${options.issuer}:${options.accountName || 'user'}`,
     issuer: options.issuer,
   })
   
-  // Create OTP auth URI
   const uri = secret.otpauth_url || `otpauth://totp/${encodeURIComponent(options.issuer)}:${encodeURIComponent(options.accountName || 'user')}?secret=${secret.base32}&issuer=${encodeURIComponent(options.issuer)}`
   
-  // Generate QR code as data URL
-  const qrCode = qrcode.toDataURL(uri)
+  const qrCode = await qrcode.toDataURL(uri)
   
   return {
     secret: secret.base32,
@@ -126,12 +124,12 @@ export interface TOTPSetupResponse {
   hashedBackupCodes: string[]
 }
 
-export function generateTOTPSetup(
+export async function generateTOTPSetup(
   issuer: string,
   accountName: string,
   backupCodeOptions?: { count?: number; length?: number }
-): TOTPSetupResponse {
-  const { secret, uri, qrCode } = generateTOTPSecret({ issuer, accountName })
+): Promise<TOTPSetupResponse> {
+  const { secret, uri, qrCode } = await generateTOTPSecret({ issuer, accountName })
   const backupCodes = generateBackupCodes(
     backupCodeOptions?.count || 10,
     backupCodeOptions?.length || 10

@@ -10,14 +10,14 @@ export async function POST(req: NextRequest) {
       const docId = `doc-${Date.now()}`
       documents.set(docId, content)
       const chunks = await chunkDocument(content, { ...metadata, docId })
-      const indexed = chunks.map((c) => ({ ...c, embedding: generateEmbedding(c.content) }))
+      const indexed = await Promise.all(chunks.map(async (c) => ({ ...c, embedding: await generateEmbedding(c.content) })))
       return NextResponse.json({ docId, chunks: indexed.length })
     }
     if (action === "search") {
-      const queryEmb = generateEmbedding(query)
+      const queryEmb = await generateEmbedding(query)
       const chunkPromises = Array.from(documents.entries()).map(async ([docId, docContent]) => {
         const chunks = await chunkDocument(docContent, { docId })
-        return chunks.map((c) => ({ ...c, embedding: generateEmbedding(c.content) }))
+        return Promise.all(chunks.map(async (c) => ({ ...c, embedding: await generateEmbedding(c.content) })))
       })
       const nested = await Promise.all(chunkPromises)
       const allChunks = nested.flat()

@@ -27,7 +27,7 @@ export async function getCohortBenchmarks(
     .gte("occurred_at", start)
 
   const groups = new Map<string, number[]>()
-  for (const e of (events ?? []) as Array<{ value: number; cohort: string | null }>) {
+  for (const e of (events ?? []) as unknown as Array<{ value: number; cohort: string | null }>) {
     const key = e.cohort ?? "unknown"
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key)!.push(e.value ?? 1)

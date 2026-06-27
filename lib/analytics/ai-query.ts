@@ -14,11 +14,11 @@ import type { AnalyticsQuery, QueryType, AggregateFn, Granularity, TimeseriesPoi
 
 // Schema for the LLM to return structured query parameters
 const querySchema = z.object({
-  type: z.enum(["timeseries", "breakdown", "summary"] as QueryType[]),
+  type: z.enum(["timeseries", "breakdown", "summary"] as const),
   event_name: z.string().nullable().optional(),
   event_category: z.string().nullable().optional(),
-  aggregate: z.enum(["count", "sum", "avg", "min", "max"] as AggregateFn[]).optional(),
-  granularity: z.enum(["hour", "day", "week", "month"] as Granularity[]).optional(),
+  aggregate: z.enum(["count", "sum", "avg", "min", "max"] as const).optional(),
+  granularity: z.enum(["hour", "day", "week", "month"] as const).optional(),
   dimension: z.string().optional(),
   start: z.string().describe("ISO date string for start of range"),
   end: z.string().describe("ISO date string for end of range"),

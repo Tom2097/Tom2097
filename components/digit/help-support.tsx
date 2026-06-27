@@ -80,7 +80,7 @@ const categories = ["All", "Getting Started", "Features", "AI Features", "Billin
 const quickLinks = [
   { title: "Intelligence", icon: Sparkles, href: "/intelligence", description: "AI-powered insights and analytics" },
   { title: "Settings", icon: Headphones, href: "/settings", description: "Manage account and preferences" },
-  { title: "Pricing", icon: ExternalLink, href: "/pricing", description: "Compare plans and features" },
+  { title: "Pricing", icon: ExternalLink, href: "/pricing", description: "Compare plans and features", external: true },
   { title: "Security", icon: CheckCircle2, href: "/security", description: "Security overview and compliance" },
 ]
 
@@ -112,6 +112,7 @@ export function HelpSupport() {
   const [chatInput, setChatInput] = useState("")
   const [ticketForm, setTicketForm] = useState({ subject: "", description: "", priority: "medium" })
   const [ticketSubmitted, setTicketSubmitted] = useState(false)
+  const [ticketId, setTicketId] = useState("")
   const [files, setFiles] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -194,6 +195,7 @@ export function HelpSupport() {
   const handleSubmitTicket = () => {
     if (!ticketForm.subject || !ticketForm.description) return
     setTicketSubmitted(true)
+    setTicketId("ticket-" + Date.now())
     setTimeout(() => {
       setTicketSubmitted(false)
       setTicketForm({ subject: "", description: "", priority: "medium" })
@@ -697,7 +699,7 @@ export function HelpSupport() {
                           We&apos;ll get back to you within 24 hours
                         </p>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          Ticket #DGT-{msg.id ? msg.id.substring(0, 8).toUpperCase() : "NEW"}
+                          Ticket #DGT-{ticketId ? ticketId.substring(0, 8).toUpperCase() : "NEW"}
                         </p>
                       </motion.div>
                     ) : (

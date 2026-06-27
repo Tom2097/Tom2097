@@ -10,7 +10,7 @@ export interface ValidationResult<T> {
   data?: T
   error?: {
     message: string
-    details?: { path: string[]; message: string }[]
+    details?: { path: (string | number)[]; message: string }[]
   }
 }
 
@@ -169,10 +169,14 @@ export function validateParams<T>(
  * )
  * ```
  */
-export function withValidation<T extends NextRequest, U extends Record<string, unknown>>(
+export function withValidation<
+  T extends NextRequest,
+  C,
+  U extends Record<string, unknown>,
+>(
   handler: (
     request: T,
-    context: { params: Record<string, string> } & {
+    context: C & {
       validatedBody?: U
       validatedQuery?: Record<string, unknown>
       validatedParams?: Record<string, unknown>
@@ -184,8 +188,8 @@ export function withValidation<T extends NextRequest, U extends Record<string, u
     params?: ZodSchema<unknown>
   } = {}
 ) {
-  return async (request: T, context: { params: Record<string, string> }) => {
-    // Validate body if schema provided
+  return async (request: T, context?: C): Promise<NextResponse> => {
+    const ctx = (context ?? {}) as C & { params: Record<string, string> }
     let validatedBody: U | undefined
     if (options.body) {
       const bodyResult = await validateBody<U>(request, options.body)
@@ -201,10 +205,9 @@ export function withValidation<T extends NextRequest, U extends Record<string, u
       validatedBody = bodyResult.data
     }
 
-    // Validate query if schema provided
     let validatedQuery: Record<string, unknown> | undefined
     if (options.query) {
-      const queryResult = validateQuery(request, options.query)
+      const queryResult = await validateQuery(request, options.query)
       if (!queryResult.success) {
         return NextResponse.json(
           {
@@ -214,13 +217,12 @@ export function withValidation<T extends NextRequest, U extends Record<string, u
           { status: 400 }
         )
       }
-      validatedQuery = queryResult.data
+      validatedQuery = queryResult.data as Record<string, unknown> | undefined
     }
 
-    // Validate params if schema provided
     let validatedParams: Record<string, unknown> | undefined
     if (options.params) {
-      const paramsResult = validateParams(context.params, options.params)
+      const paramsResult = await validateParams(ctx.params, options.params)
       if (!paramsResult.success) {
         return NextResponse.json(
           {
@@ -230,11 +232,11 @@ export function withValidation<T extends NextRequest, U extends Record<string, u
           { status: 400 }
         )
       }
-      validatedParams = paramsResult.data
+      validatedParams = paramsResult.data as Record<string, unknown> | undefined
     }
 
     return handler(request, {
-      ...context,
+      ...ctx,
       validatedBody,
       validatedQuery,
       validatedParams,

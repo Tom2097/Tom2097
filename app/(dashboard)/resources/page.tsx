@@ -72,7 +72,7 @@ export default async function ResourcesPage() {
           <div className="flex flex-wrap gap-2">
             {lowStock.map((item) => (
               <span key={item.id} className="text-xs bg-red-500/10 text-red-500 px-2 py-1 rounded-full">
-                {item.name} ({item.current_stock}/{item.reorder_point})
+                {item.name} ({item.quantity}/{item.reorder_point})
               </span>
             ))}
           </div>
