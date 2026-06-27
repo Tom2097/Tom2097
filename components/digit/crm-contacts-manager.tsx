@@ -54,6 +54,7 @@ export function CrmContactsManager({ initialContacts }: CrmContactsManagerProps)
   const [searchQuery, setSearchQuery] = useState("")
   const [addOpen, setAddOpen] = useState(false)
   const [editContact, setEditContact] = useState<CrmContactRow | null>(null)
+  const [statusFilter, setStatusFilter] = useState("all")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -67,12 +68,9 @@ export function CrmContactsManager({ initialContacts }: CrmContactsManagerProps)
 
   const filtered = contacts.filter((c) => {
     const q = searchQuery.trim().toLowerCase()
-    if (!q) return true
-    return (
-      c.name.toLowerCase().includes(q) ||
-      (c.company ?? "").toLowerCase().includes(q) ||
-      (c.email ?? "").toLowerCase().includes(q)
-    )
+    if (q && !c.name.toLowerCase().includes(q) && !(c.company ?? "").toLowerCase().includes(q) && !(c.email ?? "").toLowerCase().includes(q)) return false
+    if (statusFilter !== "all" && c.status !== statusFilter) return false
+    return true
   })
 
   const resetForm = () => {
@@ -348,7 +346,11 @@ export function CrmContactsManager({ initialContacts }: CrmContactsManagerProps)
                 className="w-64 pl-10"
               />
             </div>
-            <Button variant="outline" size="icon" aria-label="Filter contacts">
+            <Button variant="outline" size="icon" aria-label="Filter contacts" onClick={() => {
+              const statuses = ["all", "active", "inactive", "lead", "customer"]
+              const next = statuses[(statuses.indexOf(statusFilter) + 1) % statuses.length]
+              setStatusFilter(next)
+            }}>
               <Filter className="h-4 w-4" />
             </Button>
           </div>

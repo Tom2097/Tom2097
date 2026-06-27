@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TrendingUp, DollarSign, Target, BarChart3, ArrowUp, ArrowDown, FileText, Download, Loader2 } from "lucide-react"
+import { TrendingUp, DollarSign, Target, BarChart3, ArrowUp, ArrowDown, FileText, Download, Loader2, CheckCircle2 } from "lucide-react"
 import { LiveChart } from "@/components/digit/live-chart"
 import { ChartContainer } from "@/components/digit/live-chart"
 
@@ -58,6 +58,20 @@ export function CrmForecastReports() {
   const totalDeals = stages.reduce((s, st) => s + st.count, 0)
   const avgDealSize = totalDeals > 0 ? Math.round(totalPipeline / totalDeals / 1000) : 0
 
+  const [exporting, setExporting] = useState(false)
+  const handleExport = async () => {
+    setExporting(true)
+    const rows = [["Stage", "Value", "Count", "Probability"]]
+    stages.forEach((s) => rows.push([s.name, String(s.value), String(s.count), String(s.probability)]))
+    const csv = rows.map((r) => r.join(",")).join("\n")
+    const blob = new Blob([csv], { type: "text/csv" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url; a.download = `forecast-${period}.csv`; a.click()
+    URL.revokeObjectURL(url)
+    setExporting(false)
+  }
+
   if (loading) return <div className="flex items-center justify-center p-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
   if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
@@ -78,7 +92,7 @@ export function CrmForecastReports() {
               <SelectItem value="q4">Q4 2026</SelectItem>
             </SelectContent>
           </Select>
-          <Button size="sm" variant="outline" className="h-8"><Download className="h-3.5 w-3.5 mr-1" />Export</Button>
+          <Button size="sm" variant="outline" className="h-8" onClick={handleExport} disabled={exporting}>{exporting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1" />}Export</Button>
         </div>
       </div>
 

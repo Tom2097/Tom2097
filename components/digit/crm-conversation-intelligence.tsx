@@ -109,7 +109,9 @@ export function CrmConversationIntelligence() {
                   <div className="p-2 rounded-lg bg-muted/30 border border-border/30">
                     <p className="text-[10px] text-muted-foreground mb-1">Suggested response:</p>
                     <p className="text-xs">{t.suggested}</p>
-                    <Button size="sm" variant="ghost" className="h-6 text-[10px] mt-1">
+                    <Button size="sm" variant="ghost" className="h-6 text-[10px] mt-1" onClick={() => {
+                      navigator.clipboard.writeText(t.suggested).catch(() => {})
+                    }}>
                       <Quote className="h-3 w-3 mr-1" />Copy
                     </Button>
                   </div>
@@ -118,7 +120,9 @@ export function CrmConversationIntelligence() {
                       <RefreshCw className="h-3 w-3" />Objection: &ldquo;{t.objection}&rdquo;
                     </div>
                     <p className="text-xs">{t.rebuttal}</p>
-                    <Button size="sm" variant="ghost" className="h-6 text-[10px] mt-1">
+                    <Button size="sm" variant="ghost" className="h-6 text-[10px] mt-1" onClick={() => {
+                      navigator.clipboard.writeText(t.rebuttal).catch(() => {})
+                    }}>
                       <Quote className="h-3 w-3 mr-1" />Copy
                     </Button>
                   </div>

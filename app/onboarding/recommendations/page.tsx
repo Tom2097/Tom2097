@@ -59,29 +59,28 @@ const moduleColors: Record<string, string> = {
   pharma: "from-indigo-500 to-violet-500"
 }
 
+function loadFromStorage(key: string) {
+  if (typeof window === "undefined") return null
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
 export default function RecommendationsPage() {
   const router = useRouter()
-  const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(null)
-  const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireData | null>(null)
+  const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(loadFromStorage("digit_analysis"))
+  const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireData | null>(loadFromStorage("digit_questionnaire"))
   const [selectedModules, setSelectedModules] = useState<string[]>([])
   const [feedback, setFeedback] = useState<Record<string, "helpful" | "not-helpful" | null>>({})
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [showIntelligence, setShowIntelligence] = useState(false)
 
   useEffect(() => {
-    // Load data from localStorage
-    const storedAnalysis = localStorage.getItem("digit_analysis")
-    const storedQuestionnaire = localStorage.getItem("digit_questionnaire")
-
-    if (storedAnalysis && storedQuestionnaire) {
-      setAnalysisResult(JSON.parse(storedAnalysis))
-      setQuestionnaireData(JSON.parse(storedQuestionnaire))
-    } else {
-      // Redirect to onboarding if no data
+    if (!analysisResult || !questionnaireData) {
       router.push("/onboarding")
     }
-    setIsLoading(false)
-  }, [router])
+  }, [analysisResult, questionnaireData, router])
 
   const toggleModule = (moduleId: string) => {
     setSelectedModules(prev =>

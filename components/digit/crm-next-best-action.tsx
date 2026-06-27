@@ -16,7 +16,7 @@ const impactColors = { high: "text-red-500 bg-red-500/10", medium: "text-amber-5
 const channelIcons: Record<string, React.ElementType> = { email: Mail, meeting: Calendar, call: Phone, document: Star, whatsapp: MessageSquare }
 
 export function CrmNextBestAction() {
-  const [suggestions, setSuggestions] = useState<ActionSuggestion[]>([])
+  const [actions, setActions] = useState<ActionSuggestion[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
@@ -32,7 +32,7 @@ export function CrmNextBestAction() {
       if (!res.ok) throw new Error("Failed")
       const data = await res.json()
       const parsed = JSON.parse(data.response)
-      setSuggestions(Array.isArray(parsed) ? parsed : [])
+      setActions(Array.isArray(parsed) ? parsed : [])
     } catch {
       setError("Could not generate suggestions")
     } finally {
@@ -49,7 +49,7 @@ export function CrmNextBestAction() {
       }),
     }).then((r) => r.ok ? r.json() : Promise.reject()).then((data) => {
       const parsed = JSON.parse(data.response)
-      setSuggestions(Array.isArray(parsed) ? parsed : [])
+      setActions(Array.isArray(parsed) ? parsed : [])
     }).catch(() => setError("Could not generate suggestions"))
   }, [])
 
@@ -67,7 +67,7 @@ export function CrmNextBestAction() {
       </div>
 
       <div className="space-y-2">
-        {suggestions.map((s, i) => {
+        {actions.filter((s) => s).map((s, i) => {
           const Icon = channelIcons[s.channel] || Send
           return (
             <motion.div
@@ -95,7 +95,14 @@ export function CrmNextBestAction() {
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">{s.reason}</p>
                 </div>
-                <Button size="sm" variant="ghost" className="h-7 text-[10px] shrink-0">
+                <Button size="sm" variant="ghost" className="h-7 text-[10px] shrink-0" onClick={() => {
+                  fetch("/api/v1/ai/crm-query", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query: `Execute action for deal "${s.deal}": ${s.action}` }),
+                  }).catch(() => {})
+                  setActions((prev) => prev.filter((a) => a.id !== s.id))
+                }}>
                   <Send className="h-3 w-3 mr-1" />Do It
                 </Button>
               </div>

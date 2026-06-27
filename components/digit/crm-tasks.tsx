@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Circle, CheckCircle2, Clock, AlertCircle, MoreHorizontal, User } from "lucide-react"
+import { Plus, Circle, CheckCircle2, Clock, AlertCircle, MoreHorizontal, User, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 
 interface CrmTaskItem {
@@ -98,7 +99,23 @@ export function CrmTasks() {
                 {task.entity && <span>{task.entity}</span>}
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0"><MoreHorizontal className="w-3 h-3" /></Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0"><MoreHorizontal className="w-3 h-3" /></Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => toggleComplete(task.id, task.status)}>
+                  {task.status === "completed" ? <Circle className="mr-2 h-3 w-3" /> : <CheckCircle2 className="mr-2 h-3 w-3" />}
+                  {task.status === "completed" ? "Reopen" : "Complete"}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive" onClick={() => {
+                  fetch(`/api/v1/crm/tasks?id=${task.id}`, { method: "DELETE" }).catch(() => {})
+                  setTasks((prev) => prev.filter((t) => t.id !== task.id))
+                }}>
+                  <Trash2 className="mr-2 h-3 w-3" />Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </Card>
         ))}
       </div>

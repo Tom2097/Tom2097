@@ -29,6 +29,9 @@ export function CrmTimeline({ entityId, entityType }: { entityId?: string; entit
   const [events, setEvents] = useState<TimelineEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [showLogForm, setShowLogForm] = useState(false)
+  const [logTitle, setLogTitle] = useState("")
+  const [logDesc, setLogDesc] = useState("")
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -43,6 +46,24 @@ export function CrmTimeline({ entityId, entityType }: { entityId?: string; entit
       .finally(() => setLoading(false))
   }, [entityId, entityType])
 
+  const handleLogActivity = async () => {
+    if (!logTitle.trim()) return
+    try {
+      const res = await fetch("/api/v1/crm/timeline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entityId, entityType, title: logTitle, description: logDesc }),
+      })
+      if (res.ok) {
+        const newEvent = await res.json()
+        setEvents((prev) => [newEvent, ...prev])
+        setLogTitle("")
+        setLogDesc("")
+        setShowLogForm(false)
+      }
+    } catch { /* ignore */ }
+  }
+
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
   if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
@@ -50,8 +71,20 @@ export function CrmTimeline({ entityId, entityType }: { entityId?: string; entit
     <div className="relative">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-foreground">Engagement Timeline</h3>
-        <Button variant="outline" size="sm" className="gap-1 h-7 text-xs"><Plus className="w-3 h-3" /> Log Activity</Button>
+        <Button variant="outline" size="sm" className="gap-1 h-7 text-xs" onClick={() => setShowLogForm(!showLogForm)}><Plus className="w-3 h-3" /> Log Activity</Button>
       </div>
+
+      {showLogForm && (
+        <div className="mb-4 p-3 rounded-xl border border-border/50 bg-muted/30 space-y-2">
+          <input value={logTitle} onChange={(e) => setLogTitle(e.target.value)} placeholder="Activity title..." className="w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
+          <input value={logDesc} onChange={(e) => setLogDesc(e.target.value)} placeholder="Description (optional)..." className="w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
+          <div className="flex gap-2">
+            <Button size="sm" className="h-7 text-xs" onClick={handleLogActivity}>Save</Button>
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setShowLogForm(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
       {events.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">No timeline events yet</p>}
       <div className="relative space-y-0">
         {events.map((event, i) => {

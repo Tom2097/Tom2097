@@ -103,8 +103,8 @@ export function UniversalIntake() {
               <div className="py-8 text-center space-y-3">
                 <Camera className="h-10 w-10 mx-auto text-emerald-500" />
                 <p className="text-sm font-medium">Snap a photo to upload</p>
-                <input type="file" accept="image/*" capture="environment" className="hidden" />
-                <Button variant="outline"><Camera className="h-4 w-4 mr-2" />Take Photo</Button>
+                <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileUpload} />
+                <Button variant="outline" onClick={() => fileRef.current?.click()}><Camera className="h-4 w-4 mr-2" />Take Photo</Button>
                 <p className="text-xs text-muted-foreground">OCR extracts text from scans of invoices, whiteboards, handwritten notes</p>
               </div>
             )}

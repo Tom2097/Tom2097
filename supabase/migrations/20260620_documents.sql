@@ -28,18 +28,36 @@ alter table documents enable row level security;
 alter table document_reports enable row level security;
 
 -- Drop existing policies to avoid duplicates
-drop policy if exists "Users can view their org documents" on documents;
-drop policy if exists "Users can insert their org documents" on documents;
-drop policy if exists "Users can delete their org documents" on documents;
-drop policy if exists "Users can view their org reports" on document_reports;
+drop policy if exists "Enable all for authenticated users" on documents;
+drop policy if exists "Enable all for authenticated users" on document_reports;
 
--- Policies (using organization_id directly since we filter by it in API)
-create policy "Enable all for authenticated users"
-  on documents for all
-  using (true)
-  with check (true);
+-- Org-scoped RLS: users can only access rows belonging to their organization.
+-- The organization_id is resolved server-side via profiles, never from the client.
+create policy "Users can view their org documents"
+  on documents for select
+  using (organization_id = (select organization_id from profiles where id = auth.uid()));
 
-create policy "Enable all for authenticated users"
-  on document_reports for all
-  using (true)
-  with check (true);
+create policy "Users can insert their org documents"
+  on documents for insert
+  with check (organization_id = (select organization_id from profiles where id = auth.uid()));
+
+create policy "Users can update their org documents"
+  on documents for update
+  using (organization_id = (select organization_id from profiles where id = auth.uid()))
+  with check (organization_id = (select organization_id from profiles where id = auth.uid()));
+
+create policy "Users can delete their org documents"
+  on documents for delete
+  using (organization_id = (select organization_id from profiles where id = auth.uid()));
+
+create policy "Users can view their org reports"
+  on document_reports for select
+  using (organization_id = (select organization_id from profiles where id = auth.uid()));
+
+create policy "Users can insert their org reports"
+  on document_reports for insert
+  with check (organization_id = (select organization_id from profiles where id = auth.uid()));
+
+create policy "Users can delete their org reports"
+  on document_reports for delete
+  using (organization_id = (select organization_id from profiles where id = auth.uid()));

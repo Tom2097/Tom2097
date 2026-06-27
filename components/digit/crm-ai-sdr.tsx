@@ -129,9 +129,21 @@ export function CrmAiSdr() {
               </div>
 
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="text-xs">Create Contact</Button>
-                <Button size="sm" variant="outline" className="text-xs">Create Account</Button>
-                <Button size="sm" variant="outline" className="text-xs">Add to Deal</Button>
+                <Button size="sm" variant="outline" className="text-xs" onClick={() => fetch("/api/v1/crm/contacts", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name: result.company_name, company: result.company_name, source: "ai-sdr" }),
+                }).catch(() => {})}>Create Contact</Button>
+                <Button size="sm" variant="outline" className="text-xs" onClick={() => fetch("/api/v1/crm/companies", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name: result.company_name, domain: result.domain, industry: result.industry, size: result.size }),
+                }).catch(() => {})}>Create Account</Button>
+                <Button size="sm" variant="outline" className="text-xs" onClick={() => fetch("/api/v1/crm/deals", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name: `${result.company_name} - New Deal`, company: result.company_name }),
+                }).catch(() => {})}>Add to Deal</Button>
               </div>
             </CardContent>
           </Card>

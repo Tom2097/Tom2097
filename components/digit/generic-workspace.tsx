@@ -64,11 +64,11 @@ export async function GenericWorkspace({ title = 'Operations Workspace' }: { tit
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => window.location.href = "/analytics/reports"}>
             <FileText className="h-4 w-4" />
             View Reports
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => window.location.href = "/analytics/configure"}>
             <Workflow className="h-4 w-4" />
             Configure Workspace
           </Button>

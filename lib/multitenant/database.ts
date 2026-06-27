@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import { createClient } from "@/lib/supabase/server"
 import { TenantRegistrationData, TenantOnboardingResponse } from "@/lib/types"
 import { v4 as uuidv4 } from "uuid"
@@ -125,14 +126,15 @@ export async function registerNewTenant(
 
     // 4. Create API key for tenant
     const apiKeyId = uuidv4()
-    const apiKeyPrefix = "dk_" + organizationId.substring(0, 8)
+    const rawKey = `dk_${uuidv4().replace(/-/g, "")}${organizationId.substring(0, 8)}`
+    const keyPrefix = rawKey.substring(0, 12)
 
     const { error: apiKeyError } = await supabase.from("api_keys").insert({
       id: apiKeyId,
       organization_id: organizationId,
       name: "Default API Key",
-      key_prefix: apiKeyPrefix,
-      key_hash: `hash_${apiKeyId}`, // In production, hash the actual key
+      key_prefix: keyPrefix,
+      key_hash: createHash("sha256").update(rawKey).digest("hex"),
       scopes: ["read", "write"],
       created_at: new Date().toISOString(),
     })

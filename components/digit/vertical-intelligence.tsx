@@ -55,8 +55,16 @@ export function VerticalIntelligence() {
                   <CardContent className="p-4 pt-2">
                     <p className="text-xs text-muted-foreground mb-2">Extracts: {ext.fields}</p>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="text-xs h-7">Test</Button>
-                      <Button size="sm" className="text-xs h-7">Configure</Button>
+                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => {
+                        fetch("/api/v1/operations/test-extractor", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ extractor: ext.name, vertical: key }),
+                        }).catch(() => {})
+                      }}>Test</Button>
+                      <Button size="sm" className="text-xs h-7" onClick={() => {
+                        window.location.href = `/operations/configure?extractor=${encodeURIComponent(ext.name)}`
+                      }}>Configure</Button>
                     </div>
                   </CardContent>
                 </Card>

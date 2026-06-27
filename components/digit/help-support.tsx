@@ -571,10 +571,22 @@ export function HelpSupport() {
                                   <p className="text-sm text-muted-foreground">{faq.answer}</p>
                                   <div className="mt-3 flex items-center gap-2">
                                     <span className="text-xs text-muted-foreground">Was this helpful?</span>
-                                    <Button variant="ghost" size="sm" className="h-7 text-xs">
+                                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => {
+                                      fetch("/api/v1/feedback", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ type: "faq_helpful", helpful: true, faqId: faq.question }),
+                                      }).catch(() => {})
+                                    }}>
                                       Yes
                                     </Button>
-                                    <Button variant="ghost" size="sm" className="h-7 text-xs">
+                                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => {
+                                      fetch("/api/v1/feedback", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ type: "faq_helpful", helpful: false, faqId: faq.question }),
+                                      }).catch(() => {})
+                                    }}>
                                       No
                                     </Button>
                                   </div>
@@ -636,7 +648,18 @@ export function HelpSupport() {
                     {/* Chat Input */}
                     <div className="border-t border-border pt-4">
                       <div className="flex gap-2">
-                        <Button variant="ghost" size="icon" className="shrink-0">
+                        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => {
+                          const input = document.createElement("input")
+                          input.type = "file"
+                          input.onchange = async (e) => {
+                            const file = (e.target as HTMLInputElement).files?.[0]
+                            if (!file) return
+                            const formData = new FormData()
+                            formData.append("file", file)
+                            await fetch("/api/support/upload", { method: "POST", body: formData }).catch(() => {})
+                          }
+                          input.click()
+                        }}>
                           <Paperclip className="h-4 w-4" />
                         </Button>
                         <Input
@@ -674,7 +697,7 @@ export function HelpSupport() {
                           We&apos;ll get back to you within 24 hours
                         </p>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          Ticket #DGT-{Math.random().toString(36).substr(2, 8).toUpperCase()}
+                          Ticket #DGT-{msg.id ? msg.id.substring(0, 8).toUpperCase() : "NEW"}
                         </p>
                       </motion.div>
                     ) : (

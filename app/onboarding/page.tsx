@@ -158,9 +158,18 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     if (currentStep === 5 && !analysisResult && !isAnalyzing) {
-      runAIAnalysis()
+      Promise.resolve().then(() => setIsAnalyzing(true))
+      fetch("/api/v1/ai/analyze-business", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+        .then((res) => res.ok ? res.json() : Promise.reject())
+        .then((result) => setAnalysisResult(result))
+        .catch(() => {})
+        .finally(() => setIsAnalyzing(false))
     }
-  }, [currentStep, analysisResult, isAnalyzing, runAIAnalysis])
+  }, [currentStep, analysisResult, isAnalyzing, data])
 
   const handleNext = () => {
     if (currentStep < 5) {

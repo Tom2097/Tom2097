@@ -82,7 +82,13 @@ export function OperationalCopilot() {
                     {msg.content}
                   </div>
                   {msg.action && (
-                    <Button size="sm" variant="outline" className="mt-1 text-xs h-7">
+                    <Button size="sm" variant="outline" className="mt-1 text-xs h-7" onClick={() => {
+                      fetch("/api/v1/operations/execute-action", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: msg.action }),
+                      }).catch(() => {})
+                    }}>
                       <Sparkles className="h-3 w-3 mr-1" />{msg.action.label}
                     </Button>
                   )}

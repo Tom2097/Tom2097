@@ -154,10 +154,24 @@ export function CrmDuplicateDetection() {
                     {merging === item.id ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle2 className="h-3 w-3 mr-1" />}
                     Merge & Dedupe
                   </Button>
-                  <Button size="sm" variant="outline" className="h-7 text-[10px]">
+                  <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={() => {
+                    fetch("/api/v1/ai/crm-query", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ query: `Discard duplicate record ${item.id} in CRM.` }),
+                    }).catch(() => {})
+                    setDuplicates((prev) => prev.filter((d) => d.id !== item.id))
+                  }}>
                     <XCircle className="h-3 w-3 mr-1" />Discard New
                   </Button>
-                  <Button size="sm" variant="ghost" className="h-7 text-[10px]">
+                  <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => {
+                    fetch("/api/v1/ai/crm-query", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ query: `Keep both records for duplicate ${item.id} in CRM.` }),
+                    }).catch(() => {})
+                    setDuplicates((prev) => prev.filter((d) => d.id !== item.id))
+                  }}>
                     Keep Both
                   </Button>
                 </div>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 100" width="100%" height="100%">
+  <!-- Transparent background by default, add fill="#111218" to the svg tag if you want the dark background baked in -->
+  
+  <g transform="translate(20, 75)">
+    <!-- "D i g" -->
+    <text font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="56" fill="#ffffff">
+      <tspan x="0">D</tspan>
+      <tspan x="42">i</tspan>
+      <tspan x="58">g</tspan>
+    </text>
+
+    <!-- Custom stem for the second 'i' to remove the default dot -->
+    <rect x="98" y="-40" width="11" height="41" fill="#ffffff" />
+
+    <!-- "T" -->
+    <text font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="56" fill="#ffffff">
+      <tspan x="116">T</tspan>
+    </text>
+
+    <!-- 3 Accent Dots over the second 'i' -->
+    <circle cx="86.5" cy="-56" r="6" fill="#78d6c7" />  <!-- Light Teal -->
+    <circle cx="103.5" cy="-56" r="6" fill="#00c875" /> <!-- Green -->
+    <circle cx="120.5" cy="-56" r="6" fill="#1a56db" /> <!-- Deep Blue -->
+  </g>
+</svg>

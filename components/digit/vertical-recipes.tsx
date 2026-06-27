@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Pill, Wind, Truck, FlaskConical, FileText, Activity } from "lucide-react"
+import { Pill, Wind, Truck, FlaskConical, FileText, Activity, Loader2 } from "lucide-react"
 
 const verticalRecipes = [
   {
@@ -45,6 +45,7 @@ const verticalRecipes = [
 
 export function VerticalRecipes() {
   const [activeVertical, setActiveVertical] = useState(verticalRecipes[0].vertical)
+  const [runningRecipe, setRunningRecipe] = useState<string | null>(null)
 
   const current = verticalRecipes.find((v) => v.vertical === activeVertical)!
 
@@ -75,7 +76,19 @@ export function VerticalRecipes() {
                 <CardDescription className="text-xs mt-1">{recipe.description}</CardDescription>
               </CardHeader>
               <CardContent className="p-4 pt-2">
-                <Button variant="ghost" size="sm" className="text-xs h-7">Run Recipe</Button>
+                <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => {
+                  setRunningRecipe(recipe.name)
+                  setTimeout(() => {
+                    fetch("/api/v1/operations/run-recipe", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ recipe: recipe.name, vertical: current.vertical }),
+                    }).catch(() => {}).finally(() => setRunningRecipe(null))
+                  }, 500)
+                }} disabled={runningRecipe === recipe.name}>
+                  {runningRecipe === recipe.name ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Activity className="h-3 w-3 mr-1" />}
+                  {runningRecipe === recipe.name ? "Running..." : "Run Recipe"}
+                </Button>
               </CardContent>
             </Card>
           </motion.div>

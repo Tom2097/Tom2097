@@ -102,8 +102,16 @@ export default function FeedbackPage() {
   }, [filterStatus, filterType, sort, search])
 
   useEffect(() => {
-    fetchFeedback()
-  }, [fetchFeedback])
+    const params = new URLSearchParams({ limit: "50", offset: "0", sort })
+    if (filterStatus !== "all") params.set("status", filterStatus)
+    if (filterType !== "all") params.set("type", filterType)
+    if (search.trim()) params.set("search", search.trim())
+    fetch(`/api/v1/feedback?${params}`)
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((data) => { setItems(data.feedback ?? []); setTotal(data.total ?? 0) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [filterStatus, filterType, sort, search])
 
   const handleVote = async (id: string) => {
     await fetch(`/api/v1/feedback/${id}/vote`, { method: 'POST' })

@@ -102,7 +102,13 @@ export function CrmDealHealthRadar() {
                 <Clock className="h-3 w-3" />
                 {deal.daysSinceUpdate} days since last activity
               </div>
-              <Button size="sm" variant="ghost" className="h-6 text-[10px]">
+              <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => {
+                fetch("/api/v1/ai/crm-query", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ query: `Execute next action for deal "${deal.deal}": ${deal.nextAction}` }),
+                }).catch(() => {})
+              }}>
                 <Target className="h-3 w-3 mr-1" />{deal.nextAction}
               </Button>
             </div>

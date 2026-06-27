@@ -14,10 +14,13 @@ import { Logo } from "@/components/digit/logo"
 import { startAuthentication } from "@simplewebauthn/browser"
 
 function LoginForm() {
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState(() => {
+    if (typeof window !== "undefined") return localStorage.getItem("digit_remember_email") || ""
+    return ""
+  })
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+  const [rememberMe, setRememberMe] = useState(() => typeof window !== "undefined" && !!localStorage.getItem("digit_remember_email"))
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
@@ -32,15 +35,6 @@ function LoginForm() {
       PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.()
         .then((available) => setPasskeyAvailable(available))
         .catch(() => setPasskeyAvailable(false))
-    }
-  }, [])
-
-  // Load remembered email from localStorage
-  useEffect(() => {
-    const remembered = localStorage.getItem("digit_remember_email")
-    if (remembered) {
-      setEmail(remembered)
-      setRememberMe(true)
     }
   }, [])
 
