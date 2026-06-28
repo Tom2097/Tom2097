@@ -24,6 +24,8 @@ import {
   Network,
   PlayCircle,
   PauseCircle,
+  CheckCircle,
+  ExternalLink,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -85,6 +87,7 @@ export function IntelligenceCommandCenter() {
   const [isGeneratingBriefing, setIsGeneratingBriefing] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
   const [expandedFinding, setExpandedFinding] = useState<string | null>(null)
+  const [resolvingFinding, setResolvingFinding] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -139,6 +142,25 @@ export function IntelligenceCommandCenter() {
       if (findingsRes) setFindings(findingsRes.findings || [])
       if (actionsRes) setPendingActions(actionsRes.actions || [])
     } catch {
+    }
+  }
+
+  const resolveFinding = async (findingId: string) => {
+    setResolvingFinding(findingId)
+    try {
+      await fetch("/api/v1/intelligence/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ actionId: findingId }),
+      })
+      const [findingsRes, actionsRes] = await Promise.all([
+        fetch("/api/v1/intelligence/findings?limit=20&ranked=true").then((r) => r.ok ? r.json() : null),
+        fetch("/api/v1/intelligence/actions").then((r) => r.ok ? r.json() : null),
+      ])
+      if (findingsRes) setFindings(findingsRes.findings || [])
+      if (actionsRes) setPendingActions(actionsRes.actions || [])
+    } finally {
+      setResolvingFinding(null)
     }
   }
 
@@ -452,14 +474,54 @@ export function IntelligenceCommandCenter() {
                             {formatDistance(finding.detectedAt)}
                           </p>
 
-                          {expandedFinding === finding.id && finding.suggestedAction && (
+                          {expandedFinding === finding.id && (
                             <motion.div
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
-                              className="mt-3 p-3 rounded-lg bg-secondary/30 border border-border/50"
+                              className="mt-3 space-y-3"
                             >
-                              <p className="text-xs font-medium mb-1">Suggested Action:</p>
-                              <p className="text-sm text-muted-foreground">{finding.suggestedAction}</p>
+                              {finding.suggestedAction && (
+                                <div className="p-3 rounded-lg bg-secondary/30 border border-border/50">
+                                  <p className="text-xs font-medium mb-1">Suggested Action:</p>
+                                  <p className="text-sm text-muted-foreground">{finding.suggestedAction}</p>
+                                </div>
+                              )}
+
+                              {/* Causal chain evidence */}
+                              <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Network className="w-3 h-3 text-blue-500" />
+                                  <p className="text-xs font-medium text-blue-500">Causal Chain</p>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  This finding may impact connected entities across {finding.sourceModule} and other modules.
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="p-0 h-auto text-xs ml-1"
+                                    onClick={(e) => { e.stopPropagation(); setActiveTab("briefing") }}
+                                  >
+                                    View full chain <ChevronRight className="w-3 h-3 inline" />
+                                  </Button>
+                                </p>
+                              </div>
+
+                              {/* One-tap resolution */}
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  disabled={resolvingFinding === finding.id}
+                                  onClick={(e) => { e.stopPropagation(); resolveFinding(finding.id) }}
+                                >
+                                  {resolvingFinding === finding.id ? (
+                                    <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                                  ) : (
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                  )}
+                                  {resolvingFinding === finding.id ? "Resolving..." : "Resolve Now"}
+                                </Button>
+                              </div>
                             </motion.div>
                           )}
                         </div>
