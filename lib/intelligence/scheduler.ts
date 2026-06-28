@@ -12,7 +12,7 @@ const TASKS_TABLE = "intelligence_scheduled_tasks"
 export interface ScheduleConfig {
   id: string
   organizationId: string
-  task: "monitor_scan" | "generate_briefing" | "auto_assign" | "sync_graph" | "push_alerts"
+  task: "monitor_scan" | "generate_briefing" | "auto_assign" | "sync_graph" | "push_alerts" | "run_learning"
   intervalMinutes: number
   lastRunAt: Date | null
   enabled: boolean
@@ -35,6 +35,7 @@ export async function ensureSchedules(organizationId: string): Promise<void> {
     { organizationId, task: "auto_assign", intervalMinutes: 30, enabled: true },
     { organizationId, task: "sync_graph", intervalMinutes: 120, enabled: true },
     { organizationId, task: "push_alerts", intervalMinutes: 15, enabled: true },
+    { organizationId, task: "run_learning", intervalMinutes: 360, enabled: true },
   ]
 
   for (const sched of defaults) {
@@ -130,6 +131,12 @@ export async function executeTask(
           await pushAlert(organizationId, critical)
         }
         details = { criticalAlerts: critical.length }
+        break
+      }
+      case "run_learning": {
+        const { runLearningCycle } = await import("./learning/pipeline")
+        const result = await runLearningCycle(organizationId)
+        details = { ...result }
         break
       }
     }
