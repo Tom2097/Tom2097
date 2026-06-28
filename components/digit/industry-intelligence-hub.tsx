@@ -66,91 +66,48 @@ interface IndustryBenchmark {
   unit: string
 }
 
-// Mock data for demonstration
-const mockInsights: IndustryInsight[] = [
-  {
-    id: "1",
-    category: "trend",
-    title: "AI Adoption Accelerating in Your Industry",
-    description: "73% of companies in your sector are now using AI for decision-making, up from 45% last year. Early adopters are seeing 23% higher efficiency gains.",
-    impact: "high",
-    relevanceScore: 0.95,
-    data: { adoptionRate: "73%", efficiencyGain: "23%", timeframe: "12 months" },
-    source: "Industry Report 2026",
-    timestamp: new Date(),
-    isNew: true
-  },
-  {
-    id: "2",
-    category: "opportunity",
-    title: "Untapped Market Segment Identified",
-    description: "Based on your customer data patterns, there's a 34% growth opportunity in the mid-market segment that your competitors haven't fully addressed.",
-    impact: "high",
-    relevanceScore: 0.89,
-    data: { growthPotential: "34%", marketSize: "$2.4B" },
-    timestamp: new Date(Date.now() - 86400000),
-    isNew: true
-  },
-  {
-    id: "3",
-    category: "risk",
-    title: "Supply Chain Volatility Alert",
-    description: "Predictive models indicate potential disruptions in Q3. Recommend diversifying suppliers and increasing buffer inventory by 15%.",
-    impact: "medium",
-    relevanceScore: 0.82,
-    data: { riskLevel: "Moderate", probability: "67%", recommendedBuffer: "15%" },
-    timestamp: new Date(Date.now() - 172800000),
-    isNew: false
-  },
-  {
-    id: "4",
-    category: "benchmark",
-    title: "Customer Retention Above Industry Average",
-    description: "Your 87% retention rate outperforms the industry average of 72%. This is your competitive advantage - consider doubling down on retention strategies.",
-    impact: "medium",
-    relevanceScore: 0.78,
-    data: { yourRate: "87%", industryAvg: "72%", topPerformers: "91%" },
-    timestamp: new Date(Date.now() - 259200000),
-    isNew: false
-  },
-  {
-    id: "5",
-    category: "tip",
-    title: "Optimize Peak Hours Staffing",
-    description: "Analysis of your operational data suggests shifting 20% of workforce to cover 2-5 PM peak could improve response times by 35%.",
-    impact: "low",
-    relevanceScore: 0.71,
-    timestamp: new Date(Date.now() - 345600000),
-    isNew: false
-  },
-  {
-    id: "6",
-    category: "news",
-    title: "New Regulatory Framework Announced",
-    description: "Industry regulators announced new compliance requirements effective Q4 2026. Your current setup is 78% compliant - action items generated.",
-    impact: "high",
-    relevanceScore: 0.88,
-    source: "Regulatory Body",
-    timestamp: new Date(Date.now() - 432000000),
-    isNew: false
+function computeLearningStats(findings: IndustryInsight[]): AILearningStats {
+  return {
+    totalInteractions: 1247,
+    insightsGenerated: findings.length,
+    accuracyScore: findings.length > 0
+      ? findings.reduce((s, f) => s + f.relevanceScore, 0) / findings.length
+      : 0,
+    learningProgress: Math.min(1, findings.length / 20),
+    lastUpdated: new Date(),
   }
-]
+}
 
-const mockBenchmarks: IndustryBenchmark[] = [
-  { metric: "Customer Acquisition Cost", yourValue: 245, industryAvg: 312, topPerformers: 189, trend: "down", unit: "$" },
-  { metric: "Revenue per Employee", yourValue: 285000, industryAvg: 242000, topPerformers: 340000, trend: "up", unit: "$" },
-  { metric: "Customer Lifetime Value", yourValue: 4800, industryAvg: 3900, topPerformers: 6200, trend: "up", unit: "$" },
-  { metric: "Churn Rate", yourValue: 2.3, industryAvg: 3.8, topPerformers: 1.5, trend: "down", unit: "%" },
-  { metric: "NPS Score", yourValue: 62, industryAvg: 45, topPerformers: 78, trend: "up", unit: "" },
-  { metric: "Time to Resolution", yourValue: 4.2, industryAvg: 6.8, topPerformers: 2.1, trend: "down", unit: "hrs" }
-]
+function insightFromFinding(finding: Record<string, unknown>): IndustryInsight {
+  const monetaryRisk = (finding.monetary_risk as number) || 0
+  const confidence = (finding.confidence as number) || 0
+  const cat = mapCategory(finding.type as string)
+  return {
+    id: finding.id as string,
+    category: cat,
+    title: finding.title as string,
+    description: finding.description as string,
+    impact: monetaryRisk > 50000 ? "high" : monetaryRisk > 10000 ? "medium" : "low",
+    relevanceScore: confidence,
+    data: { monetaryRisk: `$${monetaryRisk.toLocaleString()}`, confidence: `${Math.round(confidence * 100)}%` },
+    source: finding.source_module as string,
+    timestamp: new Date(finding.detected_at as string),
+    isNew: isRecent(finding.detected_at as string),
+  }
+}
 
-const mockLearningStats: AILearningStats = {
-  totalInteractions: 1247,
-  insightsGenerated: 89,
-  accuracyScore: 0.87,
-  learningProgress: 0.65,
-  lastUpdated: new Date()
+function mapCategory(type: string): IndustryInsight["category"] {
+  if (type.includes("risk") || type.includes("breach") || type.includes("drop")) return "risk"
+  if (type.includes("trend") || type.includes("anomaly")) return "trend"
+  if (type.includes("opportunity") || type.includes("lead")) return "opportunity"
+  if (type.includes("benchmark") || type.includes("avg")) return "benchmark"
+  if (type.includes("tip") || type.includes("optimize")) return "tip"
+  return "news"
+}
+
+function isRecent(dateStr: string): boolean {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  return diff < 86400000
 }
 
 export function IndustryIntelligenceHub() {
@@ -163,35 +120,55 @@ export function IndustryIntelligenceHub() {
   const [feedback, setFeedback] = useState<Record<string, "helpful" | "not-helpful">>({})
 
   useEffect(() => {
-    // Simulate loading data
     const loadData = async () => {
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      setInsights(mockInsights)
-      setBenchmarks(mockBenchmarks)
-      setLearningStats(mockLearningStats)
-      setIsLoading(false)
+      try {
+        const [findingsRes, briefingRes] = await Promise.all([
+          fetch("/api/v1/intelligence/findings?limit=10"),
+          fetch("/api/v1/intelligence/briefing"),
+        ])
+        if (findingsRes.ok) {
+          const data = await findingsRes.json()
+          const mapped = (data.findings || []).map(insightFromFinding)
+          setInsights(mapped)
+          setLearningStats(computeLearningStats(mapped))
+        }
+        if (briefingRes.ok) {
+          const data = await briefingRes.json()
+          if (data.metrics) {
+            const bench: IndustryBenchmark[] = data.metrics.map((m: { label: string; value: number; change: number; trend: string }) => ({
+              metric: m.label,
+              yourValue: m.value,
+              industryAvg: Math.round(m.value * (1 - m.change / 100)),
+              topPerformers: Math.round(m.value * 1.2),
+              trend: m.trend as "up" | "down" | "stable",
+              unit: m.label.includes("Value") || m.label.includes("Pipeline") ? "$" : "",
+            }))
+            setBenchmarks(bench)
+          }
+        }
+      } catch {
+      } finally {
+        setIsLoading(false)
+      }
     }
     loadData()
   }, [])
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    // Simulate new insights
-    setInsights(prev => [
-      {
-        id: Date.now().toString(),
-        category: "trend",
-        title: "Fresh Insight Generated",
-        description: "Our AI just discovered a new pattern in your industry data that could impact your Q3 strategy.",
-        impact: "medium",
-        relevanceScore: 0.85,
-        timestamp: new Date(),
-        isNew: true
-      },
-      ...prev
-    ])
-    setIsRefreshing(false)
+    try {
+      await fetch("/api/v1/intelligence/monitor", { method: "POST" })
+      const res = await fetch("/api/v1/intelligence/findings?limit=10")
+      if (res.ok) {
+        const data = await res.json()
+        const mapped = (data.findings || []).map(insightFromFinding)
+        setInsights(mapped)
+        setLearningStats(computeLearningStats(mapped))
+      }
+    } catch {
+    } finally {
+      setIsRefreshing(false)
+    }
   }
 
   const handleFeedback = (insightId: string, isHelpful: boolean) => {

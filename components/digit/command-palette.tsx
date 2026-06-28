@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, FileText, BarChart3, Settings, Users, Workflow, Upload, Command } from "lucide-react"
+import { Search, FileText, BarChart3, Settings, Users, Workflow, Upload, Command, Brain, Shield, AlertTriangle, TrendingUp, Sparkles, Activity } from "lucide-react"
 
 interface CommandItem {
   id: string
@@ -21,7 +21,32 @@ const defaultCommands = (router: ReturnType<typeof useRouter>): CommandItem[] =>
   { id: "nav-crm", label: "Go to CRM", description: "Manage contacts and deals", icon: <Users className="h-4 w-4" />, action: () => router.push("/crm"), keywords: ["crm", "contacts", "customers", "deals", "sales"] },
   { id: "nav-workflows", label: "Go to Workflows", description: "Automate processes", icon: <Workflow className="h-4 w-4" />, action: () => router.push("/workflows"), keywords: ["workflows", "automation", "triggers", "actions"] },
   { id: "nav-upload", label: "Upload Document", description: "Upload a file for processing", icon: <Upload className="h-4 w-4" />, action: () => router.push("/documents?upload=true"), keywords: ["upload", "file", "import", "document"] },
+  { id: "nav-intelligence", label: "Open Intelligence", description: "AI Command Center", icon: <Brain className="h-4 w-4" />, action: () => router.push("/intelligence"), keywords: ["intelligence", "ai", "brain", "insights", "command center"] },
+  { id: "act-run-monitor", label: "Run Monitor Scan", description: "Scan all modules for issues", icon: <Activity className="h-4 w-4" />, action: () => { fetch("/api/v1/intelligence/monitor", { method: "POST" }); router.push("/intelligence") }, keywords: ["scan", "monitor", "check", "audit", "run scan"] },
+  { id: "act-briefing", label: "Generate Briefing", description: "Create an executive briefing", icon: <FileText className="h-4 w-4" />, action: () => { fetch("/api/v1/intelligence/briefing", { method: "POST" }); router.push("/intelligence") }, keywords: ["briefing", "brief", "summary", "executive summary", "morning briefing"] },
+  { id: "act-causal-chains", label: "View Causal Chains", description: "Cross-module cause and effect relationships", icon: <Shield className="h-4 w-4" />, action: () => router.push("/intelligence"), keywords: ["causal", "cause", "effect", "chain", "relationship", "root cause"] },
+  { id: "act-findings", label: "Show Active Findings", description: "View all active intelligence findings", icon: <AlertTriangle className="h-4 w-4" />, action: () => router.push("/intelligence"), keywords: ["findings", "alerts", "issues", "problems", "active"] },
 ]
+
+// Intent-based routing maps natural language patterns to commands
+function resolveIntent(query: string): { command?: string; params?: Record<string, string> } {
+  const q = query.toLowerCase().trim()
+
+  if (q.match(/^(show|find|list|get|view)\s+(expiring|cert|expir)/)) return { command: "nav-intelligence" }
+  if (q.match(/^(run|start|execute)\s+(scan|monitor|check)/)) return { command: "act-run-monitor" }
+  if (q.match(/^(generate|create|get)\s+(briefing|brief|summary)/)) return { command: "act-briefing" }
+  if (q.match(/^(show|view|find)\s+(causal|cause|chain|root)/)) return { command: "act-causal-chains" }
+  if (q.match(/^(show|list|view|get)\s+(finding|alert|issue|active)/)) return { command: "act-findings" }
+  if (q.match(/^(go|open|navigate|goto)\s+(crm|sales|pipeline)/)) return { command: "nav-crm" }
+  if (q.match(/^(go|open|navigate|goto)\s+(doc|file|document)/)) return { command: "nav-documents" }
+  if (q.match(/^(go|open|navigate|goto)\s+(analytics|metric|report)/)) return { command: "nav-analytics" }
+  if (q.match(/^(go|open|navigate|goto)\s+(setting|pref)/)) return { command: "nav-settings" }
+  if (q.match(/^(go|open|navigate|goto)\s+(workflow|automation)/)) return { command: "nav-workflows" }
+  if (q.match(/^(upload|import|add)\s+(doc|file|document)/)) return { command: "nav-upload" }
+  if (q.match(/^(what|how).*(risk|threat|danger)/)) return { command: "act-findings" }
+
+  return {}
+}
 
 export function CommandPalette() {
   const router = useRouter()
@@ -35,7 +60,9 @@ export function CommandPalette() {
   const filtered = query.trim()
     ? commands.filter((c) => {
         const q = query.toLowerCase()
-        return c.label.toLowerCase().includes(q) || c.keywords.some((k) => k.includes(q))
+        if (c.label.toLowerCase().includes(q) || c.keywords.some((k) => k.includes(q))) return true
+        const intent = resolveIntent(query)
+        return intent.command === c.id || c.keywords.some((k) => k.includes(intent.command || ""))
       })
     : commands
 
