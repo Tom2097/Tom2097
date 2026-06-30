@@ -155,13 +155,30 @@ export async function executeTask(
     return { taskId, task, status: "completed", startedAt, completedAt, details }
   } catch (err) {
     const completedAt = new Date()
+    const errorMsg = String(err)
+
     await db.from(TASKS_TABLE).update({
       status: "failed",
       completed_at: completedAt.toISOString(),
-      details: { error: String(err) },
+      details: { error: errorMsg },
     }).eq("id", taskId)
 
-    return { taskId, task, status: "failed", startedAt, completedAt, details: { error: String(err) } }
+    const { data: failedCount } = await db
+      .from(TASKS_TABLE)
+      .select("id", { count: "exact", head: true })
+      .eq("schedule_id", scheduleId)
+      .eq("status", "failed")
+      .gte("started_at", new Date(Date.now() - 86400000).toISOString())
+
+    const retryCount = (failedCount ?? 0) as number
+    if (retryCount < 3) {
+      const backoffMinutes = Math.pow(2, retryCount) * 5
+      await db.from(SCHEDULES_TABLE).update({
+        last_run_at: new Date(Date.now() + backoffMinutes * 60000).toISOString(),
+      }).eq("id", scheduleId)
+    }
+
+    return { taskId, task, status: "failed", startedAt, completedAt, details: { error: errorMsg } }
   }
 }
 

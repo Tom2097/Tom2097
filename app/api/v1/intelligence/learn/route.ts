@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { extractTenantContext } from "@/lib/multitenant/context"
+import { checkTenantRateLimit } from "@/lib/multitenant/rate-limit"
 import { runLearningCycle, backfillFeedback } from "@/lib/intelligence/learning/pipeline"
 import { seedSyntheticData } from "@/lib/intelligence/learning/synthetic"
 import { predict } from "@/lib/intelligence/learning/predictor"
@@ -8,6 +9,8 @@ import { getCalibration } from "@/lib/intelligence/learning/feedback"
 export async function POST(req: NextRequest) {
   const ctx = await extractTenantContext(req)
   if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const rateLimited = await checkTenantRateLimit(ctx.organizationId, 60, 10)
+  if (rateLimited) return rateLimited
 
   const body = await req.json().catch(() => null)
 

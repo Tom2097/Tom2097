@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { extractTenantContext } from "@/lib/multitenant/context"
+import { checkTenantRateLimit } from "@/lib/multitenant/rate-limit"
 import { executeIntelligenceAction } from "@/lib/intelligence/executor"
 import { approveAction } from "@/lib/intelligence/engine"
 import { getPendingApprovals } from "@/lib/intelligence/agents"
@@ -7,6 +8,8 @@ import { getPendingApprovals } from "@/lib/intelligence/agents"
 export async function POST(req: NextRequest) {
   const ctx = await extractTenantContext(req)
   if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const rateLimited = await checkTenantRateLimit(ctx.organizationId, 60, 10)
+  if (rateLimited) return rateLimited
 
   const body = await req.json().catch(() => null)
   if (!body?.actionId) {
