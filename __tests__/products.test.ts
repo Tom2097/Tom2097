@@ -33,7 +33,7 @@ describe("getPlanById", () => {
   it("returns correct plan", () => {
     const plan = getPlanById("professional")
     expect(plan?.name).toBe("Professional")
-    expect(plan?.priceInCents).toBe(99900)
+    expect(plan?.priceInCents).toBe(39900)
   })
 
   it("returns undefined for unknown id", () => {
@@ -43,9 +43,9 @@ describe("getPlanById", () => {
 
 describe("formatPrice", () => {
   it("formats cents to dollar string", () => {
-    expect(formatPrice(29900)).toBe("$299")
-    expect(formatPrice(99900)).toBe("$999")
-    expect(formatPrice(499900)).toBe("$4,999")
+    expect(formatPrice(9900)).toBe("$99")
+    expect(formatPrice(39900)).toBe("$399")
+    expect(formatPrice(149900)).toBe("$1,499")
   })
 
   it("handles zero", () => {

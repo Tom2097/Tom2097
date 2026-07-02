@@ -15,6 +15,12 @@ export type DomainEvent =
   | { type: "operational.record_populated"; organization_id: string; data: { entity_type: string; entity_id: string; source_document: string } }
   | { type: "workflow.started"; organization_id: string; data: { workflow_id: string; execution_id: string; trigger_type: string } }
   | { type: "workflow.completed"; organization_id: string; data: { workflow_id: string; execution_id: string; status: string } }
+  | { type: "document.version_created"; organization_id: string; data: { document_id: string; version: number; change_summary: string | null } }
+  | { type: "compliance.signature_requested"; organization_id: string; data: { signature_request_id: string; document_id: string; signer_email: string } }
+  | { type: "compliance.document_signed"; organization_id: string; data: { document_id: string; signer_email: string; signature_hash: string } }
+  | { type: "compliance.audit_appended"; organization_id: string; data: { record_type: string; record_id: string; action: string; hash: string } }
+  | { type: "resources.asset_tagged"; organization_id: string; data: { asset_id: string; tag_type: string; tag_id: string } }
+  | { type: "resources.asset_scanned"; organization_id: string; data: { asset_id: string } }
 
 const SUBSCRIPTIONS_TABLE = "event_subscriptions"
 const EVENTS_TABLE = "domain_events"

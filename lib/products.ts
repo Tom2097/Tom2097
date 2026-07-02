@@ -4,6 +4,8 @@ export interface SubscriptionPlan {
   description: string
   priceInCents: number
   annualPriceInCents: number
+  priceInr: number
+  annualPriceInr: number
   interval: "month" | "year"
   features: string[]
   limits: {
@@ -19,17 +21,20 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: "starter",
     name: "Starter",
-    description: "Perfect for small teams getting started with AI analytics",
-    priceInCents: 29900, // $299/month
-    annualPriceInCents: 24900, // $249/month billed annually
+    description: "AI analytics for small teams getting started",
+    priceInCents: 9900,
+    annualPriceInCents: 8300,
+    priceInr: 349900,
+    annualPriceInr: 291500,
     interval: "month",
     features: [
-      "1 industry module",
+      "1 workspace module",
       "Up to 5 team members",
-      "100K data points/month",
+      "1,000 AI actions/month",
+      "Basic AI insights & alerts",
+      "Core CRM",
+      "Standard integrations",
       "Email support",
-      "Basic AI insights",
-      "Standard reports",
     ],
     limits: {
       users: 5,
@@ -41,19 +46,24 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: "professional",
     name: "Professional",
-    description: "For growing businesses that need advanced analytics",
-    priceInCents: 99900, // $999/month
-    annualPriceInCents: 84900, // $849/month billed annually
+    description: "The full platform with AI Intelligence brain for growing teams",
+    priceInCents: 39900,
+    annualPriceInCents: 33200,
+    priceInr: 1499900,
+    annualPriceInr: 1249900,
     interval: "month",
     features: [
-      "3 platform modules",
+      "3 workspace modules",
       "Up to 25 team members",
-      "1M data points/month",
-      "API access",
-      "Priority support",
-      "Advanced AI predictions",
-      "Custom dashboards",
-      "Data export",
+      "10,000 AI actions/month",
+      "AI Intelligence: causal reasoning, daily briefings, predictions",
+      "Full Smart CRM",
+      "Workflow automation (all triggers)",
+      "Semantic search",
+      "Analytics & forecasting",
+      "Integration Hub + API",
+      "WhatsApp lead capture & nurture",
+      "Priority support + onboarding",
     ],
     limits: {
       users: 25,
@@ -66,27 +76,32 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
     id: "enterprise",
     name: "Enterprise",
-    description: "Full platform access with dedicated support",
-    priceInCents: 499900, // $4,999/month
-    annualPriceInCents: 424900, // $4,249/month billed annually
+    description: "Scale, security, and autonomous agents for large organizations",
+    priceInCents: 149900,
+    annualPriceInCents: 124900,
+    priceInr: 10000000,
+    annualPriceInr: 8330000,
     interval: "month",
     features: [
-      "All 6 platform modules",
-      "Unlimited team members",
-      "Unlimited data points",
-      "Dedicated account manager",
-      "24/7 phone support",
-      "Custom AI model training",
-      "White-label options",
-      "SSO/SAML integration",
-      "SLA guarantee",
-      "On-premise deployment option",
+      "All 4 workspace modules",
+      "Unlimited team members (fair-use)",
+      "Custom AI actions/month",
+      "Autonomous AI agents & simulation",
+      "Learns-your-business AI",
+      "Full workflow + autonomous agents",
+      "Custom integrations & webhooks",
+      "Advanced RBAC + ABAC",
+      "Audit & compliance (full export, DPDP data residency)",
+      "SSO/SAML",
+      "White-label",
+      "Dedicated CSM, SLA response",
+      "On-premise / VPC (roadmap)",
     ],
     limits: {
-      users: -1, // Unlimited
-      dataPoints: -1, // Unlimited
-      modules: 6,
-      apiCalls: -1, // Unlimited
+      users: -1,
+      dataPoints: -1,
+      modules: 4,
+      apiCalls: -1,
     },
   },
 ]
@@ -101,4 +116,12 @@ export function formatPrice(cents: number): string {
     currency: "USD",
     minimumFractionDigits: 0,
   }).format(cents / 100)
+}
+
+export function formatInrPrice(paise: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(paise / 100)
 }
