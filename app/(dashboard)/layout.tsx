@@ -6,6 +6,7 @@ import { Navbar } from '@/components/digit/navbar'
 import { AIAssistant } from '@/components/digit/ai-assistant'
 import { HelpSupport } from '@/components/digit/help-support'
 import { SettingsPanel } from '@/components/digit/settings-panel'
+import { cn } from '@/lib/utils'
 
 export default function DashboardLayout({
   children,
@@ -29,9 +30,10 @@ export default function DashboardLayout({
       
       {/* Main Content */}
       <div 
-        className={`transition-all duration-300 ease-in-out ${
+        className={cn(
+          "transition-all duration-300 ease-in-out",
           isSidebarCollapsed ? 'ml-16' : 'ml-64'
-        }`}
+        )}
       >
         <Navbar onOpenAI={() => setIsAIOpen(true)} />
         <main className="relative min-h-[calc(100vh-4rem)] p-6">

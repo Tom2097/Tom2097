@@ -1,11 +1,45 @@
 # Environment Variables to Add in Vercel
 
 ## Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
 
 ## Stripe
+STRIPE_SECRET_KEY=your_stripe_secret_key_here
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret_here
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key_here
 STRIPE_PRO_PRICE_ID=your_stripe_pro_price_id_here
 STRIPE_ENTERPRISE_PRICE_ID=your_stripe_enterprise_price_id_here
 
-## Next.js (Optional)
-NEXT_PUBLIC_SITE_URL=https://v0-digit.vercel.app
+## AI / Mistral
+MISTRAL_API_KEY=your_mistral_api_key_here
+
+## Upstash (Redis + Rate Limiting)
+UPSTASH_REDIS_REST_URL=your_upstash_redis_rest_url_here
+UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_rest_token_here
+
+## Cloudflare R2 (File Storage)
+CLOUDFLARE_R2_ACCESS_KEY_ID=your_r2_access_key_id_here
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=your_r2_secret_access_key_here
+CLOUDFLARE_R2_BUCKET_NAME=your_r2_bucket_name_here
+CLOUDFLARE_R2_ENDPOINT=your_r2_endpoint_here
+CLOUDFLARE_R2_PUBLIC_URL=your_r2_public_url_here
+
+## AWS (S3 alternative)
+AWS_ACCESS_KEY_ID=your_aws_access_key_id_here
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key_here
+AWS_REGION=your_aws_region_here
+AWS_S3_BUCKET=your_s3_bucket_name_here
+
+## Cron / Auth
+CRON_SECRET=your_cron_secret_here
+JWT_SECRET=your_jwt_secret_here
+
+## Next.js
+NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+NEXT_PUBLIC_SITE_URL=https://your-app.vercel.app
+
+## Razorpay (alternative payment provider)
+RAZORPAY_KEY_ID=your_razorpay_key_id_here
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret_here

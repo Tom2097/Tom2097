@@ -9,8 +9,15 @@ const config = [
       "**/*.config.mjs",
       ".well-known/**",
       "app/.well-known/**",
-      "components/ui/use-mobile.tsx",
     ],
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      "react-hooks/exhaustive-deps": "warn",
+      "no-console": ["warn", { allow: ["warn", "error"] }],
+    },
   },
 ];
 

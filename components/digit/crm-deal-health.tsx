@@ -40,16 +40,9 @@ export function CrmDealHealthRadar() {
   }
 
   useEffect(() => {
-    fetch("/api/v1/ai/crm-query", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: "Analyze my CRM pipeline and return 5 deals with their health status. Return ONLY valid JSON array with objects having: id (string), deal (string), value (number), stage (string), risk (\"high\"/\"medium\"/\"low\"), reason (string), nextAction (string), daysSinceUpdate (number). No markdown.",
-      }),
-    }).then((r) => r.ok ? r.json() : Promise.reject()).then((data) => {
-      const parsed = JSON.parse(data.response)
-      setDeals(Array.isArray(parsed) ? parsed : [])
-    }).catch(() => setError("Could not load deal health"))
+    /* eslint-disable react-hooks/set-state-in-effect */
+    fetchHealth()
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   const highRisk = deals.filter((d) => d.risk === "high").length

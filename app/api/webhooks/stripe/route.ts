@@ -12,14 +12,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No signature" }, { status: 400 })
   }
 
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  if (!webhookSecret) {
+    return NextResponse.json({ error: "Webhook secret is not configured" }, { status: 500 })
+  }
+
   let event
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    )
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
     return NextResponse.json({ error: `Webhook Error: ${message}` }, { status: 400 })

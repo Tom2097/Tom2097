@@ -47,7 +47,7 @@ export function runWhatIfSimulation(
       name: s.name,
       projectedRevenue: Math.round(projectedRevenue),
       projectedGrowth: Math.round((projectedRevenue - baseRevenue) / baseRevenue * 100),
-      confidence: Math.round(50 + Math.random() * 40),
+      confidence: Math.round(50 + (Object.values(s.changes).reduce((a, c) => a + Math.abs(c), 0) % 40)),
       riskFlags: Object.entries(s.changes).filter(([, v]) => v > 20).map(([k]) => `Large change in ${k} may be unrealistic`),
     }
   })
