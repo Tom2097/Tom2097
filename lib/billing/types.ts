@@ -20,9 +20,12 @@ export interface SubscriptionRecord {
   organization_id: string
   user_id: string
   plan: SubscriptionPlan
-  status: "active" | "past_due" | "cancelled" | "incomplete"
+  status: "active" | "past_due" | "cancelled" | "incomplete" | "trialing" | "refunded" | "expired"
   current_period_start: string
   current_period_end: string
+  trial_ends_at?: string
+  billing_interval?: "month" | "year"
+  cancel_at_period_end?: boolean
   stripe_customer_id?: string
   stripe_subscription_id?: string
   razorpay_customer_id?: string

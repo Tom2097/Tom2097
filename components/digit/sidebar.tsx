@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import useSWR from 'swr'
-import { 
+import {
   BarChart3, 
   Users, 
   LayoutGrid,
@@ -19,6 +19,7 @@ import {
   MessageSquarePlus,
   Gauge,
   Settings,
+  HelpCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo, LogoIcon } from '@/components/digit/logo'
@@ -168,6 +169,19 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
             </Link>
           )}
           <Link
+            href="/pricing"
+            className={cn(
+              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+              pathname === '/pricing'
+                ? "bg-primary/10 text-primary digit-glow-sm"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            )}
+            title={isCollapsed ? 'Pricing & Plans' : undefined}
+          >
+            <CreditCard className="h-5 w-5 shrink-0" />
+            {!isCollapsed && <span>Pricing & Plans</span>}
+          </Link>
+          <Link
             href="/configure"
             className={cn(
               "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
@@ -175,17 +189,23 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                 ? "bg-primary/10 text-primary digit-glow-sm"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}
-            title={isCollapsed ? 'Configure Workspace' : undefined}
+            title={isCollapsed ? 'Settings' : undefined}
           >
             <Settings className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Configure Workspace</span>}
+            {!isCollapsed && <span>Settings</span>}
           </Link>
           <Link
-            href="/pricing"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+            href="/help"
+            className={cn(
+              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+              pathname === '/help'
+                ? "bg-primary/10 text-primary digit-glow-sm"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            )}
+            title={isCollapsed ? 'Help & Support' : undefined}
           >
-            <CreditCard className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Pricing & Plans</span>}
+            <HelpCircle className="h-5 w-5 shrink-0" />
+            {!isCollapsed && <span>Help & Support</span>}
           </Link>
         </div>
       </div>

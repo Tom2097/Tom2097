@@ -91,32 +91,27 @@ export async function createStripeSession(
       customerId = customer.id
     }
 
-    // Check if trial is active
-    const isTrialActive = sub?.trial_ends_at && new Date(sub.trial_ends_at) > new Date()
-    if (isTrial && !isTrialActive) {
-      // Update subscription to set trial end date
-      await supabase
-        .from("subscriptions")
-        .update({
-          trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          status: "trialing"
-        })
-        .eq("organization_id", organizationId)
-    }
-
     // Create checkout session
     const planConfig = STRIPE_PLANS[plan.id]
     if (!planConfig) throw new Error(`Invalid plan: ${plan.id}`)
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionOptions: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       line_items: [{ price: planConfig.priceId, quantity: 1 }],
       mode: "subscription",
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: { organization_id: organizationId, plan: plan.id },
-      ...(isTrial && !isTrialActive ? { subscription_data: { trial_end: Math.floor(Date.now() / 1000) } } : {}),
-    })
+    }
+
+    if (isTrial) {
+      sessionOptions.subscription_data = {
+        trial_period_days: 7,
+        metadata: { organization_id: organizationId, plan: plan.id },
+      }
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionOptions)
 
     await logAuthEvent({
       action: "billing.session_created",
@@ -222,21 +217,63 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
         const orgId = (subscription.metadata as Record<string, string>)?.organization_id
 
         if (orgId) {
+          const isTrialing = subscription.status === "trialing"
+          const status = isTrialing ? "trialing" : "active"
+
           await supabase
             .from("subscriptions")
             .update({
               stripe_subscription_id: subscription.id,
-              status: "active",
+              status,
+              trial_ends_at: subscription.trial_end
+                ? new Date(subscription.trial_end * 1000).toISOString()
+                : null,
             })
             .eq("organization_id", orgId)
 
           await supabase.from("billing_events").insert({
             organization_id: orgId,
-            event_type: "subscription.created",
+            event_type: isTrialing ? "subscription.trial_started" : "subscription.created",
             provider: "stripe",
             external_id: subscription.id,
             status: "completed",
             metadata: { plan: (subscription.metadata as Record<string, string>)?.plan },
+          })
+        }
+        break
+      }
+
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as Stripe.Subscription
+        const orgId = (subscription.metadata as Record<string, string>)?.organization_id
+
+        if (orgId) {
+          const isTrialing = subscription.status === "trialing"
+          const isPastDue = subscription.status === "past_due"
+
+          let status = "active"
+          if (isTrialing) status = "trialing"
+          else if (isPastDue) status = "past_due"
+          else if (subscription.cancel_at_period_end) status = "cancelled"
+
+          await supabase
+            .from("subscriptions")
+            .update({
+              status,
+              trial_ends_at: subscription.trial_end
+                ? new Date(subscription.trial_end * 1000).toISOString()
+                : null,
+              cancel_at_period_end: subscription.cancel_at_period_end,
+            })
+            .eq("organization_id", orgId)
+
+          await supabase.from("billing_events").insert({
+            organization_id: orgId,
+            event_type: "subscription.updated",
+            provider: "stripe",
+            external_id: subscription.id,
+            status: "completed",
+            metadata: { plan: (subscription.metadata as Record<string, string>)?.plan, status },
           })
         }
         break

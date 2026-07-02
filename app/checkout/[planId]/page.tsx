@@ -36,7 +36,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
-import { createPaymentIntent, confirmSubscription } from "@/app/actions/payment"
+import { createPaymentIntent, confirmSubscription, setupTrialSubscription, confirmTrialSubscription } from "@/app/actions/payment"
 import { getPlanById, formatPrice } from "@/lib/products"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
@@ -55,11 +55,17 @@ const planIcons = {
 function CheckoutForm({ 
   plan, 
   onSuccess, 
-  onError 
+  onError,
+  isTrial,
+  clientSecret,
+  setupIntentId: initialSetupIntentId,
 }: { 
   plan: NonNullable<ReturnType<typeof getPlanById>>
   onSuccess: () => void
   onError: (error: string) => void
+  isTrial: boolean
+  clientSecret?: string | null
+  setupIntentId?: string | null
 }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -83,36 +89,65 @@ function CheckoutForm({
     setPaymentStatus("processing")
 
     try {
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/checkout/success?plan=${plan.id}`,
-          payment_method_data: {
-            billing_details: {
-              name: billingName,
-              email: billingEmail,
+      if (isTrial) {
+        const { error, setupIntent } = await stripe.confirmSetup({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/checkout/success?plan=${plan.id}`,
+            payment_method_data: {
+              billing_details: {
+                name: billingName,
+                email: billingEmail,
+              },
             },
           },
-        },
-        redirect: "if_required",
-      })
+          redirect: "if_required",
+        })
 
-      if (error) {
-        setPaymentStatus("error")
-        onError(error.message || "Payment failed. Please try again.")
-        setIsProcessing(false)
-      } else if (paymentIntent && paymentIntent.status === "succeeded") {
-        // Create the subscription after successful payment
-        try {
-          await confirmSubscription(paymentIntent.id, plan.id)
-          setPaymentStatus("success")
-          setTimeout(() => {
-            onSuccess()
-          }, 2000)
-        } catch (subError) {
+        if (error) {
           setPaymentStatus("error")
-          onError("Payment succeeded but subscription setup failed. Please contact support.")
+          onError(error.message || "Card setup failed. Please try again.")
           setIsProcessing(false)
+        } else if (setupIntent && setupIntent.status === "succeeded") {
+          try {
+            await confirmTrialSubscription(setupIntent.id, plan.id)
+            setPaymentStatus("success")
+            setTimeout(() => onSuccess(), 2000)
+          } catch (subError) {
+            setPaymentStatus("error")
+            onError("Trial setup succeeded but subscription creation failed. Please contact support.")
+            setIsProcessing(false)
+          }
+        }
+      } else {
+        const { error, paymentIntent } = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/checkout/success?plan=${plan.id}`,
+            payment_method_data: {
+              billing_details: {
+                name: billingName,
+                email: billingEmail,
+              },
+            },
+          },
+          redirect: "if_required",
+        })
+
+        if (error) {
+          setPaymentStatus("error")
+          onError(error.message || "Payment failed. Please try again.")
+          setIsProcessing(false)
+        } else if (paymentIntent && paymentIntent.status === "succeeded") {
+          try {
+            await confirmSubscription(paymentIntent.id, plan.id)
+            setPaymentStatus("success")
+            setTimeout(() => onSuccess(), 2000)
+          } catch (subError) {
+            setPaymentStatus("error")
+            onError("Payment succeeded but subscription setup failed. Please contact support.")
+            setIsProcessing(false)
+          }
         }
       }
     } catch (err) {
@@ -337,7 +372,13 @@ function CheckoutForm({
         {isProcessing ? (
           <>
             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Processing Payment...
+            {isTrial ? "Setting up trial..." : "Processing Payment..."}
+          </>
+        ) : isTrial ? (
+          <>
+            <Gift className="w-4 h-4 mr-2" />
+            Start 7-Day Free Trial
+            <ChevronRight className="w-4 h-4 ml-2" />
           </>
         ) : (
           <>
@@ -369,9 +410,11 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
+  const [setupIntentId, setSetupIntentId] = useState<string | null>(null)
   const [step, setStep] = useState<"review" | "payment">("review")
 
   const PlanIcon = plan ? planIcons[planId as keyof typeof planIcons] || Zap : Zap
+  const isTrial = plan ? plan.interval === "month" : true
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -394,11 +437,21 @@ export default function CheckoutPage() {
     try {
       setError(null)
       setStep("payment")
-      const { clientSecret } = await createPaymentIntent(planId)
-      if (!clientSecret) {
-        throw new Error("Failed to initialize payment")
+
+      if (isTrial) {
+        const result = await setupTrialSubscription(planId)
+        if (!result.clientSecret) {
+          throw new Error("Failed to initialize trial setup")
+        }
+        setClientSecret(result.clientSecret)
+        setSetupIntentId(result.setupIntentId)
+      } else {
+        const { clientSecret } = await createPaymentIntent(planId)
+        if (!clientSecret) {
+          throw new Error("Failed to initialize payment")
+        }
+        setClientSecret(clientSecret)
       }
-      setClientSecret(clientSecret)
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to start checkout"
       setError(message)
@@ -710,6 +763,9 @@ export default function CheckoutPage() {
                           plan={plan}
                           onSuccess={handlePaymentSuccess}
                           onError={handlePaymentError}
+                          isTrial={isTrial}
+                          clientSecret={clientSecret}
+                          setupIntentId={setupIntentId}
                         />
                       </Elements>
                     ) : (
@@ -732,20 +788,20 @@ export default function CheckoutPage() {
               <Card className="p-6 border-border/50">
                 <h3 className="text-lg font-semibold text-foreground mb-6">Order Summary</h3>
                 
-                <div className="space-y-4 pb-4 border-b border-border">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Plan</span>
-                    <span className="font-medium text-foreground">{plan.name}</span>
+                  <div className="space-y-4 pb-4 border-b border-border">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Plan</span>
+                      <span className="font-medium text-foreground">{plan.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Billing Cycle</span>
+                      <span className="font-medium text-foreground">{isTrial ? "Monthly (Trial)" : "Annual"}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">{isTrial ? "Trial Period" : "Subtotal"}</span>
+                      <span className="font-medium text-foreground">{isTrial ? "Free for 7 days" : formatPrice(plan.priceInCents)}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Billing Cycle</span>
-                    <span className="font-medium text-foreground">Monthly</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span className="font-medium text-foreground">{formatPrice(plan.priceInCents)}</span>
-                  </div>
-                </div>
 
                 <div className="py-4 border-b border-border">
                   <div className="flex items-center justify-between">
@@ -767,36 +823,54 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Trial Info */}
-                <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                      <Clock className="w-4 h-4 text-emerald-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">7-Day Free Trial</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Start with full access today. You won&apos;t be charged until day 8.
-                      </p>
+                {isTrial && (
+                  <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                        <Clock className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">7-Day Free Trial</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Start with full access today. You won&apos;t be charged until day 8.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Guarantee */}
-                <div className="mt-4 p-4 rounded-xl bg-muted/30">
-                  <div className="flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-primary mt-0.5" />
-                    <div>
-                      <p className="font-medium text-foreground text-sm">30-Day Money Back</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Not satisfied? Get a full refund within 30 days.
-                      </p>
+                {isTrial && (
+                  <div className="mt-4 p-4 rounded-xl bg-muted/30">
+                    <div className="flex items-start gap-3">
+                      <Shield className="w-5 h-5 text-primary mt-0.5" />
+                      <div>
+                        <p className="font-medium text-foreground text-sm">30-Day Money Back</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Not satisfied? Get a full refund within 30 days.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
-                {/* Cancel Anytime */}
+                {/* Plan Info */}
+                {!isTrial && (
+                  <div className="mt-6 p-4 rounded-xl bg-muted/30">
+                    <div className="flex items-start gap-3">
+                      <Shield className="w-5 h-5 text-primary mt-0.5" />
+                      <div>
+                        <p className="font-medium text-foreground text-sm">Annual Plan</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          3-month minimum commitment. No refunds after purchase.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <p className="text-center text-xs text-muted-foreground mt-6">
-                  Cancel anytime. No questions asked.
+                  {isTrial ? "Cancel anytime during trial. No questions asked." : "Cancel anytime. No refunds after 30 days."}
                 </p>
               </Card>
 

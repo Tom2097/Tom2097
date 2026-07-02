@@ -64,6 +64,8 @@ export type AuthAuditAction =
   | "billing.subscription_cancelled"
   | "billing.payment_completed"
   | "billing.payment_failed"
+  | "billing.trial_started"
+  | "billing.refund_processed"
   // Module #10: audit logging
   | "audit.exported"
   | "audit.retention_updated"

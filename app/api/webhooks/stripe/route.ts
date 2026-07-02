@@ -35,16 +35,28 @@ export async function POST(req: Request) {
       const planId = session.metadata?.plan_id
 
       if (organizationId && planId) {
+        const subscriptionId = session.subscription as string
+        const stripeSub = subscriptionId
+          ? await stripe.subscriptions.retrieve(subscriptionId)
+          : null
+
+        const isTrialing = stripeSub?.status === "trialing"
+        const trialEnd = stripeSub?.trial_end
+          ? new Date(stripeSub.trial_end * 1000).toISOString()
+          : null
+
         await supabase
           .from("subscriptions")
           .update({
-            stripe_subscription_id: session.subscription as string,
+            stripe_subscription_id: subscriptionId,
             plan_id: planId,
-            status: "active",
+            status: isTrialing ? "trialing" : "active",
+            trial_ends_at: trialEnd,
             current_period_start: new Date().toISOString(),
             current_period_end: new Date(
               Date.now() + 30 * 24 * 60 * 60 * 1000
             ).toISOString(),
+            billing_interval: "month",
           })
           .eq("organization_id", organizationId)
       }

@@ -56,6 +56,8 @@ export async function createCheckoutSession(planId: string) {
       .eq("organization_id", profile.organization_id)
   }
 
+  const isTrial = plan.interval === "month"
+
   // Create checkout session
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
@@ -87,6 +89,7 @@ export async function createCheckoutSession(planId: string) {
         plan_id: plan.id,
         organization_id: profile.organization_id,
       },
+      ...(isTrial ? { trial_period_days: 7 } : {}),
     },
     ui_mode: "embedded",
   })
