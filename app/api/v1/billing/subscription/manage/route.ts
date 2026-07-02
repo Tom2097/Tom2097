@@ -48,7 +48,7 @@ const manage = withAuth(async (req: NextRequest, { organizationId, userId }) => 
 
       case "cancel": {
         const result = await cancelSubscription(organizationId, userId)
-        return NextResponse.json(result, { status: result.success ? 200 : 400 })
+        return NextResponse.json(result, { status: result.charged ? 200 : 400 })
       }
 
       case "yearly-milestone": {

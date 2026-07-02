@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe"
 import { getPlanById } from "@/lib/products"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
+import Stripe from "stripe"
 
 async function resolveCustomer(
   planId: string,
@@ -357,7 +358,7 @@ export async function getPaymentMethods() {
   })
 
   return {
-    paymentMethods: paymentMethods.data.map((pm: any) => ({
+    paymentMethods: paymentMethods.data.map((pm: Stripe.PaymentMethod) => ({
       id: pm.id,
       brand: pm.card?.brand,
       last4: pm.card?.last4,

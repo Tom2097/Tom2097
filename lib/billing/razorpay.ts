@@ -185,9 +185,9 @@ export async function handleRazorpayWebhook(
 
   try {
     const event = payload.event as string
-    const inner = (payload.payload as Record<string, any>) || {}
-    const subscription = inner.subscription?.entity as Record<string, unknown> | undefined
-    const payment = inner.payment?.entity as Record<string, unknown> | undefined
+    const inner = (payload.payload as Record<string, unknown>) || {}
+    const subscription = (inner.subscription as { entity?: unknown })?.entity as Record<string, unknown> | undefined
+    const payment = (inner.payment as { entity?: unknown })?.entity as Record<string, unknown> | undefined
 
     switch (event) {
       case "subscription.activated": {

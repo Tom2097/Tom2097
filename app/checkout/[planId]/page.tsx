@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { loadStripe } from "@stripe/stripe-js"
+import { YearlyPlanConfirmation } from "@/components/billing/YearlyPlanConfirmation"
 import {
   Elements,
   PaymentElement,
@@ -411,7 +412,8 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [setupIntentId, setSetupIntentId] = useState<string | null>(null)
-  const [step, setStep] = useState<"review" | "payment">("review")
+  const [step, setStep] = useState<"review" | "payment" | "confirmation">("review")
+  const [showYearlyConfirmation, setShowYearlyConfirmation] = useState(false)
 
   const PlanIcon = plan ? planIcons[planId as keyof typeof planIcons] || Zap : Zap
   const isTrial = plan ? plan.interval === "month" : true
@@ -436,22 +438,39 @@ export default function CheckoutPage() {
   const handleProceedToPayment = async () => {
     try {
       setError(null)
-      setStep("payment")
-
-      if (isTrial) {
-        const result = await setupTrialSubscription(planId)
-        if (!result.clientSecret) {
-          throw new Error("Failed to initialize trial setup")
-        }
-        setClientSecret(result.clientSecret)
-        setSetupIntentId(result.setupIntentId)
-      } else {
-        const { clientSecret } = await createPaymentIntent(planId)
-        if (!clientSecret) {
-          throw new Error("Failed to initialize payment")
-        }
-        setClientSecret(clientSecret)
+      
+      if (!isTrial) {
+        // Yearly plan - show confirmation first
+        setShowYearlyConfirmation(true)
+        return
       }
+      
+      // Monthly plan - proceed directly to payment
+      setStep("payment")
+      
+      const result = await setupTrialSubscription(planId)
+      if (!result.clientSecret) {
+        throw new Error("Failed to initialize trial setup")
+      }
+      setClientSecret(result.clientSecret)
+      setSetupIntentId(result.setupIntentId)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to start checkout"
+      setError(message)
+      setStep("review")
+    }
+  }
+
+  const handleYearlyConfirmation = async () => {
+    try {
+      setShowYearlyConfirmation(false)
+      setStep("payment")
+      
+      const { clientSecret } = await createPaymentIntent(planId)
+      if (!clientSecret) {
+        throw new Error("Failed to initialize payment")
+      }
+      setClientSecret(clientSecret)
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to start checkout"
       setError(message)
@@ -497,6 +516,14 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      {/* Yearly Plan Confirmation */}
+      {showYearlyConfirmation && plan && (
+        <YearlyPlanConfirmation
+          planName={plan.name}
+          onConfirm={handleYearlyConfirmation}
+          onCancel={() => setShowYearlyConfirmation(false)}
+        />
+      )}
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">

@@ -53,7 +53,7 @@ function getClient(): Search | null {
 export function getSearchIndex(): ReturnType<Search["index"]> | null {
   const client = getClient()
   if (!client) return null
-  return client.index(INDEX_NAME) as any
+  return client.index(INDEX_NAME)
 }
 
 /**

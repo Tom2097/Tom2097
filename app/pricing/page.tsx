@@ -2,7 +2,8 @@
 
 import { useState, useEffect, Suspense } from "react"
 import { motion } from "framer-motion"
-import { Check, Zap, Building2, Rocket, ChevronRight, Star, X, Loader2 } from "lucide-react"
+import { Check, Zap, Building2, Rocket, ChevronRight, Star, X, Loader2, Info } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -132,11 +133,24 @@ function PricingContent() {
               <span className={`text-sm ${isAnnual ? "text-foreground font-medium" : "text-muted-foreground"}`}>
                 Annual
               </span>
-              {isAnnual && (
-                <Badge variant="secondary" className="bg-chart-2/20 text-chart-2 border-chart-2/30">
-                  Save 15%
-                </Badge>
-              )}
+               {isAnnual && (
+                 <>
+                   <Badge variant="secondary" className="bg-chart-2/20 text-chart-2 border-chart-2/30">
+                     Save 15%
+                   </Badge>
+                   <Tooltip>
+                     <TooltipTrigger asChild>
+                       <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/30 cursor-help">
+                         <Info className="w-3 h-3 mr-1" />
+                         3-month minimum commitment
+                       </Badge>
+                     </TooltipTrigger>
+                     <TooltipContent>
+                       <p className="text-sm">Yearly plans require a 3-month minimum commitment. You can cancel after 3 months, but no refunds are available.</p>
+                     </TooltipContent>
+                   </Tooltip>
+                 </>
+               )}
             </div>
           </motion.div>
         </div>

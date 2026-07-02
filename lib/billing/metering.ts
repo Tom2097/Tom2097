@@ -93,7 +93,7 @@ export async function getQuotas(
     .eq("organization_id", organizationId)
     .maybeSingle()
 
-  const planId = ((sub as any)?.plan_id as string) || "free"
+  const planId = (sub?.plan_id as string) || "free"
   const limits = TIER_LIMITS[planId] || TIER_LIMITS.free
   const since = new Date(Date.now() - 30 * 86400000)
 

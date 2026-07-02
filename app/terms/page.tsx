@@ -21,13 +21,24 @@ export default function TermsPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="2. Accounts and Subscriptions">
-        <p>
-          You are responsible for maintaining the confidentiality of your account credentials and for all activity
-          under your account. Subscriptions renew automatically unless canceled. Fees are billed in advance and are
-          non-refundable except where required by law.
-        </p>
-      </LegalSection>
+       <LegalSection heading="2. Accounts and Subscriptions">
+         <p>
+           You are responsible for maintaining the confidentiality of your account credentials and for all activity
+           under your account. Subscriptions renew automatically unless canceled.
+         </p>
+         <p className="mt-4">
+           <strong>Monthly Plans:</strong> Monthly subscriptions include a 7-day free trial. You will not be charged until day 8.
+           You may request a full refund within 30 days of your first payment. After this period, refunds are not available.
+         </p>
+         <p className="mt-4">
+           <strong>Yearly Plans:</strong> Yearly subscriptions are non-refundable. Yearly plans require a 3-month minimum commitment.
+           You can cancel after 3 months, but no refund will be issued for any unused portion of the subscription.
+         </p>
+         <p className="mt-4">
+           Fees are billed in advance. You can request a refund for monthly plans within the 30-day window by visiting
+           <a href="/settings/billing" className="text-primary hover:underline">Settings → Billing</a>.
+         </p>
+       </LegalSection>
 
       <LegalSection heading="3. Acceptable Use">
         <p>

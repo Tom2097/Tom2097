@@ -6,6 +6,7 @@ let stripeInstance: Promise<any> | null = null
 export async function getStripe() {
   if (!stripeInstance) {
     const Stripe = await import('stripe')
+    const StripeClass = Stripe.default || Stripe
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY
     
     if (!stripeSecretKey) {

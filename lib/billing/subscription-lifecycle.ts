@@ -1,5 +1,16 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { logAuthEvent } from "@/lib/auth/audit"
+import 'server-only'
+import {
+  trackTrialStarted,
+  trackTrialEnded,
+  trackFirstPayment,
+  trackRefundRequested,
+  trackRefundProcessed,
+  trackSubscriptionCancelled,
+} from "@/lib/analytics/billing-events"
+import { getPlanById } from "@/lib/products"
+
 import type { SubscriptionRecord } from "./types"
 
 const TRIAL_DAYS = 7
@@ -48,13 +59,7 @@ export async function startTrial(
     })
   }
 
-  await logAuthEvent({
-    action: "billing.trial_started",
-    userId,
-    organizationId,
-    resourceType: "subscription",
-    metadata: { plan: planId, trial_days: TRIAL_DAYS, trial_ends_at: trialEnd },
-  })
+  await trackTrialStarted(organizationId, userId, planId, TRIAL_DAYS)
 
   return { success: true }
 }
@@ -64,10 +69,13 @@ export async function processTrialEnd(organizationId: string): Promise<{ charged
 
   const { data: sub } = await supabase
     .from("subscriptions")
-    .select("*")
+    .select("id, user_id, plan_id, status, stripe_subscription_id, razorpay_subscription_id")
     .eq("organization_id", organizationId)
-    .eq("status", "trialing")
     .single()
+
+  if (!sub) return { charged: false, error: "No subscription found" }
+
+  const subRecord = sub as { plan_id: string; user_id: string; id: string; status: string; stripe_subscription_id?: string; razorpay_subscription_id?: string }
 
   if (!sub) {
     return { charged: false, error: "No trial subscription found" }
@@ -80,6 +88,16 @@ export async function processTrialEnd(organizationId: string): Promise<{ charged
       await stripe.subscriptions.update(sub.stripe_subscription_id, {
         trial_end: "now",
       })
+    }
+  }
+
+  await trackTrialEnded(organizationId, sub.user_id, sub.plan_id)
+
+  // Track first payment if this is the end of trial
+  if (sub.status === "trialing") {
+    const plan = await getPlanById(sub.plan_id)
+    if (plan) {
+      await trackFirstPayment(organizationId, sub.user_id, sub.plan_id, plan.priceInCents, "USD")
     }
   }
 
@@ -131,13 +149,15 @@ export async function processRefund(
 
   if (!sub) return { success: false, error: "No subscription found" }
 
-  if (sub.stripe_subscription_id) {
+  const subRecord = sub as { plan_id: string; stripe_subscription_id?: string; razorpay_subscription_id?: string }
+
+  if (subRecord.stripe_subscription_id) {
     const { stripe } = await import("@/lib/stripe")
     try {
-      await stripe.subscriptions.cancel(sub.stripe_subscription_id)
+      await stripe.subscriptions.cancel(subRecord.stripe_subscription_id)
 
       const invoices = await stripe.invoices.list({
-        subscription: sub.stripe_subscription_id,
+        subscription: subRecord.stripe_subscription_id,
         limit: 1,
       })
 
@@ -150,28 +170,25 @@ export async function processRefund(
         }
       }
     } catch (err) {
+      console.error("[v0] Failed to process Stripe refund:", err)
       return { success: false, error: "Failed to process Stripe refund" }
     }
   }
 
-  if (sub.razorpay_subscription_id) {
+  if (subRecord.razorpay_subscription_id) {
     const razorpay = await import("./razorpay")
     await razorpay.cancelRazorpaySubscription(organizationId)
   }
+
+  const plan = await getPlanById(subRecord.plan_id)
+  const amount = plan ? plan.priceInCents : 0
+
+  await trackRefundProcessed(organizationId, userId, sub.plan_id, amount, "USD")
 
   await supabase
     .from("subscriptions")
     .update({ status: "refunded", cancelled_at: new Date().toISOString() })
     .eq("organization_id", organizationId)
-
-  await logAuthEvent({
-    action: "billing.refund_processed",
-    userId,
-    organizationId,
-    resourceType: "subscription",
-    resourceId: sub.id,
-    metadata: { provider: sub.stripe_subscription_id ? "stripe" : "razorpay" },
-  })
 
   return { success: true }
 }
@@ -179,7 +196,11 @@ export async function processRefund(
 export async function cancelSubscription(
   organizationId: string,
   userId: string,
-): Promise<{ success: boolean; refunded: boolean; error?: string }> {
+): Promise<{
+  charged: boolean;
+  refunded?: boolean;
+  error?: string
+}> {
   const supabase = await createServiceClient()
 
   const { data: sub } = await supabase
@@ -188,7 +209,7 @@ export async function cancelSubscription(
     .eq("organization_id", organizationId)
     .single()
 
-  if (!sub) return { success: false, refunded: false, error: "No subscription found" }
+  if (!sub) return { charged: false, refunded: false, error: "No subscription found" }
 
   const withinRefund = await isWithinRefundWindow(organizationId)
 
@@ -202,8 +223,7 @@ export async function cancelSubscription(
   const monthsSinceStart = getMonthsSinceStart(sub.current_period_start)
   if (monthsSinceStart < YEARLY_MIN_MONTHS) {
     return {
-      success: false,
-      refunded: false,
+      charged: false,
       error: `Yearly plan requires a minimum ${YEARLY_MIN_MONTHS}-month commitment. You can cancel after month ${YEARLY_MIN_MONTHS}.`,
     }
   }
@@ -215,16 +235,16 @@ async function processRefundWithCancel(
   organizationId: string,
   userId: string,
   sub: SubscriptionRecord,
-): Promise<{ success: boolean; refunded: boolean; error?: string }> {
+): Promise<{ charged: boolean; refunded: boolean; error?: string }> {
   const result = await processRefund(organizationId, userId)
-  return { success: result.success, refunded: result.success, error: result.error }
+  return { charged: result.success, refunded: result.success, error: result.error }
 }
 
 async function cancelAtPeriodEnd(
   organizationId: string,
   userId: string,
-  sub: SubscriptionRecord,
-): Promise<{ success: boolean; refunded: boolean; error?: string }> {
+  sub: { plan_id: string; stripe_subscription_id?: string; razorpay_subscription_id?: string },
+): Promise<{ charged: boolean; error?: string }> {
   const supabase = await createServiceClient()
 
   if (sub.stripe_subscription_id) {
@@ -247,16 +267,9 @@ async function cancelAtPeriodEnd(
     })
     .eq("organization_id", organizationId)
 
-  await logAuthEvent({
-    action: "billing.subscription_cancelled",
-    userId,
-    organizationId,
-    resourceType: "subscription",
-    resourceId: sub.id,
-    metadata: { cancel_at_period_end: true },
-  })
+  await trackSubscriptionCancelled(organizationId, userId, sub.plan_id, "user_requested")
 
-  return { success: true, refunded: false }
+  return { charged: true }
 }
 
 export async function getYearlyMilestone(organizationId: string): Promise<{
@@ -268,11 +281,17 @@ export async function getYearlyMilestone(organizationId: string): Promise<{
 
   const { data: sub } = await supabase
     .from("subscriptions")
-    .select("current_period_start, billing_interval, status, cancelled_at")
+    .select("current_period_start, billing_interval, status, cancelled_at, plan_id")
     .eq("organization_id", organizationId)
     .single()
 
-  if (!sub || sub.billing_interval !== "year") {
+  if (!sub) {
+    return { monthsSinceStart: 0, reminderDue: false, canCancel: false }
+  }
+
+  const subRecord = sub as { current_period_start: string; billing_interval: string; status: string; cancelled_at?: string; plan_id: string }
+
+  if (subRecord.billing_interval !== "year") {
     return { monthsSinceStart: 0, reminderDue: false, canCancel: false }
   }
 
