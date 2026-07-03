@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
+import { Deal, Batch } from "./types"
 import { getLLM } from "@/lib/ai/client"
 import { generateText } from "ai"
 import type { Briefing, BriefingMetric, BriefingAction, IntelligenceFinding } from "./types"
@@ -116,7 +117,7 @@ async function computeBriefingMetrics(organizationId: string): Promise<BriefingM
     .eq("organization_id", organizationId)
     .eq("status", "open")
 
-  const totalPipeline = (openDeals || []).reduce((sum: number, d: any) => sum + (d.value || 0), 0)
+  const totalPipeline = (openDeals || []).reduce((sum: number, d: Deal) => sum + (d.value || 0), 0)
   metrics.push({
     label: "Pipeline Value",
     value: totalPipeline,
@@ -159,10 +160,10 @@ async function computeBriefingMetrics(organizationId: string): Promise<BriefingM
     .gte("completed_at", new Date(Date.now() - 7 * 86400000).toISOString())
 
   const avgThroughput = recentBatches && recentBatches.length > 0
-    ? recentBatches.reduce((sum: number, b: any) => sum + (b.throughput || 0), 0) / recentBatches.length
+    ? recentBatches.reduce((sum: number, b: Batch) => sum + (b.throughput || 0), 0) / recentBatches.length
     : 0
   const avgExpected = recentBatches && recentBatches.length > 0
-    ? recentBatches.reduce((sum: number, b: any) => sum + (b.expected_throughput || 0), 0) / recentBatches.length
+    ? recentBatches.reduce((sum: number, b: Batch) => sum + (b.expected_throughput || 0), 0) / recentBatches.length
     : 0
 
   metrics.push({

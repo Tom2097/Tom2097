@@ -140,7 +140,7 @@ const postHandler = withAuth(
         )
       }
 
-      let result: { insights: Insight[]; generatedAt: string } | { insights: Insight[]; summary: any } | Insight | null
+      let result: { insights: Insight[]; generatedAt: string } | { insights: Insight[]; summary: Record<string, unknown> } | Insight | null
 
       switch (body.action) {
         case "refresh":

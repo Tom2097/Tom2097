@@ -9,7 +9,20 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sun, TrendingUp, AlertTriangle, Target, Users, DollarSign, Zap, Sparkles, ChevronRight, RefreshCw, Loader2 } from "lucide-react"
 
 interface BriefingSection {
-  title: string; icon: React.ReactNode; content: string; priority: "high" | "medium" | "low"; actionItems: string[]
+  title: string
+  icon: React.ReactNode
+  content: string
+  priority: "high" | "medium" | "low"
+  actionItems: string[]
+}
+
+function isBriefingSection(obj: unknown): obj is BriefingSection {
+  if (typeof obj !== 'object' || obj === null) return false;
+  const section = obj as BriefingSection;
+  return typeof section.title === 'string' &&
+         typeof section.content === 'string' &&
+         ['high', 'medium', 'low'].includes(section.priority) &&
+         Array.isArray(section.actionItems);
 }
 
 export function CrmFoundersBriefing() {
@@ -32,10 +45,22 @@ export function CrmFoundersBriefing() {
       if (!res.ok) throw new Error("Failed")
       const data = await res.json()
       const parsed = JSON.parse(data.response)
-      const sections: BriefingSection[] = (Array.isArray(parsed) ? parsed : []).map((s: any, i: number) => ({
-        ...s,
-        icon: [<DollarSign key="0" className="h-4 w-4 text-emerald-500" />, <AlertTriangle key="1" className="h-4 w-4 text-amber-500" />, <Users key="2" className="h-4 w-4 text-blue-500" />, <TrendingUp key="3" className="h-4 w-4 text-cyan-500" />, <Zap key="4" className="h-4 w-4 text-purple-500" />][i] || <Sparkles className="h-4 w-4 text-primary" />,
-      }))
+      const sections: BriefingSection[] = (Array.isArray(parsed) ? parsed : []).map((s: unknown, i: number) => {
+        if (!isBriefingSection(s)) {
+          console.warn(`Invalid briefing section at index ${i}`);
+          return {
+            title: 'Invalid Section',
+            content: 'Could not parse briefing section',
+            icon: <AlertTriangle className="h-4 w-4 text-destructive" />,
+            priority: 'low',
+            actionItems: []
+          };
+        }
+        return {
+          ...s,
+          icon: [<DollarSign key="0" className="h-4 w-4 text-emerald-500" />, <AlertTriangle key="1" className="h-4 w-4 text-amber-500" />, <Users key="2" className="h-4 w-4 text-blue-500" />, <TrendingUp key="3" className="h-4 w-4 text-cyan-500" />, <Zap key="4" className="h-4 w-4 text-purple-500" />][i] || <Sparkles className="h-4 w-4 text-primary" />,
+        };
+      })
       setBriefing(sections)
     } catch {
       setError("Failed to generate briefing")

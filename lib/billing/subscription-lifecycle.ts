@@ -18,6 +18,21 @@ const REFUND_WINDOW_DAYS = 30
 const YEARLY_MIN_MONTHS = 3
 const YEARLY_REMINDER_MONTH = 4
 
+/**
+ * Starts a 7-day free trial for the specified organization and plan
+ * 
+ * @param organizationId - The ID of the organization starting the trial
+ * @param planId - The ID of the plan being trialed (e.g., "starter", "professional", "enterprise")
+ * @param userId - The ID of the user initiating the trial
+ * @returns Promise with success status
+ * 
+ * @description
+ * This function:
+ * 1. Creates or updates a subscription record with trial status
+ * 2. Sets the trial end date to 7 days from now
+ * 3. Records the trial start in billing analytics
+ * 4. Logs the event for audit purposes
+ */
 export async function startTrial(
   organizationId: string,
   planId: string,
@@ -64,6 +79,20 @@ export async function startTrial(
   return { success: true }
 }
 
+/**
+ * Processes the end of a trial period and initiates the first payment
+ * 
+ * @param organizationId - The ID of the organization whose trial is ending
+ * @returns Promise with charged status and optional error
+ * 
+ * @description
+ * This function:
+ * 1. Retrieves the subscription record
+ * 2. Updates the subscription status from "trialing" to "active"
+ * 3. Clears the trial end date
+ * 4. Records the first payment in billing analytics
+ * 5. Triggers the first charge via the payment provider
+ */
 export async function processTrialEnd(organizationId: string): Promise<{ charged: boolean; error?: string }> {
   const supabase = await createServiceClient()
 
@@ -112,6 +141,19 @@ export async function processTrialEnd(organizationId: string): Promise<{ charged
   return { charged: true }
 }
 
+/**
+ * Checks if a subscription is within the 30-day refund window
+ * 
+ * @param organizationId - The ID of the organization to check
+ * @returns Promise with boolean indicating if refund is available
+ * 
+ * @description
+ * This function:
+ * 1. Retrieves the subscription's current period start date
+ * 2. Calculates days since first payment
+ * 3. Returns true if within 30 days and plan is monthly
+ * 4. Returns false for yearly plans (no refunds)
+ */
 export async function isWithinRefundWindow(organizationId: string): Promise<boolean> {
   const supabase = await createServiceClient()
 

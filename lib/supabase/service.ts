@@ -15,14 +15,21 @@ export function createServiceClient() {
   if (!url || !serviceKey) {
     // Create a mock query builder that returns a Promise when awaited
     function createMockQueryBuilder() {
-      const builder: any = {
+      interface QueryBuilder {
+        eq: (column: string, value: unknown) => QueryBuilder;
+        neq: (column: string, value: unknown) => QueryBuilder;
+        order: (column: string, options: { ascending?: boolean }) => QueryBuilder;
+        then: (onFulfill: (value: any) => any, onReject?: (reason: any) => any) => Promise<any>;
+      }
+      
+      const builder: QueryBuilder = {
         select: (columns: string = "*") => builder,
         from: (table: string) => builder,
-        eq: (column: string, value: any) => builder,
-        neq: (column: string, value: any) => builder,
+        eq: (column: string, value: unknown) => builder,
+        neq: (column: string, value: unknown) => builder,
         or: (condition: string) => builder,
         and: (condition: string) => builder,
-        order: (column: string, options: any) => builder,
+        order: (column: string, options: { ascending?: boolean }) => builder,
         limit: (num: number) => builder,
         offset: (num: number) => builder,
         range: (start: number, end: number) => builder,
@@ -31,7 +38,7 @@ export function createServiceClient() {
       }
       
       // Make it awaitable - when awaited, return empty results
-      builder.then = async (onFulfill: any, onReject?: any) => {
+      builder.then = async (onFulfill: (value: any) => any, onReject?: (reason: any) => any) => {
         const result = { data: [], error: { message: "Supabase not configured" } }
         return onFulfill ? onFulfill(result) : result
       }
@@ -42,14 +49,14 @@ export function createServiceClient() {
     return {
       from: (table: string) => createMockQueryBuilder().from(table),
       select: (columns: string = "*") => createMockQueryBuilder().select(columns),
-      rpc: async (fn: string, params: any = {}) => ({ data: null, error: { message: "Supabase not configured" } }),
-      insert: async (data: any) => ({ data: null, error: { message: "Supabase not configured" } }),
-      update: async (data: any) => ({ data: null, error: { message: "Supabase not configured" } }),
+      rpc: async (fn: string, params: Record<string, unknown> = {}) => ({ data: null, error: { message: "Supabase not configured" } }),
+      insert: async (data: unknown) => ({ data: null, error: { message: "Supabase not configured" } }),
+      update: async (data: unknown) => ({ data: null, error: { message: "Supabase not configured" } }),
       delete: async () => ({ data: null, error: { message: "Supabase not configured" } }),
-      upsert: async (data: any) => ({ data: null, error: { message: "Supabase not configured" } }),
+      upsert: async (data: unknown) => ({ data: null, error: { message: "Supabase not configured" } }),
       storage: {
         from: (bucket: string) => ({
-          upload: async (filePath: string, file: any) => ({ data: { path: null }, error: { message: "Supabase not configured" } }),
+          upload: async (filePath: string, file: File) => ({ data: { path: null }, error: { message: "Supabase not configured" } }),
           download: async (filePath: string) => ({ data: null, error: { message: "Supabase not configured" } }),
           getPublicUrl: async (filePath: string) => ({ publicUrl: null }),
           list: async () => ({ data: [], error: { message: "Supabase not configured" } }),

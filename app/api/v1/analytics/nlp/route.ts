@@ -58,7 +58,7 @@ interface NLPResponse {
   success: boolean
   result?: NLPAnalysisResult | {
     documents: Array<{ id: string; result: NLPAnalysisResult }>
-    aggregate: any
+    aggregate: Record<string, unknown>
   }
   processingTime?: number
   error?: string

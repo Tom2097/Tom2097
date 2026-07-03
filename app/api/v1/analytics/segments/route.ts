@@ -114,7 +114,7 @@ const getHandler = withAuth(
 interface SegmentsPostRequest {
   action: "customer" | "rfm_distribution" | "custom" | "comparison"
   userId?: string
-  criteria?: any[]
+  criteria?: SegmentCriteria[]
   options?: SegmentationOptions
 }
 

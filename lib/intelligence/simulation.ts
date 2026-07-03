@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
+import { Deal, Batch, Finding, InventoryItem } from "./types"
 
 export interface SimulationInput {
   organizationId: string
@@ -62,7 +63,7 @@ async function computeBaseline(organizationId: string): Promise<SimulationMetric
     .select("value")
     .eq("organization_id", organizationId)
     .eq("status", "open")
-  const pipelineValue = (deals || []).reduce((s: number, d: any) => s + (d.value || 0), 0)
+  const pipelineValue = (deals || []).reduce((s: number, d: Deal) => s + (d.value || 0), 0)
 
   const { data: batches } = await db
     .from("production_batches")
@@ -71,7 +72,7 @@ async function computeBaseline(organizationId: string): Promise<SimulationMetric
     .eq("status", "completed")
     .gte("completed_at", new Date(Date.now() - 30 * 86400000).toISOString())
   const avgThroughput = batches && batches.length > 0
-    ? batches.reduce((s: number, b: any) => s + (b.throughput || 0), 0) / batches.length
+    ? batches.reduce((s: number, b: Batch) => s + (b.throughput || 0), 0) / batches.length
     : 0
 
   const { count: certCount } = await db
@@ -84,7 +85,7 @@ async function computeBaseline(organizationId: string): Promise<SimulationMetric
     .from("inventory_items")
     .select("quantity")
     .eq("organization_id", organizationId)
-  const totalStock = (items || []).reduce((s: number, i: any) => s + (i.quantity || 0), 0)
+  const totalStock = (items || []).reduce((s: number, i: InventoryItem) => s + (i.quantity || 0), 0)
   const resourceUtilization = items && items.length > 0 ? Math.min(100, (totalStock / (items.length * 100)) * 100) : 50
 
   const { data: findings } = await db
@@ -92,7 +93,7 @@ async function computeBaseline(organizationId: string): Promise<SimulationMetric
     .select("monetary_risk")
     .eq("organization_id", organizationId)
     .eq("status", "active")
-  const riskExposure = (findings || []).reduce((s: number, f: any) => s + (f.monetary_risk || 0), 0)
+  const riskExposure = (findings || []).reduce((s: number, f: Finding) => s + (f.monetary_risk || 0), 0)
 
   return {
     totalRevenue: pipelineValue,

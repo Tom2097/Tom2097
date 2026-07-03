@@ -36,9 +36,15 @@ Return ONLY a JSON object:
     if (!m) return { workflow_id: null, steps_generated: 0 }
 
     const parsed = JSON.parse(m[0])
-    const steps: WorkflowStep[] = (parsed.steps ?? []).map((s: any, i: number) => ({
-      id: `step-${i + 1}`, type: s.type, label: s.label,
-      config: s.config ?? {}, order: i + 1,
+    const steps: WorkflowStep[] = (parsed.steps ?? []).map((s: unknown, i: number) => {
+      const step = s as WorkflowStep;
+      return {
+        id: `step-${i + 1}`,
+        type: step.type,
+        label: step.label,
+        config: step.config ?? {},
+        order: i + 1,
+      };
     }))
 
     const trigger: WorkflowTrigger = {

@@ -35,7 +35,10 @@ export async function buildTraceabilityMatrix(organizationId: string, frameworkI
   const { data: controls } = await db.from("compliance_controls").select("*").eq("framework_id", frameworkId)
   const { data: evidence } = await db.from("compliance_evidence").select("*").eq("organization_id", organizationId).eq("framework_id", frameworkId)
 
-  const evidenceMap = new Map((evidence ?? []).map((e: any) => [e.control_id, e as Record<string, unknown>]))
+  const evidenceMap = new Map((evidence ?? []).map((e: unknown) => {
+    const evidenceItem = e as { control_id: string } & Record<string, unknown>;
+    return [evidenceItem.control_id, evidenceItem];
+  }))
   return ((controls ?? []) as Array<{ id: string; name: string; description: string }>).map((c) => {
     const ev = evidenceMap.get(c.id) as Record<string, unknown> | undefined
     return {

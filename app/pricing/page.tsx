@@ -38,7 +38,31 @@ function CanceledBanner() {
   )
 }
 
-function PricingContent() {
+const PricingCard = React.memo(function PricingCard({
+  tier,
+  index,
+  isAnnual,
+}: {
+  tier: PricingTier
+  index: number
+  isAnnual: boolean
+}) {
+  const TierIcon = tierIcons[tier.id as keyof typeof tierIcons]
+  const price = isAnnual ? tier.annualPrice : tier.monthlyPrice
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+    >
+      <Card
+        className={`relative p-8 h-full flex flex-col transition-all duration-300 hover:shadow-xl ${
+          tier.highlighted
+            ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+            : "border-border/50 bg-card/50 hover:border-primary/50"
+        }`}
+      >
   const [isAnnual, setIsAnnual] = useState(true)
   const [selectedTier, setSelectedTier] = useState<string | null>(null)
   const [showCheckout, setShowCheckout] = useState(false)
@@ -160,24 +184,14 @@ function PricingContent() {
       <section className="py-12 px-6">
         <div className="container mx-auto">
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {pricingTiers.map((tier, index) => {
-              const TierIcon = tierIcons[tier.id as keyof typeof tierIcons]
-              const price = isAnnual ? tier.annualPrice : tier.monthlyPrice
-
-              return (
-                <motion.div
+            {pricingTiers.map((tier, index) => (
+                <PricingCard
                   key={tier.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                >
-                  <Card
-                    className={`relative p-8 h-full flex flex-col transition-all duration-300 hover:shadow-xl ${
-                      tier.highlighted
-                        ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
-                        : "border-border/50 bg-card/50 hover:border-primary/50"
-                    }`}
-                  >
+                  tier={tier}
+                  index={index}
+                  isAnnual={isAnnual}
+                />
+              ))}
                     {tier.highlighted && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                         <Badge className="bg-primary text-primary-foreground">
@@ -222,25 +236,29 @@ function PricingContent() {
                           </li>
                         ))}
                       </ul>
-                    </div>
+                     </div>
 
-                    <Button
-                      className={`w-full ${
-                        tier.highlighted
-                          ? "bg-primary hover:bg-primary/90"
-                          : tier.id === "enterprise"
-                          ? "bg-foreground text-background hover:bg-foreground/90"
-                          : ""
-                      }`}
-                      variant={tier.highlighted ? "default" : tier.id === "enterprise" ? "default" : "outline"}
-                      onClick={() => handleSelectPlan(tier.id)}
-                    >
-                      {tier.cta}
-                      <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </Card>
-                </motion.div>
+                     <Button
+                       className={`w-full ${
+                         tier.highlighted
+                           ? "bg-primary hover:bg-primary/90"
+                           : tier.id === "enterprise"
+                           ? "bg-foreground text-background hover:bg-foreground/90"
+                           : ""
+                       }`}
+                       variant={tier.highlighted ? "default" : tier.id === "enterprise" ? "default" : "outline"}
+                       onClick={() => handleSelectPlan(tier.id)}
+                     >
+                       {tier.cta}
+                       <ChevronRight className="w-4 h-4 ml-1" />
+                     </Button>
+                   </Card>
+                 </motion.div>
               )
+            }
+            
+            return null;
+          })}
             })}
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { generateText } from "ai"
 import { z } from "zod"
 import { DEFAULT_CHAT_MODEL, BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
+import { DataPoint } from "./types"
 import { queryTimeseries, queryBreakdown, querySummary } from "./engine"
 import type { TimeseriesPoint, BreakdownRow, AnalyticsSummary } from "./types"
 
@@ -45,7 +46,7 @@ export interface Insight {
     end: string
   }
   relatedInsights?: string[]
-  dataPoints?: any[]
+  dataPoints?: DataPoint[]
 }
 
 export interface InsightDetectionOptions {

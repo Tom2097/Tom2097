@@ -4,6 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Mic, MicOff } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResultList
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string
+}
+
 interface MicrophoneButtonProps {
   onTranscript: (transcript: string) => void
   className?: string
@@ -34,13 +42,13 @@ export function MicrophoneButton({ onTranscript, className }: MicrophoneButtonPr
     recognition.interimResults = false
     recognition.lang = 'en-US'
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[0][0].transcript
       onTranscriptRef.current(transcript)
       setIsListening(false)
     }
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       setError(event.error)
       setIsListening(false)
     }

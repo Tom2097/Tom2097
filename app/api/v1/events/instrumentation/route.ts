@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createFunnel, calculateRetention, trackEvent, type EventType } from "@/lib/events/instrumentation"
 
-const eventStore: any[] = []
+const eventStore: Array<Record<string, unknown>> = []
 
 export async function POST(req: NextRequest) {
   try {

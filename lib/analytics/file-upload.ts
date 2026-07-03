@@ -39,7 +39,7 @@ export interface UploadedFile {
   uploadedAt: string
   status: "pending" | "processing" | "completed" | "failed"
   analysisType?: AnalysisType
-  analysisResult?: any
+  analysisResult?: Record<string, unknown>
   errorMessage?: string
 }
 
@@ -76,7 +76,7 @@ export interface FileAnalysisResult {
   extractedText?: string
   
   // For data analysis
-  extractedData?: any[]
+  extractedData?: Array<Record<string, unknown>>
   dataSummary?: {
     rows: number
     columns: number
@@ -111,7 +111,7 @@ export interface FileAnalysisResult {
   }
   
   // For custom analysis
-  customResult?: any
+  customResult?: Record<string, unknown>
   
   // Metadata
   modelUsed: string
@@ -170,7 +170,7 @@ export function parseCSV(text: string): { headers: string[]; rows: Record<string
 /**
  * Parse JSON text
  */
-function parseJSON(text: string): any {
+function parseJSON(text: string): unknown {
   try {
     return JSON.parse(text)
   } catch {
@@ -227,7 +227,7 @@ Be accurate and preserve the original content structure as much as possible.`,
 
     data_analysis: `Analyze the data in this ${fileType} file. 
 Identify the structure, key fields, and provide insights about the data.
-Return a JSON object with: { headers: string[], data: any[], summary: { rows: number, columns: number, insights: string[] } }`,
+Return a JSON object with: { headers: string[], data: Array<Record<string, unknown>>, summary: { rows: number, columns: number, insights: string[] } }`,
 
     document_summary: `Provide a comprehensive summary of this ${fileType} document. 
 Identify the main topics, key points, and important information.
@@ -455,7 +455,7 @@ export async function* streamFileAnalysis(
     size: number
   },
   options: FileAnalysisOptions
-): AsyncGenerator<{ type: string; data: any }> {
+): AsyncGenerator<{ type: string; data: unknown }> {
   const fileType = detectFileType(file.filename, file.contentType, file.content)
   const text = await extractTextFromFile(file.content, fileType)
   

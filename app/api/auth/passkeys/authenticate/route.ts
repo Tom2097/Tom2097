@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
           userId: passkey.user_id,
           message: "Passkey authenticated successfully",
         })
-      } catch (err: any) {
+      } catch (err: unknown) {
         return NextResponse.json(
           { error: `Verification error: ${err.message}` },
           { status: 400 }
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 })
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json(
       { error: `Server error: ${err.message}` },
       { status: 500 }

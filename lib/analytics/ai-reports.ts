@@ -51,7 +51,7 @@ export interface ReportSection {
   type: ReportSectionType
   title: string
   content: string
-  data?: any
+  data?: Record<string, unknown>
   order: number
 }
 

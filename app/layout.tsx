@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
+import { ErrorBoundary } from '@/components/ui/error-boundary'
+import { QueryProvider } from '@/components/providers/query-provider'
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -31,9 +33,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark bg-background">
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-        {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+         <ErrorBoundary>
+           <QueryProvider>
+             {children}
+           </QueryProvider>
+         </ErrorBoundary>
+         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   )

@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
+import { Deal, Batch, Finding } from "./types"
 
 export interface IndustryBenchmark {
   metric: string
@@ -38,7 +39,7 @@ export async function getBenchmarks(
     .eq("organization_id", organizationId)
     .eq("status", "open")
 
-  const totalPipeline = (scopeDeals || []).reduce((sum: number, d: any) => sum + (d.value || 0), 0)
+  const totalPipeline = (scopeDeals || []).reduce((sum: number, d: Deal) => sum + (d.value || 0), 0)
 
   const { count: certCount } = await db
     .from("certificates")
@@ -53,7 +54,7 @@ export async function getBenchmarks(
     .gte("completed_at", new Date(Date.now() - 30 * 86400000).toISOString())
 
   const avgThroughput = recentBatches && recentBatches.length > 0
-    ? recentBatches.reduce((sum: number, b: any) => sum + (b.throughput || 0), 0) / recentBatches.length
+    ? recentBatches.reduce((sum: number, b: Batch) => sum + (b.throughput || 0), 0) / recentBatches.length
     : 0
 
   const { data: findings } = await db
@@ -62,7 +63,7 @@ export async function getBenchmarks(
     .eq("organization_id", organizationId)
     .eq("status", "active")
 
-  const totalRisk = (findings || []).reduce((sum: number, f: any) => sum + (f.monetary_risk || 0), 0)
+  const totalRisk = (findings || []).reduce((sum: number, f: Finding) => sum + (f.monetary_risk || 0), 0)
 
   return [
     {
@@ -152,7 +153,7 @@ export async function getPeerInsights(
     .eq("status", "open")
 
   const avgDealSize = deals && deals.length > 0
-    ? deals.reduce((sum: number, d: any) => sum + (d.value || 0), 0) / deals.length
+    ? deals.reduce((sum: number, d: Deal) => sum + (d.value || 0), 0) / deals.length
     : 0
 
   if (avgDealSize > 25000) {

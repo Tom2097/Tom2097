@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
+import { FileData } from "@/lib/analytics/types"
 import {
   processUploadedFile,
   getUploadedFiles,
@@ -42,7 +43,7 @@ interface FileUploadRequest {
 
 interface FileUploadResponse {
   success: boolean
-  file?: any
+  file?: FileData
   result?: FileAnalysisResult
   error?: string
   fileId?: string
@@ -147,7 +148,7 @@ const postHandler = withAuth(
 
 interface FilesListResponse {
   success: boolean
-  files?: any[]
+  files?: FileData[]
   total?: number
   error?: string
 }

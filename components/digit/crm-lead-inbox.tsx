@@ -43,17 +43,20 @@ export function CrmLeadInbox() {
     fetch("/api/v1/crm/contacts?status=lead")
       .then((r) => r.ok ? r.json() : Promise.reject("Failed"))
       .then((data) => {
-        const items = (data.contacts || data.data || []).map((c: any) => ({
-          id: c.id,
-          name: `${c.first_name || ""} ${c.last_name || ""}`.trim() || c.name || c.email || "Unknown",
-          email: c.email || null,
-          phone: c.phone || null,
-          title: c.title || null,
-          company: c.company || c.company_name || null,
-          score: c.score || c.lead_score || 0,
-          status: c.status || "lead",
-          created_at: c.created_at || new Date().toISOString(),
-        }))
+        const items = (data.contacts || data.data || []).map((c: unknown) => {
+          const contact = c as { id: string; name: string; email: string; status: string; company: string; lastActivity: string; };
+          return {
+          id: contact.id,
+          name: `${contact.first_name || ""} ${contact.last_name || ""}`.trim() || contact.name || contact.email || "Unknown",
+          email: contact.email || null,
+          phone: contact.phone || null,
+          title: contact.title || null,
+          company: contact.company || contact.company_name || null,
+          score: contact.score || contact.lead_score || 0,
+          status: contact.status || "lead",
+          created_at: contact.created_at || new Date().toISOString(),
+        };
+      }))
         setLeads(items)
         setLoading(false)
       })

@@ -20,7 +20,7 @@ import type { FileAnalysisResult } from "@/lib/analytics/file-upload"
 
 interface FileDetailResponse {
   success: boolean
-  file?: any
+  file?: FileData
   result?: FileAnalysisResult
   error?: string
 }

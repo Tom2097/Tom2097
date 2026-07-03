@@ -37,9 +37,9 @@ interface AIQueryResponse {
   query?: ParsedAIQuery
   result?: {
     type: string
-    points?: any[]
-    rows?: any[]
-    summary?: any
+    points?: DataPoint[]
+    rows?: Array<Record<string, unknown>>
+    summary?: Record<string, unknown>
   }
   explanation?: string
   error?: string

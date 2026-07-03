@@ -22,7 +22,10 @@ export function CrmAskYourCrm() {
   useEffect(() => {
     fetch("/api/v1/crm/pipeline").then((r) => r.ok && r.json()).then((data) => {
       const stages = data?.pipeline?.stages ?? data?.stages ?? []
-      if (stages.length > 0) setPipelineData(stages.map((s: any) => ({ name: s.name, value: s.value })))
+      if (stages.length > 0) setPipelineData(stages.map((s: unknown) => {
+      const stage = s as { name: string; value: number };
+      return { name: stage.name, value: stage.value };
+    }))
     }).catch(() => {})
   }, [])
 

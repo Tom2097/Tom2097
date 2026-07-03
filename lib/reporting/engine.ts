@@ -438,9 +438,9 @@ export async function generateRun(
   const { data: finished, error: updErr } = await db
     .from("report_runs")
     .update({
-      status: anyError && results.every((r) => r.error) ? "failed" : "completed",
+      status: anyError && results.every((r) => r.error) ? "failed" : "completed" as const,
       result: { sections: results, generated_at: new Date().toISOString() },
-      error: anyError ? "one or more sections failed" : null,
+      error: anyError ? "one or more sections failed" : null as string | null,
       completed_at: new Date().toISOString(),
     })
     .eq("organization_id", organizationId)

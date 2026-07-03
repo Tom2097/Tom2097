@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
+import { Deal, Batch, Finding } from "./types"
 
 export interface CrossTenantMetric {
   metric: string
@@ -127,7 +128,7 @@ async function computeOrgMetrics(organizationId: string): Promise<Record<string,
     .select("value")
     .eq("organization_id", organizationId)
     .eq("status", "open")
-  const pipelineValue = (deals || []).reduce((s: number, d: any) => s + (d.value || 0), 0)
+  const pipelineValue = (deals || []).reduce((s: number, d: Deal) => s + (d.value || 0), 0)
 
   const { count: certCount } = await db
     .from("certificates")
@@ -142,7 +143,7 @@ async function computeOrgMetrics(organizationId: string): Promise<Record<string,
     .gte("completed_at", new Date(Date.now() - 30 * 86400000).toISOString())
 
   const avgThroughput = batches && batches.length > 0
-    ? batches.reduce((s: number, b: any) => s + (b.throughput || 0), 0) / batches.length
+    ? batches.reduce((s: number, b: Batch) => s + (b.throughput || 0), 0) / batches.length
     : 0
 
   const { data: findings } = await db
@@ -150,7 +151,7 @@ async function computeOrgMetrics(organizationId: string): Promise<Record<string,
     .select("monetary_risk")
     .eq("organization_id", organizationId)
     .eq("status", "active")
-  const riskExposure = (findings || []).reduce((s: number, f: any) => s + (f.monetary_risk || 0), 0)
+  const riskExposure = (findings || []).reduce((s: number, f: Finding) => s + (f.monetary_risk || 0), 0)
 
   const { count: completedBatches } = await db
     .from("production_batches")
