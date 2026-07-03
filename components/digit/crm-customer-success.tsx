@@ -49,7 +49,7 @@ export function CrmCustomerSuccess() {
           plan: account.plan || account.plan_name || "",
           lastActivity: account.last_activity || account.lastActivity || "",
         };
-      }))
+      })
         setAccounts(items)
         setLoading(false)
       })

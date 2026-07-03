@@ -192,7 +192,7 @@ export async function runSavedReport(
 ): Promise<unknown> {
   const report = await getReport(organizationId, reportId)
   if (!report) throw new Error("report not found")
-  const { runQuery } = await import("./engine")
+  const { runQuery } = await import("./engine.js")
   const cfg = report.config
   const now = new Date()
   const end = now.toISOString()

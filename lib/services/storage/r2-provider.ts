@@ -32,7 +32,7 @@ let presignerModule: typeof import('@aws-sdk/s3-request-presigner') | null = nul
 
 async function loadS3Modules() {
   if (!s3ClientModule) {
-    s3ClientModule = await import('@aws-sdk/client-s3')
+    s3ClientModule = await import('@aws-sdk/client-s3.js')
   }
   if (!presignerModule) {
     presignerModule = await import('@aws-sdk/s3-request-presigner')

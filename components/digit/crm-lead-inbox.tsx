@@ -56,7 +56,7 @@ export function CrmLeadInbox() {
           status: contact.status || "lead",
           created_at: contact.created_at || new Date().toISOString(),
         };
-      }))
+      })
         setLeads(items)
         setLoading(false)
       })

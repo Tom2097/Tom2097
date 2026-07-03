@@ -204,7 +204,7 @@ async function executeStepAction(action: string, module: string, organizationId:
       }
     }
     case "run_monitors": {
-      const { runAllMonitors } = await import("./monitor")
+      const { runAllMonitors } = await import("./monitor.js")
       return runAllMonitors(organizationId)
     }
     case "gather_findings":

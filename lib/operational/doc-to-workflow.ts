@@ -45,7 +45,7 @@ Return ONLY a JSON object:
         config: step.config ?? {},
         order: i + 1,
       };
-    }))
+    })
 
     const trigger: WorkflowTrigger = {
       type: parsed.trigger_type === "schedule" ? "schedule" : "event",

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import React, { useState, useEffect, Suspense } from "react"
 import { motion } from "framer-motion"
 import { Check, Zap, Building2, Rocket, ChevronRight, Star, X, Loader2, Info } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { pricingTiers, addOns, platformModules } from "@/lib/subscription-data"
+import { pricingTiers, addOns, platformModules, type PricingTier } from "@/lib/subscription-data"
 import { Checkout } from "@/components/checkout"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
@@ -19,16 +19,16 @@ import { Logo } from "@/components/digit/logo"
 const tierIcons = {
   starter: Rocket,
   professional: Zap,
-  enterprise: Building2
+  enterprise: Building2,
 }
 
 // Component that uses useSearchParams
 function CanceledBanner() {
   const searchParams = useSearchParams()
   const canceled = searchParams.get("canceled")
-  
+
   if (!canceled) return null
-  
+
   return (
     <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-3">
       <p className="text-center text-sm text-amber-600">
@@ -42,10 +42,12 @@ const PricingCard = React.memo(function PricingCard({
   tier,
   index,
   isAnnual,
+  onSelect,
 }: {
   tier: PricingTier
   index: number
   isAnnual: boolean
+  onSelect: (tierId: string) => void
 }) {
   const TierIcon = tierIcons[tier.id as keyof typeof tierIcons]
   const price = isAnnual ? tier.annualPrice : tier.monthlyPrice
@@ -63,16 +65,84 @@ const PricingCard = React.memo(function PricingCard({
             : "border-border/50 bg-card/50 hover:border-primary/50"
         }`}
       >
+        {tier.highlighted && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+            <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
+          </div>
+        )}
+
+        <div className="mb-6">
+          <div
+            className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
+              tier.highlighted ? "bg-primary/20" : "bg-muted"
+            }`}
+          >
+            <TierIcon className={`w-6 h-6 ${tier.highlighted ? "text-primary" : "text-muted-foreground"}`} />
+          </div>
+          <h3 className="text-2xl font-bold text-foreground mb-2">{tier.name}</h3>
+          <p className="text-sm text-muted-foreground">{tier.description}</p>
+        </div>
+
+        <div className="mb-6">
+          <div className="flex items-baseline gap-1">
+            <span className="text-4xl font-bold text-foreground">${price}</span>
+            <span className="text-muted-foreground">/month</span>
+          </div>
+          {isAnnual && (
+            <p className="text-sm text-chart-2 mt-1">Billed annually (${price * 12}/year)</p>
+          )}
+        </div>
+
+        <div className="flex-1 mb-8">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+            What&apos;s included
+          </p>
+          <ul className="space-y-3">
+            {tier.features.map((feature, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <Check
+                  className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                    tier.highlighted ? "text-primary" : "text-chart-2"
+                  }`}
+                />
+                <span className="text-sm text-foreground">{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <Button
+          className={`w-full ${
+            tier.highlighted
+              ? "bg-primary hover:bg-primary/90"
+              : tier.id === "enterprise"
+              ? "bg-foreground text-background hover:bg-foreground/90"
+              : ""
+          }`}
+          variant={tier.highlighted ? "default" : tier.id === "enterprise" ? "default" : "outline"}
+          onClick={() => onSelect(tier.id)}
+        >
+          {tier.cta}
+          <ChevronRight className="w-4 h-4 ml-1" />
+        </Button>
+      </Card>
+    </motion.div>
+  )
+})
+
+function PricingContent() {
   const [isAnnual, setIsAnnual] = useState(true)
   const [selectedTier, setSelectedTier] = useState<string | null>(null)
   const [showCheckout, setShowCheckout] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [loadingUser, setLoadingUser] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
+      setLoadingUser(false)
     })
   }, [])
 
@@ -81,7 +151,8 @@ const PricingCard = React.memo(function PricingCard({
       router.push(`/auth/sign-up?plan=${tierId}`)
       return
     }
-    router.push(`/checkout/${tierId}`)
+    setSelectedTier(tierId)
+    setShowCheckout(true)
   }
 
   return (
@@ -97,7 +168,9 @@ const PricingCard = React.memo(function PricingCard({
             <Link href="/pricing" className="text-sm text-foreground font-medium">
               Pricing
             </Link>
-            {user ? (
+            {loadingUser ? (
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            ) : user ? (
               <Button size="sm" asChild>
                 <Link href="/settings">My Account</Link>
               </Button>
@@ -140,8 +213,8 @@ const PricingCard = React.memo(function PricingCard({
               </span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-               Choose the plan that scales with your business. All plans include a 7-day free trial 
-               with full access to features.
+              Choose the plan that scales with your business. All plans include a 7-day free trial
+              with full access to features.
             </p>
 
             {/* Billing Toggle */}
@@ -157,24 +230,30 @@ const PricingCard = React.memo(function PricingCard({
               <span className={`text-sm ${isAnnual ? "text-foreground font-medium" : "text-muted-foreground"}`}>
                 Annual
               </span>
-               {isAnnual && (
-                 <>
-                   <Badge variant="secondary" className="bg-chart-2/20 text-chart-2 border-chart-2/30">
-                     Save 15%
-                   </Badge>
-                   <Tooltip>
-                     <TooltipTrigger asChild>
-                       <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/30 cursor-help">
-                         <Info className="w-3 h-3 mr-1" />
-                         3-month minimum commitment
-                       </Badge>
-                     </TooltipTrigger>
-                     <TooltipContent>
-                       <p className="text-sm">Yearly plans require a 3-month minimum commitment. You can cancel after 3 months, but no refunds are available.</p>
-                     </TooltipContent>
-                   </Tooltip>
-                 </>
-               )}
+              {isAnnual && (
+                <>
+                  <Badge variant="secondary" className="bg-chart-2/20 text-chart-2 border-chart-2/30">
+                    Save 15%
+                  </Badge>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge
+                        variant="secondary"
+                        className="bg-amber-500/10 text-amber-600 border-amber-500/30 cursor-help"
+                      >
+                        <Info className="w-3 h-3 mr-1" />
+                        3-month minimum commitment
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        Yearly plans require a 3-month minimum commitment. You can cancel after 3 months, but no
+                        refunds are available.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </>
+              )}
             </div>
           </motion.div>
         </div>
@@ -185,81 +264,14 @@ const PricingCard = React.memo(function PricingCard({
         <div className="container mx-auto">
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {pricingTiers.map((tier, index) => (
-                <PricingCard
-                  key={tier.id}
-                  tier={tier}
-                  index={index}
-                  isAnnual={isAnnual}
-                />
-              ))}
-                    {tier.highlighted && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <Badge className="bg-primary text-primary-foreground">
-                          Most Popular
-                        </Badge>
-                      </div>
-                    )}
-
-                    <div className="mb-6">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
-                        tier.highlighted ? "bg-primary/20" : "bg-muted"
-                      }`}>
-                        <TierIcon className={`w-6 h-6 ${tier.highlighted ? "text-primary" : "text-muted-foreground"}`} />
-                      </div>
-                      <h3 className="text-2xl font-bold text-foreground mb-2">{tier.name}</h3>
-                      <p className="text-sm text-muted-foreground">{tier.description}</p>
-                    </div>
-
-                    <div className="mb-6">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-bold text-foreground">${price}</span>
-                        <span className="text-muted-foreground">/month</span>
-                      </div>
-                      {isAnnual && (
-                        <p className="text-sm text-chart-2 mt-1">
-                          Billed annually (${price * 12}/year)
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex-1 mb-8">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
-                        What&apos;s included
-                      </p>
-                      <ul className="space-y-3">
-                        {tier.features.map((feature, i) => (
-                          <li key={i} className="flex items-start gap-3">
-                            <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                              tier.highlighted ? "text-primary" : "text-chart-2"
-                            }`} />
-                            <span className="text-sm text-foreground">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                     </div>
-
-                     <Button
-                       className={`w-full ${
-                         tier.highlighted
-                           ? "bg-primary hover:bg-primary/90"
-                           : tier.id === "enterprise"
-                           ? "bg-foreground text-background hover:bg-foreground/90"
-                           : ""
-                       }`}
-                       variant={tier.highlighted ? "default" : tier.id === "enterprise" ? "default" : "outline"}
-                       onClick={() => handleSelectPlan(tier.id)}
-                     >
-                       {tier.cta}
-                       <ChevronRight className="w-4 h-4 ml-1" />
-                     </Button>
-                   </Card>
-                 </motion.div>
-              )
-            }
-            
-            return null;
-          })}
-            })}
+              <PricingCard
+                key={tier.id}
+                tier={tier}
+                index={index}
+                isAnnual={isAnnual}
+                onSelect={handleSelectPlan}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -326,8 +338,6 @@ const PricingCard = React.memo(function PricingCard({
         </div>
       </section>
 
-
-
       {/* Footer */}
       <footer className="border-t border-border/50 py-12 px-6">
         <div className="container mx-auto">
@@ -339,10 +349,18 @@ const PricingCard = React.memo(function PricingCard({
               </span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-              <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-              <Link href="/security" className="hover:text-foreground transition-colors">Security</Link>
-              <Link href="/status" className="hover:text-foreground transition-colors">Status</Link>
+              <Link href="/privacy" className="hover:text-foreground transition-colors">
+                Privacy
+              </Link>
+              <Link href="/terms" className="hover:text-foreground transition-colors">
+                Terms
+              </Link>
+              <Link href="/security" className="hover:text-foreground transition-colors">
+                Security
+              </Link>
+              <Link href="/status" className="hover:text-foreground transition-colors">
+                Status
+              </Link>
             </div>
           </div>
         </div>
@@ -354,7 +372,7 @@ const PricingCard = React.memo(function PricingCard({
           <Card className="max-w-2xl w-full max-h-[90vh] overflow-auto">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-lg font-semibold">
-                Subscribe to {pricingTiers.find(t => t.id === selectedTier)?.name}
+                Subscribe to {pricingTiers.find((t) => t.id === selectedTier)?.name}
               </h3>
               <Button
                 variant="ghost"
@@ -368,12 +386,12 @@ const PricingCard = React.memo(function PricingCard({
               </Button>
             </div>
             <div className="p-0">
-              <Checkout 
-                planId={selectedTier} 
+              <Checkout
+                planId={selectedTier}
                 onClose={() => {
                   setShowCheckout(false)
                   setSelectedTier(null)
-                }} 
+                }}
               />
             </div>
           </Card>

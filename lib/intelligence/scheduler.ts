@@ -119,7 +119,7 @@ export async function executeTask(
         break
       }
       case "sync_graph": {
-        const { syncAllModules } = await import("./sync")
+        const { syncAllModules } = await import("./sync.js")
         const count = await syncAllModules(organizationId)
         details = { syncedEntities: count }
         break
@@ -134,7 +134,7 @@ export async function executeTask(
         break
       }
       case "run_learning": {
-        const { runLearningCycle } = await import("./learning/pipeline")
+        const { runLearningCycle } = await import("./learning/pipeline.js")
         const result = await runLearningCycle(organizationId)
         details = { ...result }
         break

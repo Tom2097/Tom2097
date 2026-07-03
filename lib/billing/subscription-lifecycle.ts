@@ -111,7 +111,7 @@ export async function processTrialEnd(organizationId: string): Promise<{ charged
   }
 
   if (sub.stripe_subscription_id) {
-    const { stripe } = await import("@/lib/stripe")
+    const { stripe } = await import("@/lib/stripe.js")
     const subscription = await stripe.subscriptions.retrieve(sub.stripe_subscription_id)
     if (subscription.status === "active" || subscription.status === "trialing") {
       await stripe.subscriptions.update(sub.stripe_subscription_id, {
@@ -194,7 +194,7 @@ export async function processRefund(
   const subRecord = sub as { plan_id: string; stripe_subscription_id?: string; razorpay_subscription_id?: string }
 
   if (subRecord.stripe_subscription_id) {
-    const { stripe } = await import("@/lib/stripe")
+    const { stripe } = await import("@/lib/stripe.js")
     try {
       await stripe.subscriptions.cancel(subRecord.stripe_subscription_id)
 
@@ -218,7 +218,7 @@ export async function processRefund(
   }
 
   if (subRecord.razorpay_subscription_id) {
-    const razorpay = await import("./razorpay")
+    const razorpay = await import("./razorpay.js")
     await razorpay.cancelRazorpaySubscription(organizationId)
   }
 
@@ -290,14 +290,14 @@ async function cancelAtPeriodEnd(
   const supabase = await createServiceClient()
 
   if (sub.stripe_subscription_id) {
-    const { stripe } = await import("@/lib/stripe")
+    const { stripe } = await import("@/lib/stripe.js")
     await stripe.subscriptions.update(sub.stripe_subscription_id, {
       cancel_at_period_end: true,
     })
   }
 
   if (sub.razorpay_subscription_id) {
-    const razorpay = await import("./razorpay")
+    const razorpay = await import("./razorpay.js")
     await razorpay.cancelRazorpaySubscription(organizationId)
   }
 

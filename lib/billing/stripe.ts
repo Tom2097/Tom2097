@@ -9,7 +9,7 @@ let stripeInstance: Stripe | null = null
 
 async function getStripeInstance(): Promise<Stripe> {
   if (!stripeInstance) {
-    const StripeModule = await import('stripe')
+    const StripeModule = await import('stripe.js')
     const StripeClass = StripeModule.default || StripeModule
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY
     

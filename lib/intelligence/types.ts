@@ -31,3 +31,15 @@ export interface InventoryItem {
   quantity: number
   [key: string]: unknown
 }
+
+export interface ConfidenceThreshold {
+  level: "auto" | "review" | "manual"
+  minConfidence: number
+  description: string
+}
+
+export const CONFIDENCE_THRESHOLDS: ConfidenceThreshold[] = [
+  { level: "auto", minConfidence: 0.8, description: "Auto-execute" },
+  { level: "review", minConfidence: 0.5, description: "Review recommended" },
+  { level: "manual", minConfidence: 0, description: "Manual action required" },
+]
