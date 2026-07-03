@@ -47,11 +47,10 @@ const searchItems = [
   { type: 'module', title: 'Performance Workspace', description: 'Anomaly detection and trend analysis', icon: Activity, href: '/performance', category: 'Modules' },
   { type: 'module', title: 'Resource Workspace', description: 'Capacity planning and inventory intelligence', icon: Boxes, href: '/resources', category: 'Modules' },
   { type: 'module', title: 'Compliance Workspace', description: 'Audit readiness and quality control', icon: ShieldCheck, href: '/compliance', category: 'Modules' },
-  // Pages
-  { type: 'page', title: 'Dashboard', description: 'Overview and key metrics', icon: BarChart3, href: '/', category: 'Pages' },
-  { type: 'page', title: 'AI Intelligence', description: 'AI-powered insights hub', icon: Sparkles, href: '/intelligence', category: 'Pages' },
-  { type: 'page', title: 'Settings', description: 'Account and preferences', icon: Settings, href: '/settings', category: 'Pages' },
-  { type: 'page', title: 'Pricing', description: 'Plans and subscriptions', icon: FileText, href: '/pricing', category: 'Pages' },
+   // Pages
+   { type: 'page', title: 'Dashboard', description: 'Overview and key metrics', icon: LayoutDashboard, href: '/', category: 'Pages' },
+   { type: 'page', title: 'Configure Workspace', description: 'Workspace settings and preferences', icon: Settings, href: '/configure', category: 'Pages' },
+   { type: 'page', title: 'Pricing', description: 'Plans and subscriptions', icon: FileText, href: '/pricing', category: 'Pages' },
   // Features
   { type: 'feature', title: 'Revenue Forecast', description: 'Predictive revenue analysis', icon: BarChart3, href: '/#revenue', category: 'Features' },
   { type: 'feature', title: 'Team Management', description: 'Manage team members and roles', icon: Users, href: '/settings?tab=team', category: 'Features' },
@@ -403,18 +402,12 @@ export function Navbar({ onOpenAI }: NavbarProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/settings" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/help" className="flex items-center gap-2">
-                  <HelpCircle className="h-4 w-4" />
-                  Help & Support
-                </Link>
-              </DropdownMenuItem>
+               <DropdownMenuItem asChild>
+                 <Link href="/configure" className="flex items-center gap-2">
+                   <Settings className="h-4 w-4" />
+                   Configure Workspace
+                 </Link>
+               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 className="text-destructive focus:text-destructive flex items-center gap-2"

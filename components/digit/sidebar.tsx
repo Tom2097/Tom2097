@@ -89,36 +89,25 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
             {!isCollapsed && <span>Dashboard</span>}
           </Link>
 
-          {/* AI Intelligence Link */}
-          <Link
-            href="/intelligence"
-            className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
-              pathname === '/intelligence'
-                ? "bg-gradient-to-r from-primary/20 to-cyan-500/20 text-primary digit-glow-sm"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            )}
-          >
-            <Brain className="h-5 w-5 shrink-0" />
-            {!isCollapsed && (
-              <span className="flex items-center gap-2">
-                AI Intelligence
-                <Sparkles className="h-3 w-3 text-cyan-500" />
-              </span>
-            )}
-          </Link>
+           {/* Dashboard Link */}
+           <Link
+             href="/"
+             className={cn(
+               "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+               pathname === '/'
+                 ? "bg-primary/10 text-primary digit-glow-sm"
+                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+             )}
+           >
+             <LayoutDashboard className="h-5 w-5 shrink-0" />
+             {!isCollapsed && <span>Dashboard</span>}
+           </Link>
 
 
 
-          {/* Separator */}
-          {!isCollapsed && (
-            <div className="py-3">
-              <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                AI Modules
-              </p>
-            </div>
-          )}
-          {isCollapsed && <div className="h-4" />}
+           {/* Separator */}
+           {!isCollapsed && <div className="h-4" />}
+           {isCollapsed && <div className="h-4" />}
 
           {/* Module Links */}
           {modules.map((module) => {
@@ -189,23 +178,10 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                 ? "bg-primary/10 text-primary digit-glow-sm"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}
-            title={isCollapsed ? 'Settings' : undefined}
+            title={isCollapsed ? 'Configure Workspace' : undefined}
           >
             <Settings className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Settings</span>}
-          </Link>
-          <Link
-            href="/help"
-            className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
-              pathname === '/help'
-                ? "bg-primary/10 text-primary digit-glow-sm"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            )}
-            title={isCollapsed ? 'Help & Support' : undefined}
-          >
-            <HelpCircle className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Help & Support</span>}
+            {!isCollapsed && <span>Configure Workspace</span>}
           </Link>
         </div>
       </div>
