@@ -29,6 +29,8 @@ export interface WorkflowStep {
   /** Unique id within the workflow. */
   id: string
   type: StepType
+  /** User-facing label for the step. */
+  label?: string
   /** Action-specific configuration. Values may reference `{{input.x}}` / `{{steps.id.field}}`. */
   config: Record<string, unknown>
   /** Next step id for linear flow (ignored for condition steps). */

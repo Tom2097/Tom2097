@@ -18,6 +18,9 @@ import {
   toBuffer,
 } from './validators'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type S3Module = Record<string, any>
+
 interface R2StorageConfig {
   accountId: string
   accessKeyId: string
@@ -27,8 +30,8 @@ interface R2StorageConfig {
 }
 
 // Lazy load AWS SDK modules to avoid initialization errors
-let s3ClientModule: typeof import('@aws-sdk/client-s3') | null = null
-let presignerModule: typeof import('@aws-sdk/s3-request-presigner') | null = null
+let s3ClientModule: S3Module | null = null
+let presignerModule: Record<string, any> | null = null
 
 async function loadS3Modules() {
    if (!s3ClientModule) {
@@ -46,7 +49,7 @@ async function loadS3Modules() {
  */
 export class R2StorageProvider implements StorageProvider {
   private config: R2StorageConfig
-  private clientPromise: Promise<S3Client> | null = null
+  private clientPromise: Promise<any> | null = null
 
   constructor(config: R2StorageConfig) {
     if (!config.accountId || !config.accessKeyId || !config.secretAccessKey || !config.bucketName) {

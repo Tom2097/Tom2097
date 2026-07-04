@@ -3,21 +3,10 @@ import { createServiceClient } from "@/lib/supabase/service"
 import { evaluateGuardrail } from "./confidence"
 import { generateId } from "@/lib/utils/id"
 import { getActiveFindings } from "./engine"
+import type { IntelligenceFinding } from "./types"
 
 const AGENTS_TABLE = "intelligence_agents"
 const ACTIONS_TABLE = "intelligence_actions"
-
-export interface IntelligenceFinding {
-  id: string
-  title: string
-  description: string
-  severity?: 'low' | 'medium' | 'high' | 'critical'
-  sourceModule: string
-  entityId?: string
-  confidence: number
-  monetaryRisk?: number
-  suggestedAction?: string
-}
 
 export interface AgentAction {
   id: string

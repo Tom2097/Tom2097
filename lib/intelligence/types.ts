@@ -38,24 +38,71 @@ export interface ConfidenceThreshold {
   description: string
 }
 
-export interface MonitorCheck {
+export interface OperationalEntity {
   id: string
+  organizationId: string
+  type: string
   name: string
-  description: string
-  targetModule: string
-  schedule: string
-  lastRun?: string
-  status?: 'active' | 'inactive' | 'error'
+  status: string
+  module: string
+  properties: Record<string, unknown>
+  lastUpdated?: Date
+  relatedEntities?: GraphRelation[]
+}
+
+export interface EntityRelation {
+  targetId: string
+  type: string
+  confidence: number
+  monetary_impact?: number
+  relationship?: string
+}
+
+export interface GraphRelation {
+  targetId: string
+  targetType: string
+  relationship: string
+  direction: 'outbound' | 'inbound'
+}
+
+export interface EntityGraphResult {
+  entity: OperationalEntity
+  relations: GraphRelation[]
+}
+
+export interface MonitorCheck {
+  module: string
+  lastChecked: Date
+  findings: number
+  status: 'healthy' | 'warning' | 'critical'
 }
 
 export interface IntelligenceFinding {
   id: string
   title: string
   description: string
-  severity: 'low' | 'medium' | 'high' | 'critical'
   monetaryRisk: number
-  module: string
+  sourceModule: string
+  type: string
+  detectedAt: Date
+  impactScore: number
   entityId?: string
+  organizationId?: string
+  confidence?: number
+  status?: string
+  suggestedAction?: string
+  requiresApproval?: boolean
+  evidence?: Record<string, unknown>
+  causalChain?: Array<{ fromModule: string; toModule: string }>
+}
+
+export interface ImpactScore {
+  finding: IntelligenceFinding
+  monetaryValue: number
+  urgency: number
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  affectedModules: string[]
+  propagationDepth: number
 }
 
 export const CONFIDENCE_THRESHOLDS: ConfidenceThreshold[] = [

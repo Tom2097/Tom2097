@@ -1,5 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
-import type { OperationalEntity, EntityRelation } from "./types"
+import type { OperationalEntity, GraphRelation, EntityGraphResult } from "./types"
 
 const ENTITIES_TABLE = "intelligence_entities"
 const RELATIONS_TABLE = "intelligence_relations"
@@ -42,7 +42,7 @@ export async function getEntityGraph(
   organizationId: string,
   entityId: string,
   depth: number = 2,
-): Promise<{ entity: OperationalEntity; relations: EntityRelation[] } | null> {
+): Promise<EntityGraphResult | null> {
   const db = createServiceClient()
   const { data: entity } = await db
     .from(ENTITIES_TABLE)
@@ -65,7 +65,7 @@ export async function getEntityGraph(
     .eq("organization_id", organizationId)
     .eq("to_entity_id", entityId)
 
-  const relations: EntityRelation[] = [
+  const relations: GraphRelation[] = [
     ...(outbound || []).map((r: { to_entity_id: string; relationship: string }) => ({
       targetId: r.to_entity_id,
       targetType: "",

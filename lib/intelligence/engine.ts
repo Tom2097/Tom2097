@@ -1,7 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { getLLM } from "@/lib/ai/client"
 import { generateText } from "ai"
-type IntelligenceEventType =
+export type IntelligenceEventType =
   | "compliance.cert_expiring"
   | "compliance.gap_detected"
   | "resources.low_stock"
@@ -17,27 +17,10 @@ import { type AgentAction } from "./agents"
 import { traceFromFinding } from "./causal-chain"
 import { upsertEntity, relateEntities } from "./operational-graph"
 import { generateId } from "@/lib/utils/id"
+import type { IntelligenceFinding } from "./types"
 
 const FINDINGS_TABLE = "intelligence_findings"
 const ACTIONS_TABLE = "intelligence_actions"
-
-interface IntelligenceFinding {
-  id: string
-  organizationId: string
-  type: IntelligenceEventType
-  title: string
-  description: string
-  impactScore: number
-  confidence: number
-  status: string
-  detectedAt: Date
-  sourceModule: string
-  entityId?: string
-  monetaryRisk: number
-  suggestedAction?: string
-  requiresApproval: boolean
-  evidence?: Record<string, unknown>
-}
 
 export interface PerceptionInput {
   organizationId: string
@@ -179,7 +162,7 @@ export async function act(
   const finding = await getFinding(findingId, organizationId)
   if (!finding || !finding.suggestedAction) return null
 
-  const guardrail = evaluateGuardrail(finding.confidence, finding.monetaryRisk ?? 0, finding.type)
+  const guardrail = evaluateGuardrail(finding.confidence ?? 0, finding.monetaryRisk ?? 0, finding.type)
 
   const action: AgentAction = {
     id: generateId(),
@@ -268,16 +251,19 @@ export async function getActiveFindings(
 
   return (data || []).map((f: Record<string, unknown>) => ({
     id: f.id as string,
+    type: f.type as string,
     title: f.title as string,
     description: f.description as string,
-    severity: f.severity as 'low' | 'medium' | 'high' | 'critical',
     monetaryRisk: f.monetary_risk as number,
-    module: f.source_module as string,
-    entityId: f.entity_id as string,
-    entityId: f.entity_id as string,
-    monetaryRisk: f.monetary_risk as number,
-    suggestedAction: f.suggested_action as string,
-    requiresApproval: f.requires_approval as boolean,
+    sourceModule: f.source_module as string,
+    impactScore: f.impact_score as number,
+    detectedAt: new Date(f.detected_at as string),
+    entityId: f.entity_id as string | undefined,
+    confidence: f.confidence as number | undefined,
+    status: f.status as string | undefined,
+    suggestedAction: f.suggested_action as string | undefined,
+    requiresApproval: f.requires_approval as boolean | undefined,
+    evidence: f.evidence as Record<string, unknown> | undefined,
   }))
 }
 
@@ -286,7 +272,7 @@ function calculateFindingImpact(monetaryRisk: number, confidence: number): numbe
 }
 
 function determineActionType(finding: IntelligenceFinding): string {
-  const typeMap: Partial<Record<IntelligenceEventType, string>> = {
+  const typeMap: Record<string, string> = {
     "compliance.cert_expiring": "renew_certification",
     "compliance.gap_detected": "create_remediation_plan",
     "resources.low_stock": "create_purchase_order",

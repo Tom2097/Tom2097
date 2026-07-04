@@ -3,7 +3,8 @@ import { getEntitiesByModule } from "./operational-graph"
 import { getActiveFindings, perceive, approveAction } from "./engine"
 import { generateBriefing } from "./briefing"
 import { generateAiResponse } from "@/lib/ai/helpers"
-import type { IntelligenceFinding, AgentAction } from "./types"
+import type { IntelligenceFinding } from "./types"
+import type { AgentAction } from "./agents"
 
 export interface IntentCommand {
   intent: string

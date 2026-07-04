@@ -1,5 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
-import type { IntelligenceFinding } from "./agents"
+import type { IntelligenceFinding, GraphRelation } from "./types"
 import { getEntityGraph, traverseGraph } from "./operational-graph"
 
 const ENTITY_MODULE_MAP: Record<string, string> = {
@@ -77,18 +77,18 @@ export async function traceCausalChain(
 
   const links: CausalLink[] = []
   for (const entity of sorted) {
-    const graph = await getEntityGraph(organizationId, entity.id)
+      const graph = await getEntityGraph(organizationId, entity.id)
     if (!graph) continue
 
-    for (const rel of graph.relations) {
+    for (const rel of graph.relations as GraphRelation[]) {
       const targetEntity = entityMap.get(rel.targetId)
       if (!targetEntity) continue
         links.push({
           source: entity.name,
           target: targetEntity.name,
-          type: rel.type,
-          confidence: rel.confidence,
-          monetaryImpact: rel.monetary_impact,
+          type: rel.relationship,
+          confidence: 0.8,
+          monetaryImpact: estimateEntityImpact(targetEntity),
         })
     }
   }
@@ -104,7 +104,7 @@ export async function traceFromFinding(
   finding: IntelligenceFinding,
 ): Promise<CausalChainResult | null> {
   if (!finding.entityId) return null
-  return traceCausalChain((finding as any).organizationId, finding.entityId)
+  return traceCausalChain(finding.organizationId!, finding.entityId)
 }
 
 function estimateEntityImpact(entity: OperationalEntity): number {

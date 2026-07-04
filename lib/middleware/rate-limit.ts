@@ -82,12 +82,9 @@ function getRedis(): Redis {
 export function createRateLimiter(config: RateLimitConfig): Ratelimit {
   return new Ratelimit({
     redis: getRedis(),
-    limiter: Ratelimit.slidingWindow(config.maxRequests, `${config.windowMs} ms`),
+    limiter: Ratelimit.slidingWindow(config.maxRequests, `${config.windowMs} s`),
     analytics: true,
-    redis: getRedis(),
-    limiter: config.key,
-    max: config.maxRequests,
-    window: `${config.windowMs}s`,
+    prefix: config.key,
   })
 }
 

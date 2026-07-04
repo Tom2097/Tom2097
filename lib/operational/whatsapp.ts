@@ -153,14 +153,7 @@ export async function verifyWhatsAppWebhook(
 interface WhatsAppWebhookPayload {
   entry?: Array<{
     changes?: Array<{
-      value?: {
-        messages?: Array<{
-          id: string
-          from: string
-          body: string
-          timestamp: string
-        }>
-      }
+      value?: Record<string, unknown>
     }>
   }>
 }
@@ -178,16 +171,16 @@ export async function parseWhatsAppWebhookPayload(
     if (!Array.isArray(changes)) continue
     for (const c of changes) {
       const value = c?.value
-      const contacts = value?.contacts ?? []
-      const msgs = value?.messages ?? []
+      const contacts = (value?.contacts ?? []) as Array<{ wa_id?: string }>
+      const msgs = (value?.messages ?? []) as Array<{ id: string; from: string; text?: { body?: string }; caption?: string; type?: string; image?: { id?: string }; audio?: { id?: string }; video?: { id?: string }; document?: { id?: string }; timestamp?: string }>
       for (const m of msgs) {
         const from = contacts[0]?.wa_id ?? m.from ?? "unknown"
         messages.push({
           id: m.id,
           from,
           body: m.text?.body ?? m.caption ?? "",
-          type: m.type ?? "text",
-          mediaUrl: m.image?.id ?? m.audio?.id ?? m.video?.id ?? m.document?.id ?? null,
+          type: (m.type ?? "text") as WhatsAppMessage["type"],
+          mediaUrl: m.image?.id ?? m.audio?.id ?? m.video?.id ?? m.document?.id ?? undefined,
           timestamp: m.timestamp ?? new Date().toISOString(),
         })
       }

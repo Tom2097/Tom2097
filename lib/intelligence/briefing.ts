@@ -3,7 +3,7 @@ import { Deal, Batch } from "./types"
 import { getLLM } from "@/lib/ai/client"
 import { generateText } from "ai"
 
-import { type IntelligenceFinding } from "./agents"
+import { type IntelligenceFinding } from "./types"
 import { getTopFindings } from "./ranking"
 import { generateId } from "@/lib/utils/id"
 
@@ -219,7 +219,7 @@ async function generateBriefingSummary(
   try {
     const llm = getLLM()
     const findingsText = findings.map(
-      (f) => `- [${(f as any).type}] ${f.title} (risk: $${f.monetaryRisk?.toLocaleString() ?? "unknown"}, confidence: ${Math.round(f.confidence * 100)}%)`,
+      (f) => `- [${f.type}] ${f.title} (risk: $${f.monetaryRisk?.toLocaleString() ?? "unknown"}, confidence: ${Math.round((f.confidence ?? 0) * 100)}%)`,
     ).join("\n")
 
     const metricsText = metrics.map(
