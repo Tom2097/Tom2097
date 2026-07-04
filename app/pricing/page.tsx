@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { Check, Zap, Building2, Rocket, ChevronRight, Star, X, Loader2, Info } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
@@ -165,6 +166,9 @@ function PricingContent() {
   const [showCheckout, setShowCheckout] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [loadingUser, setLoadingUser] = useState(true)
+  const [discountCode, setDiscountCode] = useState("")
+  const [discountError, setDiscountError] = useState("")
+  const [discountValid, setDiscountValid] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -178,6 +182,11 @@ function PricingContent() {
   const handleSelectPlan = (tierId: string) => {
     if (!user) {
       router.push(`/auth/sign-up?plan=${tierId}`)
+      return
+    }
+    if (currency === "INR") {
+      // Razorpay checkout — redirect
+      window.location.href = `/api/v1/billing/create-session?plan=${tierId}&provider=razorpay&redirect=/settings`
       return
     }
     setSelectedTier(tierId)
@@ -413,7 +422,7 @@ function PricingContent() {
         </div>
       </footer>
 
-      {/* Checkout Modal */}
+      {/* Checkout Modal (USD / Stripe) */}
       {showCheckout && selectedTier && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <Card className="max-w-2xl w-full max-h-[90vh] overflow-auto">
@@ -427,17 +436,60 @@ function PricingContent() {
                 onClick={() => {
                   setShowCheckout(false)
                   setSelectedTier(null)
+                  setDiscountCode("")
+                  setDiscountError("")
+                  setDiscountValid(false)
                 }}
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
+            <div className="p-4 border-b border-border space-y-3">
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Founding discount code?"
+                  value={discountCode}
+                  onChange={(e) => {
+                    setDiscountCode(e.target.value.toUpperCase())
+                    setDiscountError("")
+                    setDiscountValid(false)
+                  }}
+                  className="flex-1 text-sm"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    if (!discountCode) return
+                    fetch("/api/v1/billing/validate-discount", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ code: discountCode, planId: selectedTier }),
+                    })
+                      .then((r) => r.json())
+                      .then((data) => {
+                        if (data.valid) { setDiscountValid(true); setDiscountError("") }
+                        else { setDiscountValid(false); setDiscountError(data.error || "Invalid code") }
+                      })
+                      .catch(() => { setDiscountError("Failed to validate") })
+                  }}
+                >
+                  Apply
+                </Button>
+              </div>
+              {discountError && <p className="text-xs text-destructive">{discountError}</p>}
+              {discountValid && <p className="text-xs text-chart-2">Discount code applied!</p>}
+            </div>
             <div className="p-0">
               <Checkout
                 planId={selectedTier}
+                discountCode={discountValid ? discountCode : undefined}
                 onClose={() => {
                   setShowCheckout(false)
                   setSelectedTier(null)
+                  setDiscountCode("")
+                  setDiscountError("")
+                  setDiscountValid(false)
                 }}
               />
             </div>

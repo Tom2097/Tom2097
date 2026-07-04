@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Building2, Users, Loader2, PauseCircle, PlayCircle, Trash2 } from "lucide-react"
-import { useRouter } from "next/navigation"
 
 interface Tenant {
   id: string
@@ -23,7 +22,6 @@ export default function AdminTenantsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [actioning, setActioning] = useState<string | null>(null)
-  const router = useRouter()
 
   useEffect(() => {
     const load = async () => {

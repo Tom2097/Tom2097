@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Users as UsersIcon, Loader2, Eye, ExternalLink } from "lucide-react"
+import { Users as UsersIcon, Loader2, Eye } from "lucide-react"
 
 interface PlatformUser {
   id: string
@@ -19,7 +19,6 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<PlatformUser[]>([])
   const [loading, setLoading] = useState(true)
   const [impersonating, setImpersonating] = useState<string | null>(null)
-  const [impersonateUrl, setImpersonateUrl] = useState<string | null>(null)
 
   useEffect(() => {
     fetch("/api/v1/admin/users")
@@ -39,7 +38,6 @@ export default function AdminUsersPage() {
       })
       if (!res.ok) throw new Error("Failed")
       const data = await res.json()
-      setImpersonateUrl(data.url)
       window.open(data.url, "_blank")
     } catch { /* silent */ }
     finally { setImpersonating(null) }
