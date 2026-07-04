@@ -1,47 +1,60 @@
-import { isCurrentUserPlatformOwner } from "@/lib/platform/owner"
-import { createServiceClient } from "@/lib/supabase/service"
-import { notFound } from "next/navigation"
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Building2, Users, ChevronRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Building2, Users, Loader2, PauseCircle, PlayCircle, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
-export const dynamic = "force-dynamic"
-
-async function getTenants() {
-  const supabase = createServiceClient()
-  const { data: orgs } = await supabase
-    .from("organizations")
-    .select("id, name, slug, created_at, owner_id")
-    .order("created_at", { ascending: false })
-    .limit(50)
-
-  if (!orgs) return []
-
-  const tenants = await Promise.all(
-    orgs.map(async (org) => {
-      const { count: userCount } = await supabase
-        .from("organization_members")
-        .select("*", { count: "exact", head: true })
-        .eq("organization_id", org.id)
-
-      const { data: sub } = await supabase
-        .from("subscriptions")
-        .select("plan_id, status")
-        .eq("organization_id", org.id)
-        .maybeSingle()
-
-      return { ...org, userCount: userCount || 0, subscription: sub }
-    })
-  )
-
-  return tenants
+interface Tenant {
+  id: string
+  name: string
+  slug: string
+  created_at: string
+  owner_id: string
+  userCount: number
+  subscription: { plan_id: string; status: string } | null
+  status?: string
 }
 
-export default async function AdminTenantsPage() {
-  const isOwner = await isCurrentUserPlatformOwner()
-  if (!isOwner) notFound()
+export default function AdminTenantsPage() {
+  const [tenants, setTenants] = useState<Tenant[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [actioning, setActioning] = useState<string | null>(null)
+  const router = useRouter()
 
-  const tenants = await getTenants()
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch("/api/v1/admin/tenants")
+        if (!res.ok) { setError("Unauthorized"); setLoading(false); return }
+        const data = await res.json()
+        setTenants(data.tenants || [])
+      } catch { setError("Failed to load") }
+      finally { setLoading(false) }
+    }
+    load()
+  }, [])
+
+  const handleAction = async (id: string, action: string) => {
+    setActioning(id)
+    try {
+      const res = await fetch(`/api/v1/admin/tenants/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      })
+      if (!res.ok) throw new Error("Failed")
+      setTenants(prev => prev.map(t => t.id === id ? { ...t, status: action === "suspend" ? "suspended" : action === "activate" ? "active" : t.status } : t))
+      if (action === "delete") setTenants(prev => prev.filter(t => t.id !== id))
+    } catch { /* silent */ }
+    finally { setActioning(null) }
+  }
+
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+  if (error) return <div className="flex items-center justify-center min-h-[60vh] text-destructive">{error}</div>
 
   return (
     <div className="space-y-8">
@@ -57,7 +70,7 @@ export default async function AdminTenantsPage() {
         <CardContent>
           <div className="space-y-2">
             {tenants.map((tenant) => (
-              <div key={tenant.id} className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:border-primary/30 transition-colors">
+              <div key={tenant.id} className="flex items-center justify-between p-4 rounded-lg border border-border/50">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                     <Building2 className="w-5 h-5 text-primary" />
@@ -82,7 +95,19 @@ export default async function AdminTenantsPage() {
                   <div className="text-xs text-muted-foreground">
                     {new Date(tenant.created_at).toLocaleDateString()}
                   </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" variant="ghost" className="h-8 w-8" disabled={actioning === tenant.id}
+                      onClick={() => handleAction(tenant.id, tenant.status === "suspended" ? "activate" : "suspend")}
+                      title={tenant.status === "suspended" ? "Activate" : "Suspend"}>
+                      {actioning === tenant.id ? <Loader2 className="w-4 h-4 animate-spin" /> :
+                        tenant.status === "suspended" ? <PlayCircle className="w-4 h-4 text-chart-2" /> : <PauseCircle className="w-4 h-4 text-amber-500" />}
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-8 w-8" disabled={actioning === tenant.id}
+                      onClick={() => { if (confirm("Delete this tenant permanently?")) handleAction(tenant.id, "delete") }}
+                      title="Delete">
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}

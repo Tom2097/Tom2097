@@ -1,28 +1,51 @@
-import { isCurrentUserPlatformOwner } from "@/lib/platform/owner"
-import { createServiceClient } from "@/lib/supabase/service"
-import { notFound } from "next/navigation"
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Users as UsersIcon, Loader2, Eye, ExternalLink } from "lucide-react"
 
-export const dynamic = "force-dynamic"
-
-async function getUsers() {
-  const supabase = createServiceClient()
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, full_name, email, role, organization_id, created_at")
-    .order("created_at", { ascending: false })
-    .limit(100)
-
-  return profiles || []
+interface PlatformUser {
+  id: string
+  full_name: string | null
+  email: string | null
+  role: string | null
+  organization_id: string | null
+  created_at: string
 }
 
-export default async function AdminUsersPage() {
-  const isOwner = await isCurrentUserPlatformOwner()
-  if (!isOwner) notFound()
+export default function AdminUsersPage() {
+  const [users, setUsers] = useState<PlatformUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [impersonating, setImpersonating] = useState<string | null>(null)
+  const [impersonateUrl, setImpersonateUrl] = useState<string | null>(null)
 
-  const users = await getUsers()
+  useEffect(() => {
+    fetch("/api/v1/admin/users")
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((data) => setUsers(data.users || []))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleImpersonate = async (userId: string) => {
+    setImpersonating(userId)
+    try {
+      const res = await fetch("/api/v1/admin/impersonate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      })
+      if (!res.ok) throw new Error("Failed")
+      const data = await res.json()
+      setImpersonateUrl(data.url)
+      window.open(data.url, "_blank")
+    } catch { /* silent */ }
+    finally { setImpersonating(null) }
+  }
+
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><UsersIcon className="w-8 h-8 animate-spin text-primary" /></div>
 
   return (
     <div className="space-y-8">
@@ -42,7 +65,7 @@ export default async function AdminUsersPage() {
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                     <span className="text-sm font-medium text-primary">
-                      {user.full_name?.split(" ").map((n: string) => n[0]).join("").toUpperCase() || "U"}
+                      {user.full_name?.split(" ").map(n => n[0]).join("").toUpperCase() || "U"}
                     </span>
                   </div>
                   <div>
@@ -55,12 +78,19 @@ export default async function AdminUsersPage() {
                   <span className="text-xs text-muted-foreground">
                     {new Date(user.created_at).toLocaleDateString()}
                   </span>
+                  <Button size="sm" variant="outline" className="gap-1" disabled={impersonating === user.id}
+                    onClick={() => handleImpersonate(user.id)}>
+                    {impersonating === user.id
+                      ? <Loader2 className="w-3 h-3 animate-spin" />
+                      : <Eye className="w-3 h-3" />}
+                    Impersonate
+                  </Button>
                 </div>
               </div>
             ))}
             {users.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
-                <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <UsersIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No users found</p>
               </div>
             )}
