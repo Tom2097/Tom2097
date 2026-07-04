@@ -25,10 +25,16 @@ export const QUESTIONNAIRE_STEPS = [
   },
   {
     id: 5,
+    title: "Identity Verification",
+    subtitle: "Verify your identity",
+    description: "Help us confirm your identity to secure your account"
+  },
+  {
+    id: 6,
     title: "AI Analysis",
     subtitle: "Analyzing your requirements",
     description: "Our AI is finding the best solutions for your business"
-  }
+  },
 ]
 
 export const INDUSTRIES = [
@@ -203,6 +209,13 @@ export type QuestionnaireData = {
   budgetRange: string
   timelineUrgency: string
   complianceRequirements: string[]
+
+  // Step 5: Identity Verification
+  fullLegalName: string
+  governmentIdType: string
+  companyRegistrationNumber: string
+  verifiedDomain: string
+  acceptedTerms: boolean
 }
 
 export const DEFAULT_QUESTIONNAIRE_DATA: QuestionnaireData = {
@@ -218,5 +231,10 @@ export const DEFAULT_QUESTIONNAIRE_DATA: QuestionnaireData = {
   existingTools: [],
   budgetRange: "",
   timelineUrgency: "",
-  complianceRequirements: []
+  complianceRequirements: [],
+  fullLegalName: "",
+  governmentIdType: "",
+  companyRegistrationNumber: "",
+  verifiedDomain: "",
+  acceptedTerms: false,
 }

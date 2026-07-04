@@ -26,7 +26,8 @@ import {
   Film,
   Plane,
   MoreHorizontal,
-  MessageSquare
+  MessageSquare,
+  Shield
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -157,7 +158,7 @@ export default function OnboardingPage() {
   }, [data])
 
   useEffect(() => {
-    if (currentStep === 5 && !analysisResult && !isAnalyzing) {
+    if (currentStep === 6 && !analysisResult && !isAnalyzing) {
       Promise.resolve().then(() => setIsAnalyzing(true))
       fetch("/api/v1/ai/analyze-business", {
         method: "POST",
@@ -172,7 +173,7 @@ export default function OnboardingPage() {
   }, [currentStep, analysisResult, isAnalyzing, data])
 
   const handleNext = () => {
-    if (currentStep < 5) {
+    if (currentStep < 6) {
       setCurrentStep(prev => prev + 1)
     } else if (analysisResult) {
       // Save to localStorage for recommendations page
@@ -203,14 +204,14 @@ export default function OnboardingPage() {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-muted-foreground">Step {currentStep} of 5</span>
-            <span className="text-sm text-muted-foreground">{Math.round((currentStep / 5) * 100)}% complete</span>
+            <span className="text-sm text-muted-foreground">Step {currentStep} of 6</span>
+            <span className="text-sm text-muted-foreground">{Math.round((currentStep / 6) * 100)}% complete</span>
           </div>
           <div className="h-2 bg-secondary rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-to-r from-primary to-cyan-500"
               initial={{ width: 0 }}
-              animate={{ width: `${(currentStep / 5) * 100}%` }}
+              animate={{ width: `${(currentStep / 6) * 100}%` }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
             />
           </div>
@@ -254,7 +255,8 @@ export default function OnboardingPage() {
                     {currentStep === 2 && <Building2 className="w-8 h-8 text-primary" />}
                     {currentStep === 3 && <Target className="w-8 h-8 text-primary" />}
                     {currentStep === 4 && <Wrench className="w-8 h-8 text-primary" />}
-                    {currentStep === 5 && <Sparkles className="w-8 h-8 text-primary" />}
+                    {currentStep === 5 && <Shield className="w-8 h-8 text-primary" />}
+                    {currentStep === 6 && <Sparkles className="w-8 h-8 text-primary" />}
                   </div>
                   <h1 className="text-2xl font-bold mb-2">{step.title}</h1>
                   <p className="text-muted-foreground">{step.description}</p>
@@ -658,8 +660,52 @@ export default function OnboardingPage() {
                   </div>
                 )}
 
-                {/* Step 5: AI Analysis */}
+                {/* Step 5: Identity Verification */}
                 {currentStep === 5 && (
+                  <div className="space-y-8">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label>Full Legal Name</Label>
+                        <Input value={data.fullLegalName} onChange={(e) => updateData("fullLegalName", e.target.value)} placeholder="As shown on government ID" className="bg-background/50" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Government ID Type</Label>
+                        <select value={data.governmentIdType} onChange={(e) => updateData("governmentIdType", e.target.value)} className="w-full h-10 px-3 rounded-lg border border-border/50 bg-background/50 text-sm">
+                          <option value="">Select...</option>
+                          <option value="passport">Passport</option>
+                          <option value="drivers_license">Driver&apos;s License</option>
+                          <option value="national_id">National ID</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Company Registration Number</Label>
+                      <Input value={data.companyRegistrationNumber} onChange={(e) => updateData("companyRegistrationNumber", e.target.value)} placeholder="CIN, GST, or EIN number" className="bg-background/50" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Verified Domain</Label>
+                      <div className="flex gap-2">
+                        <Input value={data.verifiedDomain} onChange={(e) => updateData("verifiedDomain", e.target.value)} placeholder="yourcompany.com" className="bg-background/50" />
+                        <Button type="button" variant="outline" onClick={async () => {
+                          if (!data.verifiedDomain) return
+                          const res = await fetch("/api/v1/enterprise/verify-domain", {
+                            method: "POST", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ domain: data.verifiedDomain }),
+                          })
+                          const result = await res.json()
+                          if (result.verified) updateData("verifiedDomain", data.verifiedDomain)
+                        }}>Verify</Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" id="acceptedTerms" checked={data.acceptedTerms} onChange={(e) => updateData("acceptedTerms", e.target.checked)} className="rounded" />
+                      <Label htmlFor="acceptedTerms" className="text-sm">I confirm that the information provided is accurate and I have the authority to represent this company</Label>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 6: AI Analysis */}
+                {currentStep === 6 && (
                   <div className="space-y-8">
                     {isAnalyzing ? (
                       <div className="text-center py-12">
@@ -763,7 +809,7 @@ export default function OnboardingPage() {
                     disabled={!canProceed()}
                     className="gap-2 bg-gradient-to-r from-primary to-cyan-600 hover:from-primary/90 hover:to-cyan-600/90"
                   >
-                    {currentStep === 5 ? "View Recommendations" : "Continue"}
+                    {currentStep === 6 ? "View Recommendations" : "Continue"}
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </div>
