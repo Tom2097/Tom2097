@@ -12,17 +12,18 @@ const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 )
 
-interface CheckoutProps {
+export interface CheckoutProps {
   planId: string
+  discountCode?: string
   onClose?: () => void
 }
 
-export function Checkout({ planId, onClose }: CheckoutProps) {
+export function Checkout({ planId, discountCode, onClose }: CheckoutProps) {
   const [error, setError] = useState<string | null>(null)
 
   const fetchClientSecret = useCallback(async () => {
     try {
-      const { clientSecret } = await createCheckoutSession(planId)
+      const { clientSecret } = await createCheckoutSession(planId, discountCode)
       if (!clientSecret) {
         throw new Error("Failed to create checkout session")
       }
@@ -31,7 +32,7 @@ export function Checkout({ planId, onClose }: CheckoutProps) {
       setError(err instanceof Error ? err.message : "Failed to start checkout")
       throw err
     }
-  }, [planId])
+  }, [planId, discountCode])
 
   if (error) {
     return (
