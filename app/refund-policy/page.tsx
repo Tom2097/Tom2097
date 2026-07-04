@@ -69,7 +69,7 @@ export default function RefundPolicyPage() {
                       <div>
                         <h3 className="font-semibold text-foreground">Trial Period</h3>
                         <p className="text-muted-foreground mt-1">
-                          All monthly plans include a 7-day free trial. You won't be charged until day 8.
+                          All monthly plans include a 7-day free trial. You won&apos;t be charged until day 8.
                         </p>
                       </div>
                     </div>
@@ -81,7 +81,7 @@ export default function RefundPolicyPage() {
                       <div>
                         <h3 className="font-semibold text-foreground">Cancellation</h3>
                         <p className="text-muted-foreground mt-1">
-                          You can cancel your subscription at any time. If you cancel within the 30-day refund window, you'll receive a full refund.
+                          You can cancel your subscription at any time. If you cancel within the 30-day refund window, you&apos;ll receive a full refund.
                         </p>
                       </div>
                     </div>
@@ -139,7 +139,7 @@ export default function RefundPolicyPage() {
                       <div>
                         <h3 className="font-semibold text-foreground">Request Process</h3>
                         <p className="text-muted-foreground mt-1">
-                          Go to <Link href="/settings/billing" className="text-primary hover:underline">Settings → Billing</Link> and click "Request Refund".
+                          Go to <Link href="/settings/billing" className="text-primary hover:underline">Settings → Billing</Link> and click &quot;Request Refund&quot;.
                         </p>
                       </div>
                     </div>
