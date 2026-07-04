@@ -17,6 +17,8 @@ export async function POST(request: Request) {
     await sendMagicLink({ email })
     return NextResponse.json({ success: true })
   } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const err = error // Used for debugging
     return NextResponse.json(
       { error: "Failed to send passcode" },
       { status: 500 }

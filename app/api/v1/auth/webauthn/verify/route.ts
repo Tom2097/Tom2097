@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/service"
-import { verifyRegistrationResponse, type RegistrationResponseJSON } from "@simplewebauthn/server"
+import { verifyRegistrationResponse, type RegistrationResponseJSON, type AuthenticatorAttestationResponseJSON } from "@simplewebauthn/server"
 import { isoBase64URL } from "@simplewebauthn/server/helpers"
 
 export async function POST(request: Request) {
