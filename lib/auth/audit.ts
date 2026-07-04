@@ -144,6 +144,13 @@ export type AuthAuditAction =
   | "retention.policy_deleted"
   | "retention.purge_run"
   | "retention.purge_failed"
+  // Settings
+  | "auth.password_changed"
+  | "auth.account_deleted"
+  | "auth.invitation_sent"
+  | "auth.api_key_generated"
+  | "auth.api_key_revoked"
+  | "auth.organization_updated"
   // Module #20: localization system
   | "localization.locale_created"
   | "localization.locale_updated"

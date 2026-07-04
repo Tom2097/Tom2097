@@ -25,6 +25,8 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
   const [passkeyAvailable, setPasskeyAvailable] = useState(false)
+  const [magicLinkSent, setMagicLinkSent] = useState(false)
+  const [magicLinkLoading, setMagicLinkLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get("redirect") || "/"
@@ -131,6 +133,66 @@ function LoginForm() {
             <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
               <AlertCircle className="w-4 h-4 shrink-0" />
               {error}
+            </div>
+          )}
+
+          {/* Magic Link */}
+          {!magicLinkSent && (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full h-12 gap-2 text-muted-foreground hover:text-foreground"
+                onClick={async () => {
+                  if (!email) { setError("Enter your email first"); return }
+                  setMagicLinkLoading(true)
+                  setError(null)
+                  try {
+                    const res = await fetch("/api/auth/passwordless/send", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email }),
+                    })
+                    if (!res.ok) {
+                      const data = await res.json()
+                      throw new Error(data.error || "Failed to send magic link")
+                    }
+                    setMagicLinkSent(true)
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : "Failed to send magic link")
+                  } finally {
+                    setMagicLinkLoading(false)
+                  }
+                }}
+                disabled={magicLinkLoading}
+              >
+                {magicLinkLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Shield className="w-4 h-4" />
+                )}
+                <span>Sign in with magic link (no password)</span>
+              </Button>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border/50" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">or</span>
+                </div>
+              </div>
+            </>
+          )}
+
+          {magicLinkSent && (
+            <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
+              <p className="text-sm font-medium text-foreground">Magic link sent!</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Check your email at <strong>{email}</strong> for the sign-in link.
+              </p>
+              <Button variant="ghost" size="sm" className="mt-2" onClick={() => setMagicLinkSent(false)}>
+                Use password instead
+              </Button>
             </div>
           )}
 

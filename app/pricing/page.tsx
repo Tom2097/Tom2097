@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { pricingTiers, addOns, platformModules, type PricingTier } from "@/lib/subscription-data"
+import { pricingTiers, addOns, platformModules, currencies, inrPrices, type PricingTier } from "@/lib/subscription-data"
 import { Checkout } from "@/components/checkout"
 import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
@@ -42,15 +42,36 @@ const PricingCard = React.memo(function PricingCard({
   tier,
   index,
   isAnnual,
+  currency,
   onSelect,
 }: {
   tier: PricingTier
   index: number
   isAnnual: boolean
+  currency: string
   onSelect: (tierId: string) => void
 }) {
   const TierIcon = tierIcons[tier.id as keyof typeof tierIcons]
-  const price = isAnnual ? tier.annualPrice : tier.monthlyPrice
+  const curr = currencies.find(c => c.code === currency) || currencies[0]
+
+  const getPrice = () => {
+    if (currency === "INR") {
+      const p = inrPrices[tier.id]
+      if (!p) return tier.monthlyPrice
+      return isAnnual ? Math.round(p.annual / 12) : p.monthly
+    }
+    return isAnnual ? tier.annualPrice : tier.monthlyPrice
+  }
+
+  const getYearlyTotal = () => {
+    if (currency === "INR") {
+      const p = inrPrices[tier.id]
+      return p ? p.annual : tier.annualPrice * 12
+    }
+    return getPrice() * 12
+  }
+
+  const price = getPrice()
 
   return (
     <motion.div
@@ -85,11 +106,18 @@ const PricingCard = React.memo(function PricingCard({
 
         <div className="mb-6">
           <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-bold text-foreground">${price}</span>
+            <span className="text-4xl font-bold text-foreground">{curr.symbol}{price.toLocaleString("en-IN")}</span>
             <span className="text-muted-foreground">/month</span>
           </div>
           {isAnnual && (
-            <p className="text-sm text-chart-2 mt-1">Billed annually (${price * 12}/year)</p>
+            <p className="text-sm text-chart-2 mt-1">
+              Billed annually ({curr.symbol}{getYearlyTotal().toLocaleString("en-IN")}/year)
+            </p>
+          )}
+          {currency === "INR" && curr.gstRate && (
+            <p className="text-xs text-muted-foreground mt-1">
+              +{curr.gstRate}% GST
+            </p>
           )}
         </div>
 
@@ -132,6 +160,7 @@ const PricingCard = React.memo(function PricingCard({
 
 function PricingContent() {
   const [isAnnual, setIsAnnual] = useState(true)
+  const [currency, setCurrency] = useState("USD")
   const [selectedTier, setSelectedTier] = useState<string | null>(null)
   const [showCheckout, setShowCheckout] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -218,42 +247,59 @@ function PricingContent() {
             </p>
 
             {/* Billing Toggle */}
-            <div className="flex items-center justify-center gap-4 mb-12">
-              <span className={`text-sm ${!isAnnual ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                Monthly
-              </span>
-              <Switch
-                checked={isAnnual}
-                onCheckedChange={setIsAnnual}
-                className="data-[state=checked]:bg-primary"
-              />
-              <span className={`text-sm ${isAnnual ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                Annual
-              </span>
-              {isAnnual && (
-                <>
-                  <Badge variant="secondary" className="bg-chart-2/20 text-chart-2 border-chart-2/30">
-                    Save 15%
-                  </Badge>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge
-                        variant="secondary"
-                        className="bg-amber-500/10 text-amber-600 border-amber-500/30 cursor-help"
-                      >
-                        <Info className="w-3 h-3 mr-1" />
-                        3-month minimum commitment
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-sm">
-                        Yearly plans require a 3-month minimum commitment. You can cancel after 3 months, but no
-                        refunds are available.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </>
-              )}
+            <div className="flex items-center justify-center gap-4 mb-12 flex-wrap">
+              <div className="flex items-center gap-4">
+                <span className={`text-sm ${!isAnnual ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                  Monthly
+                </span>
+                <Switch
+                  checked={isAnnual}
+                  onCheckedChange={setIsAnnual}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <span className={`text-sm ${isAnnual ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                  Annual
+                </span>
+                {isAnnual && (
+                  <>
+                    <Badge variant="secondary" className="bg-chart-2/20 text-chart-2 border-chart-2/30">
+                      Save 15%
+                    </Badge>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge
+                          variant="secondary"
+                          className="bg-amber-500/10 text-amber-600 border-amber-500/30 cursor-help"
+                        >
+                          <Info className="w-3 h-3 mr-1" />
+                          3-month minimum commitment
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-sm">
+                          Yearly plans require a 3-month minimum commitment. You can cancel after 3 months, but no
+                          refunds are available.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </>
+                )}
+              </div>
+              <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1">
+                {currencies.map((c) => (
+                  <button
+                    key={c.code}
+                    onClick={() => setCurrency(c.code)}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                      currency === c.code
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </motion.div>
         </div>
@@ -269,6 +315,7 @@ function PricingContent() {
                 tier={tier}
                 index={index}
                 isAnnual={isAnnual}
+                currency={currency}
                 onSelect={handleSelectPlan}
               />
             ))}

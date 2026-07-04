@@ -73,6 +73,24 @@ export const pricingTiers: PricingTier[] = SUBSCRIPTION_PLANS.map((plan) => {
   }
 })
 
+export interface CurrencyConfig {
+  code: string
+  symbol: string
+  label: string
+  gstRate?: number
+}
+
+export const currencies: CurrencyConfig[] = [
+  { code: "USD", symbol: "$", label: "USD" },
+  { code: "INR", symbol: "₹", label: "INR", gstRate: 18 },
+]
+
+export const inrPrices: Record<string, { monthly: number; annual: number }> = {
+  starter: { monthly: 3499, annual: 34999 },
+  professional: { monthly: 14999, annual: 149999 },
+  enterprise: { monthly: 100000, annual: 1000000 },
+}
+
 export const addOns: AddOn[] = [
   {
     id: "ai-credits",
