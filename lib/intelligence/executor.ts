@@ -135,13 +135,17 @@ export async function executeAllApprovedActions(organizationId: string): Promise
 
   let count = 0
   for (const action of (approved || []) as Array<Record<string, unknown>>) {
+    const now = new Date().toISOString()
     const agentAction: AgentAction = {
       id: action.id as string,
       agentId: action.agent_id as string,
       type: action.type as string,
-      targetModule: action.target_entity as string || action.target_module as string,
+      targetModule: (action.target_entity as string) || (action.target_module as string),
+      input: action.config as Record<string, unknown> || {},
       config: action.config as Record<string, unknown>,
       status: "approved",
+      createdAt: action.created_at as string || now,
+      updatedAt: action.updated_at as string || now,
       confidence: action.confidence as number,
       requiresApproval: action.requires_approval as boolean,
     }
