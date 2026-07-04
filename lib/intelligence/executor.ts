@@ -114,7 +114,7 @@ async function notifyStakeholders(action: AgentAction, organizationId: string): 
         type: "info",
         category: "intelligence_action",
         priority: "high",
-        title: `Action: ${action.type.replace(/_/g, " ")}: ${action.targetEntity}`,
+        title: `Action: ${action.type.replace(/_/g, " ")}: ${action.targetModule || action.config?.domain || 'unknown entity'}`,
         body: `AI agent ${action.agentId} requires attention`,
         action_url: "/intelligence",
         source: "system",
