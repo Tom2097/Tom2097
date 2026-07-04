@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/service"
-import { verifyRegistrationResponse } from "@simplewebauthn/server"
+import { verifyRegistrationResponse, type RegistrationResponseJSON } from "@simplewebauthn/server"
 import { isoBase64URL } from "@simplewebauthn/server/helpers"
 
 export async function POST(request: Request) {
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   }
 
   // Convert credential to expected format
-  const registrationResponse = {
+  const registrationResponse: RegistrationResponseJSON = {
     id: credential.id,
     rawId: credential.rawId,
     response: credential.response,

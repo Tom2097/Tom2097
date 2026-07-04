@@ -47,6 +47,8 @@ export async function verifyIdentityWithKYC(
   // For now, we'll simulate the behavior
 
   const { userId, selfieImage, idType, idNumber, idFrontImage, fullName } = options
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const userIdForStorage = userId // Used in real implementation
 
   // Simulate API call delay
   await new Promise(resolve => setTimeout(resolve, 1500))

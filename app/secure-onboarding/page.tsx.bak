@@ -264,8 +264,6 @@ export default function SecureOnboardingPage() {
   }
   
    const handleNext = async () => {
-     // Implementation in original code
-   }
 
   return (
     <div className="min-h-screen bg-background">
@@ -792,7 +790,4 @@ export default function SecureOnboardingPage() {
       </div>
     </div>
   )
-
-};
-
 }
