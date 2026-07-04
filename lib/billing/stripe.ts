@@ -10,7 +10,7 @@ let stripeInstance: Stripe | null = null
 
 async function getStripeInstance(): Promise<Stripe> {
   if (!stripeInstance) {
-     const StripeModule = await import('stripe')
+    const StripeModule = await import('stripe')
     const StripeClass = StripeModule.default || StripeModule
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY
     
@@ -26,6 +26,21 @@ async function getStripeInstance(): Promise<Stripe> {
   
   return stripeInstance
 }
+
+// Export a `stripe` object with the required methods
+export const stripe = {
+  subscriptions: {
+    retrieve: async (id: string) => (await getStripeInstance()).subscriptions.retrieve(id),
+    update: async (id: string, params: Stripe.SubscriptionUpdateParams) => (await getStripeInstance()).subscriptions.update(id, params),
+    cancel: async (id: string) => (await getStripeInstance()).subscriptions.cancel(id),
+  },
+  invoices: {
+    list: async (params: Stripe.InvoiceListParams) => (await getStripeInstance()).invoices.list(params),
+  },
+  refunds: {
+    create: async (params: Stripe.RefundCreateParams) => (await getStripeInstance()).refunds.create(params),
+  },
+};
 
 // Stripe plan configuration
 const STRIPE_PLANS: Record<string, { priceId: string; name: string }> = {
