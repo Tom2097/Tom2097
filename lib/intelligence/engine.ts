@@ -1,15 +1,43 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { getLLM } from "@/lib/ai/client"
 import { generateText } from "ai"
-import type { IntelligenceFinding, IntelligenceEventType, AgentAction } from "./types"
+type IntelligenceEventType =
+  | "compliance.cert_expiring"
+  | "compliance.gap_detected"
+  | "resources.low_stock"
+  | "resources.maintenance_due"
+  | "crm.deal_at_risk"
+  | "crm.pipeline_stalled"
+  | "performance.anomaly_detected"
+  | "performance.threshold_breached"
+  | "operational.throughput_drop"
 import { computeConfidence, requiresApproval, evaluateGuardrail } from "./confidence"
 import { calculateImpactScore } from "./ranking"
+import { type AgentAction } from "./agents"
 import { traceFromFinding } from "./causal-chain"
 import { upsertEntity, relateEntities } from "./operational-graph"
 import { generateId } from "@/lib/utils/id"
 
 const FINDINGS_TABLE = "intelligence_findings"
 const ACTIONS_TABLE = "intelligence_actions"
+
+interface IntelligenceFinding {
+  id: string
+  organizationId: string
+  type: IntelligenceEventType
+  title: string
+  description: string
+  impactScore: number
+  confidence: number
+  status: string
+  detectedAt: Date
+  sourceModule: string
+  entityId?: string
+  monetaryRisk: number
+  suggestedAction?: string
+  requiresApproval: boolean
+  evidence?: Record<string, unknown>
+}
 
 export interface PerceptionInput {
   organizationId: string
@@ -67,7 +95,7 @@ export async function perceive(input: PerceptionInput): Promise<ReasonOutput> {
     await upsertEntity({
       id: input.entityId,
       organizationId: input.organizationId,
-      type: input.entityType as any,
+      type: input.entityType,
       name: input.title,
       status: "active",
       module: input.sourceModule,
@@ -157,7 +185,9 @@ export async function act(
     id: generateId(),
     agentId: "brain-v1",
     type: determineActionType(finding),
-    targetEntity: finding.entityId ?? finding.id,
+    input: {},
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     targetModule: finding.sourceModule,
     config: { suggestedAction: finding.suggestedAction },
     status: guardrail === "allow" ? "approved" : "pending_approval",
@@ -170,7 +200,7 @@ export async function act(
     organization_id: organizationId,
     agent_id: action.agentId,
     type: action.type,
-    target_entity: action.targetEntity,
+
     target_module: action.targetModule,
     config: action.config,
     status: action.status,

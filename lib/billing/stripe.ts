@@ -3,13 +3,14 @@ import { logAuthEvent } from "@/lib/auth/audit"
 import { claimWebhookEvent } from "./idempotency"
 import type { BillingPlan } from "./types"
 import type Stripe from "stripe"
+import { logger } from "@/lib/logging"
 
 // Lazy load Stripe to avoid build-time evaluation
 let stripeInstance: Stripe | null = null
 
 async function getStripeInstance(): Promise<Stripe> {
   if (!stripeInstance) {
-    const StripeModule = await import('stripe.js')
+     const StripeModule = await import('stripe')
     const StripeClass = StripeModule.default || StripeModule
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY
     
@@ -203,7 +204,7 @@ export async function cancelStripeSubscription(organizationId: string): Promise<
 export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
   const firstTime = await claimWebhookEvent("stripe", event.id, event.type)
   if (!firstTime) {
-    console.log("[v0] Duplicate Stripe webhook skipped:", event.id)
+    logger.logInfo("[v0] Duplicate Stripe webhook skipped:", { eventId: event.id })
     return
   }
 

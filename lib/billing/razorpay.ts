@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service"
 import { logAuthEvent } from "@/lib/auth/audit"
 import { claimWebhookEvent } from "./idempotency"
 import type { BillingPlan } from "./types"
+import { logger } from "@/lib/logging"
 
 const razorpayAuth = Buffer.from(
   `${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`
@@ -177,7 +178,7 @@ export async function handleRazorpayWebhook(
     typeof payload.event === "string" ? payload.event : undefined,
   )
   if (!firstTime) {
-    console.log("[v0] Duplicate Razorpay webhook skipped:", eventId)
+    logger.logInfo("[v0] Duplicate Razorpay webhook skipped:", { eventId })
     return
   }
 

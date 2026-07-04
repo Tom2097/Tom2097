@@ -114,21 +114,19 @@ const postHandler = withAuth(
       
       const processingTime = Date.now() - startTime
       const result = uploadedFile.analysisResult as FileAnalysisResult | undefined
-      
+
       return NextResponse.json({
         success: true,
         file: {
-          id: uploadedFile.id,
-          filename: uploadedFile.originalFilename,
-          fileType: uploadedFile.fileType,
-          size: uploadedFile.fileSize,
-          status: uploadedFile.status,
-          uploadedAt: uploadedFile.uploadedAt,
+          ...uploadedFile,
+          name: uploadedFile.filename,
+          type: uploadedFile.fileType,
+          created_at: uploadedFile.uploadedAt,
         },
         result,
         fileId: uploadedFile.id,
         processingTime,
-      } as FileUploadResponse, { status: 200 })
+      }, { status: 200 })
 
     } catch (error) {
       console.error("[File Upload API] Error:", error)
@@ -172,20 +170,18 @@ const getHandler = withAuth(
         userId,
       })
       
-      return NextResponse.json({
-        success: true,
-        files: files.map(f => ({
-          id: f.id,
-          filename: f.originalFilename,
-          fileType: f.fileType,
-          fileSize: f.fileSize,
-          uploadedAt: f.uploadedAt,
-          status: f.status,
-          analysisType: f.analysisType,
-          hasResult: !!f.analysisResult,
-        })),
-        total: files.length,
-      } as FilesListResponse, { status: 200 })
+       return NextResponse.json({
+         success: true,
+         files: files.map(f => ({
+           ...f,
+           name: f.originalFilename,
+           size: f.fileSize,
+           type: f.fileType,
+           created_at: f.uploadedAt,
+           filename: f.originalFilename,
+         })),
+         total: files.length,
+       } as FilesListResponse, { status: 200 })
 
     } catch (error) {
       console.error("[File Upload API] GET Error:", error)

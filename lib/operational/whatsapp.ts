@@ -2,6 +2,7 @@ import { createServiceClient } from "@/lib/supabase/service"
 import { classifyText } from "@/lib/analytics/nlp"
 import { dispatchDocumentEvent } from "@/lib/documents/events"
 import { ingestVoiceNote } from "./intake"
+import type { SupabaseClient } from "@/types/analytics"
 
 export interface WhatsAppMessage {
   id: string
@@ -149,11 +150,27 @@ export async function verifyWhatsAppWebhook(
   return null
 }
 
+interface WhatsAppWebhookPayload {
+  entry?: Array<{
+    changes?: Array<{
+      value?: {
+        messages?: Array<{
+          id: string
+          from: string
+          body: string
+          timestamp: string
+        }>
+      }
+    }>
+  }>
+}
+
 export async function parseWhatsAppWebhookPayload(
   body: unknown,
 ): Promise<WhatsAppMessage[]> {
   const messages: WhatsAppMessage[] = []
-  const entry = (body as any)?.entry
+  const payload = body as WhatsAppWebhookPayload
+  const entry = payload?.entry
   if (!Array.isArray(entry)) return messages
 
   for (const e of entry) {

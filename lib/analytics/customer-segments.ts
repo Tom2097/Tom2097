@@ -430,7 +430,6 @@ function calculateRFMScores(
   const monetaryValues = allProfiles.map(p => p.monetary).filter(m => !isNaN(m))
   
   // Sort and get quartiles
-  const sortedRecencies = [...recencies].sort((a, b) => a - b)
   const sortedFrequencies = [...frequencies].sort((a, b) => a - b)
   const sortedMonetary = [...monetaryValues].sort((a, b) => a - b)
   
@@ -676,7 +675,7 @@ export async function segmentCustomers(
   // Group customers by segment
   const segmentMap: Map<string, { segment: SegmentDefinition; customers: CustomerProfile[] }> = new Map()
   
-  for (const [userId, data] of customerSegments) {
+  for (const [_, data] of customerSegments) {
     const { profile, segment } = data
     
     if (!segment) continue
@@ -735,7 +734,7 @@ export async function segmentCustomers(
   
   // Add AI insights if enabled
   if (opts.useAI) {
-    const segmentsWithAI = await addAIInsightsToSegments(sortedSegments, organizationId)
+    const segmentsWithAI = await addAIInsightsToSegments(sortedSegments)
     return {
       segments: segmentsWithAI,
       totalCustomers: filteredProfiles.length,
@@ -762,8 +761,7 @@ export async function segmentCustomers(
  * Add AI-generated insights to segments
  */
 async function addAIInsightsToSegments(
-  segments: SegmentResult[],
-  organizationId: string
+  segments: SegmentResult[]
 ): Promise<SegmentResult[]> {
   
   for (const segment of segments) {

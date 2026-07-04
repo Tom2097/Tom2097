@@ -99,17 +99,17 @@ export async function POST(req: NextRequest) {
         })
       } catch (err: unknown) {
         return NextResponse.json(
-          { error: `Verification error: ${err.message}` },
+          { error: `Verification error: ${err instanceof Error ? err.message : String(err)}` },
           { status: 400 }
         )
       }
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 })
-  } catch (err: unknown) {
-    return NextResponse.json(
-      { error: `Server error: ${err.message}` },
-      { status: 500 }
-    )
-  }
+    } catch (err: unknown) {
+      return NextResponse.json(
+        { error: `Registration error: ${err instanceof Error ? err.message : String(err)}` },
+        { status: 500 }
+      )
+    }
 }

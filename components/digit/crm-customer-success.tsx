@@ -39,16 +39,30 @@ export function CrmCustomerSuccess() {
       .then((r) => r.ok ? r.json() : Promise.reject("Failed"))
       .then((data) => {
         const items = (data.accounts || data.data || []).map((a: unknown) => {
-          const account = a as { id: string; name: string; health: string; value: number; };
+          const account = a as {
+            id: string;
+            company?: string;
+            name?: string;
+            health?: string;
+            health_status?: string;
+            score?: number;
+            health_score?: number;
+            renewal?: string;
+            renewal_date?: string;
+            plan?: string;
+            plan_name?: string;
+            last_activity?: string;
+            lastActivity?: string;
+          };
           return {
-          id: account.id,
-          company: account.company || account.name || "",
-          health: account.health || account.health_status || "healthy",
-          score: account.score || account.health_score || 0,
-          renewal: account.renewal || account.renewal_date || null,
-          plan: account.plan || account.plan_name || "",
-          lastActivity: account.last_activity || account.lastActivity || "",
-        };
+            id: account.id,
+            company: account.company || account.name || "",
+            health: account.health || account.health_status || "healthy",
+            score: account.score || account.health_score || 0,
+            renewal: account.renewal || account.renewal_date || null,
+            plan: account.plan || account.plan_name || "",
+            lastActivity: account.last_activity || account.lastActivity || "",
+          };
       })
         setAccounts(items)
         setLoading(false)

@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
+import { logger } from "@/lib/logging"
 import {
   AGGREGATES,
   GRANULARITIES,
@@ -95,7 +96,7 @@ export async function trackEvents(
   const db = createServiceClient()
   const { error } = await db.from("analytics_events").insert(rows)
   if (error) {
-    console.log("[v0] trackEvents insert failed:", error.message)
+    logger.logError("[v0] trackEvents insert failed:", { error: error.message })
     throw new Error("failed to record events")
   }
   return { inserted: rows.length }
@@ -116,7 +117,7 @@ export async function queryTimeseries(
     p_agg: normalizeAggregate(q.aggregate),
   })
   if (error) {
-    console.log("[v0] queryTimeseries failed:", error.message)
+    logger.logError("[v0] queryTimeseries failed:", { error: error.message })
     throw new Error("failed to run timeseries query")
   }
   return (data ?? []).map((r: { bucket: string; value: number | string }) => ({
@@ -141,7 +142,7 @@ export async function queryBreakdown(
     p_limit: q.limit ?? 10,
   })
   if (error) {
-    console.log("[v0] queryBreakdown failed:", error.message)
+    logger.logError("[v0] queryBreakdown failed:", { error: error.message })
     throw new Error("failed to run breakdown query")
   }
   return (data ?? []).map((r: { label: string | null; value: number | string }) => ({
@@ -162,7 +163,7 @@ export async function querySummary(
     p_end: end,
   })
   if (error) {
-    console.log("[v0] querySummary failed:", error.message)
+    logger.logError("[v0] querySummary failed:", { error: error.message })
     throw new Error("failed to run summary query")
   }
   const row = (Array.isArray(data) ? data[0] : data) ?? {}
@@ -194,7 +195,7 @@ export async function queryFunnel(
       p_end: end,
     })
     if (error) {
-      console.log("[v0] queryFunnel failed at step", i, error.message)
+      logger.logError("[v0] queryFunnel failed at step", { step: i, error: error.message })
       break
     }
     const count = Number((data as Array<{ count: number }> | null)?.[0]?.count ?? 0)
@@ -227,7 +228,7 @@ export async function queryRetention(
     p_end: end,
   })
   if (error) {
-    console.log("[v0] queryRetention failed:", error.message)
+    logger.logError("[v0] queryRetention failed:", { error: error.message })
     return []
   }
   return ((data ?? []) as RetentionCohort[]).map((r) => ({

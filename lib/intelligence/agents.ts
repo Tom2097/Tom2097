@@ -1,7 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
-import { getLLM } from "@/lib/ai/client"
-import { generateText } from "ai"
-import type { AgentAction, IntelligenceFinding } from "./types"
+
 import { evaluateGuardrail } from "./confidence"
 import { generateId } from "@/lib/utils/id"
 import { getActiveFindings } from "./engine"
@@ -9,7 +7,36 @@ import { getActiveFindings } from "./engine"
 const AGENTS_TABLE = "intelligence_agents"
 const ACTIONS_TABLE = "intelligence_actions"
 
-export interface AgentDefinition {
+export interface IntelligenceFinding {
+  id: string
+  title: string
+  description: string
+  severity?: 'low' | 'medium' | 'high' | 'critical'
+  sourceModule: string
+  entityId?: string
+  confidence: number
+  monetaryRisk?: number
+  suggestedAction?: string
+}
+
+export interface AgentAction {
+  id: string
+  agentId: string
+  type: string
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'approved' | 'pending_approval'
+  input: Record<string, unknown>
+  output?: Record<string, unknown>
+  error?: string
+  createdAt: string
+  updatedAt: string
+  completedAt?: string
+  targetModule?: string
+  config?: Record<string, unknown>
+  confidence?: number
+  requiresApproval?: boolean
+}
+
+interface AgentDefinition {
   id: string
   name: string
   description: string
@@ -111,7 +138,9 @@ export async function assignFinding(
     id: generateId(),
     agentId,
     type: actionType,
-    targetEntity: finding.entity_id ?? finding.id,
+    input: {},
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     targetModule: finding.source_module,
     config: { findingId, title: finding.title, suggestedAction: finding.suggested_action },
     status: guardrail === "allow" ? "approved" : "pending_approval",
@@ -124,7 +153,7 @@ export async function assignFinding(
     organization_id: organizationId,
     agent_id: action.agentId,
     type: action.type,
-    target_entity: action.targetEntity,
+
     target_module: action.targetModule,
     config: action.config,
     status: action.status,
@@ -173,12 +202,14 @@ export async function getPendingApprovals(
     id: a.id as string,
     agentId: a.agent_id as string,
     type: a.type as string,
-    targetEntity: a.target_entity as string,
     targetModule: a.target_module as string,
     config: a.config as Record<string, unknown>,
     status: a.status as AgentAction["status"],
     confidence: a.confidence as number,
     requiresApproval: a.requires_approval as boolean,
+    input: {},
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   }))
 }
 

@@ -1,5 +1,6 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto"
 import { createServiceClient } from "@/lib/supabase/service"
+import { logger } from "@/lib/logging"
 import {
   INTEGRATION_PROVIDERS,
   INTEGRATION_STATUSES,
@@ -125,7 +126,7 @@ export async function createIntegration(
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] createIntegration failed:", error.message)
+    logger.logError("[v0] createIntegration failed:", { error: error.message })
     throw new Error("failed to create integration")
   }
   return { integration: stripSecret(data as Integration), secret }
@@ -150,7 +151,7 @@ export async function listIntegrations(
 
   const { data, error, count } = await query
   if (error) {
-    console.log("[v0] listIntegrations failed:", error.message)
+    logger.logError("[v0] listIntegrations failed:", { error: error.message })
     throw new Error("failed to list integrations")
   }
   return { integrations: (data ?? []).map((r) => stripSecret(r as Integration)), total: count ?? 0 }
@@ -177,7 +178,7 @@ async function getIntegrationRow(
     .eq("id", integrationId)
     .maybeSingle()
   if (error) {
-    console.log("[v0] getIntegration failed:", error.message)
+    logger.logError("[v0] getIntegration failed:", { error: error.message })
     throw new Error("failed to fetch integration")
   }
   return (data as Integration) ?? null
@@ -211,7 +212,7 @@ export async function updateIntegration(
     .select("*")
     .maybeSingle()
   if (error) {
-    console.log("[v0] updateIntegration failed:", error.message)
+    logger.logError("[v0] updateIntegration failed:", { error: error.message })
     throw new Error("failed to update integration")
   }
   return data ? stripSecret(data as Integration) : null
@@ -232,7 +233,7 @@ export async function rotateSecret(
     .select("id")
     .maybeSingle()
   if (error) {
-    console.log("[v0] rotateSecret failed:", error.message)
+    logger.logError("[v0] rotateSecret failed:", { error: error.message })
     throw new Error("failed to rotate secret")
   }
   return data ? secret : null
@@ -248,7 +249,7 @@ export async function deleteIntegration(organizationId: string, integrationId: s
     .select("id")
     .maybeSingle()
   if (error) {
-    console.log("[v0] deleteIntegration failed:", error.message)
+    logger.logError("[v0] deleteIntegration failed:", { error: error.message })
     throw new Error("failed to delete integration")
   }
   return Boolean(data)
@@ -377,7 +378,7 @@ async function queueAndAttempt(
     .select("id")
     .single()
   if (error || !data) {
-    console.log("[v0] queue delivery failed:", error?.message)
+    logger.logError("[v0] queue delivery failed:", { error: error?.message })
     throw new Error("failed to queue delivery")
   }
   const deliveryId = data.id as string
@@ -405,7 +406,7 @@ export async function dispatchEvent(
     .eq("status", "active")
     .contains("events", [eventType])
   if (error) {
-    console.log("[v0] dispatchEvent lookup failed:", error.message)
+    logger.logError("[v0] dispatchEvent lookup failed:", { error: error.message })
     throw new Error("failed to dispatch event")
   }
   const targets = (data ?? []) as Integration[]
@@ -456,7 +457,7 @@ export async function listDeliveries(
 
   const { data, error, count } = await query
   if (error) {
-    console.log("[v0] listDeliveries failed:", error.message)
+    logger.logError("[v0] listDeliveries failed:", { error: error.message })
     throw new Error("failed to list deliveries")
   }
   return { deliveries: (data ?? []) as IntegrationDelivery[], total: count ?? 0 }

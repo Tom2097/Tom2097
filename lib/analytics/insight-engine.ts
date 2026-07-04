@@ -1,9 +1,8 @@
 import { generateText } from "ai"
 import { z } from "zod"
 import { DEFAULT_CHAT_MODEL, BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
-import { DataPoint } from "./types"
 import { queryTimeseries, queryBreakdown, querySummary } from "./engine"
-import type { TimeseriesPoint, BreakdownRow, AnalyticsSummary } from "./types"
+import type { DataPoint, TimeseriesPoint, BreakdownRow, AnalyticsSummary } from "@/types/analytics"
 
 /**
  * Module #7.2: Automated Insight Detection Engine.
@@ -165,7 +164,7 @@ function detectAnomalies(points: TimeseriesPoint[], sensitivity: number = 2): In
             start: points[0].bucket,
             end: points[points.length - 1].bucket,
           },
-          dataPoints: [prev, current, next],
+          dataPoints: [prev, current, next] as unknown as DataPoint[],
         }
         anomalies.push(insight)
       }
@@ -219,7 +218,7 @@ function detectTrends(
         start: previous[0]?.bucket || points[0].bucket,
         end: recent[recent.length - 1]?.bucket || points[points.length - 1].bucket,
       },
-      dataPoints: points.slice(-lookbackPoints * 2),
+      dataPoints: points.slice(-lookbackPoints * 2) as unknown as DataPoint[],
     }
     trends.push(insight)
   }
@@ -289,14 +288,16 @@ async function detectCorrelations(
     const allSeries: Record<string, TimeseriesPoint[]> = {}
     
     for (const metric of metrics) {
-      const points = await queryTimeseries(organizationId, {
-        type: "timeseries",
-        event_name: metric,
-        aggregate: "count",
-        granularity: "day",
-        start: dateRange.start,
-        end: dateRange.end,
-      })
+        const points = await queryTimeseries(organizationId, {
+          type: "timeseries",
+          event_name: metric,
+          event_category: "insights",
+          aggregate: "count",
+          granularity: "day",
+          start: dateRange.start,
+          end: dateRange.end,
+          limit: 1000,
+        })
       allSeries[metric] = points
     }
     
@@ -497,14 +498,16 @@ export async function detectInsights(
     for (const metric of keyMetrics) {
       try {
         // Get timeseries data
-        const points = await queryTimeseries(organizationId, {
-          type: "timeseries",
-          event_name: metric,
-          aggregate: "count",
-          granularity: "day",
-          start: startDate,
-          end: endDate,
-        })
+         const points = await queryTimeseries(organizationId, {
+           type: "timeseries",
+           event_name: metric,
+           event_category: "insights",
+           aggregate: "count",
+           granularity: "day",
+           start: startDate,
+           end: endDate,
+           limit: 1000,
+         })
         
         if (points.length > 1) {
           // Detect trends
@@ -523,15 +526,17 @@ export async function detectInsights(
         }
         
         // Get breakdown data
-        const breakdown = await queryBreakdown(organizationId, {
-          type: "breakdown",
-          event_name: metric,
-          aggregate: "count",
-          dimension: "event_category",
-          start: startDate,
-          end: endDate,
-          limit: opts.topDimensions!,
-        })
+         const breakdown = await queryBreakdown(organizationId, {
+           type: "breakdown",
+           event_name: metric,
+           event_category: "insights",
+           aggregate: "count",
+           dimension: "event_category",
+           start: startDate,
+           end: endDate,
+           limit: opts.topDimensions!,
+           granularity: "day",
+         })
         
         if (breakdown.length > 0) {
           // Detect top performers

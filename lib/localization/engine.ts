@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
+import { logger } from "@/lib/logging"
 import {
   TRANSLATION_STATUSES,
   type Locale,
@@ -75,7 +76,7 @@ export async function listLocales(organizationId: string): Promise<Locale[]> {
     .order("position", { ascending: true })
     .order("created_at", { ascending: true })
   if (error) {
-    console.log("[v0] listLocales failed:", error.message)
+    logger.logError("[v0] listLocales failed:", { error: error.message })
     throw new Error("failed to list locales")
   }
   return (data ?? []) as Locale[]
@@ -90,7 +91,7 @@ export async function getLocale(organizationId: string, id: string): Promise<Loc
     .eq("id", id)
     .maybeSingle()
   if (error) {
-    console.log("[v0] getLocale failed:", error.message)
+    logger.logError("[v0] getLocale failed:", { error: error.message })
     throw new Error("failed to fetch locale")
   }
   return (data as Locale) ?? null
@@ -138,7 +139,7 @@ export async function createLocale(
     .single()
   if (error) {
     if (error.code === "23505") throw new Error(`locale '${code}' already exists`)
-    console.log("[v0] createLocale failed:", error.message)
+    logger.logError("[v0] createLocale failed:", { error: error.message })
     throw new Error("failed to create locale")
   }
   return data as Locale
@@ -166,7 +167,7 @@ export async function updateLocale(
     .select("*")
     .maybeSingle()
   if (error) {
-    console.log("[v0] updateLocale failed:", error.message)
+    logger.logError("[v0] updateLocale failed:", { error: error.message })
     throw new Error("failed to update locale")
   }
   return (data as Locale) ?? null
@@ -193,7 +194,7 @@ export async function setDefaultLocale(organizationId: string, id: string): Prom
     .select("*")
     .maybeSingle()
   if (error) {
-    console.log("[v0] setDefaultLocale failed:", error.message)
+    logger.logError("[v0] setDefaultLocale failed:", { error: error.message })
     throw new Error("failed to set default locale")
   }
   return (data as Locale) ?? null
@@ -207,7 +208,7 @@ export async function deleteLocale(organizationId: string, id: string): Promise<
   if (existing.is_default) return "is_default"
   const { error } = await db.from("locales").delete().eq("organization_id", organizationId).eq("id", id)
   if (error) {
-    console.log("[v0] deleteLocale failed:", error.message)
+    logger.logError("[v0] deleteLocale failed:", { error: error.message })
     throw new Error("failed to delete locale")
   }
   return "ok"
@@ -234,7 +235,7 @@ export async function listKeys(organizationId: string, opts: ListKeysOptions = {
     .range(opts.offset ?? 0, (opts.offset ?? 0) + (opts.limit ?? 200) - 1)
   const { data, error } = await q
   if (error) {
-    console.log("[v0] listKeys failed:", error.message)
+    logger.logError("[v0] listKeys failed:", { error: error.message })
     throw new Error("failed to list keys")
   }
   return (data ?? []) as TranslationKey[]
@@ -260,7 +261,7 @@ export async function createKey(
     .single()
   if (error) {
     if (error.code === "23505") throw new Error("a key with that namespace + name already exists")
-    console.log("[v0] createKey failed:", error.message)
+    logger.logError("[v0] createKey failed:", { error: error.message })
     throw new Error("failed to create key")
   }
   return data as TranslationKey
@@ -293,7 +294,7 @@ export async function updateKey(
     .select("*")
     .maybeSingle()
   if (error) {
-    console.log("[v0] updateKey failed:", error.message)
+    logger.logError("[v0] updateKey failed:", { error: error.message })
     throw new Error("failed to update key")
   }
   return (data as TranslationKey) ?? null
@@ -309,7 +310,7 @@ export async function deleteKey(organizationId: string, id: string): Promise<boo
     .select("id")
     .maybeSingle()
   if (error) {
-    console.log("[v0] deleteKey failed:", error.message)
+    logger.logError("[v0] deleteKey failed:", { error: error.message })
     throw new Error("failed to delete key")
   }
   return !!data
@@ -385,7 +386,7 @@ export async function upsertTranslation(
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] upsertTranslation failed:", error.message)
+    logger.logError("[v0] upsertTranslation failed:", { error: error.message })
     throw new Error("failed to save translation")
   }
   return data as Translation
@@ -402,7 +403,7 @@ export async function listTranslations(
   q = q.range(opts.offset ?? 0, (opts.offset ?? 0) + (opts.limit ?? 500) - 1)
   const { data, error } = await q
   if (error) {
-    console.log("[v0] listTranslations failed:", error.message)
+    logger.logError("[v0] listTranslations failed:", { error: error.message })
     throw new Error("failed to list translations")
   }
   return (data ?? []) as Translation[]
@@ -437,7 +438,7 @@ export async function getBundle(
     .eq("organization_id", organizationId)
     .eq("is_archived", false)
   if (keysErr) {
-    console.log("[v0] getBundle keys failed:", keysErr.message)
+    logger.logError("[v0] getBundle keys failed:", { error: keysErr.message })
     throw new Error("failed to build bundle")
   }
   const keyList = (keys ?? []) as Array<{ id: string; namespace: string; key: string }>
@@ -446,7 +447,7 @@ export async function getBundle(
   if (opts.reviewedOnly) tq = tq.eq("status", "reviewed")
   const { data: trans, error: transErr } = await tq
   if (transErr) {
-    console.log("[v0] getBundle translations failed:", transErr.message)
+    logger.logError("[v0] getBundle translations failed:", { error: transErr.message })
     throw new Error("failed to build bundle")
   }
   const byKey = new Map<string, string>()

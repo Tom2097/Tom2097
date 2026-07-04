@@ -42,7 +42,7 @@ interface SessionTable {
  * Uses Supabase PostgreSQL database to store session data
  */
 export class SupabaseSessionStore implements SessionStore {
-  private supabase: ReturnType<typeof createClient>
+  private supabase: any
   private tableName: string
 
   constructor(supabaseUrl?: string, supabaseKey?: string, tableName: string = 'sessions') {
@@ -127,7 +127,7 @@ export class SupabaseSessionStore implements SessionStore {
    * Create the sessions table
    */
   private async createSessionsTable(): Promise<void> {
-    await (this.supabase as any).rpc('create_sessions_table', {
+    await this.supabase.rpc('create_sessions_table', {
       table_name: this.tableName,
     })
   }
@@ -139,11 +139,11 @@ export class SupabaseSessionStore implements SessionStore {
         id: generateSessionId(),
       })
 
-      const { data, error } = await this.supabase
+      const { data, error } = await (this.supabase
         .from(this.tableName)
-        .insert(record as any)
+        .insert([record])
         .select()
-        .single()
+        .maybeSingle() as any)
 
       if (error) {
         throw new SessionError(
@@ -174,11 +174,11 @@ export class SupabaseSessionStore implements SessionStore {
 
   async findById(id: string): Promise<UserSession | null> {
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await (this.supabase
         .from(this.tableName)
-        .select('*')
+        .select()
         .eq('id', id)
-        .single()
+        .maybeSingle() as any)
 
       if (error || !data) {
         return null
@@ -254,18 +254,18 @@ export class SupabaseSessionStore implements SessionStore {
         id,
       })
 
-      const { data: result, error } = await (this.supabase as any)
-        .from(this.tableName)
-        .update(record)
-        .eq('id', id)
-        .select()
-        .single()
+       const { data: result, error } = await (this.supabase
+          .from(this.tableName)
+          .update(record)
+          .eq('id', id)
+          .select()
+          .single() as any)
 
       if (error || !result) {
         return null
       }
 
-      return this.recordToSession(result as SessionRecord)
+       return this.recordToSession(result)
     } catch {
       return null
     }
@@ -273,10 +273,10 @@ export class SupabaseSessionStore implements SessionStore {
 
   async delete(id: string): Promise<boolean> {
     try {
-      const { error } = await this.supabase
-        .from(this.tableName)
-        .delete()
-        .eq('id', id)
+       const { error } = await (this.supabase
+         .from(this.tableName)
+         .delete()
+         .eq('id', id) as any)
 
       return !error
     } catch {

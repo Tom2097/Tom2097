@@ -1,11 +1,10 @@
 "use client"
 
-import { useState } from "react"
+
 import { motion } from "framer-motion"
-import { 
+import {
   CreditCard, 
   Building2, 
-  Wallet,
   Check
 } from "lucide-react"
 import { cn } from "@/lib/utils"

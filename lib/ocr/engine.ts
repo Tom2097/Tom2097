@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
+import { logger } from "@/lib/logging"
 
 export interface OcrResult {
   text: string
@@ -59,7 +60,7 @@ export async function runOcr(documentId: string, organizationId: string): Promis
     // Fallback: no OCR available
     return null
   } catch (err) {
-    console.log("[v0] OCR failed:", err)
+    logger.logError("[v0] OCR failed:", { error: err })
     return null
   }
 }

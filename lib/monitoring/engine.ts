@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
+import { logger } from "@/lib/logging"
 import {
   CHECK_STATUSES,
   INCIDENT_SEVERITIES,
@@ -92,7 +93,7 @@ export async function createMonitor(
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] createMonitor failed:", error.message)
+    logger.logError("[v0] createMonitor failed:", { error: error.message })
     throw new Error("failed to create monitor")
   }
   return data as Monitor
@@ -117,7 +118,7 @@ export async function listMonitors(
 
   const { data, error, count } = await query
   if (error) {
-    console.log("[v0] listMonitors failed:", error.message)
+    logger.logError("[v0] listMonitors failed:", { error: error.message })
     throw new Error("failed to list monitors")
   }
   return { monitors: (data ?? []) as Monitor[], total: count ?? 0 }
@@ -132,7 +133,7 @@ export async function getMonitor(organizationId: string, monitorId: string): Pro
     .eq("id", monitorId)
     .maybeSingle()
   if (error) {
-    console.log("[v0] getMonitor failed:", error.message)
+    logger.logError("[v0] getMonitor failed:", { error: error.message })
     throw new Error("failed to fetch monitor")
   }
   return (data as Monitor) ?? null
@@ -168,7 +169,7 @@ export async function updateMonitor(
     .select("*")
     .maybeSingle()
   if (error) {
-    console.log("[v0] updateMonitor failed:", error.message)
+    logger.logError("[v0] updateMonitor failed:", { error: error.message })
     throw new Error("failed to update monitor")
   }
   return (data as Monitor) ?? null
@@ -183,7 +184,7 @@ export async function deleteMonitor(organizationId: string, monitorId: string): 
     .eq("id", monitorId)
     .select("id")
   if (error) {
-    console.log("[v0] deleteMonitor failed:", error.message)
+    logger.logError("[v0] deleteMonitor failed:", { error: error.message })
     throw new Error("failed to delete monitor")
   }
   return (data ?? []).length > 0
@@ -263,7 +264,7 @@ export async function recordCheck(
     .select("*")
     .single()
   if (checkErr) {
-    console.log("[v0] recordCheck insert failed:", checkErr.message)
+    logger.logError("[v0] recordCheck insert failed:", { error: checkErr.message })
     throw new Error("failed to record check")
   }
 
@@ -285,7 +286,7 @@ export async function recordCheck(
     .select("*")
     .single()
   if (updErr) {
-    console.log("[v0] recordCheck monitor update failed:", updErr.message)
+    logger.logError("[v0] recordCheck monitor update failed:", { error: updErr.message })
     throw new Error("failed to update monitor")
   }
 
@@ -297,7 +298,7 @@ export async function recordCheck(
       await resolveAutoIncidents(organizationId, monitorId)
     }
   } catch (e) {
-    console.log("[v0] auto-incident handling failed:", e instanceof Error ? e.message : String(e))
+    logger.logError("[v0] auto-incident handling failed:", { error: e instanceof Error ? e.message : String(e) })
   }
 
   return { monitor: updated as Monitor, check: check as MonitorCheck, result }
@@ -321,7 +322,7 @@ export async function listDueMonitors(limit = 200): Promise<Monitor[]> {
     .order("next_check_at", { ascending: true, nullsFirst: true })
     .limit(limit)
   if (error) {
-    console.log("[v0] listDueMonitors failed:", error.message)
+    logger.logError("[v0] listDueMonitors failed:", { error: error.message })
     throw new Error("failed to list due monitors")
   }
   return (data ?? []) as Monitor[]
@@ -358,7 +359,7 @@ export async function runDueChecks(limit = 200): Promise<RunChecksSummary> {
     } catch (e) {
       summary.failed++
       const message = e instanceof Error ? e.message : String(e)
-      console.log("[v0] runDueChecks: monitor", monitor.id, "failed:", message)
+      logger.logError("[v0] runDueChecks: monitor failed:", { monitorId: monitor.id, error: message })
       summary.results.push({
         monitorId: monitor.id,
         organizationId: monitor.organization_id,
@@ -368,9 +369,7 @@ export async function runDueChecks(limit = 200): Promise<RunChecksSummary> {
     }
   }
 
-  console.log(
-    `[v0] runDueChecks complete: processed=${summary.processed} up=${summary.up} down=${summary.down} degraded=${summary.degraded} failed=${summary.failed}`,
-  )
+  logger.logInfo(`[v0] runDueChecks complete: processed=${summary.processed} up=${summary.up} down=${summary.down} degraded=${summary.degraded} failed=${summary.failed}`)
   return summary
 }
 
@@ -389,7 +388,7 @@ export async function listChecks(
     .order("checked_at", { ascending: false })
     .limit(Math.min(limit, 1000))
   if (error) {
-    console.log("[v0] listChecks failed:", error.message)
+    logger.logError("[v0] listChecks failed:", { error: error.message })
     throw new Error("failed to list checks")
   }
   return (data ?? []) as MonitorCheck[]
@@ -426,7 +425,7 @@ async function openAutoIncident(organizationId: string, monitor: Monitor, failur
     .select("id")
     .single()
   if (error) {
-    console.log("[v0] openAutoIncident failed:", error.message)
+    logger.logError("[v0] openAutoIncident failed:", { error: error.message })
     return
   }
   await db.from("incident_events").insert({
@@ -489,7 +488,7 @@ export async function createIncident(
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] createIncident failed:", error.message)
+    logger.logError("[v0] createIncident failed:", { error: error.message })
     throw new Error("failed to create incident")
   }
   await db.from("incident_events").insert({
@@ -521,7 +520,7 @@ export async function listIncidents(
 
   const { data, error, count } = await query
   if (error) {
-    console.log("[v0] listIncidents failed:", error.message)
+    logger.logError("[v0] listIncidents failed:", { error: error.message })
     throw new Error("failed to list incidents")
   }
   return { incidents: (data ?? []) as Incident[], total: count ?? 0 }
@@ -536,7 +535,7 @@ export async function getIncident(organizationId: string, incidentId: string): P
     .eq("id", incidentId)
     .maybeSingle()
   if (error) {
-    console.log("[v0] getIncident failed:", error.message)
+    logger.logError("[v0] getIncident failed:", { error: error.message })
     throw new Error("failed to fetch incident")
   }
   return (data as Incident) ?? null
@@ -574,7 +573,7 @@ export async function updateIncident(
       .eq("organization_id", organizationId)
       .eq("id", incidentId)
     if (error) {
-      console.log("[v0] updateIncident failed:", error.message)
+      logger.logError("[v0] updateIncident failed:", { error: error.message })
       throw new Error("failed to update incident")
     }
   }
@@ -632,7 +631,7 @@ export async function addIncidentEvent(
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] addIncidentEvent failed:", error.message)
+    logger.logError("[v0] addIncidentEvent failed:", { error: error.message })
     throw new Error("failed to add incident event")
   }
   return data as IncidentEvent
@@ -650,7 +649,7 @@ export async function listIncidentEvents(
     .eq("incident_id", incidentId)
     .order("created_at", { ascending: true })
   if (error) {
-    console.log("[v0] listIncidentEvents failed:", error.message)
+    logger.logError("[v0] listIncidentEvents failed:", { error: error.message })
     throw new Error("failed to list incident events")
   }
   return (data ?? []) as IncidentEvent[]
@@ -670,11 +669,11 @@ export async function getSystemHealth(organizationId: string): Promise<SystemHea
       .neq("status", "resolved"),
   ])
   if (monErr) {
-    console.log("[v0] getSystemHealth monitors failed:", monErr.message)
+    logger.logError("[v0] getSystemHealth monitors failed:", { error: monErr.message })
     throw new Error("failed to compute system health")
   }
   if (incErr) {
-    console.log("[v0] getSystemHealth incidents failed:", incErr.message)
+    logger.logError("[v0] getSystemHealth incidents failed:", { error: incErr.message })
     throw new Error("failed to compute system health")
   }
 

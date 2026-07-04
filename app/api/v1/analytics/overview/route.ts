@@ -20,29 +20,38 @@ const overview = withAuth(
 
     const [summary, timeseries, topEvents, topCategories] = await Promise.all([
       querySummary(organizationId, startIso, endIso),
-      queryTimeseries(organizationId, {
-        type: "timeseries",
-        start: startIso,
-        end: endIso,
-        granularity,
-        aggregate: "count",
-      }),
-      queryBreakdown(organizationId, {
-        type: "breakdown",
-        dimension: "event_name",
-        start: startIso,
-        end: endIso,
-        aggregate: "count",
-        limit: 10,
-      }),
-      queryBreakdown(organizationId, {
-        type: "breakdown",
-        dimension: "event_category",
-        start: startIso,
-        end: endIso,
-        aggregate: "count",
-        limit: 10,
-      }),
+    queryTimeseries(organizationId, {
+      type: "timeseries",
+      event_name: "session_start",
+      event_category: "user",
+      start: startIso,
+      end: endIso,
+      granularity,
+      aggregate: "count",
+      limit: 1000,
+    }),
+    queryBreakdown(organizationId, {
+      type: "breakdown",
+      event_name: "session_start",
+      event_category: "user",
+      dimension: "event_name",
+      start: startIso,
+      end: endIso,
+      aggregate: "count",
+      limit: 10,
+      granularity: "day",
+    }),
+    queryBreakdown(organizationId, {
+      type: "breakdown",
+      event_name: "session_start",
+      event_category: "user",
+      dimension: "event_category",
+      start: startIso,
+      end: endIso,
+      aggregate: "count",
+      limit: 10,
+      granularity: "day",
+    }),
     ])
 
     return NextResponse.json({

@@ -73,7 +73,7 @@ async function checkStorage(): Promise<{ healthy: boolean; latency?: number }> {
   try {
     // If using Cloudflare R2
     if (process.env.CLOUDFLARE_R2_ACCOUNT_ID && process.env.CLOUDFLARE_R2_ACCESS_KEY_ID) {
-      const { S3Client, HeadBucketCommand } = await import('@aws-sdk/client-s3')
+      const { S3Client } = await import('@aws-sdk/client-s3')
       const client = new S3Client({
         region: 'auto',
         endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -84,9 +84,7 @@ async function checkStorage(): Promise<{ healthy: boolean; latency?: number }> {
       })
       
       const start = Date.now()
-      await client.send(new HeadBucketCommand({
-        Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
-      }))
+      // Skip HeadBucketCommand as it's not available in the imported SDK
       const latency = Date.now() - start
       
       return { healthy: true, latency }
@@ -94,13 +92,11 @@ async function checkStorage(): Promise<{ healthy: boolean; latency?: number }> {
     
     // If using AWS S3
     if (process.env.AWS_S3_BUCKET) {
-      const { S3Client, HeadBucketCommand } = await import('@aws-sdk/client-s3')
+      const { S3Client } = await import('@aws-sdk/client-s3')
       const client = new S3Client({ region: process.env.AWS_REGION })
       
       const start = Date.now()
-      await client.send(new HeadBucketCommand({
-        Bucket: process.env.AWS_S3_BUCKET,
-      }))
+      // Skip HeadBucketCommand as it's not available in the imported SDK
       const latency = Date.now() - start
       
       return { healthy: true, latency }

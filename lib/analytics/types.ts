@@ -63,8 +63,8 @@ export interface EventInput {
 
 export interface AnalyticsQuery {
   type: QueryType
-  event_name: string | null
-  event_category: string | null
+  event_name: string
+  event_category: string
   aggregate: AggregateFn
   granularity: Granularity
   dimension?: string | null

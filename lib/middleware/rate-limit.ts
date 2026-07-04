@@ -80,7 +80,10 @@ function getRedis(): Redis {
  * Create a rate limiter instance
  */
 export function createRateLimiter(config: RateLimitConfig): Ratelimit {
-  return new (Ratelimit as any)({
+  return new Ratelimit({
+    redis: getRedis(),
+    limiter: Ratelimit.slidingWindow(config.maxRequests, `${config.windowMs} ms`),
+    analytics: true,
     redis: getRedis(),
     limiter: config.key,
     max: config.maxRequests,

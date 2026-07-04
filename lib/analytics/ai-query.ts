@@ -1,7 +1,7 @@
 import { generateText } from "ai"
 import { z } from "zod"
 import { DEFAULT_CHAT_MODEL, BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
-import { runQuery, queryTimeseries, queryBreakdown, querySummary } from "./engine"
+import { runQuery } from "./engine"
 import type { AnalyticsQuery, QueryType, AggregateFn, Granularity, TimeseriesPoint, BreakdownRow, AnalyticsSummary } from "./types"
 
 /**

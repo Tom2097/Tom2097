@@ -59,5 +59,18 @@ export async function getDocumentFeed(organizationId: string, limit = 50): Promi
     .order("created_at", { ascending: false })
     .limit(limit)
 
-  return ((data ?? []) as Array<any>).map((d) => ({ ...d, task_count: 0 }))
+  interface AutoCreateItem {
+    id: string
+    name: string
+    type: string
+    classification: string
+    status: string
+    created_at: string
+    task_count: number
+  }
+
+  return (data ?? []).map((d) => ({
+    ...d,
+    task_count: 0
+  })) as AutoCreateItem[]
 }

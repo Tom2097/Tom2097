@@ -111,6 +111,12 @@ const getHandler = withAuth(
  * - "comparison": { segments: [...]; overall: {...} }
  */
 
+interface SegmentCriteria {
+  field: string
+  operator: string
+  value: unknown
+}
+
 interface SegmentsPostRequest {
   action: "customer" | "rfm_distribution" | "custom" | "comparison"
   userId?: string
@@ -221,7 +227,7 @@ const postHandler = withAuth(
             )
           }
 
-          const customSegments = await createCustomSegments(organizationId, body.criteria, options)
+          const customSegments = await createCustomSegments(organizationId, body.criteria as any, options)
           
           const customResponse: CustomSegmentsResponse = {
             success: true,

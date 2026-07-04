@@ -1,0 +1,1008 @@
+
+> digit-enterprise-intelligence@0.1.0 lint
+> eslint .
+
+
+/home/rahul/Documents/Tom2097/__tests__/billing.test.ts
+  25:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/app/(dashboard)/configure/page.tsx
+  6:10  warning  'Tabs' is defined but never used          @typescript-eslint/no-unused-vars
+  6:16  warning  'TabsContent' is defined but never used   @typescript-eslint/no-unused-vars
+  6:29  warning  'TabsList' is defined but never used      @typescript-eslint/no-unused-vars
+  6:39  warning  'TabsTrigger' is defined but never used   @typescript-eslint/no-unused-vars
+  9:74  warning  'CheckCircle2' is defined but never used  @typescript-eslint/no-unused-vars
+  9:88  warning  'ArrowRight' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/(dashboard)/crm/page.tsx
+  2:117  warning  'UserPlus' is defined but never used  @typescript-eslint/no-unused-vars
+  2:132  warning  'Globe' is defined but never used     @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/(dashboard)/feedback/page.tsx
+  4:10  warning  'createClient' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/(dashboard)/intelligence/page.tsx
+  4:10  warning  'Button' is defined but never used    @typescript-eslint/no-unused-vars
+  9:37  warning  'Sparkles' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/(dashboard)/operations/page.tsx
+  15:10  warning  'ScrollArea' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/(dashboard)/performance/page.tsx
+  1:51  warning  'AlertTriangle' is defined but never used  @typescript-eslint/no-unused-vars
+  4:26  warning  'computePacing' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/(dashboard)/resources/page.tsx
+  1:41  warning  'Calendar' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/(dashboard)/settings/page.tsx
+  14:3  warning  'Download' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/actions/stripe.ts
+  4:10  warning  'SUBSCRIPTION_PLANS' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/health/route.ts
+  34:13  warning  'data' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/notifications/unread-count/route.ts
+  21:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/api/v1/abac/route.ts
+  12:69  warning  'userId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  44:32  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  45:31  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  46:38  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  67:62  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  73:46  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/app/api/v1/analytics/ai-query/route.ts
+  127:10  warning  'req' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  127:30  warning  'organizationId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/analytics/ai-report/route.ts
+  35:11  warning  'ReportRequest' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/analytics/anomalies/route.ts
+  27:11  warning  'AnomaliesRequest' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/analytics/files/route.ts
+  32:11  warning  'FileUploadRequest' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/analytics/insights/route.ts
+  26:11  warning  'InsightsRequest' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/analytics/nlp/route.ts
+    5:3   warning  'analyzeSentiment' is defined but never used                                      @typescript-eslint/no-unused-vars
+    6:3   warning  'extractEntities' is defined but never used                                       @typescript-eslint/no-unused-vars
+    7:3   warning  'classifyText' is defined but never used                                          @typescript-eslint/no-unused-vars
+    8:3   warning  'extractKeywords' is defined but never used                                       @typescript-eslint/no-unused-vars
+    9:3   warning  'generateSummary' is defined but never used                                       @typescript-eslint/no-unused-vars
+   10:3   warning  'detectIntent' is defined but never used                                          @typescript-eslint/no-unused-vars
+   11:3   warning  'detectToxicity' is defined but never used                                        @typescript-eslint/no-unused-vars
+   12:3   warning  'detectLanguage' is defined but never used                                        @typescript-eslint/no-unused-vars
+   13:3   warning  'analyzeTextComprehensively' is defined but never used                            @typescript-eslint/no-unused-vars
+   68:30  warning  'organizationId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  151:10  warning  'req' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  151:30  warning  'organizationId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/analytics/segments/route.ts
+  31:11  warning  'SegmentsRequest' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/analytics/text-to-sql/route.ts
+  11:23  warning  'execute' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/audit/[id]/route.ts
+  22:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/api/v1/audit/export/route.ts
+  51:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/api/v1/audit/retention/route.ts
+  52:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/api/v1/audit/route.ts
+  46:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/api/v1/audit/stats/route.ts
+  20:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/api/v1/auth/audit/route.ts
+  24:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/api/v1/auth/oauth/callback/[provider]/route.ts
+  9:13  warning  'provider' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/auth/roles/route.ts
+  52:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/api/v1/auth/users/roles/route.ts
+  53:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  98:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/api/v1/billing/refund/process/route.ts
+  3:10  warning  'createServiceClient' is defined but never used                                   @typescript-eslint/no-unused-vars
+  7:66  warning  'organizationId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/billing/refund/route.ts
+  4:32  warning  'processRefund' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/billing/subscription/manage/route.ts
+  3:10  warning  'createServiceClient' is defined but never used  @typescript-eslint/no-unused-vars
+  4:10  warning  'logAuthEvent' is defined but never used         @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/billing/usage/route.ts
+  17:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/app/api/v1/compliance/esignatures/route.ts
+  15:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/app/api/v1/crm/contacts/route.ts
+  13:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  29:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  56:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  82:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/api/v1/crm/draft/route.ts
+  40:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  48:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/app/api/v1/intelligence/findings/route.ts
+  3:10  warning  'checkTenantRateLimit' is defined but never used  @typescript-eslint/no-unused-vars
+  5:26  warning  'rankFindings' is defined but never used          @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/api/v1/monitoring/run-due/route.ts
+  31:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/api/v1/tenants/route.ts
+  140:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/app/auth/forgot-password/page.tsx
+  3:20  warning  'Suspense' is defined but never used   @typescript-eslint/no-unused-vars
+  4:10  warning  'useRouter' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/auth/reset-password/page.tsx
+   5:8   warning  'Link' is defined but never used                   @typescript-eslint/no-unused-vars
+  11:59  warning  'ArrowLeft' is defined but never used              @typescript-eslint/no-unused-vars
+  71:9   warning  'searchParams' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/checkout/[planId]/page.tsx
+    3:31  warning  'useCallback' is defined but never used                                                 @typescript-eslint/no-unused-vars
+   61:3   warning  'clientSecret' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+   62:18  warning  'initialSetupIntentId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  117:20  warning  'subError' is defined but never used                                                    @typescript-eslint/no-unused-vars
+  147:20  warning  'subError' is defined but never used                                                    @typescript-eslint/no-unused-vars
+  154:14  warning  'err' is defined but never used                                                         @typescript-eslint/no-unused-vars
+  410:10  warning  'user' is assigned a value but never used                                               @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/checkout/success/page.tsx
+  34:9   warning  'sessionId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  36:10  warning  'loading' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/onboarding/page.tsx
+  121:9  warning  'runAIAnalysis' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/onboarding/recommendations/page.tsx
+  41:33  warning  'ModuleRecommendation' is defined but never used           @typescript-eslint/no-unused-vars
+  41:55  warning  'IndustryInsight' is defined but never used                @typescript-eslint/no-unused-vars
+  72:26  warning  'setAnalysisResult' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  73:29  warning  'setQuestionnaireData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  76:21  warning  'setIsLoading' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/app/refund-policy/page.tsx
+   72:80   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   84:123  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  142:141  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  142:156  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/home/rahul/Documents/Tom2097/app/settings/billing/page.tsx
+  86:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/causal-chain-view.tsx
+  10:3   warning  'FileText' is defined but never used              @typescript-eslint/no-unused-vars
+  12:3   warning  'TrendingUp' is defined but never used            @typescript-eslint/no-unused-vars
+  13:3   warning  'ChevronRight' is defined but never used          @typescript-eslint/no-unused-vars
+  14:3   warning  'AlertTriangle' is defined but never used         @typescript-eslint/no-unused-vars
+  19:10  warning  'Button' is defined but never used                @typescript-eslint/no-unused-vars
+  84:10  warning  'viewMode' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  84:20  warning  'setViewMode' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/causal-graph-visualization.tsx
+  5:10  warning  'DollarSign' is defined but never used     @typescript-eslint/no-unused-vars
+  5:22  warning  'Shield' is defined but never used         @typescript-eslint/no-unused-vars
+  5:30  warning  'Wrench' is defined but never used         @typescript-eslint/no-unused-vars
+  5:38  warning  'Package' is defined but never used        @typescript-eslint/no-unused-vars
+  5:47  warning  'FileText' is defined but never used       @typescript-eslint/no-unused-vars
+  5:57  warning  'AlertTriangle' is defined but never used  @typescript-eslint/no-unused-vars
+  8:10  warning  'cn' is defined but never used             @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/command-palette.tsx
+  6:113  warning  'TrendingUp' is defined but never used  @typescript-eslint/no-unused-vars
+  6:125  warning  'Sparkles' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/confidence-indicator.tsx
+  4:10  warning  'Progress' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-accounts-hierarchy.tsx
+  4:10  warning  'motion' is defined but never used       @typescript-eslint/no-unused-vars
+  5:10  warning  'Card' is defined but never used         @typescript-eslint/no-unused-vars
+  5:16  warning  'CardContent' is defined but never used  @typescript-eslint/no-unused-vars
+  5:29  warning  'CardHeader' is defined but never used   @typescript-eslint/no-unused-vars
+  5:41  warning  'CardTitle' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-communication-hub.tsx
+  4:44  warning  'FileText' is defined but never used     @typescript-eslint/no-unused-vars
+  4:54  warning  'Plus' is defined but never used         @typescript-eslint/no-unused-vars
+  4:60  warning  'ChevronDown' is defined but never used  @typescript-eslint/no-unused-vars
+  9:10  warning  'Label' is defined but never used        @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-conversation-intelligence.tsx
+   5:10  warning  'Card' is defined but never used                                                                    @typescript-eslint/no-unused-vars
+   5:16  warning  'CardContent' is defined but never used                                                             @typescript-eslint/no-unused-vars
+   5:29  warning  'CardHeader' is defined but never used                                                              @typescript-eslint/no-unused-vars
+   5:41  warning  'CardTitle' is defined but never used                                                               @typescript-eslint/no-unused-vars
+   8:71  warning  'Star' is defined but never used                                                                    @typescript-eslint/no-unused-vars
+  46:5   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+/home/rahul/Documents/Tom2097/components/digit/crm-customer-success.tsx
+  4:68  warning  'ArrowUp' is defined but never used  @typescript-eslint/no-unused-vars
+  4:77  warning  'Users' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-deal-health.tsx
+  5:10  warning  'Card' is defined but never used           @typescript-eslint/no-unused-vars
+  5:16  warning  'CardContent' is defined but never used    @typescript-eslint/no-unused-vars
+  8:25  warning  'CheckCircle2' is defined but never used   @typescript-eslint/no-unused-vars
+  8:46  warning  'TrendingUp' is defined but never used     @typescript-eslint/no-unused-vars
+  8:58  warning  'Zap' is defined but never used            @typescript-eslint/no-unused-vars
+  8:63  warning  'MessageSquare' is defined but never used  @typescript-eslint/no-unused-vars
+  8:78  warning  'Users' is defined but never used          @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-duplicate-detection.tsx
+  5:10  warning  'Card' is defined but never used         @typescript-eslint/no-unused-vars
+  5:16  warning  'CardContent' is defined but never used  @typescript-eslint/no-unused-vars
+  5:29  warning  'CardHeader' is defined but never used   @typescript-eslint/no-unused-vars
+  5:41  warning  'CardTitle' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-event-instrumentation.tsx
+  4:10  warning  'motion' is defined but never used         @typescript-eslint/no-unused-vars
+  7:21  warning  'Users' is defined but never used          @typescript-eslint/no-unused-vars
+  7:28  warning  'TrendingUp' is defined but never used     @typescript-eslint/no-unused-vars
+  9:10  warning  'Select' is defined but never used         @typescript-eslint/no-unused-vars
+  9:18  warning  'SelectContent' is defined but never used  @typescript-eslint/no-unused-vars
+  9:33  warning  'SelectItem' is defined but never used     @typescript-eslint/no-unused-vars
+  9:45  warning  'SelectTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+  9:60  warning  'SelectValue' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-forecast-reports.tsx
+  6:10   warning  'Badge' is defined but never used         @typescript-eslint/no-unused-vars
+  9:62   warning  'ArrowDown' is defined but never used     @typescript-eslint/no-unused-vars
+  9:102  warning  'CheckCircle2' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-founders-briefing.tsx
+  4:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-lead-source-roi.tsx
+   5:10  warning  'Card' is defined but never used          @typescript-eslint/no-unused-vars
+   5:16  warning  'CardContent' is defined but never used   @typescript-eslint/no-unused-vars
+   5:29  warning  'CardHeader' is defined but never used    @typescript-eslint/no-unused-vars
+   5:41  warning  'CardTitle' is defined but never used     @typescript-eslint/no-unused-vars
+   7:71  warning  'TrendingUp' is defined but never used    @typescript-eslint/no-unused-vars
+  14:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/components/digit/crm-next-best-action.tsx
+  5:10  warning  'Card' is defined but never used         @typescript-eslint/no-unused-vars
+  5:16  warning  'CardContent' is defined but never used  @typescript-eslint/no-unused-vars
+  5:29  warning  'CardHeader' is defined but never used   @typescript-eslint/no-unused-vars
+  5:41  warning  'CardTitle' is defined but never used    @typescript-eslint/no-unused-vars
+  8:10  warning  'Lightbulb' is defined but never used    @typescript-eslint/no-unused-vars
+  8:52  warning  'TrendingUp' is defined but never used   @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-pipeline-board.tsx
+  5:10  warning  'Card' is defined but never used          @typescript-eslint/no-unused-vars
+  5:16  warning  'CardContent' is defined but never used   @typescript-eslint/no-unused-vars
+  9:16  warning  'GripVertical' is defined but never used  @typescript-eslint/no-unused-vars
+  9:52  warning  'User' is defined but never used          @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-quotes.tsx
+  4:51  warning  'XCircle' is defined but never used         @typescript-eslint/no-unused-vars
+  4:70  warning  'MoreHorizontal' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-tasks.tsx
+   4:45  warning  'AlertCircle' is defined but never used            @typescript-eslint/no-unused-vars
+   7:10  warning  'Badge' is defined but never used                  @typescript-eslint/no-unused-vars
+  29:7   warning  'statusStyles' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-timeline.tsx
+  6:10  warning  'Card' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-vertical-signals.tsx
+  5:10  warning  'Card' is defined but never used         @typescript-eslint/no-unused-vars
+  5:16  warning  'CardContent' is defined but never used  @typescript-eslint/no-unused-vars
+  5:29  warning  'CardHeader' is defined but never used   @typescript-eslint/no-unused-vars
+  5:41  warning  'CardTitle' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/crm-whatsapp-nurture.tsx
+   5:10  warning  'Card' is defined but never used          @typescript-eslint/no-unused-vars
+   5:16  warning  'CardContent' is defined but never used   @typescript-eslint/no-unused-vars
+   5:29  warning  'CardHeader' is defined but never used    @typescript-eslint/no-unused-vars
+   5:41  warning  'CardTitle' is defined but never used     @typescript-eslint/no-unused-vars
+   7:31  warning  'Clock' is defined but never used         @typescript-eslint/no-unused-vars
+   7:75  warning  'ArrowRight' is defined but never used    @typescript-eslint/no-unused-vars
+  18:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/components/digit/document-understanding.tsx
+  8:10   warning  'ScrollArea' is defined but never used    @typescript-eslint/no-unused-vars
+  9:73   warning  'CheckCircle2' is defined but never used  @typescript-eslint/no-unused-vars
+  9:87   warning  'AlertCircle' is defined but never used   @typescript-eslint/no-unused-vars
+  9:145  warning  'FileText' is defined but never used      @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/floating-command-bar.tsx
+    8:3   warning  'AlertTriangle' is defined but never used                                          @typescript-eslint/no-unused-vars
+    9:3   warning  'BarChart3' is defined but never used                                              @typescript-eslint/no-unused-vars
+   13:3   warning  'PlayCircle' is defined but never used                                             @typescript-eslint/no-unused-vars
+   14:3   warning  'Sparkles' is defined but never used                                               @typescript-eslint/no-unused-vars
+   19:3   warning  'MessageSquare' is defined but never used                                          @typescript-eslint/no-unused-vars
+   22:3   warning  'Settings' is defined but never used                                               @typescript-eslint/no-unused-vars
+   24:10  warning  'Button' is defined but never used                                                 @typescript-eslint/no-unused-vars
+   27:10  warning  'Badge' is defined but never used                                                  @typescript-eslint/no-unused-vars
+  104:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  113:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  125:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  137:11  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/components/digit/industry-intelligence-hub.tsx
+   8:3  warning  'TrendingDown' is defined but never used   @typescript-eslint/no-unused-vars
+  15:3  warning  'ChevronRight' is defined but never used   @typescript-eslint/no-unused-vars
+  25:3  warning  'MessageSquare' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/intelligence-command-center.tsx
+  11:3   warning  'Target' is defined but never used           @typescript-eslint/no-unused-vars
+  16:3   warning  'XCircle' is defined but never used          @typescript-eslint/no-unused-vars
+  22:3   warning  'DollarSign' is defined but never used       @typescript-eslint/no-unused-vars
+  26:3   warning  'PauseCircle' is defined but never used      @typescript-eslint/no-unused-vars
+  28:3   warning  'ExternalLink' is defined but never used     @typescript-eslint/no-unused-vars
+  30:52  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+  33:10  warning  'Progress' is defined but never used         @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/live-chart.tsx
+  56:7  warning  'CHART_CYAN_DIM' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/navbar.tsx
+  14:3  warning  'HelpCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/operational-copilot.tsx
+  66:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/components/digit/operations/document-upload.tsx
+  243:84  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  248:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/components/digit/settings-panel.tsx
+  11:3  warning  'Globe' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/sidebar.tsx
+  17:3  warning  'Brain' is defined but never used       @typescript-eslint/no-unused-vars
+  18:3  warning  'Sparkles' is defined but never used    @typescript-eslint/no-unused-vars
+  22:3  warning  'HelpCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/split-view.tsx
+  98:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/components/digit/universal-intake.tsx
+  8:10  warning  'Tabs' is defined but never used         @typescript-eslint/no-unused-vars
+  8:16  warning  'TabsContent' is defined but never used  @typescript-eslint/no-unused-vars
+  8:29  warning  'TabsList' is defined but never used     @typescript-eslint/no-unused-vars
+  8:39  warning  'TabsTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+  9:43  warning  'FileText' is defined but never used     @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/vertical-intelligence.tsx
+   4:29  warning  'CardDescription' is defined but never used             @typescript-eslint/no-unused-vars
+   8:30  warning  'AlertTriangle' is defined but never used               @typescript-eslint/no-unused-vars
+  33:9   warning  'currentExtractors' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/vertical-recipes.tsx
+  8:29  warning  'FlaskConical' is defined but never used  @typescript-eslint/no-unused-vars
+  8:43  warning  'FileText' is defined but never used      @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/digit/wizard-panels.tsx
+   7:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+   8:10  warning  'Badge' is defined but never used   @typescript-eslint/no-unused-vars
+  10:44  warning  'Plus' is defined but never used    @typescript-eslint/no-unused-vars
+  10:50  warning  'X' is defined but never used       @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/feedback-widget.tsx
+  56:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/payment/payment-form.tsx
+  14:3   warning  'AlertCircle' is defined but never used                                     @typescript-eslint/no-unused-vars
+  31:31  warning  'planName' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  75:14  warning  'err' is defined but never used                                             @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/payment/payment-method-selector.tsx
+  3:10  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+  8:3   warning  'Wallet' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/components/ui/microphone-button.tsx
+  24:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/components/ui/use-toast.ts
+  18:7  warning  'actionTypes' is assigned a value but only used as a type  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/hooks/use-toast.ts
+  18:7  warning  'actionTypes' is assigned a value but only used as a type  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/ai-business-analyzer.ts
+  5:10  warning  'z' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/ai/conversation-store.ts
+   34:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   74:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   99:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  125:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  139:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/analytics/ai-query.ts
+  4:20  warning  'queryTimeseries' is defined but never used  @typescript-eslint/no-unused-vars
+  4:37  warning  'queryBreakdown' is defined but never used   @typescript-eslint/no-unused-vars
+  4:53  warning  'querySummary' is defined but never used     @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/analytics/ai-reports.ts
+    2:10  warning  'z' is defined but never used                                           @typescript-eslint/no-unused-vars
+  308:9   warning  'startTime' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  740:3   warning  'tone' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/analytics/anomaly-detection.ts
+  3:10  warning  'z' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/analytics/billing-events.ts
+  26:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/analytics/customer-segments.ts
+    3:10  warning  'z' is defined but never used                                                     @typescript-eslint/no-unused-vars
+  433:9   warning  'sortedRecencies' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  679:15  warning  'userId' is assigned a value but never used                                       @typescript-eslint/no-unused-vars
+  695:15  warning  'segmentId' is assigned a value but never used                                    @typescript-eslint/no-unused-vars
+  766:3   warning  'organizationId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/analytics/elt-extended.ts
+  82:11  warning  'targetColumns' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/analytics/elt.ts
+  54:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/analytics/engine.ts
+   98:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  119:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  144:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  165:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  197:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  230:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/analytics/file-upload.ts
+    2:10  warning  'z' is defined but never used                                  @typescript-eslint/no-unused-vars
+   98:28  warning  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  128:7   warning  'DEFAULT_ANALYSIS_OPTIONS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  173:10  warning  'parseJSON' is defined but never used                          @typescript-eslint/no-unused-vars
+  622:9   warning  'startTime' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+  702:43  warning  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/analytics/insight-engine.ts
+    2:10  warning  'z' is defined but never used               @typescript-eslint/no-unused-vars
+  202:11  warning  'trend' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/analytics/nlp.ts
+    2:10  warning  'z' is defined but never used                    @typescript-eslint/no-unused-vars
+    4:10  warning  'createServiceClient' is defined but never used  @typescript-eslint/no-unused-vars
+  228:29  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/analytics/okr.ts
+  44:9  warning  'progress' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/analytics/reports.ts
+   81:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   99:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  123:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  148:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  162:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  182:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/analytics/text-to-sql.ts
+  2:10  warning  'z' is defined but never used                   @typescript-eslint/no-unused-vars
+  3:10  warning  'DEFAULT_CHAT_MODEL' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/audit/append-only.ts
+  18:19  warning  '_' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  18:26  warning  '_id' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/auth/2fa/totp-service.ts
+  61:13  warning  'token' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/auth/audit.ts
+  196:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  199:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/auth/ip-whitelist/service.ts
+   8:3   warning  'IPAddress' is defined but never used     @typescript-eslint/no-unused-vars
+  16:87  warning  'IPv6_PATTERN' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/auth/oauth/service.ts
+  1:10  warning  'createHash' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/auth/passwordless/service.ts
+   4:33  warning  'MagicLinkToken' is defined but never used                                         @typescript-eslint/no-unused-vars
+  93:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/auth/rbac.ts
+   39:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   58:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   96:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  111:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  129:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  150:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  182:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  217:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  240:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  271:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  380:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/auth/session/service.ts
+   20:3   warning  'generateSessionId' is defined but never used     @typescript-eslint/no-unused-vars
+   53:11  warning  'fingerprint' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  335:11  warning  'now' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/auth/session/supabase-store.ts
+   25:11  warning  'SessionTable' is defined but never used  @typescript-eslint/no-unused-vars
+  130:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  144:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  257:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/auth/teams.ts
+   38:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   55:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   88:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  110:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  121:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  151:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  172:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  199:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  220:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/auth/with-auth.ts
+  90:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/billing/razorpay.ts
+   33:3  warning  'successUrl' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+   34:3  warning  'cancelUrl' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+  180:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/billing/stripe.ts
+  206:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/billing/subscription-lifecycle.ts
+    2:10  warning  'logAuthEvent' is defined but never used                               @typescript-eslint/no-unused-vars
+    8:3   warning  'trackRefundRequested' is defined but never used                       @typescript-eslint/no-unused-vars
+  107:9   warning  'subRecord' is assigned a value but never used                         @typescript-eslint/no-unused-vars
+  279:3   warning  'sub' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/compliance/audit-trail.ts
+   1:22  warning  'randomUUID' is defined but never used    @typescript-eslint/no-unused-vars
+  52:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/compliance/document-versioning.ts
+  45:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/compliance/esignatures.ts
+  1:22  warning  'randomUUID' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/compliance/scoring.ts
+  137:37  warning  'auditScope' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/crm/ai-drafting.ts
+  3:10  warning  'createServiceClient' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/crm/engine.ts
+  102:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  126:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  141:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  177:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  193:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  238:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  267:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  282:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  315:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  331:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  396:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  419:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  434:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  486:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  502:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  522:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  589:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  620:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  643:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/crm/extensions.ts
+    3:22  warning  'QuoteUpdateInput' is defined but never used                                       @typescript-eslint/no-unused-vars
+    5:46  warning  'TaskStatus' is defined but never used                                             @typescript-eslint/no-unused-vars
+    5:58  warning  'TaskPriority' is defined but never used                                           @typescript-eslint/no-unused-vars
+    6:38  warning  'CommunicationChannel' is defined but never used                                   @typescript-eslint/no-unused-vars
+    8:48  warning  'AccountHealthStatus' is defined but never used                                    @typescript-eslint/no-unused-vars
+   12:3   warning  'CrmEntityType' is defined but never used                                          @typescript-eslint/no-unused-vars
+   12:18  warning  'DealStage' is defined but never used                                              @typescript-eslint/no-unused-vars
+   15:10  warning  'num' is defined but never used                                                    @typescript-eslint/no-unused-vars
+   43:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   54:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   64:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   87:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   99:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  123:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  137:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  146:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  153:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  180:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  192:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  213:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  224:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  238:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  249:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  256:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/crm/whatsapp.ts
+   2:31  warning  'sendWhatsAppTemplate' is defined but never used  @typescript-eslint/no-unused-vars
+  24:27  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/dashboard/queries.ts
+   86:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  109:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/digit-score/composite.ts
+  27:25  warning  'currentValue' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  27:47  warning  'targetValue' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/documents/engine.ts
+   94:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  107:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  124:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  157:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  200:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  218:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  236:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  266:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  304:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  312:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  350:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  384:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  407:16  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  417:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  425:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  501:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  568:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/documents/events.ts
+  41:29  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  57:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/errors.ts
+  29:53  warning  'defaultMessage' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/events/bus.ts
+  55:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/events/cross-workspace.ts
+  46:16  warning  'target' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/feedback/engine.ts
+   63:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  101:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  120:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  152:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  171:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  194:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  225:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  251:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  263:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  274:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/integrations/engine.ts
+  128:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  153:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  180:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  214:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  235:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  251:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  380:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  408:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  459:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/intelligence/agents.ts
+  2:10  warning  'getLLM' is defined but never used        @typescript-eslint/no-unused-vars
+  3:10  warning  'generateText' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/intelligence/confidence.ts
+  59:3  warning  'actionType' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/intelligence/engine.ts
+    6:10  warning  'calculateImpactScore' is defined but never used                          @typescript-eslint/no-unused-vars
+    8:24  warning  'relateEntities' is defined but never used                                @typescript-eslint/no-unused-vars
+   70:33  warning  Unexpected any. Specify a different type                                  @typescript-eslint/no-explicit-any
+  289:37  warning  'action' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/intelligence/executor.ts
+  2:10  warning  'createNotification' is defined but never used   @typescript-eslint/no-unused-vars
+  3:10  warning  'generateId' is defined but never used           @typescript-eslint/no-unused-vars
+  4:28  warning  'IntelligenceFinding' is defined but never used  @typescript-eslint/no-unused-vars
+  5:15  warning  'WorkflowStep' is defined but never used         @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/intelligence/learning/pipeline.ts
+  11:10  warning  'runAllMonitors' is defined but never used     @typescript-eslint/no-unused-vars
+  12:10  warning  'getActiveFindings' is defined but never used  @typescript-eslint/no-unused-vars
+  50:13  warning  'adjusted' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/intelligence/learning/predictor.ts
+  95:11  warning  'alpha' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/intelligence/monitor.ts
+   2:10  warning  'getLLM' is defined but never used               @typescript-eslint/no-unused-vars
+   3:10  warning  'generateText' is defined but never used         @typescript-eslint/no-unused-vars
+   6:15  warning  'PerceptionInput' is defined but never used      @typescript-eslint/no-unused-vars
+   7:10  warning  'getEntitiesByModule' is defined but never used  @typescript-eslint/no-unused-vars
+  86:36  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/intelligence/network-effect.ts
+  34:9  warning  'industrySegment' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/intelligence/operational-graph.ts
+  44:3  warning  'depth' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/intelligence/orchestrator.ts
+    3:29  warning  'perceive' is defined but never used                                              @typescript-eslint/no-unused-vars
+    3:39  warning  'approveAction' is defined but never used                                         @typescript-eslint/no-unused-vars
+    6:15  warning  'IntelligenceFinding' is defined but never used                                   @typescript-eslint/no-unused-vars
+    6:36  warning  'AgentAction' is defined but never used                                           @typescript-eslint/no-unused-vars
+  113:46  warning  'organizationId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/intelligence/predictive.ts
+    3:29  warning  'T' is defined but never used                       @typescript-eslint/no-unused-vars
+  101:9   warning  'thirtyDaysAgo' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/intelligence/simulation.ts
+  38:9  warning  'db' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/intelligence/sync.ts
+  3:15  warning  'OperationalEntity' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/kb/engine.ts
+   88:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  138:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  164:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  179:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  220:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  232:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  267:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  305:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  334:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  349:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  364:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  423:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  437:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  441:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  456:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  503:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  522:14  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/legal/engine.ts
+   96:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  130:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  145:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  172:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  195:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  233:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  262:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  278:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  299:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  315:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  359:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  386:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  430:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  445:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  471:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  522:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/localization/engine.ts
+   78:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   93:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  141:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  169:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  196:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  210:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  237:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  263:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  296:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  312:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  388:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  405:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  440:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  449:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/logging-client.ts
+   7:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  23:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/logging.ts
+   7:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  21:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/middleware/rate-limit.ts
+   5:31  warning  'ValidationResult' is defined but never used  @typescript-eslint/no-unused-vars
+  83:28  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/middleware/validate-request.ts
+   96:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  140:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/monitoring/engine.ts
+   95:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  120:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  135:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  171:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  186:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  266:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  288:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  300:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  324:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  361:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  371:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  392:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  429:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  492:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  524:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  539:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  577:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  635:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  653:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  673:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  677:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/multitenant/context.ts
+   84:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   98:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  123:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/multitenant/database.ts
+   94:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  125:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  147:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  169:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/notifications/engine.ts
+  100:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  123:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  149:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  170:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  196:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  209:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  231:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  248:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  268:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/notifications/preferences.ts
+  40:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  71:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/observability/correlation.ts
+  26:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/ocr/engine.ts
+  62:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/operational/actions.ts
+  69:9  warning  'ctx' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/operational/auto-create.ts
+  62:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/operational/intake.ts
+  6:6  warning  'IntakeSource' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/operational/whatsapp.ts
+  156:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/platform/capacity-service.ts
+   68:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  100:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  119:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  145:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/reporting/engine.ts
+    4:10  warning  'logger' is defined but never used                                                 @typescript-eslint/no-unused-vars
+   96:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  118:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  136:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  168:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  182:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  238:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  256:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  388:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  428:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  452:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  474:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  489:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/retention/engine.ts
+  102:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  120:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  157:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  201:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  217:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  257:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  315:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  350:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/services/storage/local-provider.ts
+  199:35  warning  'expiresIn' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/services/storage/r2-provider.ts
+  49:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/rahul/Documents/Tom2097/lib/stripe.ts
+  9:11  warning  'StripeClass' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/supabase/service.ts
+  22:35  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  22:43  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  22:68  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  22:76  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  22:92  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  26:18  warning  'columns' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  27:16  warning  'table' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  28:14  warning  'column' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  28:30  warning  'value' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  29:15  warning  'column' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  29:31  warning  'value' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  30:14  warning  'condition' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+  31:15  warning  'condition' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+  32:17  warning  'column' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  32:33  warning  'options' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  33:17  warning  'num' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  34:18  warning  'num' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  35:17  warning  'start' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+  35:32  warning  'end' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  41:48  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  41:56  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  41:61  warning  'onReject' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  41:81  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  41:89  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  52:31  warning  'params' is assigned a value but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  53:22  warning  'data' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  54:22  warning  'data' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  56:22  warning  'data' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  58:16  warning  'bucket' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  59:26  warning  'filePath' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  59:44  warning  'file' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  60:28  warning  'filePath' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  61:32  warning  'filePath' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  63:26  warning  'paths' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+
+/home/rahul/Documents/Tom2097/lib/workflows/store.ts
+   50:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+   66:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  119:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  161:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  171:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  224:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  243:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  264:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  298:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  327:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+/home/rahul/Documents/Tom2097/lib/workflows/trigger-from-event.ts
+  1:10  warning  'createServiceClient' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 646 problems (4 errors, 642 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { extractTenantContext } from "@/lib/multitenant/context"
+import { logger } from "@/lib/logging"
 
 export async function GET() {
   const ctx = await extractTenantContext()
@@ -18,7 +19,7 @@ export async function GET() {
       .is("read_at", null)
 
     if (error) {
-      console.log("[v0] unread count error:", error.message)
+      logger.logError("[v0] unread count error:", { error: error.message })
       return NextResponse.json({ count: 0 })
     }
 

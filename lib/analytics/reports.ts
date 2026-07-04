@@ -6,6 +6,7 @@ import {
   type AnalyticsReport,
   type ReportConfig,
 } from "./types"
+import { logger } from "@/lib/logging"
 
 /**
  * Module #7: Saved analytics reports store.
@@ -59,12 +60,12 @@ export function reportToQuery(config: ReportConfig, now = new Date()): Analytics
   const start = new Date(end.getTime() - (config.range_days ?? 30) * 24 * 60 * 60 * 1000)
   return {
     type: config.type,
-    event_name: config.event_name ?? null,
-    event_category: config.event_category ?? null,
-    aggregate: config.aggregate,
-    granularity: config.granularity,
+    event_name: config.event_name ?? "default",
+    event_category: config.event_category ?? "default",
+    aggregate: config.aggregate || "count",
+    granularity: config.granularity || "day",
     dimension: config.dimension,
-    limit: config.limit,
+    limit: config.limit || 1000,
     start: start.toISOString(),
     end: end.toISOString(),
   }
@@ -78,7 +79,7 @@ export async function listReports(organizationId: string): Promise<AnalyticsRepo
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false })
   if (error) {
-    console.log("[v0] listReports failed:", error.message)
+    logger.logError("[v0] listReports failed:", { error: error.message })
     return []
   }
   return (data ?? []).map(rowToReport)
@@ -96,7 +97,7 @@ export async function getReport(
     .eq("id", id)
     .maybeSingle()
   if (error) {
-    console.log("[v0] getReport failed:", error.message)
+    logger.logError("[v0] getReport failed:", { error: error.message })
     return null
   }
   return data ? rowToReport(data) : null
@@ -120,7 +121,7 @@ export async function createReport(
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] createReport failed:", error.message)
+    logger.logError("[v0] createReport failed:", { error: error.message })
     return null
   }
   return rowToReport(data)
@@ -145,7 +146,7 @@ export async function updateReport(
     .select("*")
     .maybeSingle()
   if (error) {
-    console.log("[v0] updateReport failed:", error.message)
+    logger.logError("[v0] updateReport failed:", { error: error.message })
     return null
   }
   return data ? rowToReport(data) : null
@@ -159,7 +160,7 @@ export async function deleteReport(organizationId: string, id: string): Promise<
     .eq("organization_id", organizationId)
     .eq("id", id)
   if (error) {
-    console.log("[v0] deleteReport failed:", error.message)
+    logger.logError("[v0] deleteReport failed:", { error: error.message })
     return false
   }
   return true
@@ -179,7 +180,7 @@ export async function getReports(
     .order("updated_at", { ascending: false })
     .range(offset, offset + limit - 1)
   if (error) {
-    console.log("[v0] getReports failed:", error.message)
+    logger.logError("[v0] getReports failed:", { error: error.message })
     return { reports: [], total: 0 }
   }
   return { reports: (data ?? []).map(rowToReport), total: count ?? 0 }
@@ -192,19 +193,19 @@ export async function runSavedReport(
 ): Promise<unknown> {
   const report = await getReport(organizationId, reportId)
   if (!report) throw new Error("report not found")
-  const { runQuery } = await import("./engine.js")
+  const { runQuery } = await import("./engine")
   const cfg = report.config
   const now = new Date()
   const end = now.toISOString()
   const start = new Date(now.getTime() - (cfg.range_days ?? 30) * 86400000).toISOString()
   return runQuery(organizationId, {
     type: cfg.type,
-    event_name: cfg.event_name,
-    event_category: cfg.event_category,
-    aggregate: cfg.aggregate,
-    granularity: cfg.granularity,
+    event_name: cfg.event_name || "default",
+    event_category: cfg.event_category || "default",
+    aggregate: cfg.aggregate || "count",
+    granularity: cfg.granularity || "day",
     dimension: cfg.dimension,
-    limit: cfg.limit,
+    limit: cfg.limit || 1000,
     start,
     end,
   })

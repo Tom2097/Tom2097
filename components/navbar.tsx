@@ -5,6 +5,7 @@ import { MicrophoneButton } from '@/components/ui/microphone-button'
 import { FeedbackWidget } from '@/components/feedback-widget'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { logger } from "@/lib/logging-client"
 
 interface NavbarProps {
   userId?: string
@@ -39,7 +40,7 @@ export function Navbar({ userId }: NavbarProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <MicrophoneButton onTranscript={(transcript) => console.log('Transcript:', transcript)} />
+           <MicrophoneButton onTranscript={(transcript) => logger.logDebug('Transcript:', { transcript })} />
           <FeedbackWidget userId={userId} />
           <Button variant="outline" size="sm" asChild>
             <Link href="/login">Login</Link>

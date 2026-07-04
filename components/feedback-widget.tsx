@@ -53,7 +53,7 @@ export function FeedbackWidget({ userId }: FeedbackWidgetProps) {
       setRating(null)
       setComments('')
       setIsOpen(false)
-    } catch (error) {
+    } catch (_) {
       toast({
         title: "Error",
         description: "Failed to submit feedback. Please try again.",

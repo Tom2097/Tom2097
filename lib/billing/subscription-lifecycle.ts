@@ -193,9 +193,9 @@ export async function processRefund(
 
   const subRecord = sub as { plan_id: string; stripe_subscription_id?: string; razorpay_subscription_id?: string }
 
-  if (subRecord.stripe_subscription_id) {
-    const { stripe } = await import("@/lib/stripe.js")
-    try {
+   if (subRecord.stripe_subscription_id) {
+     const { stripe } = await import("./stripe")
+     try {
       await stripe.subscriptions.cancel(subRecord.stripe_subscription_id)
 
       const invoices = await stripe.invoices.list({
@@ -205,9 +205,9 @@ export async function processRefund(
 
       if (invoices.data.length > 0) {
         const latestInvoice = invoices.data[0]
-        if (latestInvoice.payment_intent && typeof latestInvoice.payment_intent === "string") {
+        if ((latestInvoice as any).payment_intent && typeof (latestInvoice as any).payment_intent === "string") {
           await stripe.refunds.create({
-            payment_intent: latestInvoice.payment_intent,
+             payment_intent: (latestInvoice as any).payment_intent,
           })
         }
       }
@@ -290,14 +290,14 @@ async function cancelAtPeriodEnd(
   const supabase = await createServiceClient()
 
   if (sub.stripe_subscription_id) {
-    const { stripe } = await import("@/lib/stripe.js")
+    const { stripe } = await import("./stripe")
     await stripe.subscriptions.update(sub.stripe_subscription_id, {
       cancel_at_period_end: true,
     })
   }
 
   if (sub.razorpay_subscription_id) {
-    const razorpay = await import("./razorpay.js")
+    const razorpay = await import("./razorpay")
     await razorpay.cancelRazorpaySubscription(organizationId)
   }
 

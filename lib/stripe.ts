@@ -1,7 +1,7 @@
 import "server-only"
 
 // Lazy load Stripe to avoid build-time evaluation
-let stripeInstance: Promise<Stripe> | null = null
+let stripeInstance: Promise<import('stripe').default> | null = null
 
 export async function getStripe() {
   if (!stripeInstance) {
@@ -28,4 +28,4 @@ export async function getStripe() {
 }
 
 // For backward compatibility, export a null stripe that will be initialized on first use
-export const stripe = null as unknown as Stripe
+export const stripe = null as unknown as import('stripe').default

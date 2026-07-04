@@ -31,8 +31,8 @@ let s3ClientModule: typeof import('@aws-sdk/client-s3') | null = null
 let presignerModule: typeof import('@aws-sdk/s3-request-presigner') | null = null
 
 async function loadS3Modules() {
-  if (!s3ClientModule) {
-    s3ClientModule = await import('@aws-sdk/client-s3.js')
+   if (!s3ClientModule) {
+    s3ClientModule = await import('@aws-sdk/client-s3')
   }
   if (!presignerModule) {
     presignerModule = await import('@aws-sdk/s3-request-presigner')
@@ -46,7 +46,7 @@ async function loadS3Modules() {
  */
 export class R2StorageProvider implements StorageProvider {
   private config: R2StorageConfig
-  private clientPromise: Promise<any> | null = null
+  private clientPromise: Promise<S3Client> | null = null
 
   constructor(config: R2StorageConfig) {
     if (!config.accountId || !config.accessKeyId || !config.secretAccessKey || !config.bucketName) {

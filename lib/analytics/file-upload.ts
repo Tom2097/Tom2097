@@ -3,10 +3,11 @@ import { z } from "zod"
 import { DEFAULT_CHAT_MODEL, BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
 import { createServiceClient } from "@/lib/supabase/service"
 import { randomUUID } from "crypto"
+import type { DataPoint, FileData, SegmentCriteria, TrackedEvent, FileUploadResponse, FilesListResponse, SupabaseClient } from "@/types/analytics"
 
 /**
  * Module #7.6: File Upload and Document Analysis.
- * 
+ *
  * Enables users to upload files (CSV, JSON, Excel, Text) for AI-powered
  * analysis and data extraction. Supports document processing, text
  * extraction, and structured data analysis.
@@ -16,7 +17,7 @@ import { randomUUID } from "crypto"
 export type FileType = "csv" | "json" | "txt" | "text" | "pdf" | "docx" | "xlsx" | "xls"
 
 // File analysis types
-export type AnalysisType = 
+export type AnalysisType =
   | "text_extraction"
   | "data_analysis"
   | "document_summary"
@@ -39,7 +40,7 @@ export interface UploadedFile {
   uploadedAt: string
   status: "pending" | "processing" | "completed" | "failed"
   analysisType?: AnalysisType
-  analysisResult?: Record<string, unknown>
+  analysisResult?: FileAnalysisResult
   errorMessage?: string
 }
 
@@ -64,76 +65,9 @@ export interface FileAnalysisOptions {
 }
 
 // File analysis result
-export interface FileAnalysisResult {
-  fileId: string
-  filename: string
-  fileType: FileType
-  analysisType: AnalysisType
-  processedAt: string
-  processingTime: number
-  
-  // For text extraction
-  extractedText?: string
-  
-  // For data analysis
-  extractedData?: Array<Record<string, unknown>>
-  dataSummary?: {
-    rows: number
-    columns: number
-    headers: string[]
-    dataTypes: Record<string, string>
-  }
-  
-  // For document summary
-  summary?: string
-  keyPoints?: string[]
-  
-  // For entity extraction
-  entities?: {
-    people: string[]
-    organizations: string[]
-    locations: string[]
-    dates: string[]
-    amounts: string[]
-    custom: Record<string, any>
-  }
-  
-  // For sentiment analysis
-  sentiment?: {
-    overall: "positive" | "negative" | "neutral" | "mixed"
-    score: number // -1 to 1
-    confidence: number
-    sentences: Array<{
-      text: string
-      sentiment: "positive" | "negative" | "neutral"
-      score: number
-    }>
-  }
-  
-  // For custom analysis
-  customResult?: Record<string, unknown>
-  
-  // Metadata
-  modelUsed: string
-  tokensUsed: number
-  
-  // Questions and answers
-  qaPairs?: Array<{
-    question: string
-    answer: string
-    confidence: number
-  }>
-}
+export type FileAnalysisResult = import("@/types/analytics").FileAnalysisResult
 
-const DEFAULT_ANALYSIS_OPTIONS: Required<Omit<FileAnalysisOptions, "analysisType">> = {
-  customPrompt: "",
-  questions: [],
-  extractFields: [],
-  outputFormat: "json",
-  includeRawText: false,
-  maxOutputTokens: 4000,
-  temperature: 0.3,
-}
+
 
 /**
  * Parse CSV text into structured data
@@ -395,7 +329,7 @@ export async function analyzeFile(
           analysisResult.extractedText = result.text
           break
         case "custom_prompt":
-          analysisResult.customResult = result.text
+          analysisResult.customResult = result.text as unknown as Record<string, unknown>
           break
         default:
           analysisResult.extractedText = result.text
@@ -619,8 +553,6 @@ export async function processUploadedFile(
   analysisType: AnalysisType,
   options: Partial<FileAnalysisOptions> = {}
 ): Promise<UploadedFile> {
-  const startTime = Date.now()
-  
   const fileType = detectFileType(file.filename, file.contentType, file.content)
   
   const uploadedFile: UploadedFile = {

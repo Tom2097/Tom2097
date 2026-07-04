@@ -15,12 +15,12 @@ export function createServiceClient() {
   if (!url || !serviceKey) {
     // Create a mock query builder that returns a Promise when awaited
     function createMockQueryBuilder() {
-      interface QueryBuilder {
-        eq: (column: string, value: unknown) => QueryBuilder;
-        neq: (column: string, value: unknown) => QueryBuilder;
-        order: (column: string, options: { ascending?: boolean }) => QueryBuilder;
-        then: (onFulfill: (value: any) => any, onReject?: (reason: any) => any) => Promise<any>;
-      }
+interface QueryBuilder {
+  eq: (column: string, value: unknown) => QueryBuilder;
+  neq: (column: string, value: unknown) => QueryBuilder;
+  order: (column: string, options: { ascending?: boolean }) => QueryBuilder;
+  then: <T>(onFulfill: (value: { data: T | null; error: { message: string } | null }) => T, onReject?: (reason: Error) => T) => Promise<T>;
+}
       
       const builder: QueryBuilder = {
         select: (columns: string = "*") => builder,
@@ -37,11 +37,11 @@ export function createServiceClient() {
         maybeSingle: async () => ({ data: null, error: { message: "Supabase not configured" } }),
       }
       
-      // Make it awaitable - when awaited, return empty results
-      builder.then = async (onFulfill: (value: any) => any, onReject?: (reason: any) => any) => {
-        const result = { data: [], error: { message: "Supabase not configured" } }
-        return onFulfill ? onFulfill(result) : result
-      }
+  // Make it awaitable - when awaited, return empty results
+  builder.then = async <T>(onFulfill?: (value: { data: T | null; error: { message: string } | null }) => T, onReject?: (reason: Error) => T) => {
+    const result = { data: null, error: { message: "Supabase not configured" } }
+    return onFulfill ? onFulfill(result) : result as any
+  }
       
       return builder
     }

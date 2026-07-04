@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { runQuery, querySummary } from "@/lib/analytics/engine"
 import type { AnalyticsQuery } from "@/lib/analytics/types"
+import { logger } from "@/lib/logging"
 import {
   REPORT_SOURCES,
   SCHEDULE_FREQUENCIES,
@@ -92,7 +93,7 @@ export async function createDefinition(
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] createDefinition failed:", error.message)
+    logger.logError("[v0] createDefinition failed:", { error: error.message })
     throw new Error("failed to create report definition")
   }
   return data as ReportDefinition
@@ -114,7 +115,7 @@ export async function listDefinitions(
   if (opts.activeOnly) q = q.eq("is_active", true)
   const { data, error, count } = await q
   if (error) {
-    console.log("[v0] listDefinitions failed:", error.message)
+    logger.logError("[v0] listDefinitions failed:", { error: error.message })
     throw new Error("failed to list report definitions")
   }
   return { items: (data ?? []) as ReportDefinition[], total: count ?? 0 }
@@ -132,7 +133,7 @@ export async function getDefinition(
     .eq("id", id)
     .maybeSingle()
   if (error) {
-    console.log("[v0] getDefinition failed:", error.message)
+    logger.logError("[v0] getDefinition failed:", { error: error.message })
     throw new Error("failed to load report definition")
   }
   return (data as ReportDefinition) ?? null
@@ -164,7 +165,7 @@ export async function updateDefinition(
     .select("*")
     .maybeSingle()
   if (error) {
-    console.log("[v0] updateDefinition failed:", error.message)
+    logger.logError("[v0] updateDefinition failed:", { error: error.message })
     throw new Error("failed to update report definition")
   }
   return (data as ReportDefinition) ?? null
@@ -178,7 +179,7 @@ export async function deleteDefinition(organizationId: string, id: string): Prom
     .eq("organization_id", organizationId)
     .eq("id", id)
   if (error) {
-    console.log("[v0] deleteDefinition failed:", error.message)
+    logger.logError("[v0] deleteDefinition failed:", { error: error.message })
     throw new Error("failed to delete report definition")
   }
   return (count ?? 0) > 0
@@ -234,7 +235,7 @@ export async function upsertSchedule(
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] upsertSchedule failed:", error.message)
+    logger.logError("[v0] upsertSchedule failed:", { error: error.message })
     throw new Error("failed to save schedule")
   }
   return data as ReportSchedule
@@ -252,7 +253,7 @@ export async function getSchedule(
     .eq("definition_id", definitionId)
     .maybeSingle()
   if (error) {
-    console.log("[v0] getSchedule failed:", error.message)
+    logger.logError("[v0] getSchedule failed:", { error: error.message })
     throw new Error("failed to load schedule")
   }
   return (data as ReportSchedule) ?? null
@@ -384,7 +385,7 @@ async function buildSection(
     return { key: section.key, title: section.title, source: section.source, data }
   } catch (err) {
     const msg = err instanceof Error ? err.message : "section failed"
-    console.log("[v0] buildSection failed:", section.key, msg)
+    logger.logError("[v0] buildSection failed:", { section: section.key, error: msg })
     return { key: section.key, title: section.title, source: section.source, data: null, error: msg }
   }
 }
@@ -424,7 +425,7 @@ export async function generateRun(
     .select("*")
     .single()
   if (insErr || !runRow) {
-    console.log("[v0] generateRun: failed to create run:", insErr?.message)
+    logger.logError("[v0] generateRun: failed to create run:", { error: insErr?.message })
     throw new Error("failed to start report run")
   }
 
@@ -440,7 +441,7 @@ export async function generateRun(
     .update({
       status: anyError && results.every((r) => r.error) ? "failed" : "completed" as const,
       result: { sections: results, generated_at: new Date().toISOString() },
-      error: anyError ? "one or more sections failed" : null as string | null,
+      error: anyError ? "one or more sections failed" : null,
       completed_at: new Date().toISOString(),
     })
     .eq("organization_id", organizationId)
@@ -448,7 +449,7 @@ export async function generateRun(
     .select("*")
     .single()
   if (updErr) {
-    console.log("[v0] generateRun: failed to finalize run:", updErr.message)
+    logger.logError("[v0] generateRun: failed to finalize run:", { error: updErr.message })
     throw new Error("failed to finalize report run")
   }
   return finished as ReportRun
@@ -470,7 +471,7 @@ export async function listRuns(
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1)
   if (error) {
-    console.log("[v0] listRuns failed:", error.message)
+    logger.logError("[v0] listRuns failed:", { error: error.message })
     throw new Error("failed to list report runs")
   }
   return { items: (data ?? []) as ReportRun[], total: count ?? 0 }
@@ -485,7 +486,7 @@ export async function getRun(organizationId: string, runId: string): Promise<Rep
     .eq("id", runId)
     .maybeSingle()
   if (error) {
-    console.log("[v0] getRun failed:", error.message)
+    logger.logError("[v0] getRun failed:", { error: error.message })
     throw new Error("failed to load report run")
   }
   return (data as ReportRun) ?? null

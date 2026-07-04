@@ -1,7 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { createNotification, broadcast } from "@/lib/notifications/engine"
 import { generateId } from "@/lib/utils/id"
-import type { AgentAction, IntelligenceFinding } from "./types"
+import type { AgentAction, IntelligenceFinding } from "./agents"
 import type { WorkflowStep } from "@/lib/workflows/types"
 
 const ACTIONS_TABLE = "intelligence_actions"

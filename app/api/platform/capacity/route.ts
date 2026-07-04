@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { isCurrentUserPlatformOwner } from "@/lib/platform/owner"
 import { getPlatformCapacityReport } from "@/lib/platform/capacity-service"
+import { logger } from "@/lib/logging"
 
 /**
  * GET /api/platform/capacity
@@ -24,7 +25,7 @@ export async function GET() {
       headers: { "Cache-Control": "no-store" },
     })
   } catch (error) {
-    console.log("[v0] capacity report error:", error)
+    logger.logError("[v0] capacity report error:", { error })
     return NextResponse.json(
       { error: "Internal Server Error", message: "Failed to build capacity report" },
       { status: 500 },

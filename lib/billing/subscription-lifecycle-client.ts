@@ -1,6 +1,6 @@
 "use client"
 
-import { logException } from "@/lib/logging-client"
+import { logger } from "@/lib/logging-client"
 
 // Client-side utility functions for subscription lifecycle
 
@@ -19,7 +19,7 @@ export async function isWithinRefundWindowClient(organizationId: string): Promis
     const result = await response.json()
     return result.withinWindow
   } catch (err) {
-    logException(err as Error, { action: 'refund-window-check' })
+    console.error('refund-window-check error:', err)
     return false
   }
 }
@@ -42,7 +42,7 @@ export async function getYearlyMilestoneClient(organizationId: string): Promise<
     
     return await response.json()
   } catch (err) {
-    logException(err as Error, { action: 'yearly-milestone-check' })
+    console.error('yearly-milestone-check error:', err)
     return { monthsSinceStart: 0, reminderDue: false, canCancel: false }
   }
 }
@@ -55,6 +55,6 @@ export async function acknowledgeYearlyReminderClient(organizationId: string): P
       body: JSON.stringify({ action: 'acknowledge-reminder', organizationId }),
     })
   } catch (err) {
-    logException(err as Error, { action: 'acknowledge-reminder' })
+    console.error('acknowledge-reminder error:', err)
   }
 }

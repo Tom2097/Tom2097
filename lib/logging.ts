@@ -29,3 +29,12 @@ export function logException(error: Error, context?: Record<string, unknown>): v
     ...context,
   })
 }
+
+// Logger object for consistent exports
+export const logger = {
+  logInfo,
+  logWarn,
+  logError,
+  logDebug,
+  logException,
+}

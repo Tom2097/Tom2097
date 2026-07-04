@@ -20,10 +20,10 @@ async function ensureUserProfile(
 
   if (!isPlatformOwnerEmail(user.email)) {
     const cap = await canCreateTenant()
-    if (!cap.allowed) {
-      console.log("[v0] tenant cap reached:", cap.used, "/", cap.limit)
-      return buildRedirect("/auth/error?reason=platform_at_capacity")
-    }
+  if (!cap.allowed) {
+    console.warn("[v0] tenant cap reached:", { used: cap.used, limit: cap.limit })
+    return buildRedirect("/auth/error?reason=platform_at_capacity")
+  }
   }
 
   const { data: org, error: orgError } = await db
@@ -36,7 +36,7 @@ async function ensureUserProfile(
     .single()
 
   if (orgError || !org) {
-    console.error("[auth] Failed to create organization:", orgError)
+    console.error("[auth] Failed to create organization:", { error: orgError })
     return buildRedirect(`/auth/error?reason=${encodeURIComponent("Failed to create organization")}`)
   }
 
@@ -51,7 +51,7 @@ async function ensureUserProfile(
     })
 
   if (profileError) {
-    console.error("[auth] Failed to create profile:", profileError)
+    console.error("[auth] Failed to create profile:", { error: profileError })
     return buildRedirect(`/auth/error?reason=${encodeURIComponent("Failed to create profile")}`)
   }
 
@@ -64,7 +64,7 @@ async function ensureUserProfile(
     })
 
   if (subError) {
-    console.error("[auth] Failed to create subscription:", subError)
+    console.error("[auth] Failed to create subscription:", { error: subError })
   }
 }
 
@@ -96,13 +96,13 @@ export async function GET(request: Request) {
         try {
           const result = await ensureUserProfile(user, db, buildRedirect)
           if (result instanceof NextResponse) return result
-        } catch (err) {
-          console.error("[auth] Post-signup profile creation failed:", err)
-        }
+          } catch (err) {
+            console.error("[auth] Post-signup profile creation failed:", err)
+          }
       }
       return buildRedirect(next)
     }
-    console.error("[v0] exchangeCodeForSession failed:", error.message)
+    console.error("[v0] exchangeCodeForSession failed:", { error: error.message })
     return buildRedirect(`/auth/error?reason=${encodeURIComponent(error.message)}`)
   }
 
@@ -115,13 +115,13 @@ export async function GET(request: Request) {
         try {
           const result = await ensureUserProfile(user, db, buildRedirect)
           if (result instanceof NextResponse) return result
-        } catch (err) {
-          console.error("[auth] Post-OTP profile creation failed:", err)
-        }
+          } catch (err) {
+            console.error("[auth] Post-OTP profile creation failed:", err)
+          }
       }
       return buildRedirect(next)
     }
-    console.error("[v0] verifyOtp failed:", error.message)
+    console.error("[v0] verifyOtp failed:", { error: error.message })
     return buildRedirect(`/auth/error?reason=${encodeURIComponent(error.message)}`)
   }
 

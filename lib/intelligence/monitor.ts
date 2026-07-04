@@ -76,14 +76,14 @@ const MODULE_MONITORS: ModuleMonitor[] = [
     module: "resources",
     checkInterval: 1 * 3600 * 1000,
     lastCheck: null,
-    async check(orgId) {
-      const findings: IntelligenceFinding[] = []
-      const db = createServiceClient()
-      const { data: items } = await db
-        .from("inventory_items")
-        .select("id, name, quantity, reorder_point")
-        .eq("organization_id", orgId)
-        .lte("quantity", db.rpc as any)
+  async check(orgId: string) {
+    const findings: IntelligenceFinding[] = []
+    const db = createServiceClient()
+    const { data: items } = await db
+      .from("inventory_items")
+      .select("id, name, quantity, reorder_point")
+      .eq("organization_id", orgId)
+      .lte("quantity", "reorder_point")
 
       for (const item of ((items || []) as Array<{ id: string; name: string; quantity: number; reorder_point: number }>)) {
         if (item.quantity <= item.reorder_point) {

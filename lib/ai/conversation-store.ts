@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import type { UIMessage } from "ai"
+import { logger } from "@/lib/logging"
 
 /**
  * Module #5: Conversation persistence.
@@ -31,7 +32,7 @@ export async function createConversation(
     .single()
 
   if (error) {
-    console.log("[v0] createConversation error:", error.message)
+    logger.logError("[v0] createConversation error:", { error: error.message })
     return null
   }
   return data.id

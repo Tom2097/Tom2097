@@ -7,11 +7,10 @@ import {
   useElements,
 } from "@stripe/react-stripe-js"
 import { motion, AnimatePresence } from "framer-motion"
-import { 
+import {
   Loader2, 
   CreditCard, 
   Lock, 
-  AlertCircle,
   CheckCircle2,
   ChevronRight
 } from "lucide-react"
@@ -28,7 +27,7 @@ interface PaymentFormProps {
   onError: (error: string) => void
 }
 
-export function PaymentForm({ planName, priceInCents, onSuccess, onError }: PaymentFormProps) {
+export function PaymentForm({ priceInCents, onSuccess, onError }: PaymentFormProps) {
   const stripe = useStripe()
   const elements = useElements()
   

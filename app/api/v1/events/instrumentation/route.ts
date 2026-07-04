@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createFunnel, calculateRetention, trackEvent, type EventType } from "@/lib/events/instrumentation"
+import { createFunnel, calculateRetention, trackEvent, type EventType, type TrackedEvent } from "@/lib/events/instrumentation"
 
 const eventStore: Array<Record<string, unknown>> = []
 
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
 
     if (action === "track") {
       const event = trackEvent(params.event as EventType, params.userId, params.organizationId, params.sessionId, params.properties)
-      eventStore.push(event)
+      eventStore.push(event as unknown as Record<string, unknown>)
       return NextResponse.json(event)
     }
 
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "retention") {
-      return NextResponse.json(calculateRetention(eventStore, params.cohortField))
+      return NextResponse.json(calculateRetention(eventStore as unknown as TrackedEvent[], params.cohortField))
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 })
@@ -28,5 +28,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json({ tracked: eventStore.length, events: eventStore.slice(-50) })
+  return NextResponse.json({
+    tracked: eventStore.length, 
+    events: eventStore.slice(-50) as unknown as Record<string, unknown>[]
+  })
 }

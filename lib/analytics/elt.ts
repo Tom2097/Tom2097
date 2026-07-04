@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
+import { logger } from "@/lib/logging"
 
 export interface SyncConfig {
   source_table: string
@@ -51,7 +52,7 @@ export async function runIncrementalSync(
         .upsert(mapped, { onConflict: `${config.incremental_key},organization_id` })
 
       if (upsertErr) {
-        console.log("[v0] ELT upsert failed:", upsertErr.message)
+        logger.logError("[v0] ELT upsert failed:", { error: upsertErr.message })
       } else {
         const isNew = String((row as Record<string, unknown>)[config.incremental_key]) >= since
         if (isNew) { inserted++ } else { updated++ }

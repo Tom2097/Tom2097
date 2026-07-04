@@ -42,7 +42,7 @@ export async function createDocumentVersion(
 
   if (!currentDoc) return null
 
-  const currentVersion = (currentDoc as any).current_version || 0
+  const currentVersion = currentDoc.current_version || 0
   const newVersion = currentVersion + 1
   const contentHash = createHash("sha256").update(content).digest("hex")
 

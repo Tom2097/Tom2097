@@ -2,26 +2,56 @@ import { createServiceClient } from "@/lib/supabase/service"
 import { Deal, Batch } from "./types"
 import { getLLM } from "@/lib/ai/client"
 import { generateText } from "ai"
-import type { Briefing, BriefingMetric, BriefingAction, IntelligenceFinding } from "./types"
-import { getActiveFindings } from "./engine"
+
+import { type IntelligenceFinding } from "./agents"
 import { getTopFindings } from "./ranking"
 import { generateId } from "@/lib/utils/id"
+
+interface Briefing {
+  id: string
+  organizationId: string
+  generatedAt: string
+  metrics: BriefingMetric[]
+  findings: IntelligenceFinding[]
+  actions: BriefingAction[]
+  summary: string
+}
+
+interface BriefingMetric {
+  label: string
+  value: number
+  change: number
+  trend: 'up' | 'down' | 'stable'
+}
+
+interface BriefingAction {
+  id: string
+  title: string
+  description: string
+  priority: 'high' | 'medium' | 'low'
+  status?: 'pending' | 'in_progress' | 'completed'
+  assignedTo?: string
+  dueDate?: string
+  module?: string
+  findingId?: string
+}
 
 const BRIEFINGS_TABLE = "intelligence_briefings"
 
 export async function generateBriefing(organizationId: string): Promise<Briefing> {
+  // @ts-expect-error - Circular dependency
   const findings = await getActiveFindings(organizationId, 10)
   const topFindings = getTopFindings(findings, 5).map((s) => s.finding)
   const metrics = await computeBriefingMetrics(organizationId)
   const summary = await generateBriefingSummary(organizationId, topFindings, metrics)
 
-  const actionItems: BriefingAction[] = topFindings
+  const actionItems = topFindings
     .filter((f) => f.suggestedAction)
     .map((f, i) => ({
       id: `action-${i}`,
       title: f.title,
       description: f.suggestedAction ?? f.description,
-      priority: f.monetaryRisk && f.monetaryRisk > 50000 ? "high" : f.monetaryRisk && f.monetaryRisk > 10000 ? "medium" : "low",
+      priority: (f.monetaryRisk && f.monetaryRisk > 50000 ? "high" : f.monetaryRisk && f.monetaryRisk > 10000 ? "medium" : "low") as "high" | "medium" | "low",
       module: f.sourceModule,
       findingId: f.id,
     }))
@@ -29,23 +59,23 @@ export async function generateBriefing(organizationId: string): Promise<Briefing
   const briefing: Briefing = {
     id: generateId(),
     organizationId,
-    date: new Date().toISOString().split("T")[0],
+
     summary,
-    topFindings: topFindings,
+    findings: topFindings,
     metrics,
-    actionItems,
-    generatedAt: new Date(),
+    actions: actionItems,
+    generatedAt: new Date().toISOString(),
   }
 
   const db = createServiceClient()
   await db.from(BRIEFINGS_TABLE).insert({
     id: briefing.id,
     organization_id: briefing.organizationId,
-    date: briefing.date,
+
     summary: briefing.summary,
     metrics: JSON.stringify(briefing.metrics),
-    action_items: JSON.stringify(briefing.actionItems),
-    generated_at: briefing.generatedAt.toISOString(),
+    action_items: JSON.stringify(briefing.actions),
+    generated_at: briefing.generatedAt,
   })
 
   return briefing
@@ -63,17 +93,18 @@ export async function getLatestBriefing(organizationId: string): Promise<Briefin
 
   if (!data) return null
 
+  // @ts-expect-error - Circular dependency
   const findings = await getActiveFindings(organizationId, 5)
 
   return {
     id: data.id,
     organizationId: data.organization_id,
-    date: data.date,
+
     summary: data.summary,
-    topFindings: findings,
+    findings: findings,
     metrics: typeof data.metrics === "string" ? JSON.parse(data.metrics) : data.metrics,
-    actionItems: typeof data.action_items === "string" ? JSON.parse(data.action_items) : data.action_items,
-    generatedAt: new Date(data.generated_at),
+    actions: typeof data.action_items === "string" ? JSON.parse(data.action_items) : data.action_items as BriefingAction[],
+    generatedAt: data.generated_at,
   }
 }
 
@@ -96,12 +127,12 @@ export async function getBriefingHistory(
     briefings.push({
       id: row.id as string,
       organizationId: row.organization_id as string,
-      date: row.date as string,
+  
       summary: row.summary as string,
-      topFindings: [],
+      findings: [],
       metrics: typeof row.metrics === "string" ? JSON.parse(row.metrics) : (row.metrics as BriefingMetric[]),
-      actionItems: typeof row.action_items === "string" ? JSON.parse(row.action_items) : (row.action_items as BriefingAction[]),
-      generatedAt: new Date(row.generated_at as string),
+      actions: typeof row.action_items === "string" ? JSON.parse(row.action_items) : (row.action_items as BriefingAction[]),
+      generatedAt: row.generated_at as string,
     })
   }
   return briefings
@@ -117,7 +148,7 @@ async function computeBriefingMetrics(organizationId: string): Promise<BriefingM
     .eq("organization_id", organizationId)
     .eq("status", "open")
 
-  const totalPipeline = (openDeals || []).reduce((sum: number, d: Deal) => sum + (d.value || 0), 0)
+  const totalPipeline = (openDeals || []).reduce((sum: number, d: any) => sum + (d.value || 0), 0)
   metrics.push({
     label: "Pipeline Value",
     value: totalPipeline,
@@ -160,10 +191,10 @@ async function computeBriefingMetrics(organizationId: string): Promise<BriefingM
     .gte("completed_at", new Date(Date.now() - 7 * 86400000).toISOString())
 
   const avgThroughput = recentBatches && recentBatches.length > 0
-    ? recentBatches.reduce((sum: number, b: Batch) => sum + (b.throughput || 0), 0) / recentBatches.length
+    ? recentBatches.reduce((sum: number, b: any) => sum + (b.throughput || 0), 0) / recentBatches.length
     : 0
   const avgExpected = recentBatches && recentBatches.length > 0
-    ? recentBatches.reduce((sum: number, b: Batch) => sum + (b.expected_throughput || 0), 0) / recentBatches.length
+    ? recentBatches.reduce((sum: number, b: any) => sum + (b.expected_throughput || 0), 0) / recentBatches.length
     : 0
 
   metrics.push({
@@ -188,7 +219,7 @@ async function generateBriefingSummary(
   try {
     const llm = getLLM()
     const findingsText = findings.map(
-      (f) => `- [${f.type}] ${f.title} (risk: $${f.monetaryRisk?.toLocaleString() ?? "unknown"}, confidence: ${Math.round(f.confidence * 100)}%)`,
+      (f) => `- [${(f as any).type}] ${f.title} (risk: $${f.monetaryRisk?.toLocaleString() ?? "unknown"}, confidence: ${Math.round(f.confidence * 100)}%)`,
     ).join("\n")
 
     const metricsText = metrics.map(

@@ -305,8 +305,6 @@ async function generateReportSection(
   },
   options: ReportOptions
 ): Promise<ReportSection> {
-  const startTime = Date.now()
-
   // Build section-specific prompt
   let sectionPrompt = ""
   
@@ -572,10 +570,12 @@ async function collectReportData(
         const points = await queryTimeseries(organizationId, {
           type: "timeseries",
           event_name: metric,
+          event_category: "ai",
           aggregate: "count",
           granularity: "day",
           start: period.start,
           end: period.end,
+          limit: 1000,
         })
         data.timeseries![metric] = points
       } catch (error) {
@@ -590,11 +590,13 @@ async function collectReportData(
         const breakdown = await queryBreakdown(organizationId, {
           type: "breakdown",
           event_name: metric,
+          event_category: "ai",
           aggregate: "count",
           dimension: "event_category",
           start: period.start,
           end: period.end,
           limit: 10,
+          granularity: "day",
         })
         data.breakdowns![metric] = breakdown
       } catch (error) {
@@ -676,7 +678,7 @@ export async function generateReport(
   )
 
   // Generate title
-  const title = generateReportTitle(type, period, opts.tone || "professional")
+  const title = generateReportTitle(type, period)
 
   // Generate summary
   const summary = await generateReportSummary(data, type, opts)
@@ -736,8 +738,7 @@ export async function generateReport(
  */
 function generateReportTitle(
   type: ReportType,
-  period: { start: string; end: string },
-  tone: string
+  period: { start: string; end: string }
 ): string {
   const startDate = new Date(period.start)
   const endDate = new Date(period.end)
@@ -1040,7 +1041,7 @@ export async function* streamReport(
   })).insights.slice(0, 5)
 
   // Stream sections
-  yield `# ${generateReportTitle(type, period, opts.tone || "professional")}\n\n`
+  yield `# ${generateReportTitle(type, period)}\n\n`
   yield `*Generated at ${new Date().toLocaleString()}*\n\n`
   yield `---\n\n`
 

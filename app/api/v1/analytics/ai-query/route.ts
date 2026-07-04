@@ -32,6 +32,15 @@ interface AIQueryRequest {
   }
 }
 
+interface DataPoint {
+  id: string
+  timestamp: string
+  value: number
+  metadata?: Record<string, unknown>
+  // Allow additional properties to match TimeseriesPoint
+  [key: string]: unknown
+}
+
 interface AIQueryResponse {
   success: boolean
   query?: ParsedAIQuery
@@ -96,7 +105,12 @@ const handler = withAuth(
       const response: AIQueryResponse = {
         success: true,
         query: result.query,
-        result: result.result,
+        result: result.result as {
+          type: string
+          points?: DataPoint[]
+          rows?: Array<Record<string, unknown>>
+          summary?: Record<string, unknown>
+        },
         explanation: result.explanation,
       }
 

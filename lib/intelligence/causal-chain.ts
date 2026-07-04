@@ -1,5 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
-import type { CausalLink, OperationalEntity, IntelligenceFinding } from "./types"
+import type { IntelligenceFinding } from "./agents"
 import { getEntityGraph, traverseGraph } from "./operational-graph"
 
 const ENTITY_MODULE_MAP: Record<string, string> = {
@@ -24,10 +24,27 @@ const ENTITY_TYPE_ORDER = [
   "deal",
 ]
 
+interface OperationalEntity {
+  id: string
+  type: string
+  name: string
+  status: string
+  module: string
+  properties: Record<string, unknown>
+}
+
 export type ChainNode = {
   entity: OperationalEntity
   module: string
   order: number
+  monetaryImpact?: number
+}
+
+interface CausalLink {
+  source: string
+  target: string
+  type: string
+  confidence: number
   monetaryImpact?: number
 }
 
@@ -66,15 +83,13 @@ export async function traceCausalChain(
     for (const rel of graph.relations) {
       const targetEntity = entityMap.get(rel.targetId)
       if (!targetEntity) continue
-      links.push({
-        fromEntity: entity.name,
-        fromModule: ENTITY_MODULE_MAP[entity.type] ?? "unknown",
-        toEntity: targetEntity.name,
-        toModule: ENTITY_MODULE_MAP[targetEntity.type] ?? "unknown",
-        relationship: rel.relationship,
-        monetaryImpact: estimateRelationshipImpact(entity, targetEntity),
-        timestamp: new Date(),
-      })
+        links.push({
+          source: entity.name,
+          target: targetEntity.name,
+          type: rel.type,
+          confidence: rel.confidence,
+          monetaryImpact: rel.monetary_impact,
+        })
     }
   }
 
@@ -89,7 +104,7 @@ export async function traceFromFinding(
   finding: IntelligenceFinding,
 ): Promise<CausalChainResult | null> {
   if (!finding.entityId) return null
-  return traceCausalChain(finding.organizationId, finding.entityId)
+  return traceCausalChain((finding as any).organizationId, finding.entityId)
 }
 
 function estimateEntityImpact(entity: OperationalEntity): number {

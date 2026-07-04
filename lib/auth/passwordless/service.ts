@@ -2,6 +2,7 @@ import { randomBytes, createHash } from "node:crypto"
 import { createServiceClient } from "@/lib/supabase/service"
 import { DEFAULT_PASSWORDLESS_CONFIG, PasswordlessError, PasswordlessErrorCode } from "./types"
 import type { MagicLinkOptions, MagicLinkToken, PasswordlessConfig } from "./types"
+import { logger } from "@/lib/logging"
 
 function generateToken(): string {
   return randomBytes(32).toString("hex")
@@ -90,10 +91,10 @@ export async function sendMagicLink(
         }),
       })
     } else {
-      console.log("[passwordless] No RESEND_API_KEY set; would send email to", options.email, "with URL:", loginUrl.toString())
+      logger.logWarn("[passwordless] No RESEND_API_KEY set; would send email", { email: options.email, url: loginUrl.toString() })
     }
   } catch (err) {
-    console.error("[passwordless] Email send failed:", err)
+    logger.logError("[passwordless] Email send failed:", { error: err })
     throw new PasswordlessError("Failed to send email", PasswordlessErrorCode.EMAIL_SEND_FAILED)
   }
 
