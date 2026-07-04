@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { ArrowRight, ArrowLeft, Check, Loader2, Building2, User, Shield, Key, Camera, AlertTriangle, Upload } from "lucide-react"
@@ -81,10 +81,6 @@ export default function SecureOnboardingPage() {
   const [passcodeVerified, setPasscodeVerified] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [hasWebAuthnCredentials, setHasWebAuthnCredentials] = useState<boolean | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isNewDevice, setIsNewDevice] = useState(false)
 
   const stage = ONBOARDING_STAGES[currentStage]
 
@@ -262,10 +258,6 @@ export default function SecureOnboardingPage() {
     updateData("photoDataUrl", imageDataUrl)
     setIsCapturingPhoto(false)
   }
-  
-   const handleNext = async () => {
-     // Implementation in original code
-   }
 
   return (
     <div className="min-h-screen bg-background">
@@ -445,7 +437,7 @@ export default function SecureOnboardingPage() {
                                 )
                                 
                                 if (reviewResult.success) {
-                                  toast.info("Manual review requested. You'll be notified of the result.")
+                                  toast.info("Manual review requested. You will be notified of the result.")
                                 }
                               } else {
                                 toast.error("Identity verification failed")
@@ -565,7 +557,7 @@ export default function SecureOnboardingPage() {
                               })
                               
                               if (reviewResult.success) {
-                                toast.info("Manual review requested. You'll be notified of the result.")
+                                toast.info("Manual review requested. You will be notified of the result.")
                               }
                             } else {
                               toast.error("Company verification failed")
@@ -585,9 +577,9 @@ export default function SecureOnboardingPage() {
                         )}
                         Verify Company
                       </Button>
-                       <p className="text-xs text-muted-foreground">
-                         We will verify your company against official registries
-                       </p>
+                      <p className="text-xs text-muted-foreground">
+                        We will verify your company against official registries
+                      </p>
                     </div>
                   </div>
                 )}
@@ -612,9 +604,9 @@ export default function SecureOnboardingPage() {
                           { value: "admin", label: "Admin", description: "Manage users and settings" },
                           { value: "member", label: "Member", description: "Standard access" },
                         ].map((role) => (
-                           <button
-                             key={role.value}
-                             onClick={() => updateData("role", role.value as "owner" | "admin" | "member")}
+                          <button
+                            key={role.value}
+                            onClick={() => updateData("role", role.value as "owner" | "admin" | "member")}
                             className={cn(
                               "flex flex-col items-start gap-2 p-4 rounded-xl border-2 transition-all text-left",
                               data.role === role.value
@@ -661,7 +653,7 @@ export default function SecureOnboardingPage() {
                         </div>
                         <h3 className="text-lg font-semibold">Secure Your Access</h3>
                         <p className="text-muted-foreground">
-                          We'll send a one-time passcode to <span className="font-medium">{data.email}</span>
+                          We will send a one-time passcode to <span className="font-medium">{data.email}</span>
                         </p>
                         <Button
                           onClick={sendPasscode}
@@ -792,7 +784,4 @@ export default function SecureOnboardingPage() {
       </div>
     </div>
   )
-
-};
-
 }
