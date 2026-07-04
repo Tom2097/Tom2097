@@ -38,6 +38,26 @@ export interface ConfidenceThreshold {
   description: string
 }
 
+export interface MonitorCheck {
+  id: string
+  name: string
+  description: string
+  targetModule: string
+  schedule: string
+  lastRun?: string
+  status?: 'active' | 'inactive' | 'error'
+}
+
+export interface IntelligenceFinding {
+  id: string
+  title: string
+  description: string
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  monetaryRisk: number
+  module: string
+  entityId?: string
+}
+
 export const CONFIDENCE_THRESHOLDS: ConfidenceThreshold[] = [
   { level: "auto", minConfidence: 0.8, description: "Auto-execute" },
   { level: "review", minConfidence: 0.5, description: "Review recommended" },
