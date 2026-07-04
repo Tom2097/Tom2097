@@ -6,7 +6,7 @@ import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js"
-import { createCheckoutSession } from "@/app/actions/stripe"
+import type { createCheckoutSession } from "@/app/actions/stripe"
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -23,7 +23,7 @@ export function Checkout({ planId, discountCode, onClose }: CheckoutProps) {
 
   const fetchClientSecret = useCallback(async () => {
     try {
-      const { clientSecret } = await createCheckoutSession(planId, discountCode)
+      const { clientSecret } = await (createCheckoutSession as (planId: string, discountCode?: string) => Promise<{ clientSecret: string }>)(planId, discountCode)
       if (!clientSecret) {
         throw new Error("Failed to create checkout session")
       }
