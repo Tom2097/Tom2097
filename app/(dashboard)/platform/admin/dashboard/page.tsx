@@ -2,7 +2,7 @@ import { isCurrentUserPlatformOwner } from "@/lib/platform/owner"
 import { getPlatformCapacityReport } from "@/lib/platform/capacity-service"
 import { notFound } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Building2, Users, CreditCard, Activity, Shield, AlertTriangle } from "lucide-react"
+import { Building2, Users, CreditCard, Activity, Shield } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
             <Building2 className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{report.totals.companies}</div>
+            <div className="text-2xl font-bold">{report.platform.tenants.used}</div>
             <p className="text-xs text-muted-foreground mt-1">
               Limit: {report.limits.maxTenants}
             </p>
@@ -38,10 +38,7 @@ export default async function AdminDashboardPage() {
             <Users className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{report.totals.users}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Limit: {report.limits.maxUsers}
-            </p>
+            <div className="text-2xl font-bold">{report.totals.totalUsers}</div>
           </CardContent>
         </Card>
         <Card>
@@ -50,10 +47,7 @@ export default async function AdminDashboardPage() {
             <CreditCard className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{report.totals.activeSubscriptions}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              MRR: ${report.totals.mrr?.toLocaleString() || "0"}
-            </p>
+            <div className="text-2xl font-bold">{report.totals.totalActiveSubscriptions}</div>
           </CardContent>
         </Card>
         <Card>

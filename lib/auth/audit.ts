@@ -117,6 +117,7 @@ export type AuthAuditAction =
   | "crm.deal_updated"
   | "crm.deal_deleted"
   | "crm.activity_logged"
+  | "crm.auto_provision"
   // Module #18: knowledge base
   | "kb.category_created"
   | "kb.category_updated"
