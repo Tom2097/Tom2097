@@ -40,7 +40,7 @@ export function CrmAutoProvision() {
         const res = await fetch("/api/v1/ai/provision", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ step: step.id, dealUrl: dealUrl.trim(), title: step.title }),
+          body: JSON.stringify({ stepId: step.id, dealUrl: dealUrl.trim() }),
         })
         if (!res.ok) throw new Error(`${step.title} failed`)
         setCompleted((prev) => [...prev, step.id])

@@ -94,7 +94,7 @@ export const DEFAULT_PASSWORDLESS_CONFIG: PasswordlessConfig = {
   maxTokensPerHour: 5,
   rateLimitWindow: 60, // 1 hour
   enabled: true,
-  emailSubject: 'Your DigiT Login Link',
+  emailSubject: 'Your DigiT Access Code',
   emailTemplate: `<!DOCTYPE html>
 <html>
 <head>
@@ -105,16 +105,15 @@ export const DEFAULT_PASSWORDLESS_CONFIG: PasswordlessConfig = {
   <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
     <h1 style="color: #2563eb;">DigiT</h1>
     <p>Hello,</p>
-    <p>You requested a login link for your DigiT account. Click the button below to sign in:</p>
-    <p style="text-align: center; margin: 30px 0;">
-      <a href="{{loginUrl}}" style="background: #2563eb; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">
-        Sign In
-      </a>
+    <p>Your one-time access code for DigiT is:</p>
+    <p style="text-align: center; margin: 30px 0; font-size: 24px; font-weight: bold; letter-spacing: 4px;">
+      {{passcode}}
     </p>
-    <p>If you didn't request this, please ignore this email.</p>
-    <p>This link will expire in {{expirationMinutes}} minutes.</p>
+    <p>Enter this code on the device where you requested access. This code will expire in {{expirationMinutes}} minutes.</p>
+    <p>If you didn't request this code, please ignore this email.</p>
     <p style="color: #666; font-size: 14px; margin-top: 30px;">
-      DigiT Enterprise Platform
+      DigiT Enterprise Platform<br/>
+      <small>This code is device-bound and can only be used once.</small>
     </p>
   </div>
 </body>

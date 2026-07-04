@@ -3,8 +3,9 @@
 import { stripe } from "@/lib/stripe"
 import { SUBSCRIPTION_PLANS, getPlanById } from "@/lib/products"
 import { createClient } from "@/lib/supabase/server"
+import { validateDiscountCode, applyDiscount, recordDiscountUse } from "@/lib/billing/discounts"
 
-export async function createCheckoutSession(planId: string) {
+export async function createCheckoutSession(planId: string, discountCode?: string) {
   const plan = getPlanById(planId)
   if (!plan) {
     throw new Error("Invalid plan selected")
@@ -27,6 +28,29 @@ export async function createCheckoutSession(planId: string) {
 
   if (!profile?.organization_id) {
     throw new Error("No organization found")
+  }
+
+  // Validate discount code
+  let appliedDiscount: string | undefined
+  let finalPriceCents = plan.priceInCents
+  if (discountCode) {
+    const result = validateDiscountCode(discountCode, planId)
+    if (!result.valid) {
+      throw new Error(result.error || "Invalid discount code")
+    }
+    if (result.discount) {
+      finalPriceCents = applyDiscount(plan.priceInCents, result.discount)
+      appliedDiscount = `${result.discount.value}% off (${result.discount.code})`
+      recordDiscountUse(result.discount.code)
+
+      // Persist the discount usage to the database
+      await supabase.from("billing_events").insert({
+        organization_id: profile.organization_id,
+        event_type: "discount_applied",
+        provider: "stripe",
+        metadata: { code: result.discount.code, value: result.discount.value, plan_id: planId },
+      })
+    }
   }
 
   // Check for existing subscription
@@ -59,17 +83,17 @@ export async function createCheckoutSession(planId: string) {
   const isTrial = plan.interval === "month"
 
   // Create checkout session
-  const session = await stripe.checkout.sessions.create({
+  const sessionParams: any = {
     customer: customerId,
     line_items: [
       {
         price_data: {
           currency: "usd",
           product_data: {
-            name: `DigiT ${plan.name} Plan`,
+            name: appliedDiscount ? `DigiT ${plan.name} Plan (${appliedDiscount})` : `DigiT ${plan.name} Plan`,
             description: plan.description,
           },
-          unit_amount: plan.priceInCents,
+          unit_amount: finalPriceCents,
           recurring: {
             interval: plan.interval,
           },
@@ -83,16 +107,20 @@ export async function createCheckoutSession(planId: string) {
     metadata: {
       plan_id: plan.id,
       organization_id: profile.organization_id,
+      ...(appliedDiscount ? { discount_code: discountCode } : {}),
     },
     subscription_data: {
       metadata: {
         plan_id: plan.id,
         organization_id: profile.organization_id,
+        ...(appliedDiscount ? { discount_code: discountCode } : {}),
       },
       ...(isTrial ? { trial_period_days: 7 } : {}),
     },
     ui_mode: "embedded",
-  })
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionParams)
 
   return { clientSecret: session.client_secret }
 }

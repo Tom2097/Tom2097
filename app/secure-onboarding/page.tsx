@@ -1,0 +1,632 @@
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useRouter } from "next/navigation"
+import { ArrowRight, ArrowLeft, Check, Loader2, Building2, User, Shield, Key, Camera, AlertTriangle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
+import { CameraCapture } from "@/components/camera-capture"
+import { startRegistration } from "@simplewebauthn/browser"
+import { toast } from "sonner"
+
+// Onboarding stages aligned with Secure Onboarding Spec
+const ONBOARDING_STAGES = [
+  { id: "identity", title: "Your Identity", description: "Verify who you are", icon: User },
+  { id: "company", title: "Your Company", description: "Verify your company registration", icon: Building2 },
+  { id: "role", title: "Your Role", description: "Confirm your position and authority", icon: Shield },
+  { id: "access", title: "Secure Access", description: "Lock DigiT to this device", icon: Key },
+]
+
+interface OnboardingData {
+  // Stage 1: Identity
+  fullName: string
+  email: string
+  phone: string
+  photoDataUrl?: string
+  governmentIdType?: string
+  governmentIdNumber?: string
+
+  // Stage 2: Company
+  companyName: string
+  companyRegistrationNumber: string
+  companyWebsite: string
+  companyAddress: string
+  companyCountry: string
+
+  // Stage 3: Role
+  role: "owner" | "admin" | "member"
+  position: string
+  authorityConfirmed: boolean
+
+  // Stage 4: Access
+  passcode?: string
+  deviceCredential?: {
+    id: string
+    publicKey: string
+    counter: number
+    deviceType: string
+    transports?: string[]
+  }
+}
+
+const DEFAULT_DATA: OnboardingData = {
+  fullName: "",
+  email: "",
+  phone: "",
+  companyName: "",
+  companyRegistrationNumber: "",
+  companyWebsite: "",
+  companyAddress: "",
+  companyCountry: "",
+  role: "member",
+  position: "",
+  authorityConfirmed: false,
+}
+
+export default function SecureOnboardingPage() {
+  const router = useRouter()
+  const [currentStage, setCurrentStage] = useState(0)
+  const [data, setData] = useState<OnboardingData>(DEFAULT_DATA)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isCapturingPhoto, setIsCapturingPhoto] = useState(false)
+  const [isRegisteringDevice, setIsRegisteringDevice] = useState(false)
+  const [passcodeSent, setPasscodeSent] = useState(false)
+  const [passcodeVerified, setPasscodeVerified] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const stage = ONBOARDING_STAGES[currentStage]
+
+  const updateData = useCallback(<K extends keyof OnboardingData>(
+    key: K,
+    value: OnboardingData[K]
+  ) => {
+    setData(prev => ({ ...prev, [key]: value }))
+  }, [])
+
+  const canProceed = useCallback(() => {
+    switch (currentStage) {
+      case 0: // Identity
+        return data.fullName && data.email && data.phone && data.photoDataUrl
+      case 1: // Company
+        return data.companyName && data.companyRegistrationNumber && data.companyWebsite
+      case 2: // Role
+        return data.role && data.position && data.authorityConfirmed
+      case 3: // Access
+        return passcodeVerified && data.deviceCredential
+      default:
+        return false
+    }
+  }, [currentStage, data, passcodeVerified])
+
+  const handleNext = async () => {
+    if (currentStage === ONBOARDING_STAGES.length - 1) {
+      // Complete onboarding
+      await completeOnboarding()
+      return
+    }
+
+    // Stage-specific validation
+    if (currentStage === 0 && !data.photoDataUrl) {
+      setIsCapturingPhoto(true)
+      return
+    }
+
+    if (currentStage === 3 && !passcodeSent) {
+      await sendPasscode()
+      return
+    }
+
+    setCurrentStage(prev => prev + 1)
+  }
+
+  const handleBack = () => {
+    if (currentStage > 0) {
+      setCurrentStage(prev => prev - 1)
+    }
+  }
+
+  const sendPasscode = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch("/api/v1/auth/passwordless/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email }),
+      })
+      if (!response.ok) throw new Error("Failed to send passcode")
+      setPasscodeSent(true)
+      toast.success("Passcode sent to your email")
+    } catch (err) {
+      setError("Failed to send passcode. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const verifyPasscode = async (code: string) => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch("/api/v1/auth/passwordless/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email, passcode: code }),
+      })
+      if (!response.ok) throw new Error("Invalid passcode")
+      const result = await response.json()
+      updateData("passcode", code)
+      setPasscodeVerified(true)
+      toast.success("Passcode verified")
+    } catch (err) {
+      setError("Invalid passcode. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const registerDevice = async () => {
+    setIsRegisteringDevice(true)
+    setError(null)
+    try {
+      // Start WebAuthn registration
+      const response = await fetch("/api/v1/auth/webauthn/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email }),
+      })
+      if (!response.ok) throw new Error("Failed to start device registration")
+
+      const options = await response.json()
+      const credential = await startRegistration(options)
+
+      // Send credential to server
+      const verifyResponse = await fetch("/api/v1/auth/webauthn/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential, email: data.email }),
+      })
+      if (!verifyResponse.ok) throw new Error("Failed to verify device")
+
+      const result = await verifyResponse.json()
+      updateData("deviceCredential", {
+        id: credential.id,
+        publicKey: credential.response.attestationObject,
+        counter: 0, // Counter will be updated by server
+        deviceType: credential.type,
+        transports: credential.response.transports || [],
+      })
+      toast.success("Device registered successfully")
+    } catch (err) {
+      setError("Failed to register device. Please try again.")
+    } finally {
+      setIsRegisteringDevice(false)
+    }
+  }
+
+  const completeOnboarding = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch("/api/v1/onboarding/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) throw new Error("Failed to complete onboarding")
+      router.push("/dashboard")
+    } catch (err) {
+      setError("Failed to complete onboarding. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handlePhotoCapture = (imageDataUrl: string) => {
+    updateData("photoDataUrl", imageDataUrl)
+    setIsCapturingPhoto(false)
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Animated background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+      </div>
+
+      <div className="relative z-10 container max-w-4xl mx-auto px-4 py-8">
+        {/* Progress bar */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-muted-foreground">Stage {currentStage + 1} of {ONBOARDING_STAGES.length}</span>
+            <span className="text-sm text-muted-foreground">{Math.round(((currentStage + 1) / ONBOARDING_STAGES.length) * 100)}% complete</span>
+          </div>
+          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-primary to-cyan-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${((currentStage + 1) / ONBOARDING_STAGES.length) * 100}%` }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            />
+          </div>
+          <div className="flex justify-between mt-2">
+            {ONBOARDING_STAGES.map((s, i) => (
+              <div
+                key={s.id}
+                className={cn(
+                  "flex items-center gap-1 text-xs",
+                  i <= currentStage ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                {i < currentStage ? (
+                  <Check className="w-3 h-3" />
+                ) : i === currentStage ? (
+                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                ) : (
+                  <div className="w-2 h-2 rounded-full bg-muted" />
+                )}
+                <span className="hidden sm:inline">{s.title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Stage content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStage}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+              <CardContent className="p-8">
+                {/* Stage header */}
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
+                    {stage.icon && <stage.icon className="w-8 h-8 text-primary" />}
+                  </div>
+                  <h1 className="text-2xl font-bold mb-2">{stage.title}</h1>
+                  <p className="text-muted-foreground">{stage.description}</p>
+                </div>
+
+                {/* Stage 1: Identity */}
+                {currentStage === 0 && !isCapturingPhoto && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label>Full Name</Label>
+                        <Input
+                          value={data.fullName}
+                          onChange={(e) => updateData("fullName", e.target.value)}
+                          placeholder="John Doe"
+                          className="bg-background/50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Work Email</Label>
+                        <Input
+                          value={data.email}
+                          onChange={(e) => updateData("email", e.target.value)}
+                          placeholder="john@company.com"
+                          type="email"
+                          className="bg-background/50"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Phone Number</Label>
+                      <Input
+                        value={data.phone}
+                        onChange={(e) => updateData("phone", e.target.value)}
+                        placeholder="+1 234 567 8900"
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Government ID (Optional)</Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <select
+                          value={data.governmentIdType}
+                          onChange={(e) => updateData("governmentIdType", e.target.value)}
+                          className="w-full h-10 px-3 rounded-lg border border-border/50 bg-background/50 text-sm"
+                        >
+                          <option value="">Select ID type...</option>
+                          <option value="passport">Passport</option>
+                          <option value="drivers_license">Driver's License</option>
+                          <option value="national_id">National ID</option>
+                        </select>
+                        <Input
+                          value={data.governmentIdNumber}
+                          onChange={(e) => updateData("governmentIdNumber", e.target.value)}
+                          placeholder="ID number"
+                          className="bg-background/50"
+                        />
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <Button
+                        onClick={() => setIsCapturingPhoto(true)}
+                        className="gap-2"
+                      >
+                        <Camera className="w-4 h-4" /> Capture Live Photo
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Photo capture */}
+                {currentStage === 0 && isCapturingPhoto && (
+                  <CameraCapture
+                    onCapture={handlePhotoCapture}
+                    onCancel={() => setIsCapturingPhoto(false)}
+                    isLoading={isLoading}
+                  />
+                )}
+
+                {/* Stage 2: Company */}
+                {currentStage === 1 && (
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label>Company Legal Name</Label>
+                      <Input
+                        value={data.companyName}
+                        onChange={(e) => updateData("companyName", e.target.value)}
+                        placeholder="Acme Corporation"
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label>Registration Number</Label>
+                        <Input
+                          value={data.companyRegistrationNumber}
+                          onChange={(e) => updateData("companyRegistrationNumber", e.target.value)}
+                          placeholder="CIN, GST, or EIN number"
+                          className="bg-background/50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Website</Label>
+                        <Input
+                          value={data.companyWebsite}
+                          onChange={(e) => updateData("companyWebsite", e.target.value)}
+                          placeholder="https://company.com"
+                          type="url"
+                          className="bg-background/50"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Registered Address</Label>
+                      <Input
+                        value={data.companyAddress}
+                        onChange={(e) => updateData("companyAddress", e.target.value)}
+                        placeholder="123 Business St, City, Country"
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Country</Label>
+                      <Input
+                        value={data.companyCountry}
+                        onChange={(e) => updateData("companyCountry", e.target.value)}
+                        placeholder="Country of registration"
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="text-center">
+                      <Button variant="outline" className="gap-2">
+                        <Building2 className="w-4 h-4" /> Verify Company
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Stage 3: Role */}
+                {currentStage === 2 && (
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label>Your Position</Label>
+                      <Input
+                        value={data.position}
+                        onChange={(e) => updateData("position", e.target.value)}
+                        placeholder="CEO, CTO, Manager, etc."
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Your Role</Label>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {[
+                          { value: "owner", label: "Owner", description: "Full authority to manage the company" },
+                          { value: "admin", label: "Admin", description: "Manage users and settings" },
+                          { value: "member", label: "Member", description: "Standard access" },
+                        ].map((role) => (
+                          <button
+                            key={role.value}
+                            onClick={() => updateData("role", role.value as any)}
+                            className={cn(
+                              "flex flex-col items-start gap-2 p-4 rounded-xl border-2 transition-all text-left",
+                              data.role === role.value
+                                ? "border-primary bg-primary/10"
+                                : "border-border/50 hover:border-primary/50"
+                            )}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className={cn(
+                                "w-4 h-4 rounded-full border-2 flex items-center justify-center",
+                                data.role === role.value ? "border-primary bg-primary" : "border-muted-foreground"
+                              )}>
+                                {data.role === role.value && <Check className="w-3 h-3 text-primary-foreground" />}
+                              </div>
+                              <span className="font-medium">{role.label}</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">{role.description}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <input
+                        type="checkbox"
+                        id="authorityConfirmed"
+                        checked={data.authorityConfirmed}
+                        onChange={(e) => updateData("authorityConfirmed", e.target.checked)}
+                        className="mt-1 rounded"
+                      />
+                      <Label htmlFor="authorityConfirmed" className="text-sm">
+                        I confirm I have the authority to represent this company and onboard it to DigiT
+                      </Label>
+                    </div>
+                  </div>
+                )}
+
+                {/* Stage 4: Access */}
+                {currentStage === 3 && (
+                  <div className="space-y-6">
+                    {!passcodeSent ? (
+                      <div className="text-center space-y-4">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                          <Key className="w-8 h-8 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-semibold">Secure Your Access</h3>
+                        <p className="text-muted-foreground">
+                          We'll send a one-time passcode to <span className="font-medium">{data.email}</span>
+                        </p>
+                        <Button
+                          onClick={sendPasscode}
+                          disabled={isLoading}
+                          className="gap-2"
+                        >
+                          {isLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <ArrowRight className="w-4 h-4" />
+                          )}
+                          Send Passcode
+                        </Button>
+                      </div>
+                    ) : !passcodeVerified ? (
+                      <div className="space-y-4">
+                        <div className="text-center">
+                          <h3 className="text-lg font-semibold mb-2">Enter Passcode</h3>
+                          <p className="text-sm text-muted-foreground mb-6">
+                            Check your email for a 6-character passcode
+                          </p>
+                        </div>
+                        <div className="flex justify-center gap-2 mb-4">
+                          {[...Array(6)].map((_, i) => (
+                            <Input
+                              key={i}
+                              type="text"
+                              maxLength={1}
+                              className="w-12 h-12 text-center text-lg font-mono"
+                              onChange={(e) => {
+                                const code = e.target.value
+                                if (code.length === 1) {
+                                  const fullCode = [...document.querySelectorAll('input[type="text"]')]
+                                    .map((input: any) => input.value)
+                                    .join('')
+                                  if (fullCode.length === 6) {
+                                    verifyPasscode(fullCode)
+                                  }
+                                }
+                              }}
+                            />
+                          ))}
+                        </div>
+                        {error && <p className="text-sm text-destructive text-center">{error}</p>}
+                        <div className="text-center">
+                          <Button
+                            variant="link"
+                            onClick={sendPasscode}
+                            disabled={isLoading}
+                          >
+                            {isLoading ? "Sending..." : "Resend passcode"}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : !data.deviceCredential ? (
+                      <div className="text-center space-y-4">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                          <Shield className="w-8 h-8 text-primary" />
+                        </div>
+                        <h3 className="text-lg font-semibold">Register This Device</h3>
+                        <p className="text-muted-foreground">
+                          Lock DigiT to this device for secure, passwordless access
+                        </p>
+                        <Button
+                          onClick={registerDevice}
+                          disabled={isRegisteringDevice}
+                          className="gap-2"
+                        >
+                          {isRegisteringDevice ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Key className="w-4 h-4" />
+                          )}
+                          Register Device
+                        </Button>
+                        {error && <p className="text-sm text-destructive">{error}</p>}
+                        <p className="text-xs text-muted-foreground">
+                          This will create a device-bound passkey that only works on this device
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center space-y-4">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 mb-4">
+                          <Check className="w-8 h-8 text-green-500" />
+                        </div>
+                        <h3 className="text-lg font-semibold">Device Registered</h3>
+                        <p className="text-muted-foreground">
+                          This device is now locked to your DigiT account
+                        </p>
+                        <div className="bg-secondary/50 rounded-lg p-4 text-left">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Key className="w-4 h-4 text-primary" />
+                            <span className="font-medium">Device Credential</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {data.deviceCredential?.id}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Navigation */}
+                <div className="flex items-center justify-between mt-8 pt-6 border-t border-border/50">
+                  <Button
+                    variant="ghost"
+                    onClick={handleBack}
+                    disabled={currentStage === 0 || isLoading}
+                    className="gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleNext}
+                    disabled={!canProceed() || isLoading}
+                    className="gap-2 bg-gradient-to-r from-primary to-cyan-600 hover:from-primary/90 hover:to-cyan-600/90"
+                  >
+                    {currentStage === ONBOARDING_STAGES.length - 1 ? "Complete Onboarding" : "Continue"}
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}

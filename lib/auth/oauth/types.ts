@@ -157,10 +157,27 @@ export const OKTA_OAUTH_CONFIG: OAuthProviderConfig = {
   enabled: !!process.env.OKTA_OAUTH_CLIENT_ID,
 }
 
+export const APPLE_OAUTH_CONFIG: OAuthProviderConfig = {
+  id: 'apple',
+  name: 'Apple',
+  clientId: process.env.APPLE_OAUTH_CLIENT_ID || '',
+  clientSecret: process.env.APPLE_OAUTH_CLIENT_SECRET || '',
+  redirectUri: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/v1/auth/oauth/callback/apple`,
+  scopes: [
+    'openid',
+    'email',
+    'name',
+  ],
+  authorizationUrl: 'https://appleid.apple.com/auth/authorize',
+  tokenUrl: 'https://appleid.apple.com/auth/token',
+  enabled: !!process.env.APPLE_OAUTH_CLIENT_ID,
+}
+
 export const SUPPORTED_PROVIDERS: Record<string, OAuthProviderConfig> = {
   google: GOOGLE_OAUTH_CONFIG,
   github: GITHUB_OAUTH_CONFIG,
   microsoft: MICROSOFT_OAUTH_CONFIG,
   'azure-ad': AZURE_AD_OAUTH_CONFIG,
   okta: OKTA_OAUTH_CONFIG,
+  apple: APPLE_OAUTH_CONFIG,
 }

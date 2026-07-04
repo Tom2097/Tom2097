@@ -4,12 +4,18 @@ import { DEFAULT_PASSWORDLESS_CONFIG, PasswordlessError, PasswordlessErrorCode }
 import type { MagicLinkOptions, MagicLinkToken, PasswordlessConfig } from "./types"
 import { logger } from "@/lib/logging"
 
-function generateToken(): string {
-  return randomBytes(32).toString("hex")
+function generatePasscode(): string {
+  // 6-digit alphanumeric passcode (e.g., A1B2C3)
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+  let passcode = ""
+  for (let i = 0; i < 6; i++) {
+    passcode += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return passcode
 }
 
 /** Hash a token for DB storage (only store hashed tokens). */
-function hashToken(token: string): string {
+export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex")
 }
 
@@ -56,24 +62,20 @@ export async function sendMagicLink(
     await db.from("profiles").insert({ id: userId, email: options.email.toLowerCase() })
   }
 
-  const rawToken = generateToken()
+  const passcode = generatePasscode()
   const expiresAt = new Date(Date.now() + config.tokenExpiration * 60 * 1000)
 
   await db.from("magic_link_tokens").insert({
     user_id: userId,
     email: options.email.toLowerCase(),
-    token_hash: hashToken(rawToken),
+    token_hash: hashToken(passcode),
     expires_at: expiresAt.toISOString(),
     redirect_to: options.redirectTo ?? null,
     used: false,
   })
 
-  const loginUrl = new URL("/api/auth/passwordless/verify", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
-  loginUrl.searchParams.set("token", rawToken)
-  loginUrl.searchParams.set("email", options.email.toLowerCase())
-
   const html = config.emailTemplate
-    .replace("{{loginUrl}}", loginUrl.toString())
+    .replace("{{passcode}}", passcode)
     .replace("{{expirationMinutes}}", String(config.tokenExpiration))
 
   // Best-effort email send via Resend or configured provider
@@ -91,7 +93,7 @@ export async function sendMagicLink(
         }),
       })
     } else {
-      logger.logWarn("[passwordless] No RESEND_API_KEY set; would send email", { email: options.email, url: loginUrl.toString() })
+      logger.logWarn("[passwordless] No RESEND_API_KEY set; would send email", { email: options.email })
     }
   } catch (err) {
     logger.logError("[passwordless] Email send failed:", { error: err })

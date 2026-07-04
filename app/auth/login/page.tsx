@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, Loader2, Eye, EyeOff, Fingerprint, Shield } from "lucide-react"
+import { AlertCircle, Loader2, Eye, EyeOff, Fingerprint, Shield, ArrowLeft, Key } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 import { startAuthentication } from "@simplewebauthn/browser"
+import { SUPPORTED_PROVIDERS } from "@/lib/auth/oauth/types"
 
 function LoginForm() {
   const [email, setEmail] = useState(() => {
@@ -27,18 +28,38 @@ function LoginForm() {
   const [passkeyAvailable, setPasskeyAvailable] = useState(false)
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [magicLinkLoading, setMagicLinkLoading] = useState(false)
+  const [hasWebAuthnCredentials, setHasWebAuthnCredentials] = useState<boolean | null>(null)
+  const [isNewDevice, setIsNewDevice] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get("redirect") || "/"
 
-  // Check if WebAuthn is available in this browser
+  // Check if WebAuthn is available and if user has credentials
   useEffect(() => {
     if (typeof window !== "undefined" && window.PublicKeyCredential) {
       PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.()
         .then((available) => setPasskeyAvailable(available))
         .catch(() => setPasskeyAvailable(false))
     }
-  }, [])
+    
+    // Check if user has WebAuthn credentials
+    const checkWebAuthnCredentials = async () => {
+      try {
+        const response = await fetch(`/api/v1/auth/webauthn/has-credentials?email=${encodeURIComponent(email)}`)
+        if (response.ok) {
+          const data = await response.json()
+          setHasWebAuthnCredentials(data.hasCredentials)
+          setIsNewDevice(!data.hasCredentials)
+        }
+      } catch {
+        setHasWebAuthnCredentials(false)
+      }
+    }
+    
+    if (email) {
+      checkWebAuthnCredentials()
+    }
+  }, [email])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -116,6 +137,80 @@ function LoginForm() {
     } finally {
       setIsPasskeyLoading(false)
     }
+  }
+
+  if (isNewDevice && email) {
+    return (
+      <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50">
+        <CardHeader className="text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Logo size="md" />
+          </div>
+          <CardTitle className="text-2xl">New Device Detected</CardTitle>
+          <CardDescription>This device is not recognized</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6 text-center">
+          <div className="flex items-center justify-center gap-2 text-destructive">
+            <AlertCircle className="w-5 h-5" />
+            <p className="text-sm">This device is not registered for your account.</p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            You can sign in with a linked SSO provider or re-enroll this device.
+          </p>
+          <div className="space-y-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-12 gap-2"
+              onClick={() => setIsNewDevice(false)}
+            >
+              <ArrowLeft className="w-4 h-4" /> Back to Sign In
+            </Button>
+            <Button
+              type="button"
+              className="w-full h-12 gap-2 bg-primary hover:bg-primary/90"
+              onClick={() => router.push(`/secure-onboarding?email=${encodeURIComponent(email)}`)}
+            >
+              <Key className="w-4 h-4" /> Re-enroll This Device
+            </Button>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border/50" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">or sign in with SSO</span>
+            </div>
+          </div>
+          <div className="flex justify-center gap-4">
+            {Object.entries(SUPPORTED_PROVIDERS).map(([providerId, config]) => (
+              config.enabled && !providerId.includes("azure") && (
+                <form
+                  key={providerId}
+                  action={`/api/v1/auth/oauth/${providerId}`}
+                  method="POST"
+                >
+                  <input type="hidden" name="redirect" value={redirect} />
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    size="icon"
+                    className="w-10 h-10 p-0 rounded-full"
+                    title={`Sign in with ${config.name}`}
+                  >
+                    <img
+                      src={`/icons/oauth/${providerId}.svg`}
+                      alt={config.name}
+                      className="w-5 h-5"
+                    />
+                  </Button>
+                </form>
+              )
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
