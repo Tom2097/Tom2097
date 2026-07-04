@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
-import { ArrowRight, ArrowLeft, Check, Loader2, Building2, User, Shield, Key, Camera, AlertTriangle } from "lucide-react"
+import { ArrowRight, ArrowLeft, Check, Loader2, Building2, User, Shield, Key, Camera, AlertTriangle, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils"
 import { CameraCapture } from "@/components/camera-capture"
 import { startRegistration } from "@simplewebauthn/browser"
 import { toast } from "sonner"
+import { verifyCompanyAgainstRegistry, requestManualReview } from "@/lib/company/registry-verification"
+import { roleRequiresApproval, requestRoleApproval } from "@/lib/company/role-approval"
+import { verifyIdentityWithKYC, requestKYCManualReview } from "@/lib/identity/kyc-verification"
 
 // Onboarding stages aligned with Secure Onboarding Spec
 const ONBOARDING_STAGES = [
@@ -77,6 +80,7 @@ export default function SecureOnboardingPage() {
   const [passcodeSent, setPasscodeSent] = useState(false)
   const [passcodeVerified, setPasscodeVerified] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
 
   const stage = ONBOARDING_STAGES[currentStage]
 
@@ -113,6 +117,29 @@ export default function SecureOnboardingPage() {
     if (currentStage === 0 && !data.photoDataUrl) {
       setIsCapturingPhoto(true)
       return
+    }
+
+    if (currentStage === 2) { // Role stage
+      // Check if role requires approval
+      if (data.role !== "member" && userId) {
+        const requiresApproval = await roleRequiresApproval(
+          userId,
+          "", // companyId will be set during onboarding completion
+          data.role
+        )
+        
+        if (requiresApproval) {
+          const approvalResult = await requestRoleApproval(
+            userId,
+            "", // companyId will be set during onboarding completion
+            data.role
+          )
+          
+          if (approvalResult.success) {
+            toast.info("Your role request has been submitted for approval")
+          }
+        }
+      }
     }
 
     if (currentStage === 3 && !passcodeSent) {
@@ -161,6 +188,7 @@ export default function SecureOnboardingPage() {
       const result = await response.json()
       updateData("passcode", code)
       setPasscodeVerified(true)
+      setUserId(result.userId) // Store user ID for manual review
       toast.success("Passcode verified")
     } catch (err) {
       setError("Invalid passcode. Please try again.")
@@ -350,6 +378,19 @@ export default function SecureOnboardingPage() {
                         />
                       </div>
                     </div>
+                    {data.governmentIdType && (
+                      <div className="space-y-2">
+                        <Label>Upload ID (Optional)</Label>
+                        <div className="flex gap-2">
+                          <Button variant="outline" className="gap-2">
+                            <Upload className="w-4 h-4" /> Front
+                          </Button>
+                          <Button variant="outline" className="gap-2">
+                            <Upload className="w-4 h-4" /> Back
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                     <div className="text-center">
                       <Button
                         onClick={() => setIsCapturingPhoto(true)}
@@ -358,6 +399,69 @@ export default function SecureOnboardingPage() {
                         <Camera className="w-4 h-4" /> Capture Live Photo
                       </Button>
                     </div>
+                    {data.photoDataUrl && data.governmentIdType && data.fullName && (
+                      <div className="text-center space-y-2 pt-4">
+                        <Button
+                          variant="outline"
+                          className="gap-2"
+                          onClick={async () => {
+                            if (!data.photoDataUrl || !data.governmentIdType || !data.fullName) {
+                              toast.error("Please provide selfie, ID type, and full name")
+                              return
+                            }
+                            
+                            setIsLoading(true)
+                            try {
+                              const result = await verifyIdentityWithKYC({
+                                userId: userId || "",
+                                selfieImage: data.photoDataUrl,
+                                idType: data.governmentIdType,
+                                idNumber: data.governmentIdNumber,
+                                fullName: data.fullName
+                              })
+                              
+                              if (result.verified) {
+                                toast.success("Identity verified successfully!")
+                              } else if (result.requiresManualReview) {
+                                toast.info("Identity verification requires manual review")
+                                // Request manual review
+                                const reviewResult = await requestKYCManualReview(
+                                  userId || "",
+                                  {
+                                    userId: userId || "",
+                                    selfieImage: data.photoDataUrl,
+                                    idType: data.governmentIdType,
+                                    idNumber: data.governmentIdNumber,
+                                    fullName: data.fullName
+                                  }
+                                )
+                                
+                                if (reviewResult.success) {
+                                  toast.info("Manual review requested. You'll be notified of the result.")
+                                }
+                              } else {
+                                toast.error("Identity verification failed")
+                              }
+                            } catch (err) {
+                              toast.error("Verification failed. Please try again.")
+                            } finally {
+                              setIsLoading(false)
+                            }
+                          }}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Shield className="w-4 h-4" />
+                          )}
+                          Verify Identity
+                        </Button>
+                        <p className="text-xs text-muted-foreground">
+                          We&apos;ll match your selfie with your government ID
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -421,10 +525,61 @@ export default function SecureOnboardingPage() {
                         className="bg-background/50"
                       />
                     </div>
-                    <div className="text-center">
-                      <Button variant="outline" className="gap-2">
-                        <Building2 className="w-4 h-4" /> Verify Company
+                    <div className="text-center space-y-2">
+                      <Button
+                        variant="outline"
+                        className="gap-2"
+                        onClick={async () => {
+                          setIsLoading(true)
+                          try {
+                            const result = await verifyCompanyAgainstRegistry({
+                              registrationNumber: data.companyRegistrationNumber,
+                              country: data.companyCountry,
+                              companyName: data.companyName,
+                              website: data.companyWebsite
+                            })
+                            
+                            if (result.verified) {
+                              toast.success("Company verified successfully!")
+                              // Update company data with verified information
+                              if (result.companyName) updateData("companyName", result.companyName)
+                              if (result.address) updateData("companyAddress", result.address)
+                            } else if (result.requiresManualReview) {
+                              toast.info("Company verification requires manual review")
+                              // Request manual review
+                              const reviewResult = await requestManualReview(userId || "", {
+                                registrationNumber: data.companyRegistrationNumber,
+                                country: data.companyCountry,
+                                companyName: data.companyName,
+                                userProvidedName: data.companyName,
+                                userProvidedWebsite: data.companyWebsite,
+                                userProvidedAddress: data.companyAddress
+                              })
+                              
+                              if (reviewResult.success) {
+                                toast.info("Manual review requested. You'll be notified of the result.")
+                              }
+                            } else {
+                              toast.error("Company verification failed")
+                            }
+                          } catch (err) {
+                            toast.error("Verification failed. Please try again.")
+                          } finally {
+                            setIsLoading(false)
+                          }
+                        }}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Building2 className="w-4 h-4" />
+                        )}
+                        Verify Company
                       </Button>
+                      <p className="text-xs text-muted-foreground">
+                        We&apos;ll verify your company against official registries
+                      </p>
                     </div>
                   </div>
                 )}

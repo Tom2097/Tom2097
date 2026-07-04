@@ -13,6 +13,7 @@ import { AlertCircle, Loader2, Eye, EyeOff, Fingerprint, Shield, ArrowLeft, Key 
 import { Logo } from "@/components/digit/logo"
 import { startAuthentication } from "@simplewebauthn/browser"
 import { SUPPORTED_PROVIDERS } from "@/lib/auth/oauth/types"
+import { toast } from "sonner"
 
 function LoginForm() {
   const [email, setEmail] = useState(() => {
@@ -169,6 +170,37 @@ function LoginForm() {
             <Button
               type="button"
               className="w-full h-12 gap-2 bg-primary hover:bg-primary/90"
+              onClick={async () => {
+                setIsLoading(true)
+                try {
+                  // Send a fresh one-time passcode to the user's email
+                  const response = await fetch("/api/v1/auth/passwordless/request", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email }),
+                  })
+                  if (!response.ok) throw new Error("Failed to send passcode")
+                  
+                  toast.success("New passcode sent to your email")
+                  setIsNewDevice(false) // Go back to sign in to enter the new passcode
+                } catch (err) {
+                  toast.error("Failed to send passcode. Please try again.")
+                } finally {
+                  setIsLoading(false)
+                }
+              }}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Key className="w-4 h-4" />
+              )}
+              Send New Passcode
+            </Button>
+            <Button
+              type="button"
+              className="w-full h-12 gap-2 bg-secondary hover:bg-secondary/90"
               onClick={() => router.push(`/secure-onboarding?email=${encodeURIComponent(email)}`)}
             >
               <Key className="w-4 h-4" /> Re-enroll This Device
