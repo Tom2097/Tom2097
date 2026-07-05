@@ -2,7 +2,8 @@ import { isCurrentUserPlatformOwner } from "@/lib/platform/owner"
 import { createServiceClient } from "@/lib/supabase/service"
 import { notFound } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Shield, AlertTriangle, CheckCircle2 } from "lucide-react"
+import { Shield, AlertTriangle, CheckCircle2, Clock } from "lucide-react"
+import { AuditRetention } from "@/components/digit/audit-retention"
 
 export const dynamic = "force-dynamic"
 
@@ -95,7 +96,10 @@ export default async function AdminSecurityPage() {
             )}
           </div>
         </CardContent>
-      </Card>
-    </div>
-  )
+       </Card>
+       <div className="mt-8">
+         <AuditRetention />
+       </div>
+      </div>
+    )
 }

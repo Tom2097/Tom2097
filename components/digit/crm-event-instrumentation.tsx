@@ -74,7 +74,7 @@ export function CrmEventInstrumentation() {
           funnelData.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No funnel data</p>
           : <div className="space-y-3">
             <div className="h-[250px]">
-              <LiveChart data={funnelData.map((d) => ({ name: d.step, count: d.count }))} dataKey="count" type="bar" height={250} color="hsl(var(--chart-2))" />
+              <LiveChart data={funnelData.map((d) => ({ name: d.step, count: d.count }))} dataKey="count" type="bar" color="hsl(var(--chart-2))" />
             </div>
             <div className="space-y-1.5">
               {funnelData.map((step, i) => (
@@ -92,7 +92,7 @@ export function CrmEventInstrumentation() {
         ) : (
           <div className="space-y-4">
             {retentionData.length > 0 && <div className="h-[250px]">
-              <LiveChart data={retentionData.map((d) => ({ name: d.week, rate: d.rate }))} dataKey="rate" type="area" height={250} color="hsl(var(--chart-2))" />
+              <LiveChart data={retentionData.map((d) => ({ name: d.week, rate: d.rate }))} dataKey="rate" type="area" color="hsl(var(--chart-2))" />
             </div>}
             {cohorts.length === 0 ? <p className="text-xs text-muted-foreground text-center py-4">No cohort data</p>
             : <div className="space-y-2">

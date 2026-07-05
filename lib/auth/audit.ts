@@ -41,6 +41,11 @@ export type AuthAuditAction =
   | "search.documents_indexed"
   | "search.document_removed"
   | "search.backfilled"
+  // Module #5: document processing
+  | "document.processing_started"
+  | "document.processing_completed"
+  | "document.processing_failed"
+  | "document.processed"
   // Module #6: workflow automation
   | "workflow.created"
   | "workflow.updated"
@@ -66,6 +71,7 @@ export type AuthAuditAction =
   | "billing.payment_failed"
   | "billing.trial_started"
   | "billing.refund_processed"
+  | "billing.usage_recorded"
   // Module #10: audit logging
   | "audit.exported"
   | "audit.retention_updated"
@@ -77,6 +83,15 @@ export type AuthAuditAction =
   | "feedback.assigned"
   | "feedback.deleted"
   | "feedback.commented"
+  // Module #12: AI Intelligence
+  | "ai.model_created"
+  | "ai.model_training_started"
+  | "ai.model_training_completed"
+  | "ai.model_training_failed"
+  | "ai.model_deployed"
+  | "ai.model_deployment_failed"
+  | "ai.prediction_made"
+  | "ai.model_prediction"
   | "feedback.voted"
   | "feedback.unvoted"
   // Module #12: document management

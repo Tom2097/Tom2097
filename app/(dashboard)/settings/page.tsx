@@ -45,7 +45,7 @@ import {
 import { createClient } from "@/lib/supabase/client"
 import { createBillingPortalSession } from "@/app/actions/stripe"
 import { SUBSCRIPTION_PLANS, formatPrice, getPlanById } from "@/lib/products"
-import { UsageTracking } from "@/components/digit/usage-tracking"
+import { UsageMonitor } from "@/components/digit/usage-monitor"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -609,14 +609,7 @@ export default function SettingsPage() {
           {currentPlan && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
               <h3 className="text-lg font-semibold mb-4">Usage & Limits</h3>
-              <UsageTracking 
-                plan={currentPlan}
-                usage={{
-                  dataPoints: Math.floor(currentPlan.limits.dataPoints * 0.65),
-                  apiCalls: Math.floor(currentPlan.limits.apiCalls * 0.45),
-                  teamMembers: 3,
-                  modulesUsed: Math.min(2, currentPlan.limits.modules)
-                }}
+              <UsageMonitor
               />
             </motion.div>
           )}

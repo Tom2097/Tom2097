@@ -17,7 +17,8 @@ const adminNav = [
   { label: "Dashboard", href: "/platform/admin/dashboard", icon: LayoutDashboard },
   { label: "Tenants", href: "/platform/admin/tenants", icon: Building2 },
   { label: "Users", href: "/platform/admin/users", icon: Users },
-  { label: "Security", href: "/platform/admin/security", icon: Shield },
+  { label: "Roles", href: "/platform/admin/roles", icon: Shield },
+  { label: "Security", href: "/platform/admin/security", icon: Activity },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -10,6 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Check, Building2, SlidersHorizontal, Database, Puzzle, Shield, Rocket, Loader2 } from "lucide-react"
 import { ComplianceFrameworkPanel, ResourcesFrameworkPanel, PerformanceFrameworkPanel, OperationalFrameworkPanel } from "@/components/digit/wizard-panels"
+import { HealthcareFrameworkPanel } from "@/components/digit/wizard-panels/HealthcareFrameworkPanel"
+import { BankingFrameworkPanel } from "@/components/digit/wizard-panels/BankingFrameworkPanel"
+import { LegalFrameworkPanel } from "@/components/digit/wizard-panels/LegalFrameworkPanel"
+import { ManufacturingFrameworkPanel } from "@/components/digit/wizard-panels/ManufacturingFrameworkPanel"
+import { RetailFrameworkPanel } from "@/components/digit/wizard-panels/RetailFrameworkPanel"
+import { EducationFrameworkPanel } from "@/components/digit/wizard-panels/EducationFrameworkPanel"
 
 const steps = [
   { id: "general", title: "General", icon: Building2 },
@@ -20,7 +26,18 @@ const steps = [
   { id: "review", title: "Review & Activate", icon: Rocket },
 ]
 
-const verticals = ["Compliance", "Resources", "Performance", "Operational"]
+const verticals = [
+  "Compliance",
+  "Resources",
+  "Performance",
+  "Operational",
+  "Healthcare",
+  "Banking & Finance",
+  "Legal",
+  "Manufacturing",
+  "Retail",
+  "Education"
+]
 
 interface SetupWizardProps {
   onComplete: () => void
@@ -29,7 +46,7 @@ interface SetupWizardProps {
 
 export function SetupWizard({ onComplete, initialVertical = "compliance" }: SetupWizardProps) {
   const [currentStep, setCurrentStep] = useState(0)
-  const [vertical, setVertical] = useState(initialVertical)
+  const [vertical, setVertical] = useState(initialVertical.toLowerCase())
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [formData, setFormData] = useState<Record<string, unknown>>({
@@ -89,12 +106,18 @@ export function SetupWizard({ onComplete, initialVertical = "compliance" }: Setu
   const Step = steps[currentStep]
 
   const frameworkPanel = () => {
-    switch (vertical) {
-      case "compliance": return <ComplianceFrameworkPanel data={formData} onChange={updateFramework} />
-      case "resources": return <ResourcesFrameworkPanel data={formData} onChange={updateFramework} />
-      case "performance": return <PerformanceFrameworkPanel data={formData} onChange={updateFramework} />
-      case "operational": return <OperationalFrameworkPanel data={formData} onChange={updateFramework} />
-      default: return null
+    switch (vertical.toLowerCase()) {
+      case "compliance": return <ComplianceFrameworkPanel data={formData} onChange={update} />
+      case "resources": return <ResourcesFrameworkPanel data={formData} onChange={update} />
+      case "performance": return <PerformanceFrameworkPanel data={formData} onChange={update} />
+      case "operational": return <OperationalFrameworkPanel data={formData} onChange={update} />
+      case "healthcare": return <HealthcareFrameworkPanel formData={formData} update={update} />
+      case "banking & finance": return <BankingFrameworkPanel formData={formData} update={update} />
+      case "legal": return <LegalFrameworkPanel formData={formData} update={update} />
+      case "manufacturing": return <ManufacturingFrameworkPanel formData={formData} update={update} />
+      case "retail": return <RetailFrameworkPanel formData={formData} update={update} />
+      case "education": return <EducationFrameworkPanel formData={formData} update={update} />
+      default: return <ComplianceFrameworkPanel data={formData} onChange={update} />
     }
   }
 
@@ -144,7 +167,9 @@ export function SetupWizard({ onComplete, initialVertical = "compliance" }: Setu
                     <Select value={vertical} onValueChange={(v) => { setVertical(v); update("vertical", v) }}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {verticals.map((v) => <SelectItem key={v.toLowerCase()} value={v.toLowerCase()}>{v}</SelectItem>)}
+                        {verticals.map((v) => (
+                          <SelectItem key={v.toLowerCase().replace(/[ &]/g, '-')} value={v.toLowerCase()}>{v}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

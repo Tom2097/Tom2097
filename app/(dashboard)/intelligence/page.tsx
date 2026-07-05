@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IntelligenceCommandCenter } from "@/components/digit/intelligence-command-center"
 import { IndustryIntelligenceHub } from "@/components/digit/industry-intelligence-hub"
 import { CausalChainView } from "@/components/digit/causal-chain-view"
+import { PredictiveModeling } from "@/components/digit/predictive-modeling"
 import { Brain, BarChart3, Network, Sparkles } from "lucide-react"
 
 export default function IntelligencePage() {
@@ -23,7 +24,7 @@ export default function IntelligencePage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="command-center" className="gap-2">
             <Brain className="w-4 h-4" />
             Command Center
@@ -35,6 +36,10 @@ export default function IntelligencePage() {
           <TabsTrigger value="causal-chains" className="gap-2">
             <Network className="w-4 h-4" />
             Causal Chains
+          </TabsTrigger>
+          <TabsTrigger value="predictive" className="gap-2">
+            <Sparkles className="w-4 h-4" />
+            Predictive Modeling
           </TabsTrigger>
         </TabsList>
 
@@ -48,6 +53,10 @@ export default function IntelligencePage() {
 
         <TabsContent value="causal-chains" className="mt-4">
           <CausalChainView />
+        </TabsContent>
+        
+        <TabsContent value="predictive" className="mt-4">
+          <PredictiveModeling />
         </TabsContent>
       </Tabs>
     </div>

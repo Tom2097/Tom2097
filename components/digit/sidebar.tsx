@@ -23,17 +23,24 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo, LogoIcon } from '@/components/digit/logo'
+import { getFeatureFlags } from '@/lib/feature-flags'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-const modules = [
-  { id: 'analytics', title: 'AI Analytics', icon: BarChart3, href: '/analytics' },
+// Base modules available to all users
+const BASE_MODULES = [
   { id: 'crm', title: 'Smart CRM', icon: Users, href: '/crm' },
-  { id: 'workspace-1', title: 'Operations Workspace', icon: LayoutGrid, href: '/operations' },
-  { id: 'workspace-2', title: 'Performance Workspace', icon: Activity, href: '/performance' },
-  { id: 'workspace-3', title: 'Resource Workspace', icon: Boxes, href: '/resources' },
-  { id: 'workspace-4', title: 'Compliance Workspace', icon: ShieldCheck, href: '/compliance' },
+  { id: 'operations', title: 'Operations', icon: LayoutGrid, href: '/operations' },
+  { id: 'performance', title: 'Performance', icon: Activity, href: '/performance' },
+  { id: 'resources', title: 'Resources', icon: Boxes, href: '/resources' },
+  { id: 'compliance', title: 'Compliance', icon: ShieldCheck, href: '/compliance' },
   { id: 'feedback', title: 'Feedback', icon: MessageSquarePlus, href: '/feedback' },
+]
+
+// AI-related modules (controlled by feature flags)
+const AI_MODULES = [
+  { id: 'intelligence', title: 'AI Intelligence', icon: Brain, href: '/intelligence', flag: 'ai_intelligence' },
+  { id: 'analytics', title: 'AI Analytics', icon: BarChart3, href: '/analytics', flag: 'advanced_analytics' },
 ]
 
 interface SidebarProps {
@@ -45,6 +52,13 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const pathname = usePathname()
   const { data: ownerData } = useSWR<{ isOwner: boolean }>('/api/platform/owner-check', fetcher)
   const isOwner = ownerData?.isOwner ?? false
+  
+  // Fetch feature flags
+  const { data: featureFlags } = useSWR<Record<string, boolean>>(
+    '/api/v1/feature-flags',
+    fetcher,
+    { fallbackData: { ai_intelligence: true, advanced_analytics: true } }
+  )
 
   return (
     <aside 
@@ -92,9 +106,35 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
           {isCollapsed && <div className="h-4" />}
 
           {/* Module Links */}
-          {modules.map((module) => {
+          {BASE_MODULES.map((module) => {
             const Icon = module.icon
             const isActive = pathname === module.href
+            
+            return (
+              <Link
+                key={module.id}
+                href={module.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                  isActive
+                    ? "bg-primary/10 text-primary digit-glow-sm"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                )}
+                title={isCollapsed ? module.title : undefined}
+              >
+                <Icon className="h-5 w-5 shrink-0" />
+                {!isCollapsed && <span>{module.title}</span>}
+              </Link>
+            )
+          })}
+          
+          {/* AI Modules (conditional based on feature flags) */}
+          {AI_MODULES.map((module) => {
+            const Icon = module.icon
+            const isActive = pathname === module.href
+            const isEnabled = featureFlags?.[module.flag as keyof typeof featureFlags] ?? false
+            
+            if (!isEnabled) return null
             
             return (
               <Link

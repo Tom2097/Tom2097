@@ -195,7 +195,7 @@ export function AnalyticsView(data: AnalyticsViewData) {
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartContainer title="Platform Activity Trend" subtitle="Event volume over the selected period (Analytics)">
           {data.activityTrend.length > 0 ? (
-            <LiveChart data={data.activityTrend} dataKey="value" type="area" height={300} currency={false} />
+            <LiveChart data={data.activityTrend} dataKey="value" type="area" currency={false} />
           ) : (
             <EmptyState icon={Activity} label="No activity recorded in this window" />
           )}

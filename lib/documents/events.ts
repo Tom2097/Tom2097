@@ -8,6 +8,7 @@ export type DocumentEventType =
   | "document.classified"
   | "document.extracted"
   | "document.routed"
+  | "document.processed"
   | "document.triggered"
   | "document.legal_hold_placed"
   | "document.legal_hold_released"

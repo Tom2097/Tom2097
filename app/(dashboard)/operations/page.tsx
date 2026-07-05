@@ -9,11 +9,12 @@ import { OperationalCopilot } from "@/components/digit/operational-copilot"
 import { VerticalIntelligence } from "@/components/digit/vertical-intelligence"
 import { VerticalRecipes } from "@/components/digit/vertical-recipes"
 import { CommandPalette } from "@/components/digit/command-palette"
+import { OperationalReports } from "@/components/digit/operational-reports"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Inbox, Beaker, BookTemplate, Columns, ArrowLeftRight, Brain, FileSearch, MessageSquare, Sparkles, ListTree, Zap, FileText } from "lucide-react"
+import { Inbox, Beaker, BookTemplate, Columns, ArrowLeftRight, Brain, FileSearch, MessageSquare, Sparkles, ListTree, Zap, FileText, BarChart2 } from "lucide-react"
 
 const sampleDocuments = [
   { id: "doc-1", name: "Invoice_Acme_2024.pdf", content: "INVOICE #INV-001\nDate: 2024-01-15\nVendor: Acme Corp\nTotal: $12,500.00\nItems:\n  - Widget A x 50: $5,000\n  - Widget B x 30: $7,500" },
@@ -57,9 +58,10 @@ export default function OperationsPage() {
               <TabsTrigger value="feed"><Inbox className="h-4 w-4 mr-1" />Feed</TabsTrigger>
               <TabsTrigger value="split"><Columns className="h-4 w-4 mr-1" />Split View</TabsTrigger>
               <TabsTrigger value="compare"><ArrowLeftRight className="h-4 w-4 mr-1" />Compare</TabsTrigger>
-              <TabsTrigger value="intelligence"><Beaker className="h-4 w-4 mr-1" />Intelligence</TabsTrigger>
-              <TabsTrigger value="recipes"><BookTemplate className="h-4 w-4 mr-1" />Recipes</TabsTrigger>
-            </TabsList>
+            <TabsTrigger value="intelligence"><Beaker className="h-4 w-4 mr-1" />Intelligence</TabsTrigger>
+            <TabsTrigger value="recipes"><BookTemplate className="h-4 w-4 mr-1" />Recipes</TabsTrigger>
+            <TabsTrigger value="reports"><BarChart2 className="h-4 w-4 mr-1" />Reports</TabsTrigger>
+          </TabsList>
 
             <TabsContent value="feed" className="mt-4">
               <div className="grid grid-cols-1 gap-4">
@@ -83,6 +85,10 @@ export default function OperationsPage() {
 
             <TabsContent value="recipes" className="mt-4">
               <VerticalRecipes />
+            </TabsContent>
+            
+            <TabsContent value="reports" className="mt-4">
+              <OperationalReports />
             </TabsContent>
           </Tabs>
         </div>

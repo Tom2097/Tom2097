@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { Users, Target, Phone, Mail, FileText, Heart, BarChart3, Sparkles, Zap, AlertTriangle, MessageSquare, Copy, UserPlus, Sun, Globe, DollarSign, TrendingUp as TrendingUpIcon, Layers } from 'lucide-react'
+import { Users, Target, Phone, Mail, FileText, Heart, BarChart3, Sparkles, Zap, AlertTriangle, MessageSquare, Copy, UserPlus, Sun, Globe, DollarSign, TrendingUp as TrendingUpIcon, Layers, Ticket } from 'lucide-react'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
 import { CrmContactsManager, type CrmContactRow } from '@/components/digit/crm-contacts-manager'
@@ -24,6 +24,8 @@ import { CrmEventInstrumentation } from '@/components/digit/crm-event-instrument
 import { CrmPipelineBoard } from '@/components/digit/crm-pipeline-board'
 import { CrmAccountsHierarchy } from '@/components/digit/crm-accounts-hierarchy'
 import { CrmForecastReports } from '@/components/digit/crm-forecast-reports'
+import { CrmSupportTickets } from '@/components/digit/crm-support-tickets'
+import { CrmSalesAnalytics } from '@/components/digit/crm-sales-analytics'
 import { extractTenantContext } from '@/lib/multitenant/context'
 import { getPipelineSummary, listContacts } from '@/lib/crm/engine'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -180,6 +182,8 @@ export default async function CRMPage() {
             <TabsTrigger value="tasks" className="gap-0.5"><Target className="w-3 h-3" /> Tasks</TabsTrigger>
             <TabsTrigger value="timeline" className="gap-0.5"><Phone className="w-3 h-3" /> Time</TabsTrigger>
             <TabsTrigger value="success" className="gap-0.5"><Heart className="w-3 h-3" /> CS</TabsTrigger>
+            <TabsTrigger value="support" className="gap-0.5"><Ticket className="w-3 h-3" /> Tickets</TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-0.5"><Target className="w-3 h-3" /> Analytics</TabsTrigger>
           </TabsList>
           <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
         </div>
@@ -296,6 +300,14 @@ export default async function CRMPage() {
           <div className="rounded-2xl border border-border/50 bg-card p-6">
             <CrmForecastReports />
           </div>
+        </TabsContent>
+        
+        <TabsContent value="support" className="mt-4">
+          <CrmSupportTickets />
+        </TabsContent>
+        
+        <TabsContent value="analytics" className="mt-4">
+          <CrmSalesAnalytics />
         </TabsContent>
       </Tabs>
     </div>
