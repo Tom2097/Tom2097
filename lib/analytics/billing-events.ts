@@ -1,5 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
-import { logAuthEvent } from "@/lib/auth/audit"
+import { logAuthEvent, type AuthAuditAction } from "@/lib/auth/audit"
 
 interface BillingAnalyticsEvent {
   eventType: "trial_started" | "trial_ended" | "first_payment" | "refund_requested" | "refund_processed" | "subscription_cancelled"
@@ -22,8 +22,20 @@ export async function trackBillingEvent(event: BillingAnalyticsEvent): Promise<v
   })
 
   // Record in audit log
+  const billingActions: Record<string, AuthAuditAction> = {
+    "session_created": "billing.session_created",
+    "subscription_created": "billing.subscription_created",
+    "subscription_updated": "billing.subscription_updated",
+    "subscription_cancelled": "billing.subscription_cancelled",
+    "payment_completed": "billing.payment_completed",
+    "payment_failed": "billing.payment_failed",
+    "trial_started": "billing.trial_started",
+    "refund_processed": "billing.refund_processed"
+  }
+  
+  const action = billingActions[event.eventType] || "billing.subscription_updated"
   await logAuthEvent({
-    action: `billing.${event.eventType}` as string, // Type assertion for audit action
+    action,
     organizationId: event.organizationId,
     userId: event.userId,
     resourceType: "subscription",

@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { logAuthEvent } from "@/lib/auth/audit"
 import 'server-only'
+import type Stripe from "stripe"
 import {
   trackTrialStarted,
   trackTrialEnded,
@@ -205,9 +206,9 @@ export async function processRefund(
 
       if (invoices.data.length > 0) {
         const latestInvoice = invoices.data[0]
-        if (latestInvoice.payment_intent && typeof latestInvoice.payment_intent === "string") {
+        if (latestInvoice.payment_intent && typeof (latestInvoice as Stripe.Invoice).payment_intent === "string") {
           await stripe.refunds.create({
-             payment_intent: latestInvoice.payment_intent,
+             payment_intent: (latestInvoice as Stripe.Invoice).payment_intent as string,
           })
         }
       }

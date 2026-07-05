@@ -2,7 +2,7 @@
  * Supabase Session Store
  * Stores session data in Supabase database
  */
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { SessionStore, UserSession, SessionQueryOptions, SessionStats } from './types'
 import { SessionError, SessionErrorCode } from './types'
 import { generateSessionId, isSessionExpired } from './utils'

@@ -4,6 +4,32 @@ import { Button } from '@/components/ui/button'
 import { Mic, MicOff } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 
+interface SpeechRecognitionResult {
+  0: {
+    transcript: string
+  }
+  length: number
+  isFinal: boolean
+}
+
+interface SpeechRecognitionResultList {
+  [index: number]: SpeechRecognitionResult
+  length: number
+}
+
+interface SpeechRecognition {
+  new (): SpeechRecognition
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  onresult: ((event: SpeechRecognitionEvent) => void) | null
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null
+  onend: (() => void) | null
+  start: () => void
+  stop: () => void
+  abort: () => void
+}
+
 interface SpeechRecognitionEvent {
   results: SpeechRecognitionResultList
 }
@@ -21,21 +47,21 @@ export function MicrophoneButton({ onTranscript, className }: MicrophoneButtonPr
   const [isListening, setIsListening] = useState(false)
   const [error, setError] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
-    const SpeechRecognition = (window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition || (window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition
+    const SpeechRecognition = (window as Window & typeof globalThis & { SpeechRecognition?: SpeechRecognition; webkitSpeechRecognition?: SpeechRecognition }).SpeechRecognition || (window as Window & typeof globalThis & { SpeechRecognition?: SpeechRecognition; webkitSpeechRecognition?: SpeechRecognition }).webkitSpeechRecognition
     if (!SpeechRecognition) return 'Speech recognition is not supported in your browser.'
     return null
   })
-   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
   const onTranscriptRef = useRef(onTranscript)
 
   useEffect(() => {
     onTranscriptRef.current = onTranscript
   }, [onTranscript])
 
-   useEffect(() => {
-     const SpeechRecognition = (window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition || (window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition
+  useEffect(() => {
+    const SpeechRecognition = (window as Window & typeof globalThis & { SpeechRecognition?: SpeechRecognition; webkitSpeechRecognition?: SpeechRecognition }).SpeechRecognition || (window as Window & typeof globalThis & { SpeechRecognition?: SpeechRecognition; webkitSpeechRecognition?: SpeechRecognition }).webkitSpeechRecognition
 
-     if (!SpeechRecognition) return
+    if (!SpeechRecognition) return
 
     const recognition = new SpeechRecognition()
     recognition.continuous = false

@@ -30,15 +30,20 @@ interface R2StorageConfig {
 }
 
 // Lazy load AWS SDK modules to avoid initialization errors
-let s3ClientModule: S3Module | null = null
-let presignerModule: { createPresignedPost: (params: unknown) => Promise<{ url: string; fields: Record<string, string> }> } | null = null
+let s3ClientModule: any = null
+let presignerModule: any = null
 
 async function loadS3Modules() {
    if (!s3ClientModule) {
     s3ClientModule = await import('@aws-sdk/client-s3')
   }
   if (!presignerModule) {
-    presignerModule = await import('@aws-sdk/s3-request-presigner')
+    const presigner = await import('@aws-sdk/s3-request-presigner')
+    const { createPresignedPost } = await import('@aws-sdk/s3-presigned-post')
+    presignerModule = {
+      createPresignedPost,
+      getSignedUrl: presigner.getSignedUrl
+    }
   }
   return { s3ClientModule, presignerModule }
 }
@@ -49,7 +54,7 @@ async function loadS3Modules() {
  */
 export class R2StorageProvider implements StorageProvider {
   private config: R2StorageConfig
-   private clientPromise: Promise<S3Client> | null = null
+   private clientPromise: Promise<any> | null = null
 
   constructor(config: R2StorageConfig) {
     if (!config.accountId || !config.accessKeyId || !config.secretAccessKey || !config.bucketName) {

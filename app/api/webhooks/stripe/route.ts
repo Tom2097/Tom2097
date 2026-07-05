@@ -68,17 +68,16 @@ export async function POST(req: Request) {
       const organizationId = subscription.metadata?.organization_id
 
       if (organizationId) {
-        const subscriptionItem = subscription.items.data[0]
         await supabase
           .from("subscriptions")
           .update({
             status: subscription.status,
             cancel_at_period_end: subscription.cancel_at_period_end,
             current_period_start: new Date(
-              subscriptionItem.current_period_start * 1000
+              subscription.current_period_start * 1000
             ).toISOString(),
             current_period_end: new Date(
-              subscriptionItem.current_period_end * 1000
+              subscription.current_period_end * 1000
             ).toISOString(),
           })
           .eq("organization_id", organizationId)

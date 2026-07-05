@@ -1,5 +1,7 @@
 import { generateText, streamText } from "ai"
 import { randomUUID } from "crypto"
+import { BASE_SYSTEM_PROMPT, DEFAULT_CHAT_MODEL } from "@/lib/ai/config"
+import { createServiceClient } from "@/lib/supabase/service"
 
 /**
  * Module #7.6: File Upload and Document Analysis.
@@ -627,7 +629,7 @@ export async function getUploadedFiles(
       .order("uploaded_at", { ascending: false })
     
     if (options.limit) query = query.limit(options.limit)
-    if (options.offset) query = query.offset(options.offset)
+    if (options.offset) query = query.range(options.offset, (options.offset + (options.limit || 100)) - 1)
     if (options.status) query = query.eq("status", options.status)
     if (options.analysisType) query = query.eq("analysis_type", options.analysisType)
     if (options.userId) query = query.eq("user_id", options.userId)

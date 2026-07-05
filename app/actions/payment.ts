@@ -198,8 +198,8 @@ export async function confirmTrialSubscription(setupIntentId: string, planId: st
     plan_id: plan.id,
     status: "trialing" as const,
     trial_ends_at: new Date((subscription.trial_end ?? 0) * 1000).toISOString(),
-    current_period_start: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
-    current_period_end: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
+    current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+    current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
     billing_interval: plan.interval as "month" | "year",
   }
 
@@ -269,8 +269,6 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
     },
   })
 
-  const subscriptionItem = subscription.items.data[0]
-
   // Update the subscription row - it should exist from createPaymentIntent or be created here
   const { data: existingRow, error: selectError } = await db
     .from("subscriptions")
@@ -292,8 +290,8 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
         stripe_customer_id: customerId,
         plan_id: plan.id,
         status: "active",
-        current_period_start: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
-        current_period_end: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
+        current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
       })
       .eq("organization_id", profile.organization_id)
 
@@ -311,8 +309,8 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
         stripe_customer_id: customerId,
         plan_id: plan.id,
         status: "active",
-        current_period_start: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
-        current_period_end: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
+        current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
       })
 
     if (insertError) {

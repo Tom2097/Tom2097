@@ -21,14 +21,14 @@ export async function getCrmWhatsAppConfig(
     .eq("id", organizationId)
     .maybeSingle()
 
-   const config = (data as { whatsapp_config?: Record<string, unknown> })?.whatsapp_config || {}
+    const config = (data as { whatsapp_config?: { webhookVerified?: unknown; autoCreateContact?: unknown; autoCreateLead?: unknown; nurtureEnabled?: unknown; defaultAssignee?: unknown } })?.whatsapp_config || {}
   return {
     organizationId,
-    webhookVerified: config.webhookVerified ?? false,
-    autoCreateContact: config.autoCreateContact ?? true,
-    autoCreateLead: config.autoCreateLead ?? true,
-    nurtureEnabled: config.nurtureEnabled ?? true,
-    defaultAssignee: config.defaultAssignee ?? null,
+    webhookVerified: config.webhookVerified === true,
+    autoCreateContact: config.autoCreateContact !== false,
+    autoCreateLead: config.autoCreateLead !== false,
+    nurtureEnabled: config.nurtureEnabled !== false,
+    defaultAssignee: typeof config.defaultAssignee === 'string' ? config.defaultAssignee : null,
   }
 }
 

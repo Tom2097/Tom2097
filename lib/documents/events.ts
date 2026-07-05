@@ -1,5 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
-import { logAuthEvent } from "@/lib/auth/audit"
+import { logAuthEvent, type AuthAuditAction } from "@/lib/auth/audit"
 import { triggerWorkflowsFromDocumentEvent } from "@/lib/workflows/trigger-from-event"
 
 export type DocumentEventType =
@@ -37,8 +37,23 @@ export async function dispatchDocumentEvent(event: DocumentEvent): Promise<void>
       metadata: event.metadata ?? {},
     })
 
+    const documentActions: Record<string, AuthAuditAction> = {
+      "document.created": "document.uploaded",
+      "document.uploaded": "document.uploaded",
+      "document.classified": "document.uploaded",
+      "document.extracted": "document.uploaded",
+      "document.routed": "document.uploaded",
+      "document.triggered": "document.uploaded",
+      "document.legal_hold_placed": "legal.document_archived",
+      "document.legal_hold_released": "legal.document_published",
+      "document.signature_requested": "document.uploaded",
+      "document.signature_completed": "document.uploaded",
+      "document.archived": "document.uploaded",
+      "document.deleted": "document.deleted"
+    }
+    
     await logAuthEvent({
-      action: event.type as string,
+      action: documentActions[event.type] || "document.uploaded",
       userId: event.actor_id,
       organizationId: event.organization_id,
       resourceType: "document",
