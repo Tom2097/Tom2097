@@ -228,7 +228,7 @@ function LoginForm() {
                     variant="outline"
                     size="icon"
                     className="w-10 h-10 p-0 rounded-full"
-                    title={`Sign in with ${config.name}`}
+                    title={`Sign in with ${config.name.replace("'", "&apos;")}`}
                   >
                     <img
                       src={`/icons/oauth/${providerId}.svg`}

@@ -201,10 +201,10 @@ export async function logAuthEvent(entry: AuthAuditEntry): Promise<void> {
     })
 
     if (error) {
-      console.log("[v0] Failed to write auth audit log:", error.message)
+      console.warn("[v0] Failed to write auth audit log:", error.message)
     }
   } catch (err) {
-    console.log("[v0] Unexpected error writing auth audit log:", err)
+    console.error("[v0] Unexpected error writing auth audit log:", err)
   }
 }
 

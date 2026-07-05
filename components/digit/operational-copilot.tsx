@@ -63,7 +63,7 @@ export function OperationalCopilot() {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0 flex-1 flex flex-col">
-        <ScrollArea ref={scrollRef as any} className="flex-1 px-4 py-2">
+        <ScrollArea ref={scrollRef as React.RefObject<HTMLDivElement>} className="flex-1 px-4 py-2">
           <div className="space-y-3">
             {messages.map((msg, i) => (
               <motion.div

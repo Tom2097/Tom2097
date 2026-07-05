@@ -50,7 +50,7 @@ export class SessionService {
     const ipAddress = extractIP(request)
     const userAgent = extractUserAgent(request)
     const deviceInfo = parseDeviceInfo(userAgent)
-    const fingerprint = this.config.enableDeviceFingerprint
+    this.config.enableDeviceFingerprint
       ? generateDeviceFingerprint(userAgent, ipAddress)
       : undefined
 

@@ -425,7 +425,7 @@ function calculateRFMScores(
 ): { recencyScore: RFMScore; frequencyScore: RFMScore; monetaryScore: RFMScore } {
   
   // Get quartiles for scoring
-  const recencies = allProfiles.map(p => p.recency).filter(r => !isNaN(r))
+   allProfiles.map(p => p.recency).filter(r => !isNaN(r))
   const frequencies = allProfiles.map(p => p.frequency).filter(f => !isNaN(f))
   const monetaryValues = allProfiles.map(p => p.monetary).filter(m => !isNaN(m))
   

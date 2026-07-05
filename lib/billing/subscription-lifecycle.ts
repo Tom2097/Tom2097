@@ -205,9 +205,9 @@ export async function processRefund(
 
       if (invoices.data.length > 0) {
         const latestInvoice = invoices.data[0]
-        if ((latestInvoice as any).payment_intent && typeof (latestInvoice as any).payment_intent === "string") {
+        if (latestInvoice.payment_intent && typeof latestInvoice.payment_intent === "string") {
           await stripe.refunds.create({
-             payment_intent: (latestInvoice as any).payment_intent,
+             payment_intent: latestInvoice.payment_intent,
           })
         }
       }

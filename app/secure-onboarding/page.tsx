@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
-import { ArrowRight, ArrowLeft, Check, Loader2, Building2, User, Shield, Key, Camera, AlertTriangle, Upload } from "lucide-react"
+import { ArrowRight, ArrowLeft, Check, Loader2, Building2, User, Shield, Key, Camera, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -81,18 +81,10 @@ export default function SecureOnboardingPage() {
   const [passcodeVerified, setPasscodeVerified] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
-  // These variables are used in the JSX but might be flagged as unused
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [hasWebAuthnCredentials, setHasWebAuthnCredentials] = useState<boolean | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isNewDevice, setIsNewDevice] = useState(false)
 
   const stage = ONBOARDING_STAGES[currentStage]
 
-  const updateData = useCallback(<K extends keyof OnboardingData>(
-    key: K,
-    value: OnboardingData[K]
-  ) => {
+  const updateData = useCallback((key: keyof OnboardingData, value: any) => {
     setData(prev => ({ ...prev, [key]: value }))
   }, [])
    
@@ -174,7 +166,7 @@ export default function SecureOnboardingPage() {
       if (!response.ok) throw new Error("Failed to send passcode")
       setPasscodeSent(true)
       toast.success("Passcode sent to your email")
-    } catch (err) {
+    } catch {
       setError("Failed to send passcode. Please try again.")
     } finally {
       setIsLoading(false)
@@ -196,7 +188,7 @@ export default function SecureOnboardingPage() {
       setPasscodeVerified(true)
       setUserId(result.userId) // Store user ID for manual review
       toast.success("Passcode verified")
-    } catch (err) {
+    } catch {
       setError("Invalid passcode. Please try again.")
     } finally {
       setIsLoading(false)
@@ -226,7 +218,7 @@ export default function SecureOnboardingPage() {
       })
       if (!verifyResponse.ok) throw new Error("Failed to verify device")
 
-      const result = await verifyResponse.json()
+      await verifyResponse.json()
       updateData("deviceCredential", {
         id: credential.id,
         publicKey: credential.response.attestationObject,
@@ -235,7 +227,7 @@ export default function SecureOnboardingPage() {
         transports: credential.response.transports || [],
       })
       toast.success("Device registered successfully")
-    } catch (err) {
+    } catch {
       setError("Failed to register device. Please try again.")
     } finally {
       setIsRegisteringDevice(false)
@@ -253,7 +245,7 @@ export default function SecureOnboardingPage() {
       })
       if (!response.ok) throw new Error("Failed to complete onboarding")
       router.push("/dashboard")
-    } catch (err) {
+    } catch {
       setError("Failed to complete onboarding. Please try again.")
     } finally {
       setIsLoading(false)
@@ -372,9 +364,9 @@ export default function SecureOnboardingPage() {
                           className="w-full h-10 px-3 rounded-lg border border-border/50 bg-background/50 text-sm"
                         >
                           <option value="">Select ID type...</option>
-                          <option value="passport">Passport</option>
-                          <option value="drivers_license">Driver's License</option>
-                          <option value="national_id">National ID</option>
+                           <option value="passport">Passport</option>
+                           <option value="drivers_license">Driver&apos;s License</option>
+                           <option value="national_id">National ID</option>
                         </select>
                         <Input
                           value={data.governmentIdNumber}
@@ -448,9 +440,9 @@ export default function SecureOnboardingPage() {
                               } else {
                                 toast.error("Identity verification failed")
                               }
-                            } catch (err) {
-                              toast.error("Verification failed. Please try again.")
-                            } finally {
+    } catch {
+      toast.error("Verification failed. Please try again.")
+    } finally {
                               setIsLoading(false)
                             }
                           }}

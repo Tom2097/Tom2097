@@ -49,7 +49,7 @@ export async function appendComplianceAudit(
     .limit(1)
     .maybeSingle()
 
-  const previousHash = (lastEntry as any)?.hash || null
+   const previousHash = (lastEntry as { hash?: string })?.hash || null
   const hash = computeComplianceHash(previousHash, recordType, recordId, action, dataSnapshot)
 
   const { data, error } = await db.from("compliance_audit_trail").insert({

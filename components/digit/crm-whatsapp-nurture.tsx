@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
 import { Badge } from "@/components/ui/badge"
 import { MessageSquare, Send, Clock, CheckCircle2, Phone, Mail, Calendar, ArrowRight, Loader2, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,7 +15,7 @@ interface NurtureSequence {
   id: string; name: string; prospect: string; steps: NurtureStep[]
 }
 
-const channelIcons: Record<string, any> = { email: Mail, whatsapp: MessageSquare, phone: Phone, meeting: Calendar }
+const channelIcons: Record<string, React.ComponentType<{className?: string}>> = { email: Mail, whatsapp: MessageSquare, phone: Phone, meeting: Calendar }
 
 export function CrmWhatsAppNurture() {
   const [sequences, setSequences] = useState<NurtureSequence[]>([])

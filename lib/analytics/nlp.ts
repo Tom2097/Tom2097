@@ -225,7 +225,7 @@ export interface TextDocument {
   title?: string
   source?: string
   language?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 const DEFAULT_OPTIONS: Required<Omit<NLPAnalysisOptions, "analysisType">> = {

@@ -72,7 +72,7 @@ export async function listConversations(
     .order("updated_at", { ascending: false })
 
   if (error) {
-    console.log("[v0] listConversations error:", error.message)
+    console.warn("[v0] listConversations error:", error.message)
     return []
   }
   return (data ?? []).map((c) => ({

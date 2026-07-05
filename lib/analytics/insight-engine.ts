@@ -198,7 +198,7 @@ function detectTrends(
   
   // Only report significant changes
   if (Math.abs(change.percentage) >= minChangePercentage) {
-    const trend = analyzeTrend(points.slice(-lookbackPoints * 2))
+    analyzeTrend(points.slice(-lookbackPoints * 2))
     
     const insight: Insight = {
       id: `trend_${metric}_${Date.now()}`,

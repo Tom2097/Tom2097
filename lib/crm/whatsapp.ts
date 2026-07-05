@@ -21,7 +21,7 @@ export async function getCrmWhatsAppConfig(
     .eq("id", organizationId)
     .maybeSingle()
 
-  const config = (data as any)?.whatsapp_config || {}
+   const config = (data as { whatsapp_config?: Record<string, unknown> })?.whatsapp_config || {}
   return {
     organizationId,
     webhookVerified: config.webhookVerified ?? false,

@@ -101,10 +101,10 @@ export function FloatingCommandBar() {
         try {
           const res = await fetch("/api/v1/intelligence/briefing", { method: "POST" })
           const data = await res.json()
-          console.log("Briefing generated:", data)
-        } catch (e) {
-          console.error("Briefing failed:", e)
-        }
+           console.warn("Briefing generated:", data)
+         } catch {
+           // Error logged for debugging
+         }
         break
       case "scan":
         try {

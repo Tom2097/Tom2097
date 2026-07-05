@@ -42,7 +42,7 @@ interface SessionTable {
  * Uses Supabase PostgreSQL database to store session data
  */
 export class SupabaseSessionStore implements SessionStore {
-  private supabase: any
+   private supabase: SupabaseClient
   private tableName: string
 
   constructor(supabaseUrl?: string, supabaseKey?: string, tableName: string = 'sessions') {
@@ -139,11 +139,11 @@ export class SupabaseSessionStore implements SessionStore {
         id: generateSessionId(),
       })
 
-      const { data, error } = await (this.supabase
-        .from(this.tableName)
-        .insert([record])
-        .select()
-        .maybeSingle() as any)
+       const { data, error } = await (this.supabase
+         .from(this.tableName)
+         .insert([record])
+         .select()
+         .maybeSingle())
 
       if (error) {
         throw new SessionError(

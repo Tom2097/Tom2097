@@ -95,7 +95,7 @@ export function SplitView({ document }: SplitViewProps) {
           </TabsContent>
 
           <TabsContent value="chat" className="flex-1 mt-0 flex flex-col">
-            <ScrollArea ref={chatScrollRef as any} className="flex-1 p-4">
+             <ScrollArea ref={chatScrollRef as React.RefObject<HTMLDivElement>} className="flex-1 p-4">
               <div className="space-y-3">
                 {chatMessages.map((msg, i) => (
                   <motion.div

@@ -1,9 +1,5 @@
 import { generateText, streamText } from "ai"
-import { z } from "zod"
-import { DEFAULT_CHAT_MODEL, BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
-import { createServiceClient } from "@/lib/supabase/service"
 import { randomUUID } from "crypto"
-import type { DataPoint, FileData, SegmentCriteria, TrackedEvent, FileUploadResponse, FilesListResponse, SupabaseClient } from "@/types/analytics"
 
 /**
  * Module #7.6: File Upload and Document Analysis.
@@ -631,7 +627,7 @@ export async function getUploadedFiles(
       .order("uploaded_at", { ascending: false })
     
     if (options.limit) query = query.limit(options.limit)
-    if (options.offset) query = (query as any).offset(options.offset)
+    if (options.offset) query = query.offset(options.offset)
     if (options.status) query = query.eq("status", options.status)
     if (options.analysisType) query = query.eq("analysis_type", options.analysisType)
     if (options.userId) query = query.eq("user_id", options.userId)

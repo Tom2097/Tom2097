@@ -240,12 +240,12 @@ export function DocumentUpload() {
                 {'document_count' in report.insights && <div className="rounded-lg bg-background/50 px-4 py-2 text-center flex-1"><p className="text-lg font-bold text-foreground">{String(report.insights.document_count)}</p><p className="text-xs text-muted-foreground">Docs</p></div>}
               </div>
             )}
-            {'statistics' in (report.insights || {}) && typeof (report.insights as any).statistics === 'object' && (
+             {'statistics' in (report.insights || {}) && typeof report.insights.statistics === 'object' && (
               <div className="overflow-x-auto rounded-lg border border-border/50">
                 <table className="w-full text-xs">
                   <thead><tr className="border-b border-border/50 bg-muted/30"><th className="px-3 py-1.5 text-left font-medium text-foreground">Column</th><th className="px-3 py-1.5 text-right font-medium text-muted-foreground">Count</th><th className="px-3 py-1.5 text-right font-medium text-muted-foreground">Sum</th><th className="px-3 py-1.5 text-right font-medium text-muted-foreground">Avg</th><th className="px-3 py-1.5 text-right font-medium text-muted-foreground">Min</th><th className="px-3 py-1.5 text-right font-medium text-muted-foreground">Max</th></tr></thead>
                   <tbody>
-                    {Object.entries((report.insights as any).statistics as Record<string, Record<string, number | string>>).map(([col, stats]) => (
+                     {Object.entries(report.insights.statistics as Record<string, Record<string, number | string>>).map(([col, stats]) => (
                       <tr key={col} className="border-b border-border/30 last:border-0"><td className="px-3 py-1.5 font-medium text-foreground">{col}</td><td className="px-3 py-1.5 text-right text-muted-foreground">{String(stats.count ?? '-')}</td><td className="px-3 py-1.5 text-right text-muted-foreground">{String(stats.sum ?? '-')}</td><td className="px-3 py-1.5 text-right text-muted-foreground">{String(stats.average ?? '-')}</td><td className="px-3 py-1.5 text-right text-muted-foreground">{String(stats.min ?? '-')}</td><td className="px-3 py-1.5 text-right text-muted-foreground">{String(stats.max ?? '-')}</td></tr>
                     ))}
                   </tbody>

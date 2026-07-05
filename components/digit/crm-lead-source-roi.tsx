@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
 import { Badge } from "@/components/ui/badge"
 import { BarChart3, Globe, Mail, MessageSquare, Search, ExternalLink, TrendingUp, DollarSign, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -11,7 +11,7 @@ interface LeadSource {
   source: string; leads: number; conversion: number; revenue: number; cost: number; roi: number; trend: "up" | "down" | "stable"
 }
 
-const sourceIcons: Record<string, any> = {
+const sourceIcons: Record<string, React.ComponentType<{className?: string}>> = {
   "LinkedIn Ads": Globe, "Google Search": Search, "Email Outreach": Mail,
   "Content Marketing": BarChart3, "Referrals": MessageSquare, "Trade Shows": ExternalLink,
 }

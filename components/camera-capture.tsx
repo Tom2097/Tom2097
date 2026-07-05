@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Camera, CameraOff, Check, Loader2, RefreshCw, X } from "lucide-react"
+import { Camera, Check, Loader2, RefreshCw, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+
 
 interface CameraCaptureProps {
   onCapture: (imageDataUrl: string) => void
@@ -23,16 +23,17 @@ export function CameraCapture({ onCapture, onCancel, isLoading }: CameraCaptureP
 
   // Start camera
   useEffect(() => {
+    let stream: MediaStream | null = null
     const startCamera = async () => {
       try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({
+        stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user", width: 1280, height: 720 },
         })
         if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream
-          setStream(mediaStream)
+          videoRef.current.srcObject = stream
+          setStream(stream)
         }
-      } catch (err) {
+      } catch {
         setError("Could not access camera. Please enable camera permissions.")
       }
     }
@@ -145,8 +146,8 @@ export function CameraCapture({ onCapture, onCancel, isLoading }: CameraCaptureP
               <div className="text-center">
                 <p className="text-sm font-medium mb-2">Liveness Check</p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Please {livenessCheck === "blink" ? "blink" : "smile"} to confirm you're a real person
-                </p>
+                    Please {livenessCheck === "blink" ? "blink" : "smile"} to confirm you&apos;re a real person
+                  </p>
                 <Button
                   onClick={triggerLivenessCheck}
                   disabled={isLoading}

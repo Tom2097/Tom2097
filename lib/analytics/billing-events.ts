@@ -23,7 +23,7 @@ export async function trackBillingEvent(event: BillingAnalyticsEvent): Promise<v
 
   // Record in audit log
   await logAuthEvent({
-    action: `billing.${event.eventType}` as any, // Type assertion for audit action
+    action: `billing.${event.eventType}` as string, // Type assertion for audit action
     organizationId: event.organizationId,
     userId: event.userId,
     resourceType: "subscription",

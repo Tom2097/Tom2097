@@ -128,7 +128,7 @@ async function computeOrgMetrics(organizationId: string): Promise<Record<string,
     .select("value")
     .eq("organization_id", organizationId)
     .eq("status", "open")
-  const pipelineValue = (deals || []).reduce((s: number, d: any) => s + (d.value || 0), 0)
+   const pipelineValue = (deals || []).reduce((s: number, d: { value?: number }) => s + (d.value || 0), 0)
 
   const { count: certCount } = await db
     .from("certificates")

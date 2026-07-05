@@ -21,21 +21,21 @@ export function MicrophoneButton({ onTranscript, className }: MicrophoneButtonPr
   const [isListening, setIsListening] = useState(false)
   const [error, setError] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const SpeechRecognition = (window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition || (window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition
     if (!SpeechRecognition) return 'Speech recognition is not supported in your browser.'
     return null
   })
-  const recognitionRef = useRef<any>(null)
+   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const onTranscriptRef = useRef(onTranscript)
 
   useEffect(() => {
     onTranscriptRef.current = onTranscript
   }, [onTranscript])
 
-  useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+   useEffect(() => {
+     const SpeechRecognition = (window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition || (window as Window & typeof globalThis & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition
 
-    if (!SpeechRecognition) return
+     if (!SpeechRecognition) return
 
     const recognition = new SpeechRecognition()
     recognition.continuous = false

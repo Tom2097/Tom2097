@@ -148,7 +148,7 @@ async function computeBriefingMetrics(organizationId: string): Promise<BriefingM
     .eq("organization_id", organizationId)
     .eq("status", "open")
 
-  const totalPipeline = (openDeals || []).reduce((sum: number, d: any) => sum + (d.value || 0), 0)
+   const totalPipeline = (openDeals || []).reduce((sum: number, d: { value?: number }) => sum + (d.value || 0), 0)
   metrics.push({
     label: "Pipeline Value",
     value: totalPipeline,
