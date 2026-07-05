@@ -95,7 +95,7 @@ export default function SecureOnboardingPage() {
   ) => {
     setData(prev => ({ ...prev, [key]: value }))
   }, [])
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
 
   const canProceed = useCallback(() => {
     switch (currentStage) {
