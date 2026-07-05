@@ -20,7 +20,7 @@ export async function POST(
       )
     }
 
-    const result = await startModelTraining(organizationId, user.id, modelId, datasetId)
+    const result = await startModelTraining(organizationId, user.id, modelId)
 
     if (!result) {
       return NextResponse.json(
