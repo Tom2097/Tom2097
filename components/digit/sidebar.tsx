@@ -23,8 +23,6 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo, LogoIcon } from '@/components/digit/logo'
-import { getFeatureFlags } from '@/lib/feature-flags'
-
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 // Base modules available to all users
