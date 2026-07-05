@@ -1,21 +1,15 @@
-
 import { NextResponse, type NextRequest } from 'next/server'
-import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
+import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
 import { createServiceClient } from '@/lib/supabase/service'
 
-type AuthHandler = Parameters<typeof withAuth>[0]
-
-async function handler(
+export async function POST(
   request: NextRequest,
-  context: AuthContext & { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const { params, organizationId } = context;
-  
-  if (!organizationId) {
-    return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
-  }
-  
   try {
+    const user = await getAuthenticatedUser()
+    const organizationId = await getOrganizationId(user.id)
+
     const reportId = params.id
     const { frequency, recipients } = await request.json()
     
@@ -25,10 +19,9 @@ async function handler(
         { status: 400 }
       )
     }
-    
+
     const supabase = await createServiceClient()
     
-    // Schedule report
     const { data, error } = await supabase
       .from('report_schedules')
       .upsert({
@@ -43,7 +36,10 @@ async function handler(
     
     if (error) {
       console.error('[ReportSchedule] Error scheduling report:', error)
-      return NextResponse.json({ error: 'Failed to schedule report' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Failed to schedule report' },
+        { status: 500 }
+      )
     }
     
     return NextResponse.json({
@@ -51,12 +47,6 @@ async function handler(
       schedule: data
     })
   } catch (error) {
-    console.error('[ReportSchedule] Error:', error)
-    return NextResponse.json(
-      { error: 'Failed to schedule report' },
-      { status: 500 }
-    )
+    return handleAuthError(error as Error)
   }
 }
-
-export const POST = withAuth(handler as AuthHandler);

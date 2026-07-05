@@ -1,27 +1,20 @@
-
 import { NextResponse, type NextRequest } from 'next/server'
-import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
+import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
 import { createServiceClient } from '@/lib/supabase/service'
 
-type AuthHandler = Parameters<typeof withAuth>[0]
-
-async function handler(
+export async function POST(
   request: NextRequest,
-  context: AuthContext & { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const { params, organizationId } = context;
-  
-  if (!organizationId) {
-    return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
-  }
-  
   try {
+    const user = await getAuthenticatedUser()
+    const organizationId = await getOrganizationId(user.id)
+
     const reportId = params.id
     const { format = 'json' } = await request.json()
     
     const supabase = await createServiceClient()
     
-    // Generate report
     const { data, error } = await supabase
       .rpc('generate_report', {
         report_id: reportId,
@@ -31,7 +24,10 @@ async function handler(
     
     if (error) {
       console.error('[ReportGenerate] Error generating report:', error)
-      return NextResponse.json({ error: 'Failed to generate report' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Failed to generate report' },
+        { status: 500 }
+      )
     }
     
     return NextResponse.json({
@@ -39,12 +35,6 @@ async function handler(
       report: data
     })
   } catch (error) {
-    console.error('[ReportGenerate] Error:', error)
-    return NextResponse.json(
-      { error: 'Failed to generate report' },
-      { status: 500 }
-    )
+    return handleAuthError(error as Error)
   }
 }
-
-export const POST = withAuth(handler as AuthHandler);

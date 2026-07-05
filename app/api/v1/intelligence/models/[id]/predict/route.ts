@@ -1,51 +1,39 @@
-
 import { NextResponse, type NextRequest } from 'next/server'
-import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
+import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
 import { makePrediction } from '@/lib/ai/model-training'
 
-type AuthHandler = Parameters<typeof withAuth>[0]
-
-async function handler(
+export async function POST(
   request: NextRequest,
-  context: AuthContext & { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const { params, organizationId } = context;
-  
-  if (!organizationId) {
-    return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
-  }
-  
   try {
+    const user = await getAuthenticatedUser()
+    const organizationId = await getOrganizationId(user.id)
+
     const modelId = params.id
     const { input } = await request.json()
-    
+
     if (!modelId || !input) {
       return NextResponse.json(
         { error: 'Model ID and input are required' },
         { status: 400 }
       )
     }
-    
-    const result = await makePrediction(organizationId, context.userId, modelId, input)
-    
+
+    const result = await makePrediction(organizationId, user.id, modelId, input)
+
     if (!result.success) {
       return NextResponse.json(
-        { error: 'Failed to make prediction' },
+        { error: result.error || 'Failed to make prediction' },
         { status: 500 }
       )
     }
-    
+
     return NextResponse.json({
       success: true,
       prediction: result.prediction
     })
   } catch (error) {
-    console.error('[ModelPredict] Error:', error)
-    return NextResponse.json(
-      { error: 'Failed to make prediction' },
-      { status: 500 }
-    )
+    return handleAuthError(error as Error)
   }
 }
-
-export const POST = withAuth(handler as AuthHandler);

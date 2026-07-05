@@ -1,30 +1,23 @@
-
 import { NextResponse, type NextRequest } from 'next/server'
-import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
+import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
 import { createServiceClient } from '@/lib/supabase/service'
 
-type AuthHandler = Parameters<typeof withAuth>[0]
-
-async function handler(
+export async function GET(
   request: NextRequest,
-  context: AuthContext & { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const { params, organizationId } = context;
-  
-  if (!organizationId) {
-    return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
-  }
-  
   try {
+    const user = await getAuthenticatedUser()
+    const organizationId = await getOrganizationId(user.id)
+
     const reportId = params.id
     const { searchParams } = new URL(request.url)
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
     const filters = searchParams.get('filters')
-    
+
     const supabase = await createServiceClient()
     
-    // Get report data
     const { data, error } = await supabase
       .rpc('get_report_data', {
         report_id: reportId,
@@ -36,7 +29,10 @@ async function handler(
     
     if (error) {
       console.error('[ReportData] Error fetching report data:', error)
-      return NextResponse.json({ error: 'Failed to fetch report data' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Failed to fetch report data' },
+        { status: 500 }
+      )
     }
     
     return NextResponse.json({
@@ -44,12 +40,6 @@ async function handler(
       data
     })
   } catch (error) {
-    console.error('[ReportData] Error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch report data' },
-      { status: 500 }
-    )
+    return handleAuthError(error as Error)
   }
 }
-
-export const GET = withAuth(handler as AuthHandler);
