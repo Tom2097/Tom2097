@@ -42,7 +42,7 @@ export async function listTenants(): Promise<TenantInfo[]> {
 
 export async function suspendTenant(tenantId: string, reason: string): Promise<{ success: boolean; error?: string }> {
   const supabase = await createServiceClient()
-  const { data: { user } } = await (await import("@/lib/supabase/server")).createClient().auth.getUser()
+  const { data: { user } } = await (await (await import("@/lib/supabase/server")).createClient()).auth.getUser()
   
   await supabase
     .from("organizations")
@@ -64,7 +64,7 @@ export async function suspendTenant(tenantId: string, reason: string): Promise<{
 
 export async function activateTenant(tenantId: string): Promise<{ success: boolean; error?: string }> {
   const supabase = await createServiceClient()
-  const { data: { user } } = await (await import("@/lib/supabase/server")).createClient().auth.getUser()
+  const { data: { user } } = await (await (await import("@/lib/supabase/server")).createClient()).auth.getUser()
   
   await supabase
     .from("organizations")
@@ -86,7 +86,7 @@ export async function activateTenant(tenantId: string): Promise<{ success: boole
 
 export async function deprovisionTenant(tenantId: string): Promise<{ success: boolean; error?: string }> {
   const supabase = await createServiceClient()
-  const { data: { user } } = await (await import("@/lib/supabase/server")).createClient().auth.getUser()
+  const { data: { user } } = await (await (await import("@/lib/supabase/server")).createClient()).auth.getUser()
   
   await supabase.from("organizations").update({ status: "deprovisioned", deprovisioned_at: new Date().toISOString() }).eq("id", tenantId)
   await supabase.from("subscriptions").update({ status: "cancelled" }).eq("organization_id", tenantId)

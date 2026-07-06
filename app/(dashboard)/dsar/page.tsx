@@ -36,28 +36,29 @@ export default function DsarPage() {
   const [exportDialogOpen, setExportDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
-  useEffect(() => {
-    let cancelled = false
-    async function load() {
-      try {
-        setLoading(true)
-        const [requestsRes, consentRes] = await Promise.all([
-          fetch("/api/v1/compliance/dsar?type=requests"),
-          fetch("/api/v1/compliance/dsar?type=consent"),
-        ])
-        const requestsData = await requestsRes.json()
-        const consentData = await consentRes.json()
-        if (requestsRes.ok && !cancelled) setRequests(requestsData.requests || [])
-        if (consentRes.ok && !cancelled) setConsentRecords(consentData.records || [])
-      } catch {
-        if (!cancelled) toast.error("Failed to load DSAR data")
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
+  const fetchData = useCallback(async (cancelled?: { current: boolean }) => {
+    try {
+      setLoading(true)
+      const [requestsRes, consentRes] = await Promise.all([
+        fetch("/api/v1/compliance/dsar?type=requests"),
+        fetch("/api/v1/compliance/dsar?type=consent"),
+      ])
+      const requestsData = await requestsRes.json()
+      const consentData = await consentRes.json()
+      if (requestsRes.ok && (!cancelled || !cancelled.current)) setRequests(requestsData.requests || [])
+      if (consentRes.ok && (!cancelled || !cancelled.current)) setConsentRecords(consentData.records || [])
+    } catch {
+      if (!cancelled || !cancelled.current) toast.error("Failed to load DSAR data")
+    } finally {
+      if (!cancelled || !cancelled.current) setLoading(false)
     }
-    load()
-    return () => { cancelled = true }
   }, [])
+
+  useEffect(() => {
+    const cancelled = { current: false }
+    fetchData(cancelled)
+    return () => { cancelled.current = true }
+  }, [fetchData])
 
   const handleExport = async () => {
     try {

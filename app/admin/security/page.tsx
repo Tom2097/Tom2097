@@ -89,7 +89,7 @@ export default function SecurityPage() {
     async function init() {
       try {
         await Promise.all([
-          fetch("/api/v1/admin/audit").then(r => r.json()).then(d => { if (!cancelled) setAuditLogs(d.entries || []); }),
+          fetch("/api/v1/admin/audit").then(r => r.json()).then(d => { if (!cancelled) setAuditEvents(d.entries || []); }),
           fetch("/api/v1/admin/sessions").then(r => r.json()).then(d => { if (!cancelled) setSessions(d.sessions || []); }),
         ])
       } catch {

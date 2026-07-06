@@ -1,5 +1,3 @@
-"use server"
-
 import { createServiceClient } from "@/lib/supabase/service"
 import { getPlanById } from "@/lib/products"
 

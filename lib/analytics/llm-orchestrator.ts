@@ -1,5 +1,3 @@
-"use server"
-
 export interface AnalyticalJob {
   id: string
   type: "anomaly_detection" | "forecasting" | "causal_analysis" | "benchmarking" | "scoring" | "report" | "simulation"

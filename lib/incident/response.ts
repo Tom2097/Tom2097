@@ -1,5 +1,3 @@
-"use server"
-
 import { createServiceClient } from "@/lib/supabase/service"
 import { createAuditEntry } from "@/lib/audit/append-only"
 import { randomUUID } from "crypto"

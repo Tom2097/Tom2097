@@ -34,25 +34,30 @@ export default function ImpersonationPage() {
   const [isStartDialogOpen, setIsStartDialogOpen] = useState(false)
   const [starting, setStarting] = useState(false)
 
+  const fetchSessions = useCallback(async (cancelled?: { current: boolean }) => {
+    try {
+      const res = await fetch("/api/v1/admin/impersonate")
+      const data = await res.json()
+      if (res.ok && (!cancelled || !cancelled.current)) {
+        setSessions(data.sessions || [])
+      }
+    } catch {
+      if (!cancelled || !cancelled.current) toast.error("Failed to load impersonation sessions")
+    }
+  }, [])
+
   useEffect(() => {
-    let cancelled = false
-    async function load() {
+    const cancelled = { current: false }
+    ;(async () => {
       try {
         setLoading(true)
-        const res = await fetch("/api/v1/admin/impersonate")
-        const data = await res.json()
-        if (res.ok && !cancelled) {
-          setSessions(data.sessions || [])
-        }
-      } catch {
-        if (!cancelled) toast.error("Failed to load impersonation sessions")
+        await fetchSessions(cancelled)
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled.current) setLoading(false)
       }
-    }
-    load()
-    return () => { cancelled = true }
-  }, [])
+    })()
+    return () => { cancelled.current = true }
+  }, [fetchSessions])
 
   const searchUser = async () => {
     if (!targetEmail) return

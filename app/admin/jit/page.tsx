@@ -37,29 +37,35 @@ export default function JitAccessPage() {
   const [submitting, setSubmitting] = useState(false)
   const [activeElevation, setActiveElevation] = useState<{ role: string; expiresAt: string } | null>(null)
 
+  const fetchData = useCallback(async (cancelled?: { current: boolean }) => {
+    try {
+      const [requestsRes, statusRes] = await Promise.all([
+        fetch("/api/v1/admin/jit"),
+        fetch("/api/v1/admin/jit"),
+      ])
+      const requestsData = await requestsRes.json()
+      const statusData = await statusRes.json()
+      if (requestsRes.ok && (!cancelled || !cancelled.current)) setRequests(requestsData.requests || [])
+      if (statusRes.ok && (!cancelled || !cancelled.current)) {
+        setActiveElevation(statusData.active ? { role: statusData.role, expiresAt: statusData.expiresAt } : null)
+      }
+    } catch {
+      if (!cancelled || !cancelled.current) toast.error("Failed to load JIT access data")
+    }
+  }, [])
+
   useEffect(() => {
-    let cancelled = false
-    async function load() {
+    const cancelled = { current: false }
+    ;(async () => {
       try {
         setLoading(true)
-        const statusRes = await fetch("/api/v1/admin/jit")
-        const statusData = await statusRes.json()
-        if (statusRes.ok && !cancelled) {
-          if (statusData.active) {
-            setActiveElevation({ role: statusData.role, expiresAt: statusData.expiresAt })
-          } else {
-            setActiveElevation(null)
-          }
-        }
-      } catch {
-        if (!cancelled) toast.error("Failed to load JIT access data")
+        await fetchData(cancelled)
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled.current) setLoading(false)
       }
-    }
-    load()
-    return () => { cancelled = true }
-  }, [])
+    })()
+    return () => { cancelled.current = true }
+  }, [fetchData])
 
   const handleRequest = async () => {
     if (!reason) {

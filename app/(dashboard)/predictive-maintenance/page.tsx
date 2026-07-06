@@ -55,9 +55,21 @@ export default function PredictiveMaintenancePage() {
   })
   const [simSending, setSimSending] = useState(false)
 
+  const fetchSchedule = useCallback(async () => {
+    try {
+      const res = await fetch("/api/v1/predictive/rul")
+      const data = await res.json()
+      if (res.ok) {
+        setSchedule(data.schedule || [])
+      }
+    } catch {
+      // silent
+    }
+  }, [])
+
   useEffect(() => {
     let cancelled = false
-    async function load() {
+    ;(async () => {
       try {
         setLoading(true)
         const res = await fetch("/api/v1/predictive/rul")
@@ -72,8 +84,7 @@ export default function PredictiveMaintenancePage() {
       } finally {
         if (!cancelled) setLoading(false)
       }
-    }
-    load()
+    })()
     return () => { cancelled = true }
   }, [])
 

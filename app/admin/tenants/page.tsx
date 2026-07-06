@@ -96,25 +96,30 @@ export default function TenantsPage() {
   const [deprovisionDialogOpen, setDeprovisionDialogOpen] = useState(false)
   const [deprovisionTenantId, setDeprovisionTenantId] = useState<string | null>(null)
 
+  const fetchTenants = useCallback(async (cancelled?: { current: boolean }) => {
+    try {
+      const res = await fetch("/api/v1/admin/tenants")
+      if (res.ok) {
+        const data = await res.json()
+        if (!cancelled || !cancelled.current) setTenants(data.tenants || [])
+      }
+    } catch {
+      if (!cancelled || !cancelled.current) toast.error("Failed to load tenants")
+    }
+  }, [])
+
   useEffect(() => {
-    let cancelled = false
-    async function load() {
+    const cancelled = { current: false }
+    ;(async () => {
       try {
         setLoading(true)
-        const res = await fetch("/api/v1/admin/tenants")
-        if (res.ok && !cancelled) {
-          const data = await res.json()
-          setTenants(data.tenants || [])
-        }
-      } catch {
-        if (!cancelled) toast.error("Failed to load tenants")
+        await fetchTenants(cancelled)
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled.current) setLoading(false)
       }
-    }
-    load()
-    return () => { cancelled = true }
-  }, [])
+    })()
+    return () => { cancelled.current = true }
+  }, [fetchTenants])
 
   const filteredTenants = tenants.filter(
     (t) =>
