@@ -31,6 +31,14 @@ export interface AnalyticsViewData {
   }
   auditTotal: number
   uptimePct: number
+  anomalies?: Array<{ timestamp: string; value: number; severity: number }>
+  forecast?: Array<{
+    timestamp: string
+    actual: number
+    forecast: number
+    lower_bound: number
+    upper_bound: number
+  }>
 }
 
 const PERIODS: Array<{ value: string; days: number }> = [

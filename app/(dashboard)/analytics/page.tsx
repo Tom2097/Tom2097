@@ -110,7 +110,7 @@ export default async function AnalyticsPage({
     health,
     auditTotal: auditStats?.total ?? 0,
     uptimePct,
-    anomalies: anomalies.anomalies,
+    anomalies: anomalies?.anomalies,
     forecast: forecast.map(f => ({
       timestamp: f.timestamp,
       actual: f.actual,
