@@ -6,7 +6,7 @@ export interface ComplianceAuditEntry {
   organization_id: string
   record_type: string
   record_id: string
-  action: "CREATE" | "UPDATE" | "DELETE" | "SIGN" | "VERIFY" | "EXPORT" | "ARCHIVE"
+  action: "CREATE" | "UPDATE" | "DELETE" | "SIGN" | "VERIFY" | "EXPORT" | "ARCHIVE" | "DOWNLOAD" | "SEARCH"
   previous_hash: string | null
   hash: string
   data_snapshot: Record<string, unknown>
@@ -49,7 +49,7 @@ export async function appendComplianceAudit(
     .limit(1)
     .maybeSingle()
 
-   const previousHash = (lastEntry as { hash?: string })?.hash || null
+    const previousHash = (lastEntry as { hash?: string })?.hash || null
   const hash = computeComplianceHash(previousHash, recordType, recordId, action, dataSnapshot)
 
   const { data, error } = await db.from("compliance_audit_trail").insert({
@@ -129,7 +129,7 @@ export async function exportComplianceAudit(
   const header = "id,created_at,record_type,record_id,action,hash,previous_hash,changed_by"
   const rows = entries.map((e) =>
     [e.id, e.created_at, e.record_type, e.record_id, e.action, e.hash, e.previous_hash || "", e.changed_by || ""]
-      .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+      .map((v) => `"${String(v).replace(/\"/g, '""')}"`)
       .join(",")
   )
   return [header, ...rows].join("\n")
