@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
 import {
   createAgent,
-  executeAction, 
-  listAgents, 
-  getAgent, 
+  executeAction,
+  listAgents,
+  getAgent,
   getAuditTrail
-} from "@/lib/intelligence"
+} from "../../../../../lib/intelligence"
 import { getAuthenticatedUser } from "@/lib/auth/server-auth"
-import { hasWorkspaceAccess } from "@/lib/auth/rbac"
+import { hasWorkspaceAccess } from "../../../../../lib/auth/rbac"
 
 /**
  * POST: Create a new agent

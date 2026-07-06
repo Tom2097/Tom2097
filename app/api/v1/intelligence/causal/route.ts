@@ -2,12 +2,12 @@ import { NextResponse } from "next/server"
 import { createClient } from "../../../../../lib/supabase/server"
 import {
   addEvent,
-  addCausalLink, 
-  findRootCauses, 
+  addCausalLink,
+  findRootCauses,
   findDownstreamEffects
-} from "@/lib/intelligence"
+} from "../../../../../lib/intelligence"
 import { getAuthenticatedUser } from "@/lib/auth/server-auth"
-import { hasWorkspaceAccess } from "@/lib/auth/rbac"
+import { hasWorkspaceAccess } from "../../../../../lib/auth/rbac"
 
 /**
  * POST: Add an event to the causal graph

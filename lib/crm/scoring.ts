@@ -1,91 +1,84 @@
-"use strict";
+import { createClient } from "../../lib/supabase/server"
 
-import { z } from "zod";
-
-// Schema for lead data
-const LeadSchema = z.object({
-  id: z.string(),
-  engagementScore: z.number().min(0).max(100).optional(),
-  firmographicsScore: z.number().min(0).max(100).optional(),
-  intentScore: z.number().min(0).max(100).optional(),
-  companySize: z.number().optional(),
-  industry: z.string().optional(),
-  recentActivity: z.date().optional(),
-  lastContacted: z.date().optional(),
-  emailOpens: z.number().optional(),
-  whatsappEngagement: z.number().optional(),
-});
-
-export type Lead = z.infer<typeof LeadSchema>;
-
-// Schema for lead score result
-const LeadScoreResultSchema = z.object({
-  leadId: z.string(),
-  score: z.number().min(0).max(100),
-  priority: z.enum(["low", "medium", "high", "critical"]),
-  factors: z.record(z.string(), z.number()),
-});
-
-export type LeadScoreResult = z.infer<typeof LeadScoreResultSchema>;
+interface Lead {
+  id: string
+  name: string
+  email: string
+  engagementScore: number
+  firmographics: Record<string, unknown>
+  intentSignals: Record<string, unknown>
+  workspaceId: string
+  createdAt: string
+}
 
 /**
  * Calculates lead score based on engagement, firmographics, and intent signals.
- * @param lead - Lead data
- * @returns LeadScoreResult
  */
-export const calculateLeadScore = (lead: Lead): LeadScoreResult => {
-  const engagementScore = lead.engagementScore || 0;
-  const firmographicsScore = lead.firmographicsScore || 0;
-  const intentScore = lead.intentScore || 0;
+export async function calculateLeadScore(leadId: string): Promise<number> {
+  const supabase = await createClient()
+  const { data: lead, error } = await supabase
+    .from("leads")
+    .select("*")
+    .eq("id", leadId)
+    .single()
 
-  // Weighted scoring (adjust weights as needed)
-  const score =
-    engagementScore * 0.4 +
-    firmographicsScore * 0.3 +
-    intentScore * 0.3;
+  if (error || !lead) throw new Error("Lead not found")
 
-  // Determine priority
-  let priority: "low" | "medium" | "high" | "critical" = "low";
-  if (score >= 80) priority = "critical";
-  else if (score >= 60) priority = "high";
-  else if (score >= 40) priority = "medium";
+  // Base score from engagement
+  let score = lead.engagementScore || 0
 
-  return {
+  // Add firmographics boost
+  if (lead.firmographics?.companySize === "enterprise") score += 20
+  if (lead.firmographics?.industry === "technology") score += 15
+
+  // Add intent signals boost
+  if (lead.intentSignals?.visitedPricingPage) score += 10
+  if (lead.intentSignals?.requestedDemo) score += 25
+
+  // Cap at 100
+  return Math.min(100, score)
+}
+
+/**
+ * Gets high-priority leads for a workspace.
+ */
+export async function getHighPriorityLeads(workspaceId: string): Promise<Lead[]> {
+  const supabase = await createClient()
+  const { data: leads, error } = await supabase
+    .from("leads")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .gte("engagement_score", 70)
+    .order("engagement_score", { ascending: false })
+
+  if (error) throw new Error("Failed to fetch leads")
+
+  return leads.map(lead => ({
+    id: lead.id,
+    name: lead.name,
+    email: lead.email,
+    engagementScore: lead.engagement_score,
+    firmographics: lead.firmographics,
+    intentSignals: lead.intent_signals,
+    workspaceId: lead.workspace_id,
+    createdAt: lead.created_at,
+  }))
+}
+
+/**
+ * Gets lead scores for all leads in a workspace.
+ */
+export async function getLeadScores(workspaceId: string): Promise<{ leadId: string; score: number }[]> {
+  const supabase = await createClient()
+  const { data: leads, error } = await supabase
+    .from("leads")
+    .select("id, engagement_score, firmographics, intent_signals")
+    .eq("workspace_id", workspaceId)
+
+  if (error) throw new Error("Failed to fetch leads")
+
+  return leads.map(lead => ({
     leadId: lead.id,
-    score: Math.round(score),
-    priority,
-    factors: {
-      engagement: engagementScore,
-      firmographics: firmographicsScore,
-      intent: intentScore,
-    },
-  };
-};
-
-/**
- * Updates lead score in real-time as new data arrives.
- * @param lead - Lead data
- * @param newData - Partial lead data with updates
- * @returns Updated LeadScoreResult
- */
-export const updateLeadScore = (lead: Lead, newData: Partial<Lead>): LeadScoreResult => {
-  const updatedLead = { ...lead, ...newData };
-  return calculateLeadScore(updatedLead);
-};
-
-/**
- * Surfaces high-priority leads for sales teams.
- * @param leads - Array of leads
- * @param threshold - Minimum score to consider as high-priority (default: 60)
- * @returns Array of high-priority leads
- */
-export const getHighPriorityLeads = (leads: Lead[], threshold = 60): Lead[] => {
-  return leads
-    .map(lead => ({
-      lead,
-      score: calculateLeadScore(lead).score,
-    }))
-    .filter(({ score }) => score >= threshold)
-    .sort((a, b) => b.score - a.score)
-    .map(({ lead }) => lead);
-};
+    score: calculateLeadScore(lead.id),
+  }))
+}

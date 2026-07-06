@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server"
 import {
   addNode,
-  addEdge, 
-  findRelatedNodes, 
-  traverse, 
-  getNode, 
+  addEdge,
+  findRelatedNodes,
+  traverse,
+  getNode,
   getEdge
-} from "@/lib/intelligence"
+} from "../../../../../lib/intelligence"
 import { getAuthenticatedUser } from "@/lib/auth/server-auth"
-import { hasWorkspaceAccess } from "@/lib/auth/rbac"
+import { hasWorkspaceAccess } from "../../../../../lib/auth/rbac"
 
 /**
  * POST: Add a node to the operational graph

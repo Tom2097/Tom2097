@@ -2,6 +2,8 @@ import { createServerClient } from "@supabase/ssr"
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { cookies } from "next/headers"
 
+// This file must only be imported in Server Components or Route Handlers
+
 function createMockClient(): SupabaseClient {
   const builder: Record<string, unknown> = {}
   const mkChain = (): Record<string, unknown> => new Proxy(builder, {
