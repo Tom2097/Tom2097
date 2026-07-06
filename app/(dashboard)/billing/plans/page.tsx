@@ -61,81 +61,108 @@ export default function BillingPlansPage() {
   const [startingTrial, setStartingTrial] = useState(false)
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
     async function load() {
       try {
+        setLoading(true);
         const [trialRes, discountRes] = await Promise.all([
           fetch('/api/v1/billing/trials'),
           fetch('/api/v1/billing/discounts'),
-        ])
-        if (trialRes.ok && !cancelled) {
-          const trialData = await trialRes.json()
-          setTrial(trialData.trial)
+        ]);
+        
+        if (cancelled) return;
+        
+        if (!trialRes.ok || !discountRes.ok) {
+          const errorData1 = await trialRes.json();
+          const errorData2 = await discountRes.json();
+          throw new Error(
+            errorData1.error || errorData2.error || "Failed to load billing data"
+          );
         }
-        if (discountRes.ok && !cancelled) {
-          const discountData = await discountRes.json()
-          setFoundingPlans(discountData.foundingPlans || [])
-          setAnalytics(discountData.analytics || null)
+        
+        const trialData = await trialRes.json();
+        const discountData = await discountRes.json();
+        
+        if (!cancelled) {
+          setTrial(trialData.trial);
+          setFoundingPlans(discountData.foundingPlans || []);
+          setAnalytics(discountData.analytics || null);
         }
-      } catch {
+      } catch (error) {
+        if (!cancelled) {
+          toast.error(error.message || "Failed to load billing data");
+        }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) setLoading(false);
       }
     }
-    load()
-    return () => { cancelled = true }
-  }, [])
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
   async function handleStartTrial(planId: string) {
-    setStartingTrial(true)
+    setStartingTrial(true);
     try {
       const res = await fetch('/api/v1/billing/trials', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId }),
-      })
-      const data = await res.json()
-      if (res.ok && data.trial) {
-        setTrial(data.trial)
-        toast.success('Trial started successfully!')
-      } else {
-        toast.error(data.error || 'Failed to start trial')
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to start trial');
       }
-    } catch {
-      toast.error('Failed to start trial')
+      
+      const data = await res.json();
+      setTrial(data.trial);
+      toast.success('Trial started successfully!');
+    } catch (error) {
+      toast.error(error.message || 'Failed to start trial');
     } finally {
-      setStartingTrial(false)
+      setStartingTrial(false);
     }
   }
 
   async function handleApplyDiscount() {
-    if (!discountCode.trim()) return
-    setApplyingDiscount(true)
-    setDiscountValid(null)
-    setDiscountValue(null)
-    setDiscountReason('')
+    if (!discountCode.trim()) {
+      toast.error("Please enter a discount code");
+      return;
+    }
+    
+    setApplyingDiscount(true);
+    setDiscountValid(null);
+    setDiscountValue(null);
+    setDiscountReason('');
+    
     try {
       const res = await fetch('/api/v1/billing/discounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: discountCode.trim(), plan: trial?.planId || '' }),
-      })
-      const data = await res.json()
-      if (res.ok && data.valid) {
-        setDiscountValid(true)
-        setDiscountValue(data.discount)
-        toast.success(`Discount applied! ${data.discount}% off`)
-      } else {
-        setDiscountValid(false)
-        setDiscountReason(data.reason || 'Invalid code')
-        toast.error(data.reason || 'Invalid discount code')
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to validate discount code');
       }
-    } catch {
-      setDiscountValid(false)
-      setDiscountReason('Failed to validate code')
-      toast.error('Failed to validate discount code')
+      
+      const data = await res.json();
+      if (data.valid) {
+        setDiscountValid(true);
+        setDiscountValue(data.discount);
+        toast.success(`Discount applied! ${data.discount}% off`);
+      } else {
+        setDiscountValid(false);
+        setDiscountReason(data.reason || 'Invalid code');
+        toast.error(data.reason || 'Invalid discount code');
+      }
+    } catch (error) {
+      setDiscountValid(false);
+      setDiscountReason(error.message || 'Failed to validate code');
+      toast.error(error.message || 'Failed to validate discount code');
     } finally {
-      setApplyingDiscount(false)
+      setApplyingDiscount(false);
     }
   }
 

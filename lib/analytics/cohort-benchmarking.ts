@@ -43,26 +43,38 @@ export async function computeBenchmark(
   dimension: string,
   metric: string,
   epsilon: number = DEFAULT_BENCHMARK_CONFIG.epsilon
-): Promise<BenchmarkResult | null> {
+): Promise<BenchmarkResult> {
+  if (!organizationId || !dimension || !metric) {
+    throw new Error("Missing required parameters: organizationId, dimension, or metric")
+  }
+  
   const supabase = await createServiceClient()
 
-  const { data: org } = await supabase
+  const { data: org, error: orgError } = await supabase
     .from("organizations")
     .select("industry, size, region")
     .eq("id", organizationId)
     .single()
 
-  if (!org) return null
+  if (orgError || !org) {
+    throw new Error(`Organization not found: ${organizationId}`)
+  }
 
   const orgRow = org as unknown as Record<string, string | null>
   const dimensionValue = dimension === "size" ? orgRow.size : dimension === "region" ? orgRow.region : orgRow.industry
-  if (!dimensionValue) return null
+  if (!dimensionValue) {
+    throw new Error(`Dimension value not found for: ${dimension}`)
+  }
 
-  const { data: peers } = await supabase
+  const { data: peers, error: peersError } = await supabase
     .from("organizations")
     .select("id")
     .eq(dimension, dimensionValue)
     .neq("id", organizationId)
+
+  if (peersError) {
+    throw new Error(`Failed to fetch peers: ${peersError.message}`)
+  }
 
   const peerIds = (peers || []).map(p => p.id)
   const cohortSize = peerIds.length + 1
@@ -71,21 +83,27 @@ export async function computeBenchmark(
 
   let metricValues: number[] = []
 
-  if (metric === "compliance_score") {
-    const { data: scores } = await supabase
-      .from("compliance_scores")
-      .select("score, organization_id")
-      .in("organization_id", [organizationId, ...peerIds])
-    metricValues = (scores || []).map(s => s.score)
-  } else if (metric === "ai_actions") {
-    const { data: usage } = await supabase
-      .from("usage_tracking")
-      .select("quantity, organization_id")
-      .in("organization_id", [organizationId, ...peerIds])
-      .eq("usage_type", "ai_action")
-    metricValues = (usage || []).map(u => u.quantity)
+  const { data: scores } = await supabase
+    .from("digit_scores")
+    .select("score, organization_id")
+    .in("organization_id", [organizationId, ...peerIds])
+    .eq("metric", metric)
+  
+  if (!scores || scores.length === 0) {
+    const { data: fallbackScores } = await supabase
+      .from("digit_scores")
+      .select("score")
+      .eq("organization_id", organizationId)
+      .eq("metric", metric)
+      .single()
+    
+    if (!fallbackScores) {
+      throw new Error(`No data available for metric: ${metric}`)
+    }
+    
+    metricValues = [fallbackScores.score]
   } else {
-    metricValues = Array.from({ length: cohortSize }, () => Math.round(50 + Math.random() * 50))
+    metricValues = scores.map(s => s.score)
   }
 
   if (metricValues.length === 0) return null

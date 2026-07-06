@@ -161,23 +161,45 @@ export default function SimulatePage() {
     }
   }
 
+  const [submitting, setSubmitting] = useState(false)
+
   const handleCommit = async (simId: string) => {
+    setSubmitting(true)
     try {
-      await commitSimulation(simId)
+      const res = await fetch(`/api/v1/simulations/${simId}/commit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "Failed to commit simulation")
+      }
       setSimulations(prev => prev.map(s => s.id === simId ? { ...s, status: 'committed' as const, committedAt: new Date().toISOString() } : s))
       toast.success("Simulation committed")
-    } catch {
-      toast.error("Failed to commit simulation")
+    } catch (error) {
+      toast.error(error.message || "Failed to commit simulation")
+    } finally {
+      setSubmitting(false)
     }
   }
 
   const handleDiscard = async (simId: string) => {
+    setSubmitting(true)
     try {
-      await discardSimulation(simId)
+      const res = await fetch(`/api/v1/simulations/${simId}/discard`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "Failed to discard simulation")
+      }
       setSimulations(prev => prev.map(s => s.id === simId ? { ...s, status: 'discarded' as const } : s))
       toast.success("Simulation discarded")
-    } catch {
-      toast.error("Failed to discard simulation")
+    } catch (error) {
+      toast.error(error.message || "Failed to discard simulation")
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -330,16 +352,18 @@ export default function SimulatePage() {
                               </Button>
                             </>
                           )}
-                          {sim.status === 'ready' && (
-                            <>
-                              <Button variant="default" size="sm" onClick={() => handleCommit(sim.id)}>
-                                <CheckCircle2 className="h-3 w-3 mr-1" /> Commit
-                              </Button>
-                              <Button variant="ghost" size="sm" onClick={() => handleDiscard(sim.id)}>
-                                <XCircle className="h-3 w-3 mr-1" /> Discard
-                              </Button>
-                            </>
-                          )}
+                           {sim.status === 'ready' && (
+                             <>
+                               <Button variant="default" size="sm" onClick={() => handleCommit(sim.id)} disabled={submitting}>
+                                 {submitting && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                                 <CheckCircle2 className="h-3 w-3 mr-1" /> Commit
+                               </Button>
+                               <Button variant="ghost" size="sm" onClick={() => handleDiscard(sim.id)} disabled={submitting}>
+                                 {submitting && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                                 <XCircle className="h-3 w-3 mr-1" /> Discard
+                               </Button>
+                             </>
+                           )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -372,11 +396,12 @@ export default function SimulatePage() {
                       <ArrowRight className="h-4 w-4 mr-1" /> Mark Ready
                     </Button>
                   )}
-                  {sim.status === 'ready' && (
-                    <Button onClick={() => { handleCommit(selectedSimId); setDiffDialogOpen(false) }}>
-                      <CheckCircle2 className="h-4 w-4 mr-1" /> Commit
-                    </Button>
-                  )}
+                   {sim.status === 'ready' && (
+                     <Button onClick={() => { handleCommit(selectedSimId); setDiffDialogOpen(false) }} disabled={submitting}>
+                       {submitting && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+                       <CheckCircle2 className="h-4 w-4 mr-1" /> Commit
+                     </Button>
+                   )}
                 </>
               )
             })()}

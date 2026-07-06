@@ -55,101 +55,133 @@ export default function PredictiveMaintenancePage() {
   })
   const [simSending, setSimSending] = useState(false)
 
-  const fetchSchedule = useCallback(async () => {
+  const fetchSchedule = useCallback(async (cancelled?: { current: boolean }) => {
     try {
-      const res = await fetch("/api/v1/predictive/rul")
-      const data = await res.json()
-      if (res.ok) {
-        setSchedule(data.schedule || [])
+      setLoading(true);
+      const res = await fetch("/api/v1/predictive/rul");
+      
+      if (cancelled?.current) return;
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to load maintenance schedule");
       }
-    } catch {
-      // silent
+      
+      const data = await res.json();
+      if (!cancelled?.current) {
+        setSchedule(data.schedule || []);
+      }
+    } catch (error) {
+      if (!cancelled?.current) {
+        toast.error(error.message || "Failed to load maintenance schedule");
+      }
+    } finally {
+      if (!cancelled?.current) {
+        setLoading(false);
+      }
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        setLoading(true)
-        const res = await fetch("/api/v1/predictive/rul")
-        const data = await res.json()
-        if (res.ok && !cancelled) {
-          setSchedule(data.schedule || [])
-        } else if (!cancelled) {
-          toast.error(data.error || "Failed to load schedule")
-        }
-      } catch {
-        if (!cancelled) toast.error("Failed to load maintenance schedule")
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    })()
-    return () => { cancelled = true }
-  }, [])
+    const cancelled = { current: false };
+    fetchSchedule(cancelled);
+    return () => { cancelled.current = true; };
+  }, [fetchSchedule]);
 
   const handleLookupAsset = async () => {
     if (!assetId.trim()) {
-      toast.error("Please enter an asset ID")
-      return
+      toast.error("Please enter an asset ID");
+      return;
     }
+    
     try {
-      setAssetLoading(true)
-      const res = await fetch(`/api/v1/predictive/rul?assetId=${encodeURIComponent(assetId)}`)
-      const data = await res.json()
-      if (res.ok) {
-        setAssetRules(data)
-      } else {
-        toast.error(data.error || "Failed to look up asset")
+      setAssetLoading(true);
+      const res = await fetch(`/api/v1/predictive/rul?assetId=${encodeURIComponent(assetId)}`);
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to look up asset");
       }
-    } catch {
-      toast.error("Failed to look up asset")
+      
+      const data = await res.json();
+      setAssetRules(data);
+    } catch (error) {
+      toast.error(error.message || "Failed to look up asset");
     } finally {
-      setAssetLoading(false)
+      setAssetLoading(false);
     }
-  }
+  };
+
+  const validateSimForm = () => {
+    if (!simForm.assetId.trim()) {
+      toast.error("Asset ID is required");
+      return false;
+    }
+    
+    const numericFields = [
+      { key: "temperature", label: "Temperature" },
+      { key: "vibration", label: "Vibration" },
+      { key: "pressure", label: "Pressure" },
+      { key: "rpm", label: "RPM" },
+      { key: "powerConsumption", label: "Power Consumption" },
+      { key: "humidity", label: "Humidity" },
+    ];
+    
+    for (const field of numericFields) {
+      if (simForm[field.key as keyof typeof simForm] && isNaN(parseFloat(simForm[field.key as keyof typeof simForm] as string))) {
+        toast.error(`${field.label} must be a valid number`);
+        return false;
+      }
+    }
+    
+    return true;
+  };
 
   const handleSimulateTelemetry = async () => {
+    if (!validateSimForm()) return;
+    
     const reading: Record<string, unknown> = {
       assetId: simForm.assetId,
       timestamp: new Date().toISOString(),
-    }
-    if (simForm.temperature) reading.temperature = parseFloat(simForm.temperature)
-    if (simForm.vibration) reading.vibration = parseFloat(simForm.vibration)
-    if (simForm.pressure) reading.pressure = parseFloat(simForm.pressure)
-    if (simForm.rpm) reading.rpm = parseFloat(simForm.rpm)
-    if (simForm.powerConsumption) reading.powerConsumption = parseFloat(simForm.powerConsumption)
-    if (simForm.humidity) reading.humidity = parseFloat(simForm.humidity)
+    };
+    if (simForm.temperature) reading.temperature = parseFloat(simForm.temperature);
+    if (simForm.vibration) reading.vibration = parseFloat(simForm.vibration);
+    if (simForm.pressure) reading.pressure = parseFloat(simForm.pressure);
+    if (simForm.rpm) reading.rpm = parseFloat(simForm.rpm);
+    if (simForm.powerConsumption) reading.powerConsumption = parseFloat(simForm.powerConsumption);
+    if (simForm.humidity) reading.humidity = parseFloat(simForm.humidity);
 
     try {
-      setSimSending(true)
+      setSimSending(true);
       const res = await fetch("/api/v1/predictive/telemetry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(reading),
-      })
-      const data = await res.json()
-      if (res.ok) {
-        toast.success("Telemetry ingested successfully")
-        setSimForm({
-          assetId: simForm.assetId,
-          temperature: "",
-          vibration: "",
-          pressure: "",
-          rpm: "",
-          powerConsumption: "",
-          humidity: "",
-        })
-        fetchSchedule()
-      } else {
-        toast.error(data.error || "Failed to ingest telemetry")
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to ingest telemetry");
       }
-    } catch {
-      toast.error("Failed to ingest telemetry")
+      
+      const data = await res.json();
+      toast.success("Telemetry ingested successfully");
+      setSimForm({
+        assetId: simForm.assetId,
+        temperature: "",
+        vibration: "",
+        pressure: "",
+        rpm: "",
+        powerConsumption: "",
+        humidity: "",
+      });
+      fetchSchedule();
+    } catch (error) {
+      toast.error(error.message || "Failed to ingest telemetry");
     } finally {
-      setSimSending(false)
+      setSimSending(false);
     }
-  }
+  };
 
   const dueSoon = schedule.filter(a => a.estimatedRulDays <= 30 && a.estimatedRulDays > 0)
   const overdue = schedule.filter(a => a.estimatedRulDays === 0)

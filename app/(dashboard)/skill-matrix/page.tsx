@@ -122,6 +122,7 @@ export default function SkillMatrixPage() {
   const [assessDialogOpen, setAssessDialogOpen] = useState(false)
   const [expandedCategory, setExpandedCategory] = useState<string | null>('technical')
   const [submitting, setSubmitting] = useState(false)
+  const [navigating, setNavigating] = useState(false)
   const [form, setForm] = useState({ userId: '', skillId: '', level: '' })
 
   useEffect(() => {
@@ -499,29 +500,54 @@ export default function SkillMatrixPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-            Recommended Training
-          </CardTitle>
-          <CardDescription>Suggested courses and certifications based on gap analysis</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {recommendations.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4">No recommendations available</p>
-          ) : (
-            <div className="space-y-2">
-              {recommendations.map((rec, i) => (
-                <div key={i} className="flex items-start gap-3 rounded-lg bg-secondary/30 p-3">
-                  <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-indigo-500" />
-                  <span className="text-sm">{rec}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+  const handleNavigateToTraining = async (skillName: string) => {
+    setNavigating(true)
+    try {
+      const skill = catalog.find(s => s.name === skillName.split(" ")[1])
+      if (!skill) throw new Error("Skill not found")
+      // Simulate navigation to training module
+      await new Promise(resolve => setTimeout(resolve, 800))
+      toast.success(`Navigating to ${skillName} training...`)
+      window.open(`/training/${skill.id}`, "_blank")
+    } catch (error) {
+      toast.error(error.message || "Failed to navigate to training")
+    } finally {
+      setNavigating(false)
+    }
+  }
+
+       <Card>
+         <CardHeader>
+           <CardTitle className="flex items-center gap-2 text-lg">
+             <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+             Recommended Training
+           </CardTitle>
+           <CardDescription>Suggested courses and certifications based on gap analysis</CardDescription>
+         </CardHeader>
+         <CardContent>
+           {recommendations.length === 0 ? (
+             <p className="text-sm text-muted-foreground py-4">No recommendations available</p>
+           ) : (
+             <div className="space-y-2">
+               {recommendations.map((rec, i) => (
+                 <div key={i} className="flex items-start gap-3 rounded-lg bg-secondary/30 p-3">
+                   <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-indigo-500" />
+                   <span className="text-sm flex-1">{rec}</span>
+                   <Button
+                     variant="ghost"
+                     size="sm"
+                     className="h-7 w-7 p-1 text-indigo-500 hover:text-indigo-600"
+                     onClick={() => handleNavigateToTraining(rec)}
+                     disabled={navigating}
+                   >
+                     <ExternalLink className="h-3.5 w-3.5" />
+                   </Button>
+                 </div>
+               ))}
+             </div>
+           )}
+         </CardContent>
+       </Card>
     </div>
   )
 }

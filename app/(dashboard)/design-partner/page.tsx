@@ -50,11 +50,58 @@ export default function DesignPartnerPipeline() {
 
   const getStagePartners = (stage: string) => partners.filter(p => p.stage === stage)
 
-  const moveStage = (partnerId: string, newStage: string) => {
-    setPartners(prev => prev.map(p => 
-      p.id === partnerId ? { ...p, stage: newStage as DesignPartner["stage"] } : p
-    ))
-    toast.success("Partner moved to next stage")
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleMoveStage = async (partnerId: string, newStage: string) => {
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/v1/design-partners/${partnerId}/stage`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage: newStage }),
+      })
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "Failed to move partner stage")
+      }
+      setPartners(prev => prev.map(p =>
+        p.id === partnerId ? { ...p, stage: newStage as DesignPartner["stage"] } : p
+      ))
+      toast.success("Partner moved to next stage")
+    } catch (error) {
+      toast.error(error.message || "Failed to move partner stage")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleSaveNote = async () => {
+    if (!selectedPartner || !noteText.trim()) {
+      toast.error("Please enter a note")
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/v1/design-partners/${selectedPartner.id}/notes`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes: noteText }),
+      })
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "Failed to save note")
+      }
+      setPartners(prev => prev.map(p =>
+        p.id === selectedPartner.id ? { ...p, notes: noteText } : p
+      ))
+      toast.success("Note saved successfully")
+      setNoteText("")
+      setNotesDialogOpen(false)
+    } catch (error) {
+      toast.error(error.message || "Failed to save note")
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -129,22 +176,26 @@ export default function DesignPartnerPipeline() {
                               <MessageSquare className="h-3 w-3" />
                             </Button>
                             {partner.stage === "awareness" && (
-                              <Button size="sm" onClick={() => moveStage(partner.id, "evaluation")}>
+                              <Button size="sm" onClick={() => handleMoveStage(partner.id, "evaluation")} disabled={submitting}>
+                                {submitting && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                                 Start Evaluation
                               </Button>
                             )}
                             {partner.stage === "evaluation" && (
-                              <Button size="sm" onClick={() => moveStage(partner.id, "pilot")}>
+                              <Button size="sm" onClick={() => handleMoveStage(partner.id, "pilot")} disabled={submitting}>
+                                {submitting && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                                 Start Pilot
                               </Button>
                             )}
                             {partner.stage === "pilot" && (
-                              <Button size="sm" onClick={() => moveStage(partner.id, "launch")}>
+                              <Button size="sm" onClick={() => handleMoveStage(partner.id, "launch")} disabled={submitting}>
+                                {submitting && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                                 Launch
                               </Button>
                             )}
                             {partner.stage === "launch" && (
-                              <Button size="sm" variant="secondary" onClick={() => moveStage(partner.id, "advocate")}>
+                              <Button size="sm" variant="secondary" onClick={() => handleMoveStage(partner.id, "advocate")} disabled={submitting}>
+                                {submitting && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                                 Mark Advocate
                               </Button>
                             )}
@@ -271,11 +322,10 @@ export default function DesignPartnerPipeline() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNotesDialogOpen(false)}>Close</Button>
-            <Button onClick={() => {
-              toast.success("Note added")
-              setNoteText("")
-              setNotesDialogOpen(false)
-            }}>Save Note</Button>
+            <Button onClick={handleSaveNote} disabled={submitting}>
+              {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Note
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

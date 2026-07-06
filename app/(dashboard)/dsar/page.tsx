@@ -38,77 +38,112 @@ export default function DsarPage() {
 
   const fetchData = useCallback(async (cancelled?: { current: boolean }) => {
     try {
+      setLoading(true);
       const [requestsRes, consentRes] = await Promise.all([
         fetch("/api/v1/compliance/dsar?type=requests"),
         fetch("/api/v1/compliance/dsar?type=consent"),
-      ])
-      const requestsData = await requestsRes.json()
-      const consentData = await consentRes.json()
-      if (requestsRes.ok && (!cancelled || !cancelled.current)) setRequests(requestsData.requests || [])
-      if (consentRes.ok && (!cancelled || !cancelled.current)) setConsentRecords(consentData.records || [])
-    } catch {
-      if (!cancelled || !cancelled.current) toast.error("Failed to load DSAR data")
+      ]);
+      
+      if (cancelled?.current) return;
+      
+      if (!requestsRes.ok || !consentRes.ok) {
+        const errorData1 = await requestsRes.json();
+        const errorData2 = await consentRes.json();
+        throw new Error(
+          errorData1.error || errorData2.error || "Failed to load DSAR data"
+        );
+      }
+      
+      const requestsData = await requestsRes.json();
+      const consentData = await consentRes.json();
+      
+      if (!cancelled?.current) {
+        setRequests(requestsData.requests || []);
+        setConsentRecords(consentData.records || []);
+      }
+    } catch (error) {
+      if (!cancelled?.current) {
+        toast.error(error.message || "Failed to load DSAR data");
+      }
+    } finally {
+      if (!cancelled?.current) {
+        setLoading(false);
+      }
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    const cancelled = { current: false }
-    fetchData(cancelled).finally(() => {
-      if (!cancelled.current) setLoading(false)
-    })
-    return () => { cancelled.current = true }
-  }, [fetchData])
-
-  // Handle loading state separately to avoid setState in effect
-  useEffect(() => {
-    setLoading(true)
-  }, []) // Run once on mount
+    const cancelled = { current: false };
+    fetchData(cancelled);
+    return () => { cancelled.current = true; };
+  }, [fetchData]);
 
   const handleExport = async () => {
     try {
-      const res = await fetch("/api/v1/compliance/dsar?type=export")
-      const data = await res.json()
-      if (res.ok) {
-        setExportData(data.data)
-        setExportDialogOpen(true)
+      setLoading(true);
+      const res = await fetch("/api/v1/compliance/dsar?type=export");
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to export data");
       }
-    } catch {
-      toast.error("Failed to export data")
+      
+      const data = await res.json();
+      setExportData(data.data);
+      setExportDialogOpen(true);
+    } catch (error) {
+      toast.error(error.message || "Failed to export data");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
     try {
+      setLoading(true);
       const res = await fetch("/api/v1/compliance/dsar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "delete" }),
-      })
-      if (res.ok) {
-        toast.success("Your data has been scheduled for deletion")
-        setDeleteDialogOpen(false)
-        fetchData()
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to process deletion request");
       }
-    } catch {
-      toast.error("Failed to process deletion request")
+      
+      toast.success("Your data has been scheduled for deletion");
+      setDeleteDialogOpen(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.message || "Failed to process deletion request");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   const createRequest = async (type: DsarRequest["request_type"]) => {
     try {
+      setLoading(true);
       const res = await fetch("/api/v1/compliance/dsar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "create", requestType: type }),
-      })
-      if (res.ok) {
-        toast.success(`${type} request submitted`)
-        fetchData()
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to create request");
       }
-    } catch {
-      toast.error("Failed to create request")
+      
+      toast.success(`${type} request submitted`);
+      fetchData();
+    } catch (error) {
+      toast.error(error.message || "Failed to create request");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {

@@ -57,47 +57,75 @@ export async function ingestBatchTelemetry(readings: TelemetryReading[]): Promis
   return success
 }
 
-export async function calculateRUL(assetId: string): Promise<RULEstimate | null> {
+export async function calculateRUL(assetId: string): Promise<RULEstimate> {
+  if (!assetId) {
+    throw new Error("Asset ID is required")
+  }
+  
   const supabase = await createServiceClient()
 
-  const { data: asset } = await supabase
+  const { data: asset, error: assetError } = await supabase
     .from("assets")
     .select("id, name, asset_type, installation_date, expected_lifespan_days")
     .eq("id", assetId)
     .single()
 
-  if (!asset) return null
+  if (assetError || !asset) {
+    throw new Error(`Asset not found: ${assetId}`)
+  }
 
-  const { data: telemetry } = await supabase
+  const { data: telemetry, error: telemetryError } = await supabase
     .from("asset_telemetry")
     .select("*")
     .eq("asset_id", assetId)
     .order("timestamp", { ascending: false })
     .limit(100)
 
-  const readings = (telemetry as TelemetryReading[]) || []
+  if (telemetryError) {
+    throw new Error(`Failed to fetch telemetry data: ${telemetryError.message}`)
+  }
+
+  const readings = telemetry || []
+
+  if (readings.length === 0) {
+    throw new Error("No telemetry data available for RUL calculation")
+  }
 
   const installedDate = new Date(asset.installation_date)
   const daysSinceInstall = Math.floor((Date.now() - installedDate.getTime()) / (1000 * 60 * 60 * 24))
   const expectedLifespan = asset.expected_lifespan_days || 3650
 
   let healthScore = 1.0
-  if (readings.length > 0) {
-    const temps = readings.filter(r => r.temperature).map(r => r.temperature!)
-    if (temps.length > 0) {
-      const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length
-      if (avgTemp > 80) healthScore -= 0.3
-      else if (avgTemp > 60) healthScore -= 0.1
-    }
+  const temps = readings.filter(r => r.temperature !== undefined && r.temperature !== null).map(r => r.temperature!)
+  const vibes = readings.filter(r => r.vibration !== undefined && r.vibration !== null).map(r => r.vibration!)
+  const pressures = readings.filter(r => r.pressure !== undefined && r.pressure !== null).map(r => r.pressure!)
+  const rpms = readings.filter(r => r.rpm !== undefined && r.rpm !== null).map(r => r.rpm!)
 
-    const vibes = readings.filter(r => r.vibration).map(r => r.vibration!)
-    if (vibes.length > 0) {
-      const avgVibe = vibes.reduce((a, b) => a + b, 0) / vibes.length
-      if (avgVibe > 10) healthScore -= 0.2
-    }
+  if (temps.length > 0) {
+    const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length
+    if (avgTemp > 80) healthScore -= 0.3
+    else if (avgTemp > 60) healthScore -= 0.1
   }
 
-  healthScore = Math.max(0.1, healthScore)
+  if (vibes.length > 0) {
+    const avgVibe = vibes.reduce((a, b) => a + b, 0) / vibes.length
+    if (avgVibe > 10) healthScore -= 0.2
+    else if (avgVibe > 5) healthScore -= 0.1
+  }
+
+  if (pressures.length > 0) {
+    const avgPressure = pressures.reduce((a, b) => a + b, 0) / pressures.length
+    if (avgPressure > 150) healthScore -= 0.15
+    else if (avgPressure < 80) healthScore -= 0.1
+  }
+
+  if (rpms.length > 0) {
+    const avgRpm = rpms.reduce((a, b) => a + b, 0) / rpms.length
+    if (avgRpm > 3000) healthScore -= 0.2
+    else if (avgRpm > 2500) healthScore -= 0.1
+  }
+
+  healthScore = Math.max(0.1, Math.min(1.0, healthScore))
   const effectiveLifespan = expectedLifespan * healthScore
   const remainingDays = Math.max(0, Math.round(effectiveLifespan - daysSinceInstall))
 
