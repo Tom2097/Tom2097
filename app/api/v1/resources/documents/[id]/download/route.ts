@@ -5,7 +5,6 @@ import { withAuth } from "@/lib/auth/with-auth"
 import { appendComplianceAudit } from "@/lib/compliance/audit-trail"
 import { createServiceClient } from "@/lib/supabase/service"
 import { getClientIp } from "@/lib/auth/audit"
-import { Storage } from "@google-cloud/storage"
 
 // GET /api/v1/resources/documents/[id]/download - Download document
 export const GET = withAuth(async (req: NextRequest, { organizationId, userId, params }) => {
@@ -26,22 +25,14 @@ export const GET = withAuth(async (req: NextRequest, { organizationId, userId, p
     return NextResponse.json({ error: "Document not found" }, { status: 404 })
   }
 
-  // In a real implementation, this would fetch the file from storage
-  // For now, we'll return a mock response
-  const storage = new Storage()
-  const bucket = storage.bucket(process.env.GCS_BUCKET_NAME!)
-  const file = bucket.file(document.file_path)
+  // Generate signed URL from Supabase Storage
+  const { data, error: downloadError } = await db.storage
+    .from("documents")
+    .createSignedUrl(document.file_path, 3600) // 1 hour expiry
 
-  const [exists] = await file.exists()
-  if (!exists) {
-    return NextResponse.json({ error: "File not found in storage" }, { status: 404 })
+  if (downloadError || !data?.signedUrl) {
+    return NextResponse.json({ error: "Failed to generate download link" }, { status: 500 })
   }
-
-  const [url] = await file.getSignedUrl({
-    version: "v4",
-    action: "read",
-    expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-  })
 
   await appendComplianceAudit(
     organizationId,
@@ -54,5 +45,5 @@ export const GET = withAuth(async (req: NextRequest, { organizationId, userId, p
     { endpoint: `/api/v1/resources/documents/${id}/download` }
   )
 
-  return NextResponse.json({ url })
+  return NextResponse.json({ url: data.signedUrl })
 }, { requireAny: ["documents:read", "documents:manage"] })

@@ -563,6 +563,101 @@ export async function getPipelineSummary(organizationId: string): Promise<Pipeli
   }
 }
 
+/**
+ * Get real-time CRM metrics including WhatsApp integration status, deal velocity,
+ * and AI recommendations.
+ */
+export async function getPipelineSummaryRealtime(organizationId: string): Promise<{
+  whatsappConnected: boolean
+  dealVelocity: number
+  velocityTrend: number[]
+  avgLeadScore: number
+  leadScoreDistribution: number[]
+  aiRecommendations: number
+}> {
+  const db = createServiceClient()
+  
+  // Check WhatsApp integration status
+  const { data: whatsappData } = await db
+    .from("integrations")
+    .select("status")
+    .eq("organization_id", organizationId)
+    .eq("type", "whatsapp")
+    .maybeSingle()
+  
+  const whatsappConnected = whatsappData?.status === "active"
+  
+  // Calculate deal velocity (deals created per week in last 4 weeks)
+  const { data: velocityData } = await db
+    .from("crm_deals")
+    .select("created_at")
+    .eq("organization_id", organizationId)
+    .gte("created_at", new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString())
+    .order("created_at", { ascending: true })
+  
+  const velocityTrend = [0, 0, 0, 0]
+  if (velocityData && velocityData.length > 0) {
+    const now = new Date()
+    velocityData.forEach(deal => {
+      const dealDate = new Date(deal.created_at)
+      const weekIndex = Math.min(3, Math.floor((now.getTime() - dealDate.getTime()) / (7 * 24 * 60 * 60 * 1000)))
+      velocityTrend[3 - weekIndex] += 1
+    })
+  }
+  
+  const dealVelocity = velocityTrend.reduce((a, b) => a + b, 0) / 4
+  
+  // Get lead scoring data
+  const { data: leadData } = await db
+    .from("crm_contacts")
+    .select("lead_score")
+    .eq("organization_id", organizationId)
+    .not("lead_score", "is", null)
+    .limit(100)
+  
+  const leadScores = leadData?.map(c => c.lead_score || 0) || []
+  const avgLeadScore = leadScores.length > 0 ? leadScores.reduce((a, b) => a + b, 0) / leadScores.length : 0
+  
+  // Simple distribution (0-20, 20-40, 40-60, 60-80, 80-100)
+  const leadScoreDistribution = [0, 0, 0, 0, 0]
+  leadScores.forEach(score => {
+    const index = Math.min(4, Math.floor(score / 20))
+    leadScoreDistribution[index] += 1
+  })
+  
+  // Normalize distribution
+  const maxDist = Math.max(...leadScoreDistribution, 1)
+  const normalizedDistribution = leadScoreDistribution.map(v => v / maxDist)
+  
+  // Get AI recommendations count
+  const { data: aiData } = await db
+    .from("ai_recommendations")
+    .select("id", { count: "exact" })
+    .eq("organization_id", organizationId)
+    .eq("status", "pending")
+  
+  const aiRecommendations = aiData?.count || 0
+  
+  // Get WhatsApp activity (messages per day in last 7 days)
+  const { data: whatsappActivityData } = await db
+    .from("whatsapp_messages")
+    .select("created_at", { count: "exact" })
+    .eq("organization_id", organizationId)
+    .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+  
+  const whatsappActivity = whatsappActivityData?.count ? Math.round(whatsappActivityData.count / 7) : 0
+  
+  return {
+    whatsappConnected,
+    dealVelocity: Number(dealVelocity.toFixed(1)),
+    velocityTrend,
+    avgLeadScore: Number(avgLeadScore.toFixed(1)),
+    leadScoreDistribution: normalizedDistribution,
+    aiRecommendations,
+    whatsappActivity,
+  }
+}
+
 // ── Activities ─────────────────────────────────────────────────────────────────
 
 export function validateActivity(input: unknown): string | null {

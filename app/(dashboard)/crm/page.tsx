@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
-import { Users, Target, Phone, Mail, FileText, Heart, BarChart3, Sparkles, Zap, AlertTriangle, MessageSquare, Copy, UserPlus, Sun, Globe, DollarSign, TrendingUp as TrendingUpIcon, Layers, Ticket } from 'lucide-react'
+import { Users, Target, Phone, Mail, FileText, Heart, BarChart3, Sparkles, Zap, AlertTriangle, MessageSquare, Copy, UserPlus, Sun, Globe, DollarSign, TrendingUp as TrendingUpIcon, Layers, Ticket, RefreshCw, BarChart2, MessageCircle, Brain, Activity } from 'lucide-react'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
-import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
+import { ChartContainer } from '@/components/ui/chart'
+import { LiveChart } from '@/components/digit/live-chart'
+import { RealTimeChart } from '@/components/digit/real-time-chart'
 import { CrmContactsManager, type CrmContactRow } from '@/components/digit/crm-contacts-manager'
 import { CrmLeadInbox } from '@/components/digit/crm-lead-inbox'
 import { CrmTimeline } from '@/components/digit/crm-timeline'
@@ -27,7 +29,9 @@ import { CrmForecastReports } from '@/components/digit/crm-forecast-reports'
 import { CrmSupportTickets } from '@/components/digit/crm-support-tickets'
 import { CrmSalesAnalytics } from '@/components/digit/crm-sales-analytics'
 import { extractTenantContext } from '@/lib/multitenant/context'
-import { getPipelineSummary, listContacts } from '@/lib/crm/engine'
+import { getPipelineSummary, listContacts, getPipelineSummaryRealtime } from '@/lib/crm/engine'
+import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
+import { forecastMetric } from '@/lib/analytics/forecasting'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export const dynamic = 'force-dynamic'
@@ -50,8 +54,11 @@ export default async function CRMPage() {
   if (!ctx) redirect('/auth/login')
   const orgId = ctx.organizationId
 
-  const [pipeline, contactsResult] = await Promise.all([
+  const [pipeline, pipelineRealtime, anomalies, forecast, contactsResult] = await Promise.all([
     getPipelineSummary(orgId),
+    getPipelineSummaryRealtime(orgId),
+    detectAnomalies(orgId, 'crm_deal_value', { start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), end: new Date().toISOString() }),
+    forecastMetric(orgId, 'crm_deal_value', 6),
     listContacts(orgId, { limit: 100 }),
   ])
 
@@ -91,54 +98,165 @@ export default async function CRMPage() {
         </div>
       </div>
 
-      {/* Metrics */}
-      <MetricGrid columns={4}>
-        <MetricCard label="Total Contacts" value={contactsResult.total} variant="highlight" />
-        <MetricCard label="Open Deals" value={pipeline.open_deals} />
-        <MetricCard label="Pipeline Value" value={formatCurrency(pipeline.total_open_value, pipeline.currency)} />
-        <MetricCard label="Avg Deal Size" value={formatCurrency(avgDealValue, pipeline.currency)} />
-        <MetricCard label="Win Rate" value={(() => { const won = pipeline.stages.find(s => s.stage === 'won')?.count ?? 0; const lost = pipeline.stages.find(s => s.stage === 'lost')?.count ?? 0; const total = won + lost; return total > 0 ? `${Math.round((won / total) * 100)}%` : '0%' })()} />
-      </MetricGrid>
+       <div className="flex items-center justify-between mb-6">
+         <div>
+           <h2 className="text-2xl font-bold text-foreground">CRM Intelligence</h2>
+           <p className="text-sm text-muted-foreground">Real-time pipeline analytics and AI insights</p>
+         </div>
+         <Button variant="ghost" size="sm" className="gap-1 text-sm">
+           <RefreshCw className="h-3 w-3" />
+           Refresh
+         </Button>
+       </div>
 
-      {/* Pipeline Chart */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ChartContainer title="Sales Pipeline" subtitle="Deal value by stage">
-          {hasPipeline ? (
-            <LiveChart data={pipelineData} dataKey="value" type="bar" height={280} color="hsl(var(--chart-2))" />
-          ) : (
-            <div className="flex h-[280px] items-center justify-center text-center text-sm text-muted-foreground">
-              No deals in the pipeline yet. Add a deal to see stage progression.
-            </div>
-          )}
-        </ChartContainer>
+       {/* Metrics */}
+       <MetricGrid columns={4}>
+         <MetricCard label="Total Contacts" value={contactsResult.total} variant="highlight" />
+         <MetricCard label="Open Deals" value={pipeline.open_deals} />
+         <MetricCard label="Pipeline Value" value={formatCurrency(pipeline.total_open_value, pipeline.currency)} />
+         <MetricCard label="Avg Deal Size" value={formatCurrency(avgDealValue, pipeline.currency)} />
+         <MetricCard label="Win Rate" value={(() => { const won = pipeline.stages.find(s => s.stage === 'won')?.count ?? 0; const lost = pipeline.stages.find(s => s.stage === 'lost')?.count ?? 0; const total = won + lost; return total > 0 ? `${Math.round((won / total) * 100)}%` : '0%' })()} />
+         <MetricCard label="Anomalies" value={anomalies.anomalies.length} subtitle="Last 30 days" />
+         <MetricCard label="Forecast Growth" value={forecast.length > 0 ? `${Math.round(((forecast[forecast.length - 1].forecast - forecast[0].actual) / forecast[0].actual) * 100)}%` : '0%'} subtitle="Next 6 months" />
+         <MetricCard label="WhatsApp Integration" value={pipelineRealtime.whatsappConnected ? 'Connected' : 'Disconnected'} variant={pipelineRealtime.whatsappConnected ? 'default' : 'destructive'} />
+       </MetricGrid>
 
-        <div className="rounded-2xl border border-border/50 bg-card p-6">
-          <h3 className="mb-4 text-lg font-semibold text-foreground">Pipeline Breakdown</h3>
-          {hasPipeline ? (
-            <div className="space-y-3">
-              {pipeline.stages
-                .filter((s) => s.count > 0)
-                .map((s) => (
-                  <div key={s.stage} className="flex items-center justify-between rounded-xl bg-secondary/30 p-4">
-                    <div>
-                      <p className="font-medium capitalize text-foreground">{s.stage}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {s.count} {s.count === 1 ? 'deal' : 'deals'} · weighted {formatCurrency(s.weighted_value, pipeline.currency)}
-                      </p>
-                    </div>
-                    <span className="text-sm font-medium text-foreground">
-                      {formatCurrency(s.value, pipeline.currency)}
-                    </span>
-                  </div>
-                ))}
-            </div>
-          ) : (
-            <div className="flex h-[200px] items-center justify-center text-center text-sm text-muted-foreground">
-              Pipeline insights will appear once deals are added.
-            </div>
-          )}
-        </div>
-      </div>
+       {/* Real-Time Pipeline Charts */}
+       <div className="grid gap-6 lg:grid-cols-2">
+         <ChartContainer title="Sales Pipeline" subtitle="Real-time deal value by stage with anomaly detection">
+           {hasPipeline ? (
+             <RealTimeChart
+               data={pipelineData}
+               dataKey="value"
+               type="bar"
+               height={280}
+               anomalies={anomalies.anomalies}
+             />
+           ) : (
+             <div className="flex h-[280px] items-center justify-center text-center text-sm text-muted-foreground">
+               No deals in the pipeline yet. Add a deal to see stage progression.
+             </div>
+           )}
+         </ChartContainer>
+
+         <ChartContainer title="Pipeline Health" subtitle="Real-time deal flow analytics">
+           <div className="grid grid-cols-2 gap-4 h-[280px]">
+             <div className="rounded-xl border border-border/50 bg-card p-4">
+               <div className="flex items-center justify-between mb-2">
+                 <h4 className="text-sm font-medium">Deal Velocity</h4>
+                 <TrendingUpIcon className="h-4 w-4 text-blue-500" />
+               </div>
+               <div className="text-2xl font-bold">{pipelineRealtime.dealVelocity.toFixed(1)}</div>
+               <p className="text-xs text-muted-foreground">deals/week</p>
+               <div className="mt-4 h-20 flex items-end gap-1">
+                 {pipelineRealtime.velocityTrend.map((value, index) => (
+                   <div key={index} className="flex-1 bg-blue-500/20 rounded-t-sm" style={{ height: `${value * 50}px` }}></div>
+                 ))}
+               </div>
+             </div>
+
+             <div className="rounded-xl border border-border/50 bg-card p-4">
+               <div className="flex items-center justify-between mb-2">
+                 <h4 className="text-sm font-medium">Lead Scoring</h4>
+                 <Brain className="h-4 w-4 text-purple-500" />
+               </div>
+               <div className="text-2xl font-bold">{pipelineRealtime.avgLeadScore.toFixed(1)}</div>
+               <p className="text-xs text-muted-foreground">avg score</p>
+               <div className="mt-4 h-20 flex items-end gap-1">
+                 {pipelineRealtime.leadScoreDistribution.map((value, index) => (
+                   <div key={index} className="flex-1 bg-purple-500/20 rounded-t-sm" style={{ height: `${value * 100}px` }}></div>
+                 ))}
+               </div>
+             </div>
+
+             <div className="rounded-xl border border-border/50 bg-card p-4">
+               <div className="flex items-center justify-between mb-2">
+                 <h4 className="text-sm font-medium">WhatsApp Activity</h4>
+                 <MessageCircle className="h-4 w-4 text-green-500" />
+               </div>
+               <div className="text-2xl font-bold">{pipelineRealtime.whatsappActivity}</div>
+               <p className="text-xs text-muted-foreground">messages/day</p>
+               <div className="mt-4 h-16 flex items-center justify-center">
+                 {pipelineRealtime.whatsappConnected ? (
+                   <div className="flex items-center gap-2 text-green-500">
+                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                     <span className="text-xs">Connected</span>
+                   </div>
+                 ) : (
+                   <div className="flex items-center gap-2 text-red-500">
+                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                     <span className="text-xs">Disconnected</span>
+                   </div>
+                 )}
+               </div>
+             </div>
+
+             <div className="rounded-xl border border-border/50 bg-card p-4">
+               <div className="flex items-center justify-between mb-2">
+                 <h4 className="text-sm font-medium">AI Recommendations</h4>
+                 <Activity className="h-4 w-4 text-orange-500" />
+               </div>
+               <div className="text-2xl font-bold">{pipelineRealtime.aiRecommendations}</div>
+               <p className="text-xs text-muted-foreground">actions pending</p>
+               <div className="mt-4 h-16 flex items-center justify-center">
+                 <div className="flex items-center gap-2 text-orange-500">
+                   <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                   <span className="text-xs">AI Active</span>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </ChartContainer>
+       </div>
+
+       {/* Pipeline Breakdown with Anomalies */}
+       <div className="rounded-2xl border border-border/50 bg-card p-6">
+         <h3 className="mb-4 text-lg font-semibold text-foreground flex items-center gap-2">
+           Pipeline Breakdown
+           {anomalies.anomalies.length > 0 && (
+             <Badge variant="destructive" className="gap-1 text-xs">
+               <AlertTriangle className="h-3 w-3" />
+               {anomalies.anomalies.length} anomalies
+             </Badge>
+           )}
+         </h3>
+         {hasPipeline ? (
+           <div className="space-y-3">
+             {pipeline.stages
+               .filter((s) => s.count > 0)
+               .map((s) => {
+                 const stageAnomalies = anomalies.anomalies.filter(a => a.dimensionValue === s.stage)
+                 return (
+                   <div key={s.stage} className="flex items-center justify-between rounded-xl bg-secondary/30 p-4">
+                     <div>
+                       <p className="font-medium capitalize text-foreground">{s.stage}</p>
+                       <p className="text-sm text-muted-foreground">
+                         {s.count} {s.count === 1 ? 'deal' : 'deals'} · weighted {formatCurrency(s.weighted_value, pipeline.currency)}
+                       </p>
+                       {stageAnomalies.length > 0 && (
+                         <div className="flex items-center gap-1 mt-1">
+                           {stageAnomalies.slice(0, 3).map((anomaly, index) => (
+                             <div key={index} className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                           ))}
+                           {stageAnomalies.length > 3 && (
+                             <span className="text-xs text-muted-foreground">+{stageAnomalies.length - 3}</span>
+                           )}
+                         </div>
+                       )}
+                     </div>
+                     <span className="text-sm font-medium text-foreground">
+                       {formatCurrency(s.value, pipeline.currency)}
+                     </span>
+                   </div>
+                 )
+               })}
+           </div>
+         ) : (
+           <div className="flex h-[200px] items-center justify-center text-center text-sm text-muted-foreground">
+             Pipeline insights will appear once deals are added.
+           </div>
+         )}
+       </div>
 
       {/* Smart CRM Intelligence Section */}
       <div className="grid gap-4 lg:grid-cols-3">

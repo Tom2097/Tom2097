@@ -3,6 +3,8 @@ import { extractTenantContext } from '@/lib/multitenant/context'
 import { querySummary, queryTimeseries, queryBreakdown } from '@/lib/analytics/engine'
 import { getSystemHealth } from '@/lib/monitoring/engine'
 import { getAuditLogStats } from '@/lib/audit/store'
+import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
+import { forecastMetric } from '@/lib/analytics/forecasting'
 import { AnalyticsView, type AnalyticsViewData } from '@/components/digit/analytics-view'
 
 // Always render with fresh tenant data.
@@ -39,7 +41,7 @@ export default async function AnalyticsPage({
   const endIso = end.toISOString()
 
   // Fetch all live sources in parallel. Each is tenant-scoped by orgId.
-  const [summary, timeseries, categories, topEvents, health, auditStats] = await Promise.all([
+  const [summary, timeseries, categories, topEvents, health, auditStats, anomalies, forecast] = await Promise.all([
     querySummary(orgId, startIso, endIso),
     queryTimeseries(orgId, {
       type: 'timeseries',
@@ -75,6 +77,8 @@ export default async function AnalyticsPage({
     }),
     getSystemHealth(orgId),
     getAuditLogStats(orgId, days).catch(() => null),
+    detectAnomalies(orgId, 'session_start', { start: startIso, end: endIso }),
+    forecastMetric(orgId, 'session_start', 6),
   ])
 
   // Build an aligned activity-vs-audit operational series keyed by date.
@@ -106,6 +110,15 @@ export default async function AnalyticsPage({
     health,
     auditTotal: auditStats?.total ?? 0,
     uptimePct,
+    anomalies: anomalies.anomalies,
+    forecast: forecast.map(f => ({
+      timestamp: f.timestamp,
+      actual: f.actual,
+      forecast: f.forecast,
+      lower_bound: f.lower_bound,
+      upper_bound: f.upper_bound,
+    })),
+    anomalySummary: anomalies.summary,
   }
 
   return <AnalyticsView {...data} />

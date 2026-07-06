@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server"
 import { createRouteHandlerClient } from "@/lib/supabase/server"
 import { getDashboardMetrics, getDashboardTimeseries, getDashboardAnomalies } from "@/lib/analytics/dashboard"
-import { withAuth } from "@/lib/api/middleware"
+import { withAuth } from "@/lib/auth/with-auth"
 import { logger } from "@/lib/logging"
 
 /**
