@@ -1,9 +1,7 @@
-"use client"
-
 import { ReactNode } from "react"
 import { redirect } from "next/navigation"
 import { getAuthenticatedUser } from "@/lib/auth/server-auth"
-import { isPlatformAdmin } from "../../lib/auth/rbac"
+import { isPlatformAdmin } from "@/lib/auth/rbac"
 
 interface AdminPlatformLayoutProps {
   children: ReactNode

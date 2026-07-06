@@ -1,5 +1,5 @@
-import { createClient } from "../../lib/supabase/server"
-import { createAuditEntry } from "../../lib/audit/append-only"
+import { createClient } from "@/lib/supabase/server"
+import { createAuditEntry } from "@/lib/audit/append-only"
 
 interface Agent {
   id: string

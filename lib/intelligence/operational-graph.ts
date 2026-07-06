@@ -1,4 +1,4 @@
-import { createClient } from "../../lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 
 interface OperationalNode {
   id: string
@@ -193,5 +193,53 @@ export async function traverse(
       updatedAt: startNode.updated_at,
     }],
     edges: []
+  }
+}
+
+/**
+ * Gets a node by ID.
+ */
+export async function getNode(nodeId: string): Promise<OperationalNode | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("operational_graph_nodes")
+    .select("*")
+    .eq("id", nodeId)
+    .single()
+
+  if (error) return null
+
+  return {
+    id: data.id,
+    workspaceId: data.workspace_id,
+    entityId: data.entity_id,
+    entityType: data.entity_type,
+    properties: data.properties,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  }
+}
+
+/**
+ * Gets an edge by ID.
+ */
+export async function getEdge(edgeId: string): Promise<OperationalEdge | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("operational_graph_edges")
+    .select("*")
+    .eq("id", edgeId)
+    .single()
+
+  if (error) return null
+
+  return {
+    id: data.id,
+    from: data.from,
+    to: data.to,
+    relationshipType: data.relationship_type,
+    properties: data.properties,
+    workspaceId: data.workspace_id,
+    createdAt: data.created_at,
   }
 }

@@ -33,7 +33,7 @@ function LoginForm() {
   const [isNewDevice, setIsNewDevice] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirect = searchParams.get("redirect") || "/"
+  const redirect = searchParams?.get("redirect") || "/"
 
   // Check if WebAuthn is available and if user has credentials
   useEffect(() => {

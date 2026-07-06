@@ -20,6 +20,7 @@ export default function BreakGlassPage() {
   const [duration, setDuration] = useState(MAX_BREAK_GLASS_MINUTES)
   const [isLoading, setIsLoading] = useState(false)
   const [activeSession, setActiveSession] = useState<{ expiresAt: string } | null>(null)
+  const [remainingMinutes, setRemainingMinutes] = useState(0)
 
   useEffect(() => {
     const checkActiveSession = async () => {
@@ -30,6 +31,17 @@ export default function BreakGlassPage() {
     }
     checkActiveSession()
   }, [])
+
+  useEffect(() => {
+    if (!activeSession) return
+    const updateRemaining = () => {
+      const minutes = Math.max(0, Math.floor((new Date(activeSession.expiresAt).getTime() - Date.now()) / 60000))
+      setRemainingMinutes(minutes)
+    }
+    updateRemaining()
+    const interval = setInterval(updateRemaining, 60000)
+    return () => clearInterval(interval)
+  }, [activeSession])
 
   const handleRequestAccess = async () => {
     if (!reason.trim()) {
@@ -101,9 +113,7 @@ export default function BreakGlassPage() {
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Time Remaining:</span>
-              <span>
-                {Math.max(0, Math.floor((new Date(activeSession.expiresAt).getTime() - Date.now()) / 60000))} minutes
-              </span>
+              <span>{remainingMinutes} minutes</span>
             </div>
           </div>
         </CardContent>

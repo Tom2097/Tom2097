@@ -1,4 +1,4 @@
-import { createClient } from "../../lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 
 interface CausalNode {
   id: string
@@ -21,9 +21,9 @@ interface CausalEdge {
 }
 
 /**
- * Adds a node to the causal graph.
+ * Adds an event node to the causal graph.
  */
-export async function addNode(
+export async function addEvent(
   workspaceId: string,
   entityId: string,
   entityType: string,
@@ -57,9 +57,9 @@ export async function addNode(
 }
 
 /**
- * Adds an edge to the causal graph.
+ * Adds a causal link (edge) to the causal graph.
  */
-export async function addEdge(
+export async function addCausalLink(
   from: string,
   to: string,
   relationshipType: string,
@@ -93,17 +93,17 @@ export async function addEdge(
 }
 
 /**
- * Finds root causes for a node.
+ * Finds root causes for a node up to a maximum depth.
  */
-export async function findRootCauses(nodeId: string): Promise<CausalNode[]> {
+export async function findRootCauses(nodeId: string, maxDepth: number = 3): Promise<CausalNode[]> {
   const supabase = await createClient()
   const rootCauses: CausalNode[] = []
   const visited = new Set<string>()
-  const queue: string[] = [nodeId]
+  const queue: { id: string; depth: number }[] = [{ id: nodeId, depth: 0 }]
 
   while (queue.length > 0) {
-    const currentId = queue.shift()!
-    if (visited.has(currentId)) continue
+    const { id: currentId, depth } = queue.shift()!
+    if (depth > maxDepth || visited.has(currentId)) continue
     visited.add(currentId)
 
     const { data: edges, error: edgeError } = await supabase
@@ -132,7 +132,7 @@ export async function findRootCauses(nodeId: string): Promise<CausalNode[]> {
       })
     } else {
       for (const edge of edges) {
-        queue.push(edge.from)
+        queue.push({ id: edge.from, depth: depth + 1 })
       }
     }
   }
@@ -141,17 +141,17 @@ export async function findRootCauses(nodeId: string): Promise<CausalNode[]> {
 }
 
 /**
- * Finds downstream effects for a node.
+ * Finds downstream effects for a node up to a maximum depth.
  */
-export async function findDownstreamEffects(nodeId: string): Promise<CausalNode[]> {
+export async function findDownstreamEffects(nodeId: string, maxDepth: number = 3): Promise<CausalNode[]> {
   const supabase = await createClient()
   const downstreamEffects: CausalNode[] = []
   const visited = new Set<string>()
-  const queue: string[] = [nodeId]
+  const queue: { id: string; depth: number }[] = [{ id: nodeId, depth: 0 }]
 
   while (queue.length > 0) {
-    const currentId = queue.shift()!
-    if (visited.has(currentId)) continue
+    const { id: currentId, depth } = queue.shift()!
+    if (depth > maxDepth || visited.has(currentId)) continue
     visited.add(currentId)
 
     const { data: edges, error: edgeError } = await supabase
@@ -178,7 +178,7 @@ export async function findDownstreamEffects(nodeId: string): Promise<CausalNode[
         timestamp: node.created_at,
         metadata: node.metadata,
       })
-      queue.push(edge.to)
+      queue.push({ id: edge.to, depth: depth + 1 })
     }
   }
 

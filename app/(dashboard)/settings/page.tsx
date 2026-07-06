@@ -84,7 +84,7 @@ interface ApiKey {
 
 function SuccessBanner() {
   const searchParams = useSearchParams()
-  const success = searchParams.get("success")
+  const success = searchParams?.get("success")
   
   if (!success) return null
   

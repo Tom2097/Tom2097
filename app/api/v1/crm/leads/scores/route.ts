@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { calculateLeadScore, getHighPriorityLeads } from "../../../../../lib/crm/scoring";
+import { calculateLeadScore, getHighPriorityLeads } from "../../../../../../lib/crm/scoring";
 
 // Schema for lead data
 const LeadSchema = z.object({

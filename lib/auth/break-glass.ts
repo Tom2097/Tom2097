@@ -1,17 +1,24 @@
 "use server"
 
-import { createClient } from "../../lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 import { getAuthenticatedUser } from "./server-auth"
-import { isPlatformAdmin } from "../../lib/auth/rbac"
-import { createAuditEntry } from "../../lib/audit/append-only"
+import { isPlatformAdmin } from "@/lib/auth/rbac"
+import { createAuditEntry } from "@/lib/audit/append-only"
 import { randomUUID } from "crypto"
 
-interface BreakGlassSession {
+export interface BreakGlassSession {
   id: string
   adminId: string
+  adminName?: string
+  adminEmail?: string
   reason: string
+  role: string
+  status: "active" | "ended" | "expired"
+  alarmTriggered: boolean
   createdAt: string
+  startedAt: string
   expiresAt: string
+  endedAt?: string | null
 }
 
 const MAX_BREAK_GLASS_MINUTES = 30

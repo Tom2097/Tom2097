@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { requestBreakGlassAccess, endBreakGlassSession } from "@/lib/auth/break-glass"
+import { requestBreakGlassAccess, endBreakGlassSession, getActiveBreakGlassSession } from "@/lib/auth/break-glass"
 import { getAuthenticatedUser } from "@/lib/auth/server-auth"
 
 /**
