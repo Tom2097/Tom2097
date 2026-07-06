@@ -1,6 +1,6 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "../../lib/supabase/server"
 import { getAuthenticatedUser } from "./server-auth"
 import { isPlatformAdmin } from "./rbac"
 import { createAuditLog } from "@/lib/audit/append-only"
