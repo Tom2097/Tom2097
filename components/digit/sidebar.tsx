@@ -130,7 +130,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
           {AI_MODULES.map((module) => {
             const Icon = module.icon
             const isActive = pathname === module.href
-            const isEnabled = featureFlags?.[module.flag as keyof typeof featureFlags] ?? false
+            const isEnabled = featureFlags?.[module.flag as keyof typeof featureFlags] ?? true
             
             if (!isEnabled) return null
             
