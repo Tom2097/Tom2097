@@ -2,10 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { redirect } from "next/navigation"
-import { extractTenantContext } from "@/lib/multitenant/context"
-import { getFeedbackStats, listFeedback, createFeedback, voteFeedback } from "@/lib/feedback/engine"
-import { detectAnomalies } from "@/lib/analytics/anomaly-detection"
-import { forecastMetric } from "@/lib/analytics/forecasting"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -102,14 +98,19 @@ export default function FeedbackPage() {
     fetchContext()
   }, [])
 
-  const fetchFeedback = async (organizationId?: string) => {
-    if (!organizationId) return
+  const fetchFeedback = async () => {
+    if (!ctx?.organizationId) return
     setLoading(true)
     try {
-      const [stats, items] = await Promise.all([
-        getFeedbackStats(organizationId),
-        listFeedback(organizationId, { search, status: filterStatus, type: filterType, sort })
-      ])
+      const params = new URLSearchParams()
+      if (search) params.set('search', search)
+      if (filterStatus !== 'all') params.set('status', filterStatus)
+      if (filterType !== 'all') params.set('type', filterType)
+      if (sort) params.set('sort', sort)
+      
+      const response = await fetch(`/api/v1/feedback?${params.toString()}`)
+      const { stats, items } = await response.json()
+      
       setMetrics({
         sentimentScore: stats.sentimentScore,
         responseTime: stats.responseTime,
@@ -138,17 +139,24 @@ export default function FeedbackPage() {
     setSubmitting(true)
     setFormError("")
     try {
-      await submitFeedback(ctx.organizationId, ctx.userId, {
-        title: form.title,
-        body: form.body,
-        type: form.type,
-        category: form.category || 'general',
-        priority: form.priority,
-        rating: form.rating ? parseInt(form.rating) : undefined
+      const response = await fetch('/api/v1/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: form.title,
+          body: form.body,
+          type: form.type,
+          category: form.category || 'general',
+          priority: form.priority,
+          rating: form.rating ? parseInt(form.rating) : undefined
+        })
       })
+      
+      if (!response.ok) throw new Error('Failed to submit feedback')
+      
       setOpen(false)
       setForm({ title: "", body: "", type: "general", category: "", priority: "medium" })
-      await fetchFeedback(ctx.organizationId)
+      await fetchFeedback()
     } catch (error) {
       setFormError("Failed to submit feedback")
       console.error("Failed to submit feedback:", error)
@@ -158,10 +166,17 @@ export default function FeedbackPage() {
   }
 
   const handleVote = async (feedbackId: string) => {
-    if (!ctx?.organizationId || !ctx?.userId) return
+    if (!ctx?.organizationId) return
     try {
-      await voteFeedback(ctx.organizationId, feedbackId, ctx.userId)
-      await fetchFeedback(ctx.organizationId)
+      const response = await fetch('/api/v1/feedback/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedbackId })
+      })
+      
+      if (!response.ok) throw new Error('Failed to vote')
+      
+      await fetchFeedback()
     } catch (error) {
       console.error("Failed to vote:", error)
     }
