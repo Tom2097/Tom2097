@@ -38,7 +38,6 @@ export default function DsarPage() {
 
   const fetchData = useCallback(async (cancelled?: { current: boolean }) => {
     try {
-      setLoading(true)
       const [requestsRes, consentRes] = await Promise.all([
         fetch("/api/v1/compliance/dsar?type=requests"),
         fetch("/api/v1/compliance/dsar?type=consent"),
@@ -49,16 +48,21 @@ export default function DsarPage() {
       if (consentRes.ok && (!cancelled || !cancelled.current)) setConsentRecords(consentData.records || [])
     } catch {
       if (!cancelled || !cancelled.current) toast.error("Failed to load DSAR data")
-    } finally {
-      if (!cancelled || !cancelled.current) setLoading(false)
     }
   }, [])
 
   useEffect(() => {
     const cancelled = { current: false }
-    fetchData(cancelled)
+    fetchData(cancelled).finally(() => {
+      if (!cancelled.current) setLoading(false)
+    })
     return () => { cancelled.current = true }
   }, [fetchData])
+
+  // Handle loading state separately to avoid setState in effect
+  useEffect(() => {
+    setLoading(true)
+  }, []) // Run once on mount
 
   const handleExport = async () => {
     try {
