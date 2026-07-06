@@ -74,10 +74,15 @@ export default function DsarPage() {
 
   useEffect(() => {
     const cancelled = { current: false };
-    setLoading(true);
-    fetchData(cancelled).finally(() => {
-      if (!cancelled.current) setLoading(false);
-    });
+    const load = async () => {
+      setLoading(true);
+      try {
+        await fetchData(cancelled);
+      } finally {
+        if (!cancelled.current) setLoading(false);
+      }
+    };
+    load();
     return () => { cancelled.current = true; };
   }, [fetchData]);
 
