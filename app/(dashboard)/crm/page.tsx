@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { Users, Target, Phone, Mail, FileText, Heart, BarChart3, Sparkles, Zap, AlertTriangle, MessageSquare, Copy, UserPlus, Sun, Globe, DollarSign, TrendingUp as TrendingUpIcon, Layers, Ticket, RefreshCw, BarChart2, MessageCircle, Brain, Activity } from 'lucide-react'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
-import { ChartContainer } from '@/components/ui/chart'
+import { ChartContainer } from '@/components/digit/live-chart'
 import { LiveChart } from '@/components/digit/live-chart'
 import { RealTimeChart } from '@/components/digit/real-time-chart'
 import { Button } from '@/components/ui/button'
