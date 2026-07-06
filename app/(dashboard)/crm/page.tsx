@@ -175,7 +175,7 @@ export default async function CRMPage() {
                  <h4 className="text-sm font-medium">WhatsApp Activity</h4>
                  <MessageCircle className="h-4 w-4 text-green-500" />
                </div>
-               <div className="text-2xl font-bold">{pipelineRealtime.whatsappActivity}</div>
+               <div className="text-2xl font-bold">{pipelineRealtime.whatsappConnected ? pipelineRealtime.dealVelocity || 0 : 0}</div>
                <p className="text-xs text-muted-foreground">messages/day</p>
                <div className="mt-4 h-16 flex items-center justify-center">
                  {pipelineRealtime.whatsappConnected ? (
