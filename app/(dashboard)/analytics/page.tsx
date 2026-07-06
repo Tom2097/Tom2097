@@ -110,7 +110,11 @@ export default async function AnalyticsPage({
     health,
     auditTotal: auditStats?.total ?? 0,
     uptimePct,
-    anomalies: anomalies?.anomalies,
+    anomalies: anomalies?.anomalies?.map(a => ({
+      timestamp: a.timestamp,
+      value: a.value,
+      severity: typeof a.severity === 'string' ? parseFloat(a.severity) : a.severity
+    })),
     forecast: forecast.map(f => ({
       timestamp: f.timestamp,
       actual: f.actual,
