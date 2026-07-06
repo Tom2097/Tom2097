@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
@@ -69,12 +69,7 @@ export function CrmSalesAnalytics() {
   const [filterStage, setFilterStage] = useState('all')
   const [owners, setOwners] = useState<Array<{ id: string; name: string }>>([])
 
-  useEffect(() => {
-    fetchAnalyticsData()
-    fetchOwners()
-  }, [timeRange, filterOwner, filterStage])
-
-  const fetchAnalyticsData = async () => {
+  const fetchAnalyticsData = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -94,9 +89,9 @@ export function CrmSalesAnalytics() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [timeRange, filterOwner, filterStage])
 
-  const fetchOwners = async () => {
+  const fetchOwners = useCallback(async () => {
     try {
       const response = await fetch('/api/v1/auth/users')
       const data = await response.json()
@@ -107,7 +102,15 @@ export function CrmSalesAnalytics() {
     } catch (error) {
       console.error('Error fetching owners:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchAnalyticsData()
+      await fetchOwners()
+    }
+    load()
+  }, [timeRange, filterOwner, filterStage, fetchAnalyticsData, fetchOwners])
 
   const getTimeRangeLabel = () => {
     switch (timeRange) {

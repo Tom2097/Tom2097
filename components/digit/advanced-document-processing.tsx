@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -73,30 +73,9 @@ export function AdvancedDocumentProcessing() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterType, setFilterType] = useState('all')
   const [autoRefresh, setAutoRefresh] = useState(false)
-  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null)
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  useEffect(() => {
-    fetchDocuments()
-    
-    // Set up auto-refresh
-    if (autoRefresh) {
-      const interval = setInterval(() => {
-        fetchDocuments()
-        if (selectedDocument) {
-          checkProcessingStatus(selectedDocument.id)
-        }
-      }, 5000)
-      setRefreshInterval(interval)
-    }
-    
-    return () => {
-      if (refreshInterval) {
-        clearInterval(refreshInterval)
-      }
-    }
-  }, [autoRefresh])
-
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch('/api/v1/documents')
@@ -113,9 +92,9 @@ export function AdvancedDocumentProcessing() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const checkProcessingStatus = async (documentId: string) => {
+  const checkProcessingStatus = useCallback(async (documentId: string) => {
     try {
       const response = await fetch(`/api/v1/documents/${documentId}/status`)
       const data = await response.json()
@@ -135,7 +114,31 @@ export function AdvancedDocumentProcessing() {
     } catch (error) {
       console.error('Error checking processing status:', error)
     }
-  }
+  }, [fetchDocuments])
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchDocuments()
+    }
+    load()
+    
+    // Set up auto-refresh
+    if (autoRefresh) {
+      refreshIntervalRef.current = setInterval(() => {
+        fetchDocuments()
+        if (selectedDocument) {
+          checkProcessingStatus(selectedDocument.id)
+        }
+      }, 5000)
+    }
+    
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current)
+        refreshIntervalRef.current = null
+      }
+    }
+  }, [autoRefresh, fetchDocuments, checkProcessingStatus, selectedDocument])
 
   const handleProcessDocument = async (documentId: string) => {
     try {
@@ -162,7 +165,7 @@ export function AdvancedDocumentProcessing() {
         }, 2000)
         
         // Store interval for cleanup
-        setRefreshInterval(interval)
+        refreshIntervalRef.current = interval
       } else {
         toast.error(result.error || 'Failed to start document processing')
         setProcessingStatus({
@@ -217,7 +220,7 @@ export function AdvancedDocumentProcessing() {
         }
       }, 1000)
       
-      setRefreshInterval(interval)
+      refreshIntervalRef.current = interval
     } catch (error) {
       toast.error('Error starting bulk processing')
       console.error('Error:', error)

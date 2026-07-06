@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { AlertTriangle, CheckCircle2, Info, BarChart2, Clock, AlertCircle } from 'lucide-react'
@@ -34,11 +34,7 @@ export function UsageMonitor() {
   const [timeRange, setTimeRange] = useState('month')
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchUsageData()
-  }, [timeRange])
-
-  const fetchUsageData = async () => {
+  const fetchUsageData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -57,7 +53,14 @@ export function UsageMonitor() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchUsageData()
+    }
+    load()
+  }, [timeRange, fetchUsageData])
 
   const getTimeRangeDates = () => {
     const now = new Date()
@@ -190,7 +193,7 @@ export function UsageMonitor() {
               <AlertTriangle className="h-5 w-5" /> Usage Limits Exceeded
             </CardTitle>
             <CardDescription>
-              You have exceeded your plan's usage limits. Consider upgrading your plan or reducing usage.
+              You have exceeded your plan&apos;s usage limits. Consider upgrading your plan or reducing usage.
             </CardDescription>
           </CardHeader>
           <CardContent>

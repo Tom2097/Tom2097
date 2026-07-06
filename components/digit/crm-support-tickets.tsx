@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -68,13 +68,7 @@ export function CrmSupportTickets() {
   const [priorityFilter, setPriorityFilter] = useState<string | null>(null)
   const router = useRouter()
 
-  useEffect(() => {
-    fetchTickets()
-    fetchContacts()
-    fetchUsers()
-  }, [])
-
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch('/api/v1/crm/support-tickets')
@@ -91,9 +85,9 @@ export function CrmSupportTickets() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const fetchContacts = async () => {
+  const fetchContacts = useCallback(async () => {
     try {
       const response = await fetch('/api/v1/crm/contacts?limit=100')
       const data = await response.json()
@@ -104,9 +98,9 @@ export function CrmSupportTickets() {
     } catch (error) {
       console.error('Error loading contacts:', error)
     }
-  }
+  }, [])
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const response = await fetch('/api/v1/auth/users')
       const data = await response.json()
@@ -117,7 +111,16 @@ export function CrmSupportTickets() {
     } catch (error) {
       console.error('Error loading users:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchTickets()
+      await fetchContacts()
+      await fetchUsers()
+    }
+    load()
+  }, [fetchTickets, fetchContacts, fetchUsers])
 
   const handleCreateTicket = async () => {
     if (!newTicket.subject.trim()) {

@@ -122,7 +122,7 @@ export function RoutingRules({ workspaces, initialRules = {} }: RoutingRulesProp
           </div>
           
           <p className="text-sm text-muted-foreground">
-            Route documents based on their content classification (e.g., "legal", "finance", "healthcare").
+            Route documents based on their content classification (e.g., &quot;legal&quot;, &quot;finance&quot;).
           </p>
           
            <div className="space-y-3">
@@ -176,7 +176,7 @@ export function RoutingRules({ workspaces, initialRules = {} }: RoutingRulesProp
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Intent-Based Routing</h3>
           <p className="text-sm text-muted-foreground">
-            Route documents based on detected intent (e.g., "contract review", "financial report").
+            Route documents based on detected intent (e.g., &quot;contract review&quot;, &quot;financial report&quot;).
           </p>
           
            <div className="space-y-3">

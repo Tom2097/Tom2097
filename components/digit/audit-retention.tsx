@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,6 +19,8 @@ interface RetentionPolicy {
   is_active: boolean
 }
 
+const CUTOFF_BASE_TIME = Date.now()
+
 export function AuditRetention() {
   const [policies, setPolicies] = useState<RetentionPolicy[]>([])
   const [history, setHistory] = useState<Array<{
@@ -36,11 +38,7 @@ export function AuditRetention() {
     is_active: true
   })
 
-  useEffect(() => {
-    fetchRetentionData()
-  }, [])
-
-  const fetchRetentionData = async () => {
+  const fetchRetentionData = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch('/api/v1/audit/retention')
@@ -58,7 +56,21 @@ export function AuditRetention() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  const cutoffDates = useMemo(() =>
+    policies.map(policy =>
+      new Date(CUTOFF_BASE_TIME - policy.retention_period_days * 24 * 60 * 60 * 1000).toLocaleDateString()
+    ),
+    [policies]
+  )
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchRetentionData()
+    }
+    load()
+  }, [fetchRetentionData])
 
   const handleSavePolicies = async () => {
     try {
@@ -355,7 +367,7 @@ export function AuditRetention() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {policies.map((policy) => (
+            {policies.map((policy, index) => (
               <Card key={policy.id}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">
@@ -378,7 +390,7 @@ export function AuditRetention() {
                       <History className="h-4 w-4 text-muted-foreground" />
                       <span className="text-muted-foreground">Cutoff Date:</span>
                       <span className="font-medium">
-                        {new Date(Date.now() - policy.retention_period_days * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                        {cutoffDates[index]}
                       </span>
                     </div>
                   </div>

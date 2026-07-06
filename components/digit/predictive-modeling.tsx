@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -73,11 +73,7 @@ export function PredictiveModeling() {
   const [trainingStatus, setTrainingStatus] = useState<string | null>(null)
   const [trainingProgress, setTrainingProgress] = useState(0)
 
-  useEffect(() => {
-    fetchModelsAndDatasets()
-  }, [])
-
-  const fetchModelsAndDatasets = async () => {
+  const fetchModelsAndDatasets = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -102,7 +98,14 @@ export function PredictiveModeling() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchModelsAndDatasets()
+    }
+    load()
+  }, [fetchModelsAndDatasets])
 
   const handleCreateModel = async () => {
     if (!newModel.name.trim() || !newModel.dataset_id) {

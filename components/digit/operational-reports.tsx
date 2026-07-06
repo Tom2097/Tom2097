@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -68,11 +68,7 @@ export function OperationalReports() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all')
 
-  useEffect(() => {
-    fetchReports()
-  }, [])
-
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch('/api/v1/operations/reports')
@@ -89,7 +85,14 @@ export function OperationalReports() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchReports()
+    }
+    load()
+  }, [fetchReports])
 
   const handleCreateReport = async () => {
     if (!newReport.name.trim()) {
