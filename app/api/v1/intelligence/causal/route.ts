@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { addEvent, addCausalLink, findRootCauses, findDownstreamEffects } from "@/lib/intelligence/causal-graph"
+import {
+  addEvent,
+  addCausalLink, 
+  findRootCauses, 
+  findDownstreamEffects
+} from "@/lib/intelligence"
 import { getAuthenticatedUser } from "@/lib/auth/server-auth"
 import { hasWorkspaceAccess } from "@/lib/auth/rbac"
 

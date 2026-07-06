@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server"
-import { createAgent, executeAction, listAgents, getAgent, getAuditTrail } from "@/lib/intelligence/agents"
+import {
+  createAgent,
+  executeAction, 
+  listAgents, 
+  getAgent, 
+  getAuditTrail
+} from "@/lib/intelligence"
 import { getAuthenticatedUser } from "@/lib/auth/server-auth"
 import { hasWorkspaceAccess } from "@/lib/auth/rbac"
 
