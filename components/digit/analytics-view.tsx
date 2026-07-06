@@ -41,9 +41,9 @@ export interface AnalyticsViewData {
   }>
   anomalySummary?: {
     total: number
-    high: number
-    medium: number
-    low: number
+    byMethod?: Record<string, number>
+    bySeverity?: Record<string, number>
+    byType?: Record<string, number>
   }
 }
 
