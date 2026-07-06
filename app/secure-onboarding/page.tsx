@@ -469,13 +469,13 @@ export default function SecureOnboardingPage() {
                                }
                                await logAuditEvent(userId || "", "onboarding", "liveness_check_passed", { confidence: livenessResult.confidence })
                               
-                               const result = await verifyIdentityWithKYC({
-                                 userId: userId || "",
-                                 selfieImage: data.photoDataUrl,
-                                 idType: data.governmentIdType,
-                                 idNumber: data.governmentIdNumber,
-                                 fullName: data.fullName
-                               })
+                                const result = await verifyIdentityWithKYC({
+                                  userId: userId || "",
+                                  selfieImage: data.photoDataUrl,
+                                  idType: data.governmentIdType || "",
+                                  idNumber: data.governmentIdNumber || "",
+                                  fullName: data.fullName || ""
+                                })
                               
                                if (result.verified) {
                                  toast.success("Identity verified successfully!")
@@ -484,16 +484,16 @@ export default function SecureOnboardingPage() {
                                  toast.info("Identity verification requires manual review")
                                  await logAuditEvent(userId || "", "onboarding", "identity_manual_review_requested", { reason: result.manualReviewNotes })
                                  // Request manual review
-                                 const reviewResult = await requestKYCManualReview(
-                                   userId || "",
-                                   {
-                                     userId: userId || "",
-                                     selfieImage: data.photoDataUrl,
-                                     idType: data.governmentIdType,
-                                     idNumber: data.governmentIdNumber,
-                                     fullName: data.fullName
-                                   }
-                                 )
+                                  const reviewResult = await requestKYCManualReview(
+                                    userId || "",
+                                    {
+                                      userId: userId || "",
+                                      selfieImage: data.photoDataUrl,
+                                      idType: data.governmentIdType || "",
+                                      idNumber: data.governmentIdNumber || "",
+                                      fullName: data.fullName || ""
+                                    }
+                                  )
                                 
                                  if (reviewResult.success) {
                                    toast.info("Manual review requested. You will be notified of the result.")

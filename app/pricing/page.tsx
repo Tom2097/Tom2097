@@ -26,7 +26,7 @@ const tierIcons = {
 // Component that uses useSearchParams
 function CanceledBanner() {
   const searchParams = useSearchParams()
-  const canceled = searchParams.get("canceled")
+  const canceled = searchParams?.get("canceled")
 
   if (!canceled) return null
 

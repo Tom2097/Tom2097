@@ -36,7 +36,7 @@ export async function requestBreakGlassAccess(
   const isAdmin = await isPlatformAdmin(user.id)
   if (!isAdmin) return { success: false, error: "Forbidden" }
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const expiresAt = new Date()
   expiresAt.setMinutes(expiresAt.getMinutes() + Math.min(durationMinutes, MAX_BREAK_GLASS_MINUTES))
 
@@ -45,6 +45,9 @@ export async function requestBreakGlassAccess(
     id: sessionId,
     admin_id: user.id,
     reason,
+    role: "platform_admin",
+    status: "active",
+    alarm_triggered: true,
     expires_at: expiresAt.toISOString(),
   })
 
@@ -54,15 +57,20 @@ export async function requestBreakGlassAccess(
   }
 
   // Audit log
-  await createAuditLog({
-    action: "break_glass_request",
-    userId: user.id,
-    metadata: {
+  await createAuditEntry(
+    "break_glass_sessions",
+    sessionId,
+    "INSERT",
+    null,
+    {
+      adminId: user.id,
       reason,
       durationMinutes,
       expiresAt: expiresAt.toISOString(),
     },
-  })
+    user.id,
+    ""
+  )
 
   // Trigger alarm (e.g., Slack, PagerDuty)
   await triggerBreakGlassAlarm(user.id, reason, expiresAt)
@@ -77,10 +85,14 @@ export async function endBreakGlassSession() {
   const user = await getAuthenticatedUser()
   if (!user) return { success: false, error: "Unauthorized" }
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { error } = await supabase
     .from("break_glass_sessions")
-    .update({ expires_at: new Date().toISOString() })
+    .update({
+      expires_at: new Date().toISOString(),
+      status: "ended",
+      ended_at: new Date().toISOString(),
+    })
     .eq("admin_id", user.id)
     .is("expires_at", null)
 
@@ -90,11 +102,15 @@ export async function endBreakGlassSession() {
   }
 
   // Audit log
-  await createAuditLog({
-    action: "break_glass_end",
-    userId: user.id,
-    metadata: { manualEnd: true },
-  })
+  await createAuditEntry(
+    "break_glass_sessions",
+    user.id,
+    "UPDATE",
+    { status: "active" },
+    { status: "ended" },
+    user.id,
+    ""
+  )
 
   return { success: true }
 }
@@ -106,7 +122,7 @@ export async function getActiveBreakGlassSession(): Promise<BreakGlassSession | 
   const user = await getAuthenticatedUser()
   if (!user) return null
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data } = await supabase
     .from("break_glass_sessions")
     .select("*")
@@ -122,9 +138,16 @@ export async function getActiveBreakGlassSession(): Promise<BreakGlassSession | 
   return {
     id: data.id,
     adminId: data.admin_id,
+    adminName: data.admin_name,
+    adminEmail: data.admin_email,
     reason: data.reason,
+    role: data.role || "platform_admin",
+    status: data.status || "active",
+    alarmTriggered: data.alarm_triggered || false,
     createdAt: data.created_at,
+    startedAt: data.started_at || data.created_at,
     expiresAt: data.expires_at,
+    endedAt: data.ended_at,
   }
 }
 

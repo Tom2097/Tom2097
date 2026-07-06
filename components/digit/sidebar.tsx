@@ -161,7 +161,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                 href="/platform/admin/dashboard"
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
-                  pathname.startsWith('/platform/admin')
+                  pathname?.startsWith('/platform/admin')
                     ? "bg-primary/10 text-primary digit-glow-sm"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 )}

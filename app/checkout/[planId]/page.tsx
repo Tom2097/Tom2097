@@ -404,7 +404,7 @@ function CheckoutForm({
 export default function CheckoutPage() {
   const params = useParams()
   const router = useRouter()
-  const planId = params.planId as string
+  const planId = (params?.planId as string) || "" 
   const plan = getPlanById(planId)
   
   const [user, setUser] = useState<User | null>(null)

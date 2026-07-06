@@ -50,11 +50,15 @@ export async function createAgent(
   if (error) throw new Error(`Failed to create agent: ${error.message}`)
 
   // Audit log
-  await createAuditLog({
-    action: "agent_created",
-    userId: "system",
-    metadata: { agentId: data.id, workspaceId },
-  })
+  await createAuditEntry(
+    "agents",
+    data.id,
+    "INSERT",
+    null,
+    { agentId: data.id, workspaceId },
+    "system",
+    workspaceId
+  )
 
   return {
     id: data.id,
@@ -111,11 +115,15 @@ export async function executeAction(
   if (error) throw new Error(`Failed to create action: ${error.message}`)
 
   // Audit log
-  await createAuditLog({
-    action: "agent_action_initiated",
-    userId: agentId,
-    metadata: { action, targetEntityId, targetEntityType, parameters },
-  })
+  await createAuditEntry(
+    "agent_actions",
+    data.id,
+    "INSERT",
+    null,
+    { action, targetEntityId, targetEntityType, parameters },
+    agentId,
+    agent.workspace_id
+  )
 
   // Execute action (mock implementation)
   const result = await mockActionExecution(agentId, action, parameters)
@@ -133,17 +141,21 @@ export async function executeAction(
   if (updateError) console.error("Failed to update action status:", updateError)
 
   // Audit log
-  await createAuditLog({
-    action: "agent_action_completed",
-    userId: agentId,
-    metadata: {
+  await createAuditEntry(
+    "agent_actions",
+    data.id,
+    "UPDATE",
+    { status: "pending" },
+    {
       action,
       targetEntityId,
       targetEntityType,
       status: result.success ? "completed" : "failed",
       result: result.success ? result.data : { error: result.error }
     },
-  })
+    agentId,
+    agent.workspace_id
+  )
 
   return {
     id: data.id,
@@ -168,7 +180,7 @@ async function mockActionExecution(
   parameters: Record<string, unknown>
 ): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
   console.log(`Agent ${agentId} executing action: ${action}`, parameters)
-  
+
   // Mock action logic
   switch (action) {
     case "escalate_issue":
@@ -194,15 +206,15 @@ export async function listAgents(workspaceId: string): Promise<Agent[]> {
 
   if (error) throw new Error(`Failed to list agents: ${error.message}`)
 
-  return data.map((agent) => ({
-    id: agent.id,
-    name: agent.name,
-    description: agent.description,
-    permissions: agent.permissions,
-    workspaceId: agent.workspace_id,
-    isActive: agent.is_active,
-    createdAt: agent.created_at,
-    updatedAt: agent.updated_at,
+  return data.map((agent: Record<string, unknown>) => ({
+    id: agent.id as string,
+    name: agent.name as string,
+    description: agent.description as string,
+    permissions: agent.permissions as string[],
+    workspaceId: agent.workspace_id as string,
+    isActive: agent.is_active as boolean,
+    createdAt: agent.created_at as string,
+    updatedAt: agent.updated_at as string,
   }))
 }
 
@@ -244,16 +256,16 @@ export async function getAuditTrail(agentId: string): Promise<AgentAction[]> {
 
   if (error) throw new Error(`Failed to get audit trail: ${error.message}`)
 
-  return data.map((action) => ({
-    id: action.id,
-    agentId: action.agent_id,
-    action: action.action,
-    targetEntityId: action.target_entity_id,
-    targetEntityType: action.target_entity_type,
-    parameters: action.parameters,
-    status: action.status,
-    result: action.result,
-    createdAt: action.created_at,
-    completedAt: action.completed_at,
+  return data.map((action: Record<string, unknown>) => ({
+    id: action.id as string,
+    agentId: action.agent_id as string,
+    action: action.action as string,
+    targetEntityId: action.target_entity_id as string,
+    targetEntityType: action.target_entity_type as string,
+    parameters: action.parameters as Record<string, unknown>,
+    status: action.status as "pending" | "completed" | "failed",
+    result: action.result as Record<string, unknown> | undefined,
+    createdAt: action.created_at as string,
+    completedAt: action.completed_at as string | null,
   }))
 }

@@ -15,6 +15,17 @@ interface LeadScore extends LeadInput {
   score: number
 }
 
+export interface LeadScoreResult {
+  score: number
+  category: "cold" | "warm" | "hot"
+  priority: "low" | "medium" | "high" | "critical"
+  factors: {
+    engagement: number
+    firmographics: number
+    intent: number
+  }
+}
+
 /**
  * Calculates lead score based on engagement, firmographics, and intent signals.
  */

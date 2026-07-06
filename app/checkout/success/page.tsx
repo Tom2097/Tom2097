@@ -31,7 +31,7 @@ interface SubscriptionData {
 
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams()
-  const sessionId = searchParams.get("session_id")
+  const sessionId = searchParams?.get("session_id")
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState<string | null>(null)
