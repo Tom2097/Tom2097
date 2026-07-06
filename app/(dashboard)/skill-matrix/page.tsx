@@ -125,6 +125,22 @@ export default function SkillMatrixPage() {
   const [navigating, setNavigating] = useState(false)
   const [form, setForm] = useState({ userId: '', skillId: '', level: '' })
 
+  const handleNavigateToTraining = async (skillName: string) => {
+    setNavigating(true)
+    try {
+      const skill = catalog.find(s => s.name === skillName.split(" ")[1])
+      if (!skill) throw new Error("Skill not found")
+      // Simulate navigation to training module
+      await new Promise(resolve => setTimeout(resolve, 800))
+      toast.success(`Navigating to ${skillName} training...`)
+      window.open(`/training/${skill.id}`, "_blank")
+    } catch (error) {
+      toast.error(error.message || "Failed to navigate to training")
+    } finally {
+      setNavigating(false)
+    }
+  }
+
   useEffect(() => {
     let cancelled = false
     async function load() {
@@ -498,23 +514,7 @@ export default function SkillMatrixPage() {
             </TableBody>
           </Table>
         </CardContent>
-      </Card>
-
-  const handleNavigateToTraining = async (skillName: string) => {
-    setNavigating(true)
-    try {
-      const skill = catalog.find(s => s.name === skillName.split(" ")[1])
-      if (!skill) throw new Error("Skill not found")
-      // Simulate navigation to training module
-      await new Promise(resolve => setTimeout(resolve, 800))
-      toast.success(`Navigating to ${skillName} training...`)
-      window.open(`/training/${skill.id}`, "_blank")
-    } catch (error) {
-      toast.error(error.message || "Failed to navigate to training")
-    } finally {
-      setNavigating(false)
-    }
-  }
+        </Card>
 
        <Card>
          <CardHeader>
