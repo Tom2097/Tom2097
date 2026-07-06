@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
-import { getFeedbackStats, listFeedback, submitFeedback, voteFeedback } from "@/lib/feedback/engine"
+import { getFeedbackStats, listFeedback, submitFeedback } from "@/lib/feedback/engine"
 
 // GET /api/v1/feedback - List feedback and get stats
 export const GET = withAuth(async (req: Request, { organizationId, userId }) => {
@@ -29,34 +29,6 @@ export const GET = withAuth(async (req: Request, { organizationId, userId }) => 
 
 // POST /api/v1/feedback - Create feedback
 export const POST = withAuth(async (req: Request, { organizationId, userId }) => {
-  try {
-    const body = await req.json()
-    const feedback = await submitFeedback(organizationId, userId, body)
-    return NextResponse.json(feedback)
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to create feedback" },
-      { status: 500 }
-    )
-  }
-})
-
-// POST /api/v1/feedback/vote - Vote for feedback
-export const POST = withAuth(async (req: Request, { organizationId, userId, url }) => {
-  if (url.pathname.endsWith('/vote')) {
-    try {
-      const { feedbackId } = await req.json()
-      const result = await voteFeedback(organizationId, feedbackId, userId)
-      return NextResponse.json(result)
-    } catch (error) {
-      return NextResponse.json(
-        { error: "Failed to vote" },
-        { status: 500 }
-      )
-    }
-  }
-  
-  // Default POST handler for creating feedback
   try {
     const body = await req.json()
     const feedback = await submitFeedback(organizationId, userId, body)
