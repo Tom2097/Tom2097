@@ -118,7 +118,7 @@ export default async function CRMPage() {
          <MetricCard label="Avg Deal Size" value={formatCurrency(avgDealValue, pipeline.currency)} />
          <MetricCard label="Win Rate" value={(() => { const won = pipeline.stages.find(s => s.stage === 'won')?.count ?? 0; const lost = pipeline.stages.find(s => s.stage === 'lost')?.count ?? 0; const total = won + lost; return total > 0 ? `${Math.round((won / total) * 100)}%` : '0%' })()} />
          <MetricCard label="Anomalies" value={anomalies.anomalies.length} subtitle="Last 30 days" />
-         <MetricCard label="Forecast Growth" value={forecast.length > 0 ? `${Math.round(((forecast[forecast.length - 1].forecast - forecast[0].actual) / forecast[0].actual) * 100)}%` : '0%'} subtitle="Next 6 months" />
+         <MetricCard label="Forecast Growth" value={forecast && forecast.length >= 2 ? `${Math.round(((forecast[forecast.length - 1].forecast - (forecast[0].actual || 0)) / ((forecast[0].actual || 1))) * 100)}%` : '0%'} subtitle="Next 6 months" />
          <MetricCard label="WhatsApp Integration" value={pipelineRealtime.whatsappConnected ? 'Connected' : 'Disconnected'} variant={pipelineRealtime.whatsappConnected ? 'default' : 'destructive'} />
        </MetricGrid>
 
