@@ -24,7 +24,7 @@ export default function DashboardError({
         </div>
         <h2 className="text-lg font-semibold">Something went wrong</h2>
         <p className="text-sm text-muted-foreground">
-          {error.message || "An unexpected error occurred"}
+          {error instanceof Error ? error.message : "An unexpected error occurred"}
         </p>
         <Button onClick={reset} variant="outline">
           Try again

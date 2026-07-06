@@ -107,7 +107,7 @@ function CheckoutForm({
 
         if (error) {
           setPaymentStatus("error")
-          onError(error.message || "Card setup failed. Please try again.")
+          onError(error instanceof Error ? error.message : "Card setup failed. Please try again.")
           setIsProcessing(false)
         } else if (setupIntent && setupIntent.status === "succeeded") {
           try {
@@ -137,7 +137,7 @@ function CheckoutForm({
 
         if (error) {
           setPaymentStatus("error")
-          onError(error.message || "Payment failed. Please try again.")
+          onError(error instanceof Error ? error.message : "Payment failed. Please try again.")
           setIsProcessing(false)
         } else if (paymentIntent && paymentIntent.status === "succeeded") {
           try {

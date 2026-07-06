@@ -90,7 +90,7 @@ export default function BillingPlansPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          toast.error(error.message || "Failed to load billing data");
+          toast.error(error instanceof Error ? error.message : "Failed to load billing data");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -118,7 +118,7 @@ export default function BillingPlansPage() {
       setTrial(data.trial);
       toast.success('Trial started successfully!');
     } catch (error) {
-      toast.error(error.message || 'Failed to start trial');
+      toast.error(error instanceof Error ? error.message : 'Failed to start trial');
     } finally {
       setStartingTrial(false);
     }
