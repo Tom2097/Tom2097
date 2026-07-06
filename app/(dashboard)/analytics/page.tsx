@@ -117,7 +117,7 @@ export default async function AnalyticsPage({
     })),
     forecast: forecast.map(f => ({
       timestamp: f.timestamp,
-      actual: f.actual,
+      actual: f.actual ?? 0, // Provide default for null actuals
       forecast: f.forecast,
       lower_bound: f.lower_bound,
       upper_bound: f.upper_bound,
