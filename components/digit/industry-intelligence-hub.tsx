@@ -134,7 +134,7 @@ export function IndustryIntelligenceHub() {
         }
         if (briefingRes.ok) {
           const data = await briefingRes.json()
-          if (data.metrics) {
+          if (Array.isArray(data.metrics)) {
             const bench: IndustryBenchmark[] = data.metrics.map((m: { label: string; value: number; change: number; trend: string }) => ({
               metric: m.label,
               yourValue: m.value,

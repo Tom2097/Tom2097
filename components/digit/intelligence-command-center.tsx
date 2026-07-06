@@ -61,8 +61,8 @@ interface BriefingData {
   id: string
   date: string
   summary: string
-  metrics: Array<{ label: string; value: number; change: number; trend: string }>
-  actionItems: Array<{ id: string; title: string; description: string; priority: string; module: string }>
+  metrics?: Array<{ label: string; value: number; change: number; trend: string }>
+  actionItems?: Array<{ id: string; title: string; description: string; priority: string; module: string }>
 }
 
 interface AgentAction {
@@ -627,7 +627,7 @@ export function IntelligenceCommandCenter() {
             <>
               {/* Metrics Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {briefing.metrics.map((metric) => (
+                {(briefing.metrics || []).map((metric) => (
                   <Card key={metric.label}>
                     <CardContent className="p-4">
                       <p className="text-xs text-muted-foreground">{metric.label}</p>
@@ -669,11 +669,11 @@ export function IntelligenceCommandCenter() {
                 <CardContent>
                   <p className="text-sm leading-relaxed">{briefing.summary}</p>
 
-                  {briefing.actionItems.length > 0 && (
+                  {(briefing.actionItems || []).length > 0 && (
                     <div className="mt-6">
                       <h4 className="text-sm font-medium mb-3">Action Items</h4>
                       <div className="space-y-2">
-                        {briefing.actionItems.map((item) => (
+                        {(briefing.actionItems || []).map((item) => (
                           <div
                             key={item.id}
                             className="flex items-start gap-3 p-3 rounded-lg bg-secondary/30 border border-border/50"

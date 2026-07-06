@@ -82,7 +82,7 @@ export function PredictiveModeling() {
       const modelsData = await modelsResponse.json()
       
       if (modelsResponse.ok) {
-        setModels(modelsData)
+        setModels(modelsData.models || modelsData || [])
       }
       
       // Fetch datasets
@@ -90,7 +90,7 @@ export function PredictiveModeling() {
       const datasetsData = await datasetsResponse.json()
       
       if (datasetsResponse.ok) {
-        setDatasets(datasetsData)
+        setDatasets(datasetsData.datasets || datasetsData || [])
       }
     } catch (error) {
       console.error('Error fetching models and datasets:', error)
