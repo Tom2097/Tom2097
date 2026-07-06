@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
-import { Lightbulb, Target, TrendingUp, Users, Star, Handshake, MessageSquare } from "lucide-react"
+import { Lightbulb, Target, TrendingUp, Users, Star, Handshake, MessageSquare, Loader2 } from "lucide-react"
 
 interface DesignPartner {
   id: string
