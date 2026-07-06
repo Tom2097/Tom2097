@@ -1,205 +1,187 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card'
-import { ThumbsUp, MessageSquarePlus, Search, Loader2, Bug, Lightbulb, TrendingUp, HelpCircle, MessageSquare, RefreshCw, BarChart2, Smile, Frown, Meh, Brain, AlertTriangle } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import type {
-  Feedback,
-  FeedbackType,
-  FeedbackStatus,
-  FeedbackPriority,
-} from '@/lib/feedback/types'
-import { FEEDBACK_TYPES, FEEDBACK_STATUSES, FEEDBACK_PRIORITIES } from '@/lib/feedback/types'
+import { useState, useEffect } from "react"
+import { redirect } from "next/navigation"
+import { extractTenantContext } from "@/lib/multitenant/context"
+import { getFeedbackStats, listFeedback, createFeedback, voteFeedback } from "@/lib/feedback/engine"
+import { detectAnomalies } from "@/lib/analytics/anomaly-detection"
+import { forecastMetric } from "@/lib/analytics/forecasting"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog"
+import { Loader2, RefreshCw, MessageSquare, Smile, MessageSquarePlus, ThumbsUp, AlertTriangle, Brain, Search } from "lucide-react"
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer, Cell } from "recharts"
+import { ChartContainer } from "@/components/digit/analytics-view"
 
-const TYPE_ICONS: Record<FeedbackType, React.ElementType> = {
-  bug: Bug,
-  feature: Lightbulb,
-  improvement: TrendingUp,
-  question: HelpCircle,
+// Feedback types
+const FEEDBACK_TYPES = ["bug", "feature", "general"] as const
+const FEEDBACK_STATUSES = ["new", "in_progress", "resolved", "closed"] as const
+const FEEDBACK_PRIORITIES = ["low", "medium", "high", "critical"] as const
+
+const STATUS_COLORS: Record<string, string> = {
+  new: "bg-blue-500/20 text-blue-600",
+  in_progress: "bg-yellow-500/20 text-yellow-600",
+  resolved: "bg-green-500/20 text-green-600",
+  closed: "bg-gray-500/20 text-gray-600",
+}
+
+const PRIORITY_COLORS: Record<string, string> = {
+  low: "bg-green-500/20 text-green-600",
+  medium: "bg-yellow-500/20 text-yellow-600",
+  high: "bg-orange-500/20 text-orange-600",
+  critical: "bg-red-500/20 text-red-600",
+}
+
+const TYPE_ICONS = {
+  bug: AlertTriangle,
+  feature: Sparkles,
   general: MessageSquare,
 }
 
-const STATUS_COLORS: Record<FeedbackStatus, string> = {
-  open: 'bg-blue-500/10 text-blue-500',
-  triaged: 'bg-yellow-500/10 text-yellow-500',
-  in_progress: 'bg-primary/10 text-primary',
-  resolved: 'bg-green-500/10 text-green-500',
-  closed: 'bg-muted text-muted-foreground',
-  wont_fix: 'bg-destructive/10 text-destructive',
+type FeedbackType = typeof FEEDBACK_TYPES[number]
+type FeedbackStatus = typeof FEEDBACK_STATUSES[number]
+type FeedbackPriority = typeof FEEDBACK_PRIORITIES[number]
+
+type FeedbackForm = {
+  title: string
+  body: string
+  type: FeedbackType
+  category: string
+  rating?: string
+  priority: FeedbackPriority
 }
 
-const PRIORITY_COLORS: Record<FeedbackPriority, string> = {
-  low: 'bg-muted text-muted-foreground',
-  normal: 'bg-blue-500/10 text-blue-500',
-  high: 'bg-yellow-500/10 text-yellow-600',
-  urgent: 'bg-destructive/10 text-destructive',
+type FeedbackItem = {
+  id: string
+  title: string
+  body: string
+  type: FeedbackType
+  category: string
+  rating?: number
+  status: FeedbackStatus
+  priority: FeedbackPriority
+  vote_count: number
+  created_at: string
+}
+
+type FeedbackMetrics = {
+  sentimentScore: number
+  responseTime: number
+  categorizationAccuracy: number
+  responseRate: number
+  openItems: number
+  totalItems: number
 }
 
 export default function FeedbackPage() {
-  const [items, setItems] = useState<Feedback[]>([])
-  const [total, setTotal] = useState(0)
+  const [ctx, setCtx] = useState<any>(null)
+  const [feedback, setFeedback] = useState<FeedbackItem[]>([])
+  const [metrics, setMetrics] = useState<FeedbackMetrics>({ sentimentScore: 0, responseTime: 0, categorizationAccuracy: 0, responseRate: 0, openItems: 0, totalItems: 0 })
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [open, setOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [form, setForm] = useState<FeedbackForm>({ title: "", body: "", type: "general", category: "", priority: "medium" })
+  const [formError, setFormError] = useState("")
+  const [search, setSearch] = useState("")
   const [filterStatus, setFilterStatus] = useState<FeedbackStatus | 'all'>('all')
   const [filterType, setFilterType] = useState<FeedbackType | 'all'>('all')
   const [sort, setSort] = useState<'recent' | 'votes'>('recent')
-  const [submitting, setSubmitting] = useState(false)
-  const [open, setOpen] = useState(false)
-  const [form, setForm] = useState({
-    title: '',
-    body: '',
-    type: 'general' as FeedbackType,
-    priority: 'normal' as FeedbackPriority,
-    category: 'general',
-    rating: '' as string,
-  })
-  const [formError, setFormError] = useState<string | null>(null)
-  const [metrics, setMetrics] = useState({
-    sentimentScore: 0,
-    responseTime: 0,
-    categorizationAccuracy: 0,
-    openItems: 0,
-    responseRate: 0,
-  })
-  const [sentimentData, setSentimentData] = useState<Array<{ name: string; value: number; sentiment: number }>>([])
-  const [categorizationData, setCategorizationData] = useState<Array<{ name: string; value: number }>>([])
 
-  const fetchFeedback = useCallback(async () => {
+  useEffect(() => {
+    const fetchContext = async () => {
+      const context = await extractTenantContext()
+      if (!context) redirect('/auth/login')
+      setCtx(context)
+      await fetchFeedback(context.organizationId)
+    }
+    fetchContext()
+  }, [])
+
+  const fetchFeedback = async (organizationId?: string) => {
+    if (!organizationId) return
     setLoading(true)
     try {
-      const params = new URLSearchParams({ limit: '50', offset: '0', sort })
-      if (filterStatus !== 'all') params.set('status', filterStatus)
-      if (filterType !== 'all') params.set('type', filterType)
-      if (search.trim()) params.set('search', search.trim())
-      const res = await fetch(`/api/v1/feedback?${params}`)
-      if (!res.ok) throw new Error(await res.text())
-      const data = await res.json()
-      setItems(data.feedback ?? [])
-      setTotal(data.total ?? 0)
-      
-      // Update metrics
-      const openItems = data.feedback?.filter((f: Feedback) => f.status === 'open' || f.status === 'triaged').length || 0
-      const responseRate = data.feedback?.length > 0 ? Math.round(((data.feedback.length - openItems) / data.feedback.length) * 100) : 0
-      
-      setMetrics({
-        sentimentScore: 78, // Mock sentiment score
-        responseTime: 4.2, // Mock response time in hours
-        categorizationAccuracy: 92, // Mock categorization accuracy
-        openItems,
-        responseRate,
-      })
-      
-      // Update sentiment data
-      const sentimentMap = { positive: 0, neutral: 0, negative: 0 }
-      data.feedback?.forEach((f: Feedback) => {
-        if (f.rating && f.rating >= 4) sentimentMap.positive++
-        else if (f.rating && f.rating <= 2) sentimentMap.negative++
-        else sentimentMap.neutral++
-      })
-      
-      setSentimentData([
-        { name: 'Positive', value: sentimentMap.positive, sentiment: 1 },
-        { name: 'Neutral', value: sentimentMap.neutral, sentiment: 0 },
-        { name: 'Negative', value: sentimentMap.negative, sentiment: -1 },
+      const [stats, items] = await Promise.all([
+        getFeedbackStats(organizationId),
+        listFeedback(organizationId, { search, status: filterStatus, type: filterType, sort })
       ])
-      
-      // Update categorization data
-      const categoryMap: Record<string, number> = {}
-      data.feedback?.forEach((f: Feedback) => {
-        const category = f.category || 'general'
-        categoryMap[category] = (categoryMap[category] || 0) + 1
+      setMetrics({
+        sentimentScore: stats.sentimentScore,
+        responseTime: stats.responseTime,
+        categorizationAccuracy: stats.categorizationAccuracy,
+        responseRate: stats.responseRate,
+        openItems: stats.openItems,
+        totalItems: stats.totalItems
       })
-      
-      const categorizationArray = Object.entries(categoryMap).map(([name, value]) => ({ name, value }))
-      setCategorizationData(categorizationArray.slice(0, 5))
-      
-    } catch {
-      // silently leave previous items displayed
+      setFeedback(items)
+    } catch (error) {
+      console.error("Failed to fetch feedback:", error)
     } finally {
       setLoading(false)
     }
-  }, [filterStatus, filterType, sort, search])
-
-  useEffect(() => {
-    fetchFeedback()
-    
-    // Simulate real-time updates
-    const interval = setInterval(() => {
-      setMetrics(prev => ({
-        ...prev,
-        sentimentScore: Math.floor(Math.random() * 20) + 70,
-        responseTime: (Math.random() * 10).toFixed(1),
-      }))
-    }, 5000)
-    
-    return () => clearInterval(interval)
-  }, [fetchFeedback])
-
-  const handleVote = async (id: string) => {
-    await fetch(`/api/v1/feedback/${id}/vote`, { method: 'POST' })
-    fetchFeedback()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setFormError(null)
-    if (!form.title.trim()) { setFormError('Title is required'); return }
+    if (!ctx?.organizationId) return
+    
+    if (!form.title.trim()) {
+      setFormError("Title is required")
+      return
+    }
+    
     setSubmitting(true)
+    setFormError("")
     try {
-      const payload: Record<string, unknown> = {
-        title: form.title.trim(),
-        body: form.body.trim() || null,
+      await createFeedback(ctx.organizationId, {
+        title: form.title,
+        body: form.body,
         type: form.type,
+        category: form.category || 'general',
         priority: form.priority,
-        category: form.category.trim() || 'general',
-      }
-      if (form.rating) payload.rating = Number(form.rating)
-      const res = await fetch('/api/v1/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        rating: form.rating ? parseInt(form.rating) : undefined
       })
-      if (!res.ok) {
-        const err = await res.json()
-        setFormError(err.error ?? 'Failed to submit feedback')
-        return
-      }
       setOpen(false)
-      setForm({ title: '', body: '', type: 'general', priority: 'normal', category: 'general', rating: '' })
-      fetchFeedback()
-    } catch {
-      setFormError('Unexpected error. Please try again.')
+      setForm({ title: "", body: "", type: "general", category: "", priority: "medium" })
+      await fetchFeedback(ctx.organizationId)
+    } catch (error) {
+      setFormError("Failed to submit feedback")
+      console.error("Failed to submit feedback:", error)
     } finally {
       setSubmitting(false)
     }
   }
+
+  const handleVote = async (feedbackId: string) => {
+    if (!ctx?.organizationId) return
+    try {
+      await voteFeedback(ctx.organizationId, feedbackId)
+      await fetchFeedback(ctx.organizationId)
+    } catch (error) {
+      console.error("Failed to vote:", error)
+    }
+  }
+
+  const filteredItems = feedback
+  const total = feedback.length
+
+  // Sample chart data
+  const sentimentData = [
+    { name: 'Positive', value: metrics.sentimentScore, sentiment: 1 },
+    { name: 'Neutral', value: 100 - metrics.sentimentScore - 10, sentiment: 0 },
+    { name: 'Negative', value: 10, sentiment: -1 }
+  ]
+
+  const categorizationData = [
+    { name: 'Bug Reports', value: 45 },
+    { name: 'Feature Requests', value: 30 },
+    { name: 'General', value: 25 }
+  ]
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -210,91 +192,109 @@ export default function FeedbackPage() {
           <p className="text-sm text-muted-foreground">
             {total} item{total !== 1 ? 's' : ''} — AI-powered feedback analysis and response tracking
           </p>
-         </div>
-         <div className="flex items-center gap-2">
-           <Button variant="ghost" size="sm" onClick={fetchFeedback} className="gap-1 text-sm">
-             <RefreshCw className="h-3 w-3" />
-             Refresh
-           </Button>
-           <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1 text-sm">
-                  <MessageSquare className="h-3 w-3" />
-                  Submit Feedback
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <DialogHeader>
-                    <DialogTitle>Submit Feedback</DialogTitle>
-                    <DialogDescription>
-                      Share your thoughts, suggestions, or report issues.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => fetchFeedback(ctx?.organizationId)} className="gap-1 text-sm">
+            <RefreshCw className="h-3 w-3" />
+            Refresh
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1 text-sm">
+                <MessageSquare className="h-3 w-3" />
+                Submit Feedback
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <DialogHeader>
+                  <DialogTitle>Submit Feedback</DialogTitle>
+                  <DialogDescription>
+                    Share your thoughts, suggestions, or report issues.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="fb-title">Title *</Label>
+                    <Input
+                      id="fb-title"
+                      placeholder="Short summary"
+                      value={form.title}
+                      onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                      maxLength={300}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="fb-body">Details</Label>
+                    <Textarea
+                      id="fb-body"
+                      placeholder="Describe in detail..."
+                      value={form.body}
+                      onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
+                      rows={4}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1.5">
-                      <Label htmlFor="fb-type">Type</Label>
-                      <Select
-                        value={form.type}
-                        onValueChange={(v) => setForm((f) => ({ ...f, type: v }))}
-                      >
-                        <SelectTrigger id="fb-type">
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
+                      <Label>Type</Label>
+                      <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v as FeedbackType }))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="bug">Bug Report</SelectItem>
-                          <SelectItem value="feature">Feature Request</SelectItem>
-                          <SelectItem value="general">General Feedback</SelectItem>
+                          {FEEDBACK_TYPES.map((t) => (
+                            <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <Label htmlFor="fb-message">Message</Label>
-                      <Textarea
-                        id="fb-message"
-                        placeholder="Describe your feedback..."
-                        value={form.message}
-                        onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-                        rows={4}
+                      <Label>Priority</Label>
+                      <Select value={form.priority} onValueChange={(v) => setForm((f) => ({ ...f, priority: v as FeedbackPriority }))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {FEEDBACK_PRIORITIES.map((p) => (
+                            <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1.5">
+                      <Label htmlFor="fb-category">Category</Label>
+                      <Input
+                        id="fb-category"
+                        placeholder="e.g. dashboard, billing"
+                        value={form.category}
+                        onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="fb-category">Category</Label>
-                        <Input
-                          id="fb-category"
-                          placeholder="e.g. dashboard, billing"
-                          value={form.category}
-                          onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="fb-rating">Rating (1–5)</Label>
-                        <Input
-                          id="fb-rating"
-                          type="number"
-                          min={1}
-                          max={5}
-                          placeholder="Optional"
-                          value={form.rating}
-                          onChange={(e) => setForm((f) => ({ ...f, rating: e.target.value }))}
-                        />
-                      </div>
+                    <div className="flex flex-col gap-1.5">
+                      <Label htmlFor="fb-rating">Rating (1–5)</Label>
+                      <Input
+                        id="fb-rating"
+                        type="number"
+                        min={1}
+                        max={5}
+                        placeholder="Optional"
+                        value={form.rating}
+                        onChange={(e) => setForm((f) => ({ ...f, rating: e.target.value }))}
+                      />
                     </div>
                   </div>
-                  {formError && <p className="text-sm text-destructive">{formError}</p>}
-                  <div className="flex justify-end gap-2 pt-1">
-                    <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button type="submit" disabled={submitting}>
-                      {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Submit
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-           </Dialog>
-         </div>
-       </div>
+                </div>
+                {formError && <p className="text-sm text-destructive">{formError}</p>}
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                  <Button type="submit" disabled={submitting}>
+                    {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Submit
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
 
       {/* Metrics */}
       <div className="grid gap-6 lg:grid-cols-4">
@@ -340,168 +340,7 @@ export default function FeedbackPage() {
         </Card>
       </div>
 
-      {/* Analytics Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ChartContainer title="Sentiment Analysis" subtitle="Feedback sentiment distribution">
-          <div className="h-[300px] flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={sentimentData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]}>
-                  {sentimentData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.sentiment > 0 ? '#10b981' : entry.sentiment < 0 ? '#ef4444' : '#6b7280'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartContainer>
-
-        <ChartContainer title="Feedback Categorization" subtitle="Top categories">
-          <div className="h-[300px] flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={categorizationData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={120} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="value" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartContainer>
-      </div>
-
-      {/* Response Tracking */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Response Tracking</span>
-            {metrics.openItems > 5 && (
-              <Badge variant="destructive" className="gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                {metrics.openItems} open
-              </Badge>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[200px] flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={[
-                { name: 'Week 1', responded: 15, open: 8 },
-                { name: 'Week 2', responded: 18, open: 6 },
-                { name: 'Week 3', responded: 22, open: 4 },
-                { name: 'Week 4', responded: 20, open: 7 },
-                { name: 'Current', responded: total - metrics.openItems, open: metrics.openItems },
-              ]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="responded" stroke="#10b981" strokeWidth={2} name="Responded" />
-                <Line type="monotone" dataKey="open" stroke="#ef4444" strokeWidth={2} name="Open" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <MessageSquarePlus className="h-4 w-4" />
-              Submit Feedback
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Submit Feedback</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-2">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="fb-title">Title *</Label>
-                <Input
-                  id="fb-title"
-                  placeholder="Short summary"
-                  value={form.title}
-                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                  maxLength={300}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="fb-body">Details</Label>
-                <Textarea
-                  id="fb-body"
-                  placeholder="Describe in detail..."
-                  rows={4}
-                  value={form.body}
-                  onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <Label>Type</Label>
-                  <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v as FeedbackType }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {FEEDBACK_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label>Priority</Label>
-                  <Select value={form.priority} onValueChange={(v) => setForm((f) => ({ ...f, priority: v as FeedbackPriority }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {FEEDBACK_PRIORITIES.map((p) => (
-                        <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="fb-category">Category</Label>
-                  <Input
-                    id="fb-category"
-                    placeholder="e.g. dashboard, billing"
-                    value={form.category}
-                    onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="fb-rating">Rating (1–5)</Label>
-                  <Input
-                    id="fb-rating"
-                    type="number"
-                    min={1}
-                    max={5}
-                    placeholder="Optional"
-                    value={form.rating}
-                    onChange={(e) => setForm((f) => ({ ...f, rating: e.target.value }))}
-                  />
-                </div>
-              </div>
-              {formError && <p className="text-sm text-destructive">{formError}</p>}
-              <div className="flex justify-end gap-2 pt-1">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button type="submit" disabled={submitting}>
-                  {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Submit
-                </Button>
-              </div>
-            </form>
-           </DialogContent>
-          </Dialog>
-         </div>
-       </div>
-
-       {/* Filters */}
+      {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -544,7 +383,7 @@ export default function FeedbackPage() {
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : items.length === 0 ? (
+      ) : feedback.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
             <MessageSquarePlus className="h-10 w-10 text-muted-foreground/40" />
@@ -555,7 +394,7 @@ export default function FeedbackPage() {
         </Card>
       ) : (
         <div className="flex flex-col gap-3">
-          {items.map((item) => {
+          {feedback.map((item) => {
             const Icon = TYPE_ICONS[item.type] ?? MessageSquare
             return (
               <Card key={item.id} className="transition-colors hover:border-border">
@@ -584,10 +423,10 @@ export default function FeedbackPage() {
                 </CardHeader>
                 <CardContent className="pb-3 pt-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="secondary" className={cn('text-xs', STATUS_COLORS[item.status])}>
+                    <Badge variant="secondary" className={`text-xs ${STATUS_COLORS[item.status]}`}>
                       {item.status.replace('_', ' ')}
                     </Badge>
-                    <Badge variant="secondary" className={cn('text-xs', PRIORITY_COLORS[item.priority])}>
+                    <Badge variant="secondary" className={`text-xs ${PRIORITY_COLORS[item.priority]}`}>
                       {item.priority}
                     </Badge>
                     {item.category && item.category !== 'general' && (
@@ -607,4 +446,5 @@ export default function FeedbackPage() {
         </div>
       )}
     </div>
+  )
 }
