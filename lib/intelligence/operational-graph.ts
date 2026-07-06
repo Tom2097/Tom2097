@@ -1,189 +1,128 @@
-import { createServiceClient } from "@/lib/supabase/service"
-import type { OperationalEntity, GraphRelation, EntityGraphResult } from "./types"
+"""Operational Graph: Entities + Relationships
 
-const ENTITIES_TABLE = "intelligence_entities"
-const RELATIONS_TABLE = "intelligence_relations"
+- Models entities (e.g., customers, orders, shipments) as nodes
+- Models relationships (e.g., "depends on", "blocks", "causes") as edges
+- Provides query layer for graph traversal and analysis
+"""
 
-export async function upsertEntity(
-  entity: Omit<OperationalEntity, "lastUpdated" | "relatedEntities">,
-): Promise<void> {
-  const db = createServiceClient()
-  await db.from(ENTITIES_TABLE).upsert(
-    {
-      id: entity.id,
-      organization_id: entity.organizationId,
-      type: entity.type,
-      name: entity.name,
-      status: entity.status,
-      module: entity.module,
-      properties: entity.properties,
-      last_updated: new Date().toISOString(),
-    },
-    { onConflict: "id" },
-  )
+import { EventEmitter } from 'events';
+import { v4 as uuidv4 } from 'uuid';
+
+interface OperationalNode {
+    id: string;
+    workspaceId: string;
+    entityId: string;
+    entityType: 'customer' | 'order' | 'shipment' | 'asset' | 'certificate' | 'deal' | 'task' | string;
+    properties: Record<string, unknown>;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-export async function relateEntities(
-  organizationId: string,
-  fromId: string,
-  toId: string,
-  relationship: string,
-): Promise<void> {
-  const db = createServiceClient()
-  await db.from(RELATIONS_TABLE).insert({
-    organization_id: organizationId,
-    from_entity_id: fromId,
-    to_entity_id: toId,
-    relationship,
-  })
+interface OperationalEdge {
+    id: string;
+    from: string;
+    to: string;
+    relationshipType: 'depends_on' | 'blocks' | 'causes' | 'triggers' | 'owns' | 'contains' | string;
+    properties: Record<string, unknown>;
+    createdAt: Date;
 }
 
-export async function getEntityGraph(
-  organizationId: string,
-  entityId: string,
-  depth: number = 2,
-): Promise<EntityGraphResult | null> {
-  const db = createServiceClient()
-  const { data: entity } = await db
-    .from(ENTITIES_TABLE)
-    .select("*")
-    .eq("organization_id", organizationId)
-    .eq("id", entityId)
-    .single()
+class OperationalGraph {
+    private nodes: Map<string, OperationalNode>;
+    private edges: Map<string, OperationalEdge>;
+    private eventEmitter: EventEmitter;
 
-  if (!entity) return null
-
-  const { data: outbound } = await db
-    .from(RELATIONS_TABLE)
-    .select("to_entity_id, relationship")
-    .eq("organization_id", organizationId)
-    .eq("from_entity_id", entityId)
-
-  const { data: inbound } = await db
-    .from(RELATIONS_TABLE)
-    .select("from_entity_id, relationship")
-    .eq("organization_id", organizationId)
-    .eq("to_entity_id", entityId)
-
-  const relations: GraphRelation[] = [
-    ...(outbound || []).map((r: { to_entity_id: string; relationship: string }) => ({
-      targetId: r.to_entity_id,
-      targetType: "",
-      relationship: r.relationship,
-      direction: "outbound" as const,
-    })),
-    ...(inbound || []).map((r: { from_entity_id: string; relationship: string }) => ({
-      targetId: r.from_entity_id,
-      targetType: "",
-      relationship: r.relationship,
-      direction: "inbound" as const,
-    })),
-  ]
-
-  return {
-    entity: {
-      id: entity.id,
-      organizationId: entity.organization_id,
-      type: entity.type,
-      name: entity.name,
-      status: entity.status,
-      module: entity.module,
-      properties: entity.properties as Record<string, unknown>,
-      relatedEntities: relations,
-      lastUpdated: new Date(entity.last_updated),
-    },
-    relations,
-  }
-}
-
-export async function traverseGraph(
-  organizationId: string,
-  startEntityId: string,
-  maxDepth: number = 3,
-): Promise<OperationalEntity[]> {
-  const visited = new Set<string>()
-  const queue: Array<{ id: string; depth: number }> = [{ id: startEntityId, depth: 0 }]
-  const result: OperationalEntity[] = []
-
-  while (queue.length > 0) {
-    const { id, depth } = queue.shift()!
-    if (visited.has(id) || depth > maxDepth) continue
-    visited.add(id)
-
-    const graph = await getEntityGraph(organizationId, id)
-    if (!graph) continue
-
-    result.push(graph.entity)
-
-    for (const rel of graph.relations) {
-      const nextId = rel.direction === "outbound" ? rel.targetId : rel.targetId
-      if (!visited.has(nextId)) {
-        queue.push({ id: nextId, depth: depth + 1 })
-      }
+    constructor() {
+        this.nodes = new Map();
+        this.edges = new Map();
+        this.eventEmitter = new EventEmitter();
     }
-  }
 
-  return result
-}
-
-export async function findPath(
-  organizationId: string,
-  fromId: string,
-  toId: string,
-): Promise<OperationalEntity[] | null> {
-  const db = createServiceClient()
-  const { data: path } = await db.rpc("find_entity_path", {
-    p_organization_id: organizationId,
-    p_from_id: fromId,
-    p_to_id: toId,
-  })
-
-  if (!path || !Array.isArray(path)) return null
-
-  const entities: OperationalEntity[] = []
-  for (const row of path as Array<Record<string, unknown>>) {
-    const { data: entity } = await db
-      .from(ENTITIES_TABLE)
-      .select("*")
-      .eq("id", row.entity_id)
-      .single()
-    if (entity) {
-      entities.push({
-        id: entity.id,
-        organizationId: entity.organization_id,
-        type: entity.type,
-        name: entity.name,
-        status: entity.status,
-        module: entity.module,
-        properties: entity.properties as Record<string, unknown>,
-        relatedEntities: [],
-        lastUpdated: new Date(entity.last_updated),
-      })
+    addNode(node: Omit<OperationalNode, 'id' | 'createdAt' | 'updatedAt'>): OperationalNode {
+        const id = uuidv4();
+        const now = new Date();
+        const newNode: OperationalNode = { ...node, id, createdAt: now, updatedAt: now };
+        this.nodes.set(id, newNode);
+        this.eventEmitter.emit('nodeAdded', newNode);
+        return newNode;
     }
-  }
-  return entities.length > 0 ? entities : null
+
+    updateNode(nodeId: string, properties: Record<string, unknown>): OperationalNode | null {
+        const node = this.nodes.get(nodeId);
+        if (!node) return null;
+
+        node.properties = { ...node.properties, ...properties };
+        node.updatedAt = new Date();
+        this.eventEmitter.emit('nodeUpdated', node);
+        return node;
+    }
+
+    addEdge(edge: Omit<OperationalEdge, 'id' | 'createdAt'>): OperationalEdge {
+        const id = uuidv4();
+        const now = new Date();
+        const newEdge: OperationalEdge = { ...edge, id, createdAt: now };
+        this.edges.set(id, newEdge);
+        this.eventEmitter.emit('edgeAdded', newEdge);
+        return newEdge;
+    }
+
+    findRelatedNodes(nodeId: string, relationshipType?: string, direction: 'incoming' | 'outgoing' | 'both' = 'both'): OperationalNode[] {
+        const relatedNodes: OperationalNode[] = [];
+        const edgeFilter = (edge: OperationalEdge) => {
+            if (relationshipType && edge.relationshipType !== relationshipType) return false;
+            return direction === 'both' ? (edge.from === nodeId || edge.to === nodeId) :
+                   direction === 'incoming' ? edge.to === nodeId : edge.from === nodeId;
+        };
+
+        Array.from(this.edges.values())
+            .filter(edgeFilter)
+            .forEach(edge => {
+                const relatedId = edge.from === nodeId ? edge.to : edge.from;
+                const node = this.nodes.get(relatedId);
+                if (node) relatedNodes.push(node);
+            });
+
+        return relatedNodes;
+    }
+
+    traverse(startNodeId: string, maxDepth: number = 3): { nodes: OperationalNode[], edges: OperationalEdge[] } {
+        const visitedNodes = new Set<string>();
+        const visitedEdges = new Set<string>();
+        const queue: { nodeId: string, depth: number }[] = [{ nodeId: startNodeId, depth: 0 }];
+
+        while (queue.length > 0) {
+            const { nodeId, depth } = queue.shift()!;
+            if (depth > maxDepth || visitedNodes.has(nodeId)) continue;
+            visitedNodes.add(nodeId);
+
+            const edges = Array.from(this.edges.values()).filter(edge => edge.from === nodeId || edge.to === nodeId);
+            edges.forEach(edge => {
+                if (!visitedEdges.has(edge.id)) {
+                    visitedEdges.add(edge.id);
+                    const nextNodeId = edge.from === nodeId ? edge.to : edge.from;
+                    queue.push({ nodeId: nextNodeId, depth: depth + 1 });
+                }
+            });
+        }
+
+        return {
+            nodes: Array.from(visitedNodes).map(id => this.nodes.get(id)!).filter(Boolean),
+            edges: Array.from(visitedEdges).map(id => this.edges.get(id)!).filter(Boolean)
+        };
+    }
+
+    onNodeAdded(callback: (node: OperationalNode) => void): void {
+        this.eventEmitter.on('nodeAdded', callback);
+    }
+
+    onNodeUpdated(callback: (node: OperationalNode) => void): void {
+        this.eventEmitter.on('nodeUpdated', callback);
+    }
+
+    onEdgeAdded(callback: (edge: OperationalEdge) => void): void {
+        this.eventEmitter.on('edgeAdded', callback);
+    }
 }
 
-export async function getEntitiesByModule(
-  organizationId: string,
-  module: string,
-): Promise<OperationalEntity[]> {
-  const db = createServiceClient()
-  const { data: entities } = await db
-    .from(ENTITIES_TABLE)
-    .select("*")
-    .eq("organization_id", organizationId)
-    .eq("module", module)
-
-  return (entities || []).map((e: Record<string, unknown>) => ({
-    id: e.id as string,
-    organizationId: e.organization_id as string,
-    type: e.type as OperationalEntity["type"],
-    name: e.name as string,
-    status: e.status as string,
-    module: e.module as string,
-    properties: e.properties as Record<string, unknown>,
-    relatedEntities: [],
-    lastUpdated: new Date(e.last_updated as string),
-  }))
-}
+export { OperationalGraph };
+export type { OperationalNode, OperationalEdge };
