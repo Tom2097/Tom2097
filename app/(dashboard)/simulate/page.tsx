@@ -156,7 +156,7 @@ export default function SimulatePage() {
       setSelectedDiff(diff)
       setSelectedSimId(simId)
       setDiffDialogOpen(true)
-    } catch {
+    } catch (error) {
        toast.error(error instanceof Error ? error.message : "Failed to compare simulation")
     }
   }

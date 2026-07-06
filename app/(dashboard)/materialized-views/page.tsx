@@ -78,11 +78,11 @@ export default function MaterializedViewsPage() {
 
   useEffect(() => {
     let cancelled = false
-    fetch('/api/v1/analytics/views')
-      .then((r) => r.ok ? r.json() : Promise.reject())
-      .then((data) => { if (!cancelled) setViews(data.views ?? []) })
-      .catch(() => { if (!cancelled) toast.error('Failed to load materialized views') })
-      .finally(() => { if (!cancelled) setLoading(false) })
+     fetch('/api/v1/analytics/views')
+       .then((r) => r.ok ? r.json() : Promise.reject())
+       .then((data) => { if (!cancelled) setViews(data.views ?? []) })
+       .catch((error) => { if (!cancelled) toast.error(error instanceof Error ? error.message : 'Failed to load materialized views') })
+       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [])
 
@@ -100,9 +100,9 @@ export default function MaterializedViewsPage() {
       const refresh = await fetch('/api/v1/analytics/views')
       const refData = await refresh.json()
       if (refData.views) setViews(refData.views)
-    } catch {
-      toast.error('Failed to refresh view')
-    } finally {
+     } catch (error) {
+       toast.error(error instanceof Error ? error.message : 'Failed to refresh view')
+     } finally {
       setRefreshingViews((prev) => {
         const next = new Set(prev)
         next.delete(name)
@@ -125,9 +125,9 @@ export default function MaterializedViewsPage() {
       const refresh = await fetch('/api/v1/analytics/views')
       const refData = await refresh.json()
       if (refData.views) setViews(refData.views)
-    } catch {
-      toast.error('Failed to refresh all views')
-    } finally {
+     } catch (error) {
+       toast.error(error instanceof Error ? error.message : 'Failed to refresh all views')
+     } finally {
       setRefreshingAll(false)
     }
   }
@@ -145,9 +145,9 @@ export default function MaterializedViewsPage() {
       if (!res.ok) { toast.error(data.error ?? 'Failed to load cache'); return }
       setCache(data.cache)
       setCacheDialogOpen(true)
-    } catch {
-      toast.error('Failed to load scoring cache')
-    } finally {
+     } catch (error) {
+       toast.error(error instanceof Error ? error.message : 'Failed to load scoring cache')
+     } finally {
       setCacheLoading(false)
     }
   }
@@ -162,9 +162,9 @@ export default function MaterializedViewsPage() {
       if (!res.ok) { toast.error(data.error ?? 'Failed to invalidate'); return }
       toast.success(data.message ?? 'Cache invalidated')
       if (cache) setCache({ ...cache, stale: true })
-    } catch {
-      toast.error('Failed to invalidate cache')
-    }
+     } catch (error) {
+       toast.error(error instanceof Error ? error.message : 'Failed to invalidate cache')
+     }
   }
 
   const formatInterval = (minutes: number): string => {

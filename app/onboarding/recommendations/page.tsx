@@ -64,7 +64,9 @@ function loadFromStorage(key: string) {
   try {
     const raw = localStorage.getItem(key)
     return raw ? JSON.parse(raw) : null
-  } catch { return null }
+  } catch (error) {
+    return null
+  }
 }
 
 export default function RecommendationsPage() {

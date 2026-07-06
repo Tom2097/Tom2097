@@ -91,17 +91,17 @@ export default function RecordingsPage() {
     if (fetched) setSelectedRecording(fetched)
 
     setTimeout(() => {
-      try {
-        const result = processTranscription(recording.id)
-        const items = extractActionItems(recording.id)
-        setTranscription(result)
-        setActionItems(items)
-        setProcessing(false)
-        refreshRecordings()
-      } catch {
-        setProcessing(false)
-        toast.error("Failed to process transcription")
-      }
+       try {
+         const result = processTranscription(recording.id)
+         const items = extractActionItems(recording.id)
+         setTranscription(result)
+         setActionItems(items)
+         setProcessing(false)
+         refreshRecordings()
+       } catch (error) {
+         setProcessing(false)
+         toast.error(error instanceof Error ? error.message : "Failed to process transcription")
+       }
     }, 800)
   }
 
