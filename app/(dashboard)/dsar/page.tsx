@@ -63,7 +63,7 @@ export default function DsarPage() {
       }
     } catch (error) {
       if (!cancelled?.current) {
-        toast.error(error.message || "Failed to load DSAR data");
+        toast.error(error instanceof Error ? error.message : "Failed to load DSAR data");
       }
     } finally {
       if (!cancelled?.current) {
@@ -92,7 +92,7 @@ export default function DsarPage() {
       setExportData(data.data);
       setExportDialogOpen(true);
     } catch (error) {
-      toast.error(error.message || "Failed to export data");
+       toast.error(error instanceof Error ? error.message : "Failed to export data");
     } finally {
       setLoading(false);
     }
@@ -116,7 +116,7 @@ export default function DsarPage() {
       setDeleteDialogOpen(false);
       fetchData();
     } catch (error) {
-      toast.error(error.message || "Failed to process deletion request");
+       toast.error(error instanceof Error ? error.message : "Failed to process deletion request");
     } finally {
       setLoading(false);
     }
@@ -139,7 +139,7 @@ export default function DsarPage() {
       toast.success(`${type} request submitted`);
       fetchData();
     } catch (error) {
-      toast.error(error.message || "Failed to create request");
+       toast.error(error instanceof Error ? error.message : "Failed to create request");
     } finally {
       setLoading(false);
     }
@@ -294,7 +294,7 @@ export default function DsarPage() {
                                   fetchData()
                                 }
                               } catch {
-                                toast.error("Failed to update consent")
+                                 toast.error(error instanceof Error ? error.message : "Failed to update consent")
                               }
                             }}
                           >

@@ -158,9 +158,10 @@ export default function BillingPlansPage() {
         toast.error(data.reason || 'Invalid discount code');
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to validate code';
       setDiscountValid(false);
-      setDiscountReason(error.message || 'Failed to validate code');
-      toast.error(error.message || 'Failed to validate discount code');
+      setDiscountReason(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setApplyingDiscount(false);
     }

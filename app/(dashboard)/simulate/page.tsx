@@ -157,7 +157,7 @@ export default function SimulatePage() {
       setSelectedSimId(simId)
       setDiffDialogOpen(true)
     } catch {
-      toast.error("Failed to compare simulation")
+       toast.error(error instanceof Error ? error.message : "Failed to compare simulation")
     }
   }
 
@@ -177,7 +177,7 @@ export default function SimulatePage() {
       setSimulations(prev => prev.map(s => s.id === simId ? { ...s, status: 'committed' as const, committedAt: new Date().toISOString() } : s))
       toast.success("Simulation committed")
     } catch (error) {
-      toast.error(error.message || "Failed to commit simulation")
+       toast.error(error instanceof Error ? error.message : "Failed to commit simulation")
     } finally {
       setSubmitting(false)
     }
@@ -197,7 +197,7 @@ export default function SimulatePage() {
       setSimulations(prev => prev.map(s => s.id === simId ? { ...s, status: 'discarded' as const } : s))
       toast.success("Simulation discarded")
     } catch (error) {
-      toast.error(error.message || "Failed to discard simulation")
+       toast.error(error instanceof Error ? error.message : "Failed to discard simulation")
     } finally {
       setSubmitting(false)
     }

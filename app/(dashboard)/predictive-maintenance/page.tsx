@@ -73,7 +73,7 @@ export default function PredictiveMaintenancePage() {
       }
     } catch (error) {
       if (!cancelled?.current) {
-        toast.error(error.message || "Failed to load maintenance schedule");
+        toast.error(error instanceof Error ? error.message : "Failed to load maintenance schedule");
       }
     } finally {
       if (!cancelled?.current) {
@@ -106,7 +106,7 @@ export default function PredictiveMaintenancePage() {
       const data = await res.json();
       setAssetRules(data);
     } catch (error) {
-      toast.error(error.message || "Failed to look up asset");
+       toast.error(error instanceof Error ? error.message : "Failed to look up asset");
     } finally {
       setAssetLoading(false);
     }
@@ -177,7 +177,7 @@ export default function PredictiveMaintenancePage() {
       });
       fetchSchedule();
     } catch (error) {
-      toast.error(error.message || "Failed to ingest telemetry");
+       toast.error(error instanceof Error ? error.message : "Failed to ingest telemetry");
     } finally {
       setSimSending(false);
     }

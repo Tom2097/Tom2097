@@ -135,7 +135,7 @@ export default function SkillMatrixPage() {
       toast.success(`Navigating to ${skillName} training...`)
       window.open(`/training/${skill.id}`, "_blank")
     } catch (error) {
-      toast.error(error.message || "Failed to navigate to training")
+      toast.error(error instanceof Error ? error.message : "Failed to navigate to training")
     } finally {
       setNavigating(false)
     }
