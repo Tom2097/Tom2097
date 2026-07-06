@@ -87,7 +87,7 @@ export default function SignUpPage() {
     })
 
     if (error) {
-      setError(error.message)
+      setError(error instanceof Error ? error.message : "Failed to sign up")
       setIsLoading(false)
     } else if (user) {
       // Create organization and subscription with trial

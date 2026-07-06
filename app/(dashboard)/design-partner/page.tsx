@@ -69,7 +69,7 @@ export default function DesignPartnerPipeline() {
       ))
       toast.success("Partner moved to next stage")
     } catch (error) {
-      toast.error(error.message || "Failed to move partner stage")
+      toast.error(error instanceof Error ? error.message : "Failed to move partner stage")
     } finally {
       setSubmitting(false)
     }
@@ -98,7 +98,7 @@ export default function DesignPartnerPipeline() {
       setNoteText("")
       setNotesDialogOpen(false)
     } catch (error) {
-      toast.error(error.message || "Failed to save note")
+      toast.error(error instanceof Error ? error.message : "Failed to save note")
     } finally {
       setSubmitting(false)
     }

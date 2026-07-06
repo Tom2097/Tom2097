@@ -81,7 +81,7 @@ function LoginForm() {
     })
 
     if (error) {
-      setError(error.message)
+      setError(error instanceof Error ? error.message : "Failed to login")
       setIsLoading(false)
     } else {
       router.push(redirect)

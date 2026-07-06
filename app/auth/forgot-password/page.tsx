@@ -28,7 +28,7 @@ function ForgotPasswordForm() {
     })
 
     if (error) {
-      setError(error.message)
+      setError(error instanceof Error ? error.message : "Failed to send reset link")
       setIsLoading(false)
     } else {
       setSubmitted(true)

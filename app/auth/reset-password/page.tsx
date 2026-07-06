@@ -101,7 +101,7 @@ function ResetPasswordForm() {
     const { error } = await supabase.auth.updateUser({ password })
 
     if (error) {
-      setError(error.message)
+      setError(error instanceof Error ? error.message : "Failed to reset password")
       setIsLoading(false)
     } else {
       setIsResetComplete(true)
