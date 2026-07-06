@@ -106,7 +106,18 @@ export async function computeBenchmark(
     metricValues = scores.map(s => s.score)
   }
 
-  if (metricValues.length === 0) return null
+  if (metricValues.length === 0) {
+    return {
+      cohort: dimensionValue || "unknown",
+      metric,
+      value: 0,
+      percentile25: 0,
+      percentile50: 0,
+      percentile75: 0,
+      sampleSize: 0,
+      anonymized: true
+    }
+  }
 
   metricValues.sort((a, b) => a - b)
 
