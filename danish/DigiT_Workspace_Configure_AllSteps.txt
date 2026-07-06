@@ -1,0 +1,240 @@
+ DigiT — Configure Workspace
+ The full six-step setup, shown for all four workspaces · v1.0
+
+ This walks through every one of the six setup steps for each workspace. Note that steps 1, 3, 4, 5 and 6 are
+ the same shared screens across all four workspaces — only the header colour, the step-rail labels and
+ Step 2 (Framework setup) change. That is the point: you build the wizard shell once, and only the four
+ step-2 panels are bespoke. Each workspace below carries its own accent colour (Compliance teal,
+ Resources blue, Performance amber, Operational indigo).
+
+
+ Compliance workspace — full setup
+ Step 1 — General
+
+
+
+
+ Name, description, vertical and owner. Picking the vertical pre-seeds steps 2–4, so the workspace is not blank.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                                          Page 1
+ Step 2 — Framework setup
+
+
+
+
+ Toggle the standards that apply; each loads its control checklist. Set the audit calendar and CAPA SLA.
+ Step 3 — Data & integrations
+
+
+
+
+ Connect uploads and connectors and set sync frequency. Credentials authorise through each provider, never stored in
+ DigiT.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                                              Page 2
+ Step 4 — Features & automations
+
+
+
+
+ Toggle features, then set the AI assistant's scope, monthly allowance and the human-in-the-loop confidence threshold.
+ Step 5 — Roles & access
+
+
+
+
+ Assign each role to view, edit or admin on this workspace; set approvals and external guest access.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                                                Page 3
+ Step 6 — Review & activate
+
+
+
+
+ A summary with validation flags; Activate applies the config and takes the workspace live, seeded.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                             Page 4
+ Resources workspace — full setup
+ Step 1 — General
+
+
+
+
+ Name, description, vertical and owner. Picking the vertical pre-seeds steps 2–4, so the workspace is not blank.
+ Step 2 — Framework setup
+
+
+
+
+ Toggle asset categories; set the reorder point and the telemetry feed that powers predictive maintenance.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                                          Page 5
+ Step 3 — Data & integrations
+
+
+
+
+ Connect uploads and connectors and set sync frequency. Credentials authorise through each provider, never stored in
+ DigiT.
+ Step 4 — Features & automations
+
+
+
+
+ Toggle features, then set the AI assistant's scope, monthly allowance and the human-in-the-loop confidence threshold.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                                                Page 6
+ Step 5 — Roles & access
+
+
+
+
+ Assign each role to view, edit or admin on this workspace; set approvals and external guest access.
+ Step 6 — Review & activate
+
+
+
+
+ A summary with validation flags; Activate applies the config and takes the workspace live, seeded.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                              Page 7
+ Performance workspace — full setup
+ Step 1 — General
+
+
+
+
+ Name, description, vertical and owner. Picking the vertical pre-seeds steps 2–4, so the workspace is not blank.
+ Step 2 — Framework setup
+
+
+
+
+ Toggle the metrics and set each target; choose the north-star metric and a starting dashboard.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                                          Page 8
+ Step 3 — Data & integrations
+
+
+
+
+ Connect uploads and connectors and set sync frequency. Credentials authorise through each provider, never stored in
+ DigiT.
+ Step 4 — Features & automations
+
+
+
+
+ Toggle features, then set the AI assistant's scope, monthly allowance and the human-in-the-loop confidence threshold.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                                                Page 9
+ Step 5 — Roles & access
+
+
+
+
+ Assign each role to view, edit or admin on this workspace; set approvals and external guest access.
+ Step 6 — Review & activate
+
+
+
+
+ A summary with validation flags; Activate applies the config and takes the workspace live, seeded.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                              Page 10
+ Operational workspace — full setup
+ Step 1 — General
+
+
+
+
+ Name, description, vertical and owner. Picking the vertical pre-seeds steps 2–4, so the workspace is not blank.
+ Step 2 — Framework setup
+
+
+
+
+ Toggle the intake doors; set auto-routing and the human-in-the-loop confidence threshold.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                                          Page 11
+ Step 3 — Data & integrations
+
+
+
+
+ Connect uploads and connectors and set sync frequency. Credentials authorise through each provider, never stored in
+ DigiT.
+ Step 4 — Features & automations
+
+
+
+
+ Toggle features, then set the AI assistant's scope, monthly allowance and the human-in-the-loop confidence threshold.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                                            Page 12
+ Step 5 — Roles & access
+
+
+
+
+ Assign each role to view, edit or admin on this workspace; set approvals and external guest access.
+ Step 6 — Review & activate
+
+
+
+
+ A summary with validation flags; Activate applies the config and takes the workspace live, seeded.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                              Page 13
+ Recap
+ Across all four workspaces, the setup is the same guided six-step wizard. Five of the six steps — General,
+ Data & integrations, Features & automations, Roles & access, Review & activate — are identical shared
+ screens. The only bespoke work per workspace is the Step 2 Framework panel (Standards & Controls /
+ Assets & Inventory / Metrics & KPIs / Intake & Recipes). And because the same six steps become a tabbed
+ settings hub after launch, this one build also covers all post-launch reconfiguration. Build the shell once, drop
+ in four panels, and the entire configuration layer is done for every workspace.
+
+
+
+
+DigiT — Configure Workspace: all six steps for all four workspaces · v1.0                                   Page 14
+

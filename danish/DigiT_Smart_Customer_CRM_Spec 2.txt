@@ -1,0 +1,122 @@
+ DigiT — Smart Customer CRM
+ From a single “Add Leads” tab to an intelligent, end-to-end CRM · v1.0
+
+ Scope: this document covers the Customer CRM only. The Investor CRM shares the same underlying
+ engine and is specced separately. Today the module has one tab — Add Leads — a front door with no
+ rooms behind it. The build runs in two passes: first the journey a lead travels (making it a real CRM), then
+ the intelligence on every step (making it smart) — plus a few bets only DigiT can pull off because the CRM
+ is wired into the wider platform.
+
+
+
+
+ Figure 1 — The lead-to-customer journey, the smart layer that sits across every stage, and the auto-provision handoff into the
+ platform at “Won.”
+
+
+ Pass 1 — Build the rooms: the lead-to-customer journey
+ Each becomes a tab / section the lead flows through.
+ • Lead Inbox & Triage — where new leads land, auto-scored and auto-assigned, sorted by who is worth your
+    time today — the screen you open every morning.
+ • Contacts & Accounts — the relationship graph: many people per company, org hierarchy, and every
+    touchpoint in one place (a lead is a person; an account is the company behind them).
+ • Pipeline / Deal Board — a kanban of stages (New → Qualified → Demo → Proposal → Won/Lost) with value
+    and probability per deal — the heart of a CRM, and the missing piece today.
+ • Engagement Timeline — every email, call, meeting and WhatsApp auto-logged against the contact, so context
+    is never lost weeks later.
+ • Tasks & Cadences — follow-up reminders and sequences (day 1 email → day 3 nudge → day 7 call) so leads
+    never go cold by accident.
+ • Communication Hub — send email and WhatsApp from inside the CRM with reusable templates — essential
+    for India, where deals close on WhatsApp.
+ • Quotes & Proposals — generate a quote straight from the Starter / Growth / Enterprise pricing, send it, and
+    track when it is opened.
+ • Customer Success — what happens after Won: onboarding checklist, account health, renewal dates and
+    upsell flags.
+ • Forecast & Reports — pipeline value, conversion by stage, win/loss reasons and revenue projection.
+
+
+
+
+DigiT — Smart Customer CRM Specification · v1.0                                                                             Page 1
+ Pass 2 — Make every room intelligent: the “smart” layer
+ This is what separates it from a plain CRM.
+ • AI lead scoring — predicts which leads will convert from their signals, so the inbox sorts itself by priority.
+ • Auto-enrichment + AI research (“AI SDR”) — paste a name or email and it fills in company size, vertical and
+    a short brief (recent news, what they do), so you walk into every call prepared.
+ • Duplicate detection & data hygiene — auto-merges duplicates and flags stale records — the #1 reason
+    CRMs rot is messy data.
+ • Next-best-action — tells you the move: “this deal has gone quiet for 9 days, send a check-in”; “this account is
+    ready for an upsell.”
+ • Conversation intelligence — summarises calls and email threads and extracts action items and sentiment
+    automatically.
+ • AI drafting — writes the follow-up, proposal or re-engagement email in your voice; you edit and send.
+ • Deal-health radar — flags at-risk deals and explains why (“no decision-maker engaged”, “stalled at proposal”)
+    before they slip.
+ • Natural-language ask-your-CRM — “which deals close this month and which are shaky?” → answer + chart,
+    no report-building.
+
+
+ Pass 3 — The creative bets that are yours alone
+ • WhatsApp-first capture & nurture — capture leads from WhatsApp and run nurture sequences via the
+    WhatsApp Business API — the highest-leverage CRM feature in India, and rarely native in enterprise CRMs.
+ • Vertical-aware intelligence — the CRM knows pharma vs renewables vs logistics and surfaces vertical buying
+    signals (a new pharma facility, a solar developer winning a SECI auction, a logistics firm expanding fleet).
+ • “Design Partner” pipeline mode — a pipeline tuned for founder-led early sales — track the give-to-get,
+    reference status and feedback alongside the deal.
+ • Buying-signal radar — monitors triggers (a contact changes jobs, the company raises funding, expansion
+    news) and pings you when it is the moment to reach out.
+ • Lead-source ROI — shows which channel actually converts (LinkedIn vs waitlist vs referrals) so you double
+    down on what works — feeding your GTM.
+ • Founder's daily briefing — a one-screen AI digest each morning: the 5 leads to chase today and why, deals
+    that went quiet, proposals opened twice yesterday.
+
+
+ The unfair advantage — wire the CRM into the platform
+ When a deal hits Won, the CRM does not just update a field — it auto-provisions the new customer:
+ creates their tenant, kicks off the onboarding workflow (via the Workflow engine), and starts feeding their
+ data into the Performance and Resources workspaces. Customer CRM and Investor CRM share one engine,
+ and every account carries a single relationship score — the CRM equivalent of the DigiT Score. A
+ standalone CRM ends at “Won”; yours hands the customer straight into the operational-intelligence loop.
+ That is the story that justifies the price over any point-tool CRM.
+
+
+ Build matrix — almost none of this is from scratch
+ The smart layer is your existing engines surfaced through a CRM lens.
+
+
+
+
+DigiT — Smart Customer CRM Specification · v1.0                                                                     Page 2
+  Capability group                                                                             Powered by
+
+  Lead scoring, deal-health, forecasting, lead-source ROI, relationship score                  #7 Analytics Engine
+
+  AI SDR / enrichment, conversation intelligence, AI drafting, ask-your-CRM                    #5 AI Assistant
+
+  Cadences, next-best-action, buying-signal radar, auto-provision on Won, onboarding           #6 Workflow Automation
+
+  Contact/account search, dedupe, knowledge retrieval                                          #4 Universal Search
+
+  Per-tenant data isolation, role-scoped access to records                                     #3 RBAC + #1 Multi-Tenant
+
+
+
+ Suggested build order
+ To make “Add Leads” a CRM you can run design-partner sales on before launch, add these first, in order:
+    1. Pipeline / Deal Board + Contacts & Accounts — without a pipeline you do not have a CRM. This is the
+    foundation everything else hangs on.
+    2. Engagement Timeline + Tasks & Cadences — so leads stop going cold — the highest-ROI behaviour
+    change.
+    3. Communication Hub (email + WhatsApp) — reach prospects where they actually are in India.
+    4. AI lead scoring + next-best-action — the first true “smart” features — they make the daily inbox
+    useful.
+    5. Auto-provision on Won — the platform handoff — turns closing a deal into onboarding a tenant.
+
+ Everything beyond step 5 (vertical-aware signals, buying-signal radar, conversation intelligence, founder's briefing) is high-value
+ but post-launch — layer it on once the core journey is proven with real deals.
+
+
+
+
+DigiT — Smart Customer CRM Specification · v1.0                                                                                Page 3
+

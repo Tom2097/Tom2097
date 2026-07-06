@@ -1,0 +1,135 @@
+ DigiT — Subscription Models & Pricing
+ Three tiers, priced and scoped to what DigiT actually is · v2.0
+
+
+ This pricing is built around DigiT's real product — the four workspaces, Smart CRM, and the flagship AI
+ Intelligence — not a generic analytics tool. The tiers tell a story: get started (one workspace + AI
+ insights), get the brain (the full platform + cross-workspace AI Intelligence), and get everything
+ (scale, security, autonomous agents). AI Intelligence is deliberately the spine that makes a customer
+ upgrade. Prices are premium-but-accessible for a new AI-native platform, shown in USD for global sale
+ with a dedicated, lower India plan in INR.
+
+
+
+
+                                     Figure 1 — The three subscription models at a glance.
+
+
+
+
+DigiT — Subscription Models & Pricing · v2.0                                                        Page 1
+ Full feature comparison
+ What each tier includes, mapped to DigiT's actual capabilities.
+
+                                                 Starter                    Professional                      Enterprise
+
+ Price (USD / mo, billed
+                                                   $99                           $399                    Custom · from $1,499
+ annually)
+
+ India plan (INR / mo, via
+                                                 ₹3,499                        ₹14,999                       from ₹1,00,000
+ Razorpay)
+
+ Workspaces included                              1 of 4                        3 of 4                            All 4
+
+ Smart CRM                                         Core                          Full                     Full + auto-provision
+
+                                                                        The brain: causal
+                                                                                                         + Agents, simulation,
+ AI Intelligence                           Insights & alerts        reasoning, daily briefings,
+                                                                                                         learns-your-business
+                                                                           predictions
+
+ Team members                                       5                             25                       Unlimited (fair-use)
+
+ AI actions / month                               1,000                         10,000                           Custom
+
+ Workflow automation                              Basic                   Full (all triggers)          Full + autonomous agents
+
+ Universal search                                  Yes                     Yes + semantic                          Yes
+
+                                                                           + forecasting,
+ Analytics & forecasting                       Dashboards                                                       + custom
+                                                                           ask-your-data
+
+ Integrations                                   Standard               Integration Hub + API              Custom + webhooks
+
+ WhatsApp                                      Lead capture              Capture + nurture                         Yes
+
+ Roles & access (RBAC)                          Basic roles                      Full                           Advanced
+
+                                                                                                        + DPDP data residency,
+ Audit & compliance                             Basic log               Full audit + export
+                                                                                                                SLA
+
+ SSO / SAML                                         —                              —                               Yes
+
+ White-label                                        —                              —                               Yes
+
+ On-premise / VPC                                   —                              —                  By arrangement (roadmap)
+
+                                                                                                          Dedicated CSM, SLA
+ Support                                          Email                Priority + onboarding
+                                                                                                               response
+
+ The Professional column (shaded) is the “most popular” anchor — it is the first tier with the full AI Intelligence brain, which is
+                                              the real reason to choose DigiT.
+
+
+
+ Why these prices
+ • Premium, but not BI-priced — DigiT is an AI-native operational-intelligence platform, not a dashboard
+    tool — so it is priced above commodity analytics, but the $99 entry keeps it accessible and avoids
+    anchoring too low (low launch prices calcify and are hard to raise).
+ • Professional is the heart — at $399 it bundles the full platform plus the AI Intelligence brain for
+    mid-market teams — well below enterprise incumbents while far above commodity tools. This is where
+    most customers should land.
+ • Enterprise stays custom — scale, security (SSO, DPDP residency), autonomous agents and white-label
+    are negotiated — and at the enterprise tier Indian budgets approach Western ones, so there is no need to
+    discount.
+ • AI Intelligence is the upgrade engine — insights (Starter) → the brain (Professional) → agents +
+    simulation (Enterprise). Tiering the flagship feature is what pulls customers up the ladder.
+
+
+ The India plan — geo-priced, not converted
+
+
+
+DigiT — Subscription Models & Pricing · v2.0                                                                                  Page 2
+ Indian B2B buyers pay 50–70% less than Western ones for the same software, so the INR figures are a
+ separate, lower plan (billed via Razorpay, gated by location) — not a currency conversion of the USD
+ price. That is why Professional is $399 globally but ₹14,999 (~$179) in India. At the enterprise tier the
+ gap narrows, because large Indian firms have Western-scale budgets. This updates the earlier
+ India-only numbers upward (the original ₹2,999 / ₹11,999 under-priced a product this rich); the new
+ India plan is ₹3,499 / ₹14,999 / custom.
+
+
+ Billing mechanics
+ • Annual billing — list prices assume annual (2 months free); monthly billing runs ~20% higher. Annual
+    pulls cash forward — valuable for a bootstrapped founder.
+ • Seats + AI metering — extra seats beyond the tier cap are an add-on; AI usage above each tier's
+    allowance is metered as overage (protects your margin against heavy users).
+ • Free trial + founding offer — a 14-day trial, plus a time-boxed “founding customer” discount (30–40%
+    off) for the first 10–20 accounts — win early traction without lowering the list price.
+ • Dual currency — USD via Stripe internationally, INR via Razorpay domestically; prices exclude 18% GST.
+
+
+ Deliverable now vs flagged
+ Promises to soften before a customer holds you to them.
+ • 24/7 phone support → priority support with SLA — you cannot staff a 24/7 phone line solo —
+    promise guaranteed response times instead, add 24/7 phone once you have a team.
+ • On-premise → “by arrangement / roadmap” — full on-prem on a Next.js + Supabase stack is a major
+    lift; offer it by arrangement rather than as a standard checkbox.
+ • “Custom AI model training” → “learns your business” — AI Intelligence learning your patterns and
+    baselines is real and deliverable; per-customer model fine-tuning is a different, costly promise — word it as
+    the former.
+ • “Unlimited” → fair-use — keep an internal soft cap so a heavy customer cannot quietly erode margin.
+ Note: these are calibrated starting anchors, not fixed prices, and not financial advice. Validate willingness-to-pay with
+ your first design partners and adjust.
+
+
+
+
+DigiT — Subscription Models & Pricing · v2.0                                                                         Page 3
+

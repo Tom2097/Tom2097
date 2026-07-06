@@ -1,143 +1,142 @@
 "use server"
 
-import { createServiceClient } from "@/lib/supabase/service"
-import { createAuditEntry } from "@/lib/audit/append-only"
+import { createClient } from "@/lib/supabase/server"
+import { getAuthenticatedUser } from "./server-auth"
+import { isPlatformAdmin } from "./rbac"
+import { createAuditLog } from "@/lib/audit/append-only"
 import { randomUUID } from "crypto"
 
-export interface BreakGlassSession {
+interface BreakGlassSession {
   id: string
-  userId: string
-  organizationId: string
+  adminId: string
   reason: string
-  role: string
-  status: "active" | "expired" | "revoked"
-  startedAt: string
+  createdAt: string
   expiresAt: string
-  justification: string
-  alarmTriggered: boolean
 }
 
-const BREAK_GLASS_DURATION_MINUTES = 15
-const BREAK_GLASS_NOTIFY_EMAILS = (process.env.BREAK_GLASS_NOTIFY_EMAILS || "").split(",").filter(Boolean)
+const MAX_BREAK_GLASS_MINUTES = 30
 
-export async function activateBreakGlass(
+/**
+ * Requests break-glass emergency access.
+ */
+export async function requestBreakGlassAccess(
   reason: string,
-  justification: string
-): Promise<{ session?: BreakGlassSession; error?: string }> {
-  const supabase = await createServiceClient()
-  const client = await (await import("@/lib/supabase/server")).createClient()
-  const { data: { user } } = await client.auth.getUser()
-  if (!user) return { error: "Not authenticated" }
+  durationMinutes: number = MAX_BREAK_GLASS_MINUTES
+): Promise<{ success: boolean; error?: string }> {
+  const user = await getAuthenticatedUser()
+  if (!user) return { success: false, error: "Unauthorized" }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id, email")
-    .eq("id", user.id)
-    .single()
+  const isAdmin = await isPlatformAdmin(user.id)
+  if (!isAdmin) return { success: false, error: "Forbidden" }
 
-  if (!profile) return { error: "Profile not found" }
+  const supabase = createClient()
+  const expiresAt = new Date()
+  expiresAt.setMinutes(expiresAt.getMinutes() + Math.min(durationMinutes, MAX_BREAK_GLASS_MINUTES))
 
-  const id = randomUUID()
-  const now = new Date()
-  const expiresAt = new Date(now.getTime() + BREAK_GLASS_DURATION_MINUTES * 60 * 1000)
-
-  const { data: session, error } = await supabase
-    .from("break_glass_sessions")
-    .insert({
-      id,
-      user_id: user.id,
-      organization_id: profile.organization_id,
-      reason,
-      role: "super_admin",
-      status: "active",
-      started_at: now.toISOString(),
-      expires_at: expiresAt.toISOString(),
-      justification,
-    })
-    .select("*")
-    .single()
-
-  if (error) return { error: `Failed to create break-glass session: ${error.message}` }
-
-  // Trigger alarm - log with maximum visibility
-  const auditEntry = createAuditEntry(
-    "break_glass_sessions",
-    id,
-    "INSERT",
-    null,
-    { userId: user.id, reason, justification },
-    user.id,
-    profile.organization_id
-  )
-  await supabase.from("audit_log_entries").insert({
-    ...auditEntry,
-    metadata: { ...auditEntry.metadata, alarm: true, severity: "critical" },
-  })
-
-  // Send notifications (simulated)
-  for (const email of BREAK_GLASS_NOTIFY_EMAILS) {
-    console.warn(`[BREAK-GLASS] ALARM: User ${user.email} activated break-glass. Notifying ${email}`)
-  }
-
-  // Grant temporary super_admin role
-  await supabase.from("user_roles").upsert({
-    user_id: user.id,
-    role: "super_admin",
-    organization_id: profile.organization_id,
+  const sessionId = randomUUID()
+  const { error } = await supabase.from("break_glass_sessions").insert({
+    id: sessionId,
+    admin_id: user.id,
+    reason,
     expires_at: expiresAt.toISOString(),
-    granted_by: user.id,
-    granted_at: now.toISOString(),
-    break_glass: true,
   })
 
-  return {
-    session: {
-      id: session.id,
-      userId: session.user_id,
-      organizationId: session.organization_id,
-      reason: session.reason,
-      role: session.role,
-      status: session.status,
-      startedAt: session.started_at,
-      expiresAt: session.expires_at,
-      justification: session.justification,
-      alarmTriggered: true,
-    }
+  if (error) {
+    console.error("Failed to create break-glass session:", error)
+    return { success: false, error: error.message }
   }
-}
 
-export async function revokeBreakGlass(sessionId: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createServiceClient()
-  
-  const { data: session } = await supabase
-    .from("break_glass_sessions")
-    .select("*")
-    .eq("id", sessionId)
-    .single()
+  // Audit log
+  await createAuditLog({
+    action: "break_glass_request",
+    userId: user.id,
+    metadata: {
+      reason,
+      durationMinutes,
+      expiresAt: expiresAt.toISOString(),
+    },
+  })
 
-  if (!session) return { success: false, error: "Session not found" }
-
-  const now = new Date().toISOString()
-  await supabase.from("break_glass_sessions").update({ status: "revoked", revoked_at: now }).eq("id", sessionId)
-  await supabase.from("user_roles").update({ expires_at: now, revoked_at: now }).eq("user_id", session.user_id).eq("break_glass", true)
+  // Trigger alarm (e.g., Slack, PagerDuty)
+  await triggerBreakGlassAlarm(user.id, reason, expiresAt)
 
   return { success: true }
 }
 
-export async function cleanupExpiredBreakGlass(): Promise<number> {
-  const supabase = await createServiceClient()
-  const now = new Date().toISOString()
-  
-  const { data: expired } = await supabase
-    .from("break_glass_sessions")
-    .update({ status: "expired", revoked_at: now })
-    .eq("status", "active")
-    .lt("expires_at", now)
-    .select("user_id")
+/**
+ * Ends the active break-glass session.
+ */
+export async function endBreakGlassSession() {
+  const user = await getAuthenticatedUser()
+  if (!user) return { success: false, error: "Unauthorized" }
 
-  for (const item of (expired || []) as Array<Record<string, unknown>>) {
-    await supabase.from("user_roles").update({ expires_at: now }).eq("user_id", item.user_id as string).eq("break_glass", true)
+  const supabase = createClient()
+  const { error } = await supabase
+    .from("break_glass_sessions")
+    .update({ expires_at: new Date().toISOString() })
+    .eq("admin_id", user.id)
+    .is("expires_at", null)
+
+  if (error) {
+    console.error("Failed to end break-glass session:", error)
+    return { success: false, error: error.message }
   }
 
-  return (expired || []).length
+  // Audit log
+  await createAuditLog({
+    action: "break_glass_end",
+    userId: user.id,
+    metadata: { manualEnd: true },
+  })
+
+  return { success: true }
+}
+
+/**
+ * Gets the active break-glass session for the current user.
+ */
+export async function getActiveBreakGlassSession(): Promise<BreakGlassSession | null> {
+  const user = await getAuthenticatedUser()
+  if (!user) return null
+
+  const supabase = createClient()
+  const { data } = await supabase
+    .from("break_glass_sessions")
+    .select("*")
+    .eq("admin_id", user.id)
+    .is("expires_at", null)
+    .or(`expires_at.gt.now()`)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single()
+
+  if (!data) return null
+
+  return {
+    id: data.id,
+    adminId: data.admin_id,
+    reason: data.reason,
+    createdAt: data.created_at,
+    expiresAt: data.expires_at,
+  }
+}
+
+/**
+ * Checks if break-glass access is active for the current user.
+ */
+export async function isBreakGlassActive(): Promise<boolean> {
+  const session = await getActiveBreakGlassSession()
+  return session !== null
+}
+
+/**
+ * Triggers an alarm for break-glass access (e.g., Slack, PagerDuty).
+ */
+async function triggerBreakGlassAlarm(adminId: string, reason: string, expiresAt: Date) {
+  // TODO: Integrate with Slack/PagerDuty
+  console.warn("BREAK-GLASS ALARM:", {
+    adminId,
+    reason,
+    expiresAt: expiresAt.toISOString(),
+  })
 }

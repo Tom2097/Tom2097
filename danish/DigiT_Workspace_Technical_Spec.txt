@@ -1,0 +1,151 @@
+ DigiT — Client Workspace Technical Specification
+ Implementable components for the Compliance, Resources & Performance workspaces · v1.0
+
+ This document specifies the concrete technical building blocks for DigiT's three client-facing workspaces,
+ organised into a data & security layer, an AI / ML layer, and an automation layer. None of these are
+ standalone builds — they surface through five core engines (RBAC, Universal Search, AI Assistant,
+ Workflow Automation, Analytics) on top of the multi-tenant + Supabase foundation. The architecture and the
+ component-to-module mapping are given at the end.
+
+
+
+
+ Figure 1 — Three workspaces, joined by a cross-workspace event layer, powered by five shared engines over a tenant-isolated
+ Postgres foundation.
+
+
+
+ Compliance
+ Goal: continuous, self-assembling audit-readiness rather than pre-inspection scramble.
+
+ Data & security layer
+ • Row-Level Security (RLS) policies in Postgres keyed on tenant_id — the hard tenant-isolation boundary on
+    every compliance record.
+ • Append-only / immutable audit tables with hash-chained entries (each row stores the SHA-256 of the
+    previous) for tamper-evident trails — the 21 CFR Part 11 / GMP expectation.
+ • Document versioning with content checksums + e-signature capture (signed payload, signer ID, timestamp,
+    reason-for-signing).
+ • Object storage with signed URLs, TTL retention policies and legal-hold flags for the evidence vault.
+ • DSAR pipelines (data export + cascade-delete) and versioned consent records for DPDP / GDPR.
+ • ABAC (attribute-based access control) layered on RBAC for document-level sensitivity.
+
+ AI / ML layer
+ • NER + zero-shot classification over ingested regulatory feeds to tag which rules apply to a given tenant.
+ • Requirement traceability matrix — an LLM maps each control in a framework (GMP / ISO / DPDP) to the
+    tenant's stored evidence; gaps become Compliance-Score deductions.
+ • Retrieval over a controls corpus to power the mock-audit question/answer flow.
+
+
+
+
+DigiT — Client Workspace Technical Specification · v1.0                                                                 Page 1
+ Automation layer
+ • CAPA / deviation tracking as a finite-state machine (Open → Investigation → Action → Verification → Closed)
+    with SLA timers.
+ • Weighted rule-based scoring engine via materialized views for the live Compliance Health Score.
+ • Scheduled compliance checks via pg_cron / Vercel Cron, and date-diff expiry triggers feeding a notification
+    queue (licence / certificate renewals).
+
+
+ Resources
+ Goal: a system that knows what is idle, at risk, or wasted — not a static inventory.
+
+ Data & security layer
+ • Hierarchical asset registry (adjacency-list or ltree taxonomy) with QR / barcode / RFID asset tags.
+ • Inventory model with reorder points (ROP), EOQ and low-stock webhooks.
+ • OCR pipeline for scanned documents → indexed metadata.
+
+ AI / ML layer
+ • RAG over the tenant's document corpus: chunking → embeddings in pgvector → hybrid search (vector +
+    tsvector keyword) with a reranking step — the knowledge librarian.
+ • Predictive maintenance: time-series anomaly detection on usage/sensor telemetry (z-score / IQR → Isolation
+    Forest / Prophet) with RUL (Remaining Useful Life) estimation; MQTT / webhook ingest for IoT-heavy clients
+    (turbines, trucks, HPLCs).
+ • Clause / key-value extraction for contract intelligence (renewal dates, obligations, penalty clauses) → triggers
+    reminders.
+
+ Automation layer
+ • Capacity / utilisation metrics (allocation %, capacity-vs-demand) as time-series rollups; optional
+    resource-levelling / constraint-based allocation for rebalance suggestions.
+ • Vendor scorecards via normalised weighted-KPI aggregation.
+ • Onboarding orchestration — a workflow that provisions access, training and checklists via API calls.
+ • Reservation / booking system with conflict detection and ICS / CalDAV sync.
+ • Skill matrix + gap analysis (competency-vs-requirement matrix queries).
+
+
+ Performance
+ Goal: explain why a number moved and what to do next — beyond static dashboards.
+
+ Data & analytics layer
+ • Semantic / metrics layer — central metric definitions, calculated fields and materialized views / OLAP-style
+    rollups so every chart reads from one source of truth.
+ • ELT pipeline with incremental refresh and CDC (change data capture) from operational tables into an
+    analytics schema.
+ • Event instrumentation (event schema, funnels, retention curves) for product / usage analytics.
+
+ AI / ML layer
+ • Text-to-SQL over the semantic layer for ask-your-data (NL question → guarded SQL → chart).
+ • Anomaly detection on metric streams: STL decomposition + z-score / IQR, or Prophet / Isolation Forest, for
+    proactive alerts.
+ • Time-series forecasting (ARIMA / Prophet / exponential smoothing) with confidence intervals; Monte Carlo /
+    parameterised what-if simulation for scenario modelling.
+ • Driver decomposition + correlation analysis for root-cause, including cross-workspace joins (a Performance
+    dip ↔ a Resource shortage ↔ a Compliance lapse).
+ • LLM summarisation for the auto-generated executive briefing.
+
+
+
+
+DigiT — Client Workspace Technical Specification · v1.0                                                          Page 2
+ Automation layer
+ • Threshold + anomaly-based alerting with notification routing and escalation policies.
+ • Scheduled report generation (Cron-triggered → email / Slack) with templated narratives.
+ • Cohort-based benchmarking with k-anonymity / differential privacy for safe cross-tenant comparisons.
+ • OKR / KPI target tracking with pacing and variance analysis under a driver-tree model.
+
+
+ Cross-workspace layer
+ What makes DigiT operational intelligence rather than three modules: the workspaces emit and react to each
+ other's events.
+ • Event bus / pub-sub — Postgres LISTEN / NOTIFY or Supabase Realtime (or Redis Streams): each workspace
+    emits domain events and others subscribe and react (a Compliance gap auto-creates a Resource task that
+    surfaces as a Performance risk).
+ • Outbound + inbound webhooks with idempotency keys, exponential-backoff retries and a dead-letter
+    queue (DLQ).
+ • Composite scoring service computing the single “DigiT Score” as a weighted blend across the three
+    workspaces.
+ • Correlation IDs + structured logging so one operation is traceable across all three workspaces.
+
+
+ Build matrix — which engine powers what
+ You are not building twenty new things; you are surfacing five engines through three workspace lenses.
+
+  Component group                                           Powered by module                      Appears in
+
+  RLS / ABAC, tenant isolation, e-signatures, audit         #3 Dynamic RBAC &                      Compliance (+ all)
+  access                                                    Permissions
+
+  RAG, hybrid search, knowledge librarian, evidence         #4 Universal Search                    Resources, Compliance
+  retrieval
+
+  Text-to-SQL, mock-audit Q&A, clause extraction,           #5 AI Assistant                        All three
+  summarisation
+
+  CAPA FSM, onboarding orchestration, alerting,             #6 Workflow Automation                 All three
+  scheduled jobs, event reactions
+
+  Semantic/metrics layer, rollups, anomaly detection,       #7 Analytics Engine                    Performance (+ Resources)
+  forecasting, benchmarking
+
+  tenant_id, RLS foundation, auth, pgvector storage         #1 Multi-Tenant + #2 Supabase          Foundation for all
+                                                            Auth
+
+ Sequencing: build the five engines first (they are your #3–#7 priorities), then expose each through the relevant workspace. The
+ cross-workspace event layer is what differentiates DigiT from single-point competitors — prioritise it once two workspaces are
+ live.
+
+
+
+
+DigiT — Client Workspace Technical Specification · v1.0                                                                     Page 3
+

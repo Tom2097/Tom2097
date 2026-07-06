@@ -1,0 +1,145 @@
+ DigiT — AI Intelligence
+ The brain of DigiT: enterprise intelligence that perceives, reasons & acts · v1.0
+
+ AI Intelligence is not another chatbox bolted onto a module. It is a brain — wired into every module in DigiT,
+ running a continuous perceive → reason → act loop. A chatbot is pull: you ask, it answers, it sleeps. A brain
+ is a loop that never stops: it watches every module, reasons across all of them, and surfaces what matters
+ before you ask. That single shift is what makes it enterprise intelligence rather than a help desk — and it fills
+ a gap no siloed tool can, because none of them can see the whole operation at once. The positioning, in one
+ line: the first AI that understands your entire operation — not a corner of it — and acts on it.
+
+
+
+
+   Figure 1 — The loop: every module feeds live data and events into a brain that perceives, reasons and acts — non-stop — producing
+                       real-time insight, benchmarks, predictions and resources, and acting back on the modules.
+
+
+
+ How the brain works — the three phases
+ Each phase maps onto an engine you are already building.
+
+ Perceive — it has senses into everything
+ Two channels. It subscribes to the cross-workspace event bus (Postgres LISTEN/NOTIFY / Supabase
+ Realtime), so the instant anything happens — a cert lapses, a deal moves, a metric crosses a line, an asset
+ goes quiet — the brain knows. And it has scoped read access to every module's tables (the same
+ tenant_id + RLS boundary as everything else), so it can pull the full picture on demand. It runs both ways:
+ reactively on events, and on a schedule (cron) for periodic sweeps.
+
+ Reason — where the scripts, commands & scores live
+ The brain keeps a continuously-updated operational graph: the entities across workspaces and the links
+ between them (this cert → these assets → these batches → this deal → this customer → this revenue). On
+ top of it, it runs a library of analytical jobs — compute the DigiT Score, run an anomaly scan, fit a forecast,
+ trace a causal chain, run a benchmark, simulate a scenario. The LLM core decides which to run, composes
+ them, and — critically — ranks what it finds by business impact, so it surfaces the three things that
+ matter, not forty alerts.
+
+ Act — it does not just report, it does
+ Within guardrails you set (a confidence threshold, scoped permissions, human-in-the-loop), it surfaces the
+ insight and can trigger the fix through the Workflow engine — create the task, draft the message, open the
+ CAPA, reschedule the maintenance. Below the confidence line it asks first; above it, it acts and logs. That is
+
+
+
+DigiT — AI Intelligence: the brain of DigiT · v1.0                                                                              Page 1
+ the line between a dashboard that tells you and a brain that handles it.
+
+
+ What you see — a feed, not a chatbox
+ If the brain leads, the interface cannot be an empty chat window waiting for input.
+ The surface is an intelligence feed / command center: a living, ranked stream of what the brain is currently
+ thinking — the active watches, the causal chains it has flagged, the predictions, and the actions pending your
+ approval — with the morning briefing at the top. You can still ask it things (a command bar is there), but
+ asking is the secondary mode; its primary job is pushing intelligence to you. Think mission control, not
+ messenger.
+
+
+
+
+    Figure 2 — The command center. The brain pushes the few things that matter, each with its causal chain and a one-tap action. The
+                              command bar is present but de-emphasised — you do not have to ask.
+
+
+
+ The hero capability — cross-workspace causal reasoning
+ The signature move no siloed tool can copy.
+ AI Intelligence connects a cause in one corner of the business to its consequence in another — all the way to
+ the rupee. The example below touches Compliance, Resources, the CRM, Performance and the DigiT Score,
+ and ends in a number and an action. No single-point tool can write that sentence, because none of them
+ holds all the facts.
+
+
+
+
+DigiT — AI Intelligence: the brain of DigiT · v1.0                                                                               Page 2
+   Figure 3 — A single lapsed certificate, traced across four workspaces to a 9-point score drop and a 14-lakh deal at risk — with the fix
+                                attached. This one paragraph is the demo, the sales deck, and the moat.
+
+
+
+ What makes it a real intelligence, not a one-trick
+ • It works the night shift — not a box you query — a brain that watches 24/7 and hands you the 3 things that
+    matter each morning, ranked by impact. It earns trust by being right about what is important.
+ • It runs the simulation before you commit — “simulate: we take the Globex contract” → it models the load on
+    your resources, the compliance implications, the cash flow and the team capacity, and tells you what breaks
+    before you sign. A flight simulator for decisions.
+ • It sees around corners — it learns your operation's patterns and warns weeks ahead (“~3 weeks from a
+    stockout that threatens the Acme contract”). The value is not the alert — it is the lead time to prevent it.
+ • It can actually do the work — within your guardrails, specialised agents act — a compliance watchdog that
+    opens CAPAs, a follow-up agent that drafts and (on approval) sends, a maintenance scheduler. AI staff with
+    scoped permissions and a confidence threshold.
+ • You command it by intent — “get me ready for the ISO audit next month” → it assembles the evidence, flags
+    the gaps, creates the tasks and drafts the responses — orchestrating across workspaces from one sentence.
+
+
+ Why the moat deepens over time
+ • It learns your specific business — not a generic model — the longer you use it, the more it knows your
+    suppliers, your cycles, your customers.
+ • Anonymised network effect — because DigiT is multi-tenant, it can tell a client “businesses like yours that
+    fixed this early kept the deal 80% of the time” — a data-network effect a single-company tool can never have.
+ • It always shows its work — every insight ships with the causal chain and the underlying evidence. The chain
+    is the explanation — which is why this design earns trust instead of demanding it. No founder acts on a black
+    box when real money is on the line.
+
+
+ Build matrix — the brain is your engines, orchestrated
+ Not a new product — the engines you are building, pointed at the whole operation at once.
+
+
+
+
+DigiT — AI Intelligence: the brain of DigiT · v1.0                                                                                    Page 3
+  Brain capability                                                        Powered by
+
+  Perceive — event subscription + scoped reads across modules             Cross-workspace event bus + #1
+                                                                          Multi-Tenant / #3 RBAC
+
+  Reason — operational graph, scoring, anomaly, forecast, causal trace,   #7 Analytics Engine
+  benchmark, simulate
+
+  Orchestration, causal narration, intent parsing, summarisation          #5 AI Assistant
+
+  Act — create tasks, draft, trigger, autonomous agents                   #6 Workflow Automation
+
+  Ask-across-everything, evidence retrieval                               #4 Universal Search
+
+  Guardrails — scoped permissions, confidence threshold                   #3 RBAC
+
+
+
+ In simple terms
+ Most products call a chatbot “AI.” DigiT's AI Intelligence is different in kind: a brain that is plugged
+ into every module, never stops watching, connects cause to consequence across the whole
+ operation, and acts on it — while always showing its work. It is the one feature competitors
+ structurally cannot copy, because it depends on something only DigiT has: all the operational data,
+ in one connected place. That is what makes it the highlight.
+
+    The one-line bar: the first AI that understands your entire operation — not a corner of it —
+    perceives, reasons and acts on it non-stop, and proves every conclusion with the chain that led
+    to it.
+
+
+
+
+DigiT — AI Intelligence: the brain of DigiT · v1.0                                                         Page 4
+

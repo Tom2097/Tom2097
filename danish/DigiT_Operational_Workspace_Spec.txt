@@ -1,0 +1,134 @@
+ DigiT — Operational Workspace
+ From an intake slot to the platform's intake & understanding hub · v1.0
+
+ Today the operational workspace has two doors — upload document and paste text — and whatever lands
+ there simply sits. The reframe: this is not where you put files, it is the mouth of DigiT — the single front door
+ where messy real-world input arrives, is understood, and is pushed out as clean data, tasks and workflows.
+ Upload and paste are two doors; the workspace needs more doors and, above all, a brain behind them. The
+ build has four layers — ways in, an understanding layer, an action layer, and a working surface — plus
+ reusable recipes and the cross-platform bets only DigiT can make.
+
+
+
+
+ Figure 1 — Many ways in feed a single understanding & action hub that classifies, extracts and routes input out to the right
+ workspace as clean data, tasks and workflows.
+
+
+ 1. More ways in (beyond upload + paste)
+ Each is another door through which real-world input can arrive.
+ • Email-to-workspace — forward any email to a DigiT address and it is ingested and processed.
+ • WhatsApp + voice notes from the field — a plant worker forwards a voice note; it lands here transcribed.
+ • Photo / scan capture — snap an invoice, a whiteboard or a handwritten log → OCR turns it into text.
+ • Audio / meeting recording — → automatic transcript.
+ • URL / web clip — paste a link and it pulls and extracts the content.
+ • Connectors — pull straight from Drive, Gmail or Slack.
+ • Bulk drop — process 50 files at once, not one at a time.
+
+
+ 2. The understanding layer
+ What happens the instant input lands — the difference between a folder and an operational workspace.
+ • Auto-classify — what is this? Invoice, contract, SOP, complaint, report, COA.
+ • Structured extraction — turn a PDF into fields: parties, dates, amounts, line items, obligations, signatures.
+ • Summarize — a TL;DR, key points and sentiment.
+ • Detect intent & required action — “this is a complaint → needs a ticket”; “this is an invoice → log a payable.”
+
+
+
+DigiT — Operational Workspace Specification · v1.0                                                                              Page 1
+ • Auto-route — a compliance doc goes to Compliance; an asset doc to Resources; a cost to Performance.
+ • Confidence + source highlighting — shows where in the document each fact came from, with a confidence
+    score — trust matters when it is operational.
+
+
+ 3. The action layer
+ Turn understanding into operations.
+ • Auto-create — tasks, tickets or workflow triggers from the document.
+ • Populate records — create a vendor, asset, contact or compliance entry from what was extracted.
+ • Draft a response — reply to the email, generate the acknowledgment.
+ • Trigger a workflow — via the Workflow Automation engine.
+ • Human-in-the-loop — review and approve before anything commits — essential for accuracy.
+
+
+ 4. The working surface
+ A place to operate, not just store.
+ • Unified feed — everything ingested, with status: new → processed → actioned.
+ • Split view — the original document alongside the extracted structured view alongside an AI chat about it.
+ • Ask across all documents — RAG over the whole workspace corpus (“what did the March inspection flag?”).
+ • Compare / diff — two contract versions, two SOPs, this month's report vs last.
+ • Command bar — type or speak an instruction and it operates on the selected documents.
+
+
+ 5. Recipes / playbooks
+ The power-user feature — save an input→action flow once, run it forever.
+ • Invoice — extract → log to payables → flag anomalies.
+ • Contract — extract terms → set renewal reminder → file in the vault.
+ • Meeting recording — action items → tasks + a follow-up email.
+ • Inspection report — findings → auto-create a CAPA in Compliance.
+ • Vertical recipes — pharma (batch records, COAs, deviation reports), renewables (site surveys, generation
+    reports, O&M logs), logistics (PODs, e-way bills, manifests).
+
+
+ 6. The creative bets only DigiT can make
+ • Universal intake + auto-routing — the connective front door for all unstructured input across the company,
+    feeding every other workspace. No point tool does this.
+ • Vertical document intelligence — pre-built extractors that already know what a batch record, a SECI
+    generation report or an e-way bill looks like.
+ • Field-ops via voice / WhatsApp — a voice note — “Plant 2 compressor down” — is transcribed, classified,
+    turned into a maintenance task in Resources, and alerts the right person, hands-free from the floor.
+ • Document → executable workflow — drop an SOP and it builds a runnable workflow in the Workflow engine.
+ • Operational copilot — hand it a document plus an instruction and it executes the whole operational task
+    end-to-end.
+
+
+ Why this is operational intelligence, not a file uploader
+ The operational workspace is the ingestion + understanding + routing hub that feeds the rest of the
+ platform. An invoice dropped here becomes a payable, a vendor record and a cost data point in
+ Performance. An inspection report becomes CAPAs in Compliance. A delivery document becomes a logistics
+
+
+
+DigiT — Operational Workspace Specification · v1.0                                                             Page 2
+ record. The three workspaces are where the digested output lives — this is where raw reality enters and gets
+ digested.
+
+
+ Build matrix — almost none of this is from scratch
+ You are surfacing the engines you are already building through an intake lens.
+
+  Capability group                                                                          Powered by
+
+  Classify, extract, summarize, detect intent, draft, operational copilot                   #5 AI Assistant
+
+  Ask-across-docs, split view, compare / diff                                               #4 Universal Search
+
+  Auto-route, auto-create tasks/records, recipes, doc→workflow, triggers                    #6 Workflow Automation
+
+  Cross-document patterns, anomaly flags, the cost/data feed to Performance                 #7 Analytics Engine
+
+  Storage, versioning, OCR pipeline, the evidence/document layer                            #12 Document Management
+
+  Per-tenant isolation, role-scoped access to ingested data                                 #3 RBAC + #1 Multi-Tenant
+
+
+
+ Suggested build order
+ To make the two existing doors into a real operational hub, add these first, in order:
+    1. Understanding layer on upload + paste — classify, extract and summarize what is already coming in
+    — this alone makes the existing doors feel intelligent.
+    2. Action layer with human-in-the-loop — auto-create tasks / records from a document, with review
+    before commit.
+    3. Auto-route to the three workspaces — so digested output lands where it belongs — the connective
+    tissue of the platform.
+    4. Recipes / playbooks — let users save and replay the flows they run most.
+    5. New doors (email, WhatsApp/voice, OCR) — widen intake once the brain behind it is proven.
+
+ The sequencing point: do not add more doors first. The value is the brain behind the doors — make upload and paste intelligent,
+ then widen intake. Field-ops voice / WhatsApp and vertical extractors are high-value but come once the core
+ understand→route→act loop is proven.
+
+
+
+
+DigiT — Operational Workspace Specification · v1.0                                                                         Page 3
+
