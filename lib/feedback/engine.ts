@@ -48,63 +48,61 @@ export async function submitFeedback(
     .from("feedback")
     .insert({
       organization_id: organizationId,
-      submitted_by: submittedBy,
-      title: input.title.trim(),
-      body: input.body?.trim() || null,
+      title: input.title,
+      body: input.body,
       type: pick(FEEDBACK_TYPES, input.type, "general"),
-      priority: pick(FEEDBACK_PRIORITIES, input.priority, "normal"),
-      category: (input.category ?? "general").trim() || "general",
-      rating: input.rating ?? null,
-      metadata: input.metadata ?? {},
+      category: input.category || "general",
+      priority: pick(FEEDBACK_PRIORITIES, input.priority, "medium"),
+      status: "new",
+      rating: input.rating,
+      submitted_by: submittedBy,
+      metadata: input.metadata,
     })
     .select("*")
     .single()
-  if (error) {
-    console.log("[v0] submitFeedback failed:", error.message)
-    throw new Error("failed to submit feedback")
-  }
-  return data as Feedback
+  if (error) throw error
+  return data
 }
 
-/** List feedback for an org with filters, search, sort and pagination. */
+/** List feedback with optional filters. */
 export async function listFeedback(
   organizationId: string,
-  opts: ListFeedbackOptions,
-): Promise<{ feedback: Feedback[]; total: number }> {
+  options: ListFeedbackOptions = {},
+): Promise<Feedback[]> {
+  const { search, status, type, sort, limit = 100 } = options
+  let query = new URLSearchParams()
+  if (search) query.set("search", search)
+  if (status) query.set("status", status)
+  if (type) query.set("type", type)
+  if (sort) query.set("sort", sort)
+  query.set("limit", String(limit))
+
   const db = createServiceClient()
-  let query = db
+  let q = db
     .from("feedback")
-    .select("*", { count: "exact" })
+    .select("*, comments:feedback_comments(*), votes:feedback_votes(*)", { count: "exact" })
     .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false })
 
-  if (opts.status) query = query.eq("status", opts.status)
-  if (opts.type) query = query.eq("type", opts.type)
-  if (opts.priority) query = query.eq("priority", opts.priority)
-  if (opts.category) query = query.eq("category", opts.category)
-  if (opts.assignedTo) query = query.eq("assigned_to", opts.assignedTo)
-  if (opts.submittedBy) query = query.eq("submitted_by", opts.submittedBy)
-  if (opts.search && opts.search.trim()) {
-    const term = opts.search.trim().replace(/[%,]/g, " ")
-    query = query.or(`title.ilike.%${term}%,body.ilike.%${term}%`)
+  if (search) {
+    q = q.or(`title.ilike.%${search}%,body.ilike.%${search}%`)
+  }
+  if (status) {
+    q = q.eq("status", status)
+  }
+  if (type) {
+    q = q.eq("type", type)
+  }
+  if (sort === "votes") {
+    q = q.order("vote_count", { ascending: false })
   }
 
-  if (opts.sort === "votes") {
-    query = query.order("vote_count", { ascending: false }).order("created_at", { ascending: false })
-  } else {
-    query = query.order("created_at", { ascending: false })
-  }
-
-  query = query.range(opts.offset, opts.offset + opts.limit - 1)
-
-  const { data, error, count } = await query
-  if (error) {
-    console.log("[v0] listFeedback failed:", error.message)
-    throw new Error("failed to list feedback")
-  }
-  return { feedback: (data ?? []) as Feedback[], total: count ?? 0 }
+  const { data, error } = await q.limit(limit)
+  if (error) throw error
+  return data
 }
 
-/** Fetch a single feedback row, scoped to org. Returns null if not found. */
+/** Get a single feedback item by id. */
 export async function getFeedback(
   organizationId: string,
   feedbackId: string,
@@ -112,169 +110,170 @@ export async function getFeedback(
   const db = createServiceClient()
   const { data, error } = await db
     .from("feedback")
-    .select("*")
+    .select("*, comments:feedback_comments(*), votes:feedback_votes(*)")
     .eq("organization_id", organizationId)
     .eq("id", feedbackId)
     .maybeSingle()
-  if (error) {
-    console.log("[v0] getFeedback failed:", error.message)
-    throw new Error("failed to fetch feedback")
-  }
-  return (data as Feedback) ?? null
+  if (error) throw error
+  return data
 }
 
-/** Update mutable fields (status/priority/assignee/type/category/title/body). Scoped to org. */
+/** Update feedback. */
 export async function updateFeedback(
   organizationId: string,
   feedbackId: string,
-  patch: FeedbackUpdate,
-): Promise<Feedback | null> {
-  const update: Record<string, unknown> = {}
-  if (patch.status !== undefined) update.status = pick(FEEDBACK_STATUSES, patch.status, "open")
-  if (patch.priority !== undefined) update.priority = pick(FEEDBACK_PRIORITIES, patch.priority, "normal")
-  if (patch.type !== undefined) update.type = pick(FEEDBACK_TYPES, patch.type, "general")
-  if (patch.assigned_to !== undefined) update.assigned_to = patch.assigned_to
-  if (patch.category !== undefined) update.category = (patch.category ?? "general").trim() || "general"
-  if (patch.title !== undefined && patch.title.trim()) update.title = patch.title.trim()
-  if (patch.body !== undefined) update.body = patch.body?.trim() || null
-
-  if (Object.keys(update).length === 0) return getFeedback(organizationId, feedbackId)
-
+  update: FeedbackUpdate,
+): Promise<Feedback> {
   const db = createServiceClient()
   const { data, error } = await db
     .from("feedback")
-    .update(update)
+    .update({
+      title: update.title,
+      body: update.body,
+      type: update.type ? pick(FEEDBACK_TYPES, update.type, "general") : undefined,
+      category: update.category,
+      priority: update.priority ? pick(FEEDBACK_PRIORITIES, update.priority, "medium") : undefined,
+      status: update.status ? pick(FEEDBACK_STATUSES, update.status, "new") : undefined,
+      rating: update.rating,
+      metadata: update.metadata,
+    })
     .eq("organization_id", organizationId)
     .eq("id", feedbackId)
     .select("*")
-    .maybeSingle()
-  if (error) {
-    console.log("[v0] updateFeedback failed:", error.message)
-    throw new Error("failed to update feedback")
-  }
-  return (data as Feedback) ?? null
+    .single()
+  if (error) throw error
+  return data
 }
 
-/** Delete feedback (and cascade comments/votes). Scoped to org. */
-export async function deleteFeedback(
+/** Create a comment on feedback. */
+export async function createComment(
   organizationId: string,
   feedbackId: string,
-): Promise<boolean> {
-  const db = createServiceClient()
-  const { data, error } = await db
-    .from("feedback")
-    .delete()
-    .eq("organization_id", organizationId)
-    .eq("id", feedbackId)
-    .select("id")
-  if (error) {
-    console.log("[v0] deleteFeedback failed:", error.message)
-    throw new Error("failed to delete feedback")
-  }
-  return (data ?? []).length > 0
-}
-
-/** List comments for a feedback item. Non-admins should not see internal notes. */
-export async function listComments(
-  organizationId: string,
-  feedbackId: string,
-  includeInternal: boolean,
-): Promise<FeedbackComment[]> {
-  const db = createServiceClient()
-  let query = db
-    .from("feedback_comments")
-    .select("*")
-    .eq("organization_id", organizationId)
-    .eq("feedback_id", feedbackId)
-    .order("created_at", { ascending: true })
-  if (!includeInternal) query = query.eq("is_internal", false)
-
-  const { data, error } = await query
-  if (error) {
-    console.log("[v0] listComments failed:", error.message)
-    throw new Error("failed to list comments")
-  }
-  return (data ?? []) as FeedbackComment[]
-}
-
-/** Add a comment. internal notes require manage permission (enforced in route). */
-export async function addComment(
-  organizationId: string,
-  feedbackId: string,
-  authorId: string,
-  body: string,
-  isInternal: boolean,
+  submittedBy: string,
+  text: string,
 ): Promise<FeedbackComment> {
-  // Verify the feedback belongs to this org before commenting.
-  const parent = await getFeedback(organizationId, feedbackId)
-  if (!parent) throw new Error("feedback not found")
-
   const db = createServiceClient()
   const { data, error } = await db
     .from("feedback_comments")
     .insert({
       organization_id: organizationId,
       feedback_id: feedbackId,
-      author_id: authorId,
-      body: body.trim(),
-      is_internal: isInternal,
+      submitted_by: submittedBy,
+      text,
     })
     .select("*")
     .single()
-  if (error) {
-    console.log("[v0] addComment failed:", error.message)
-    throw new Error("failed to add comment")
-  }
-  return data as FeedbackComment
+  if (error) throw error
+  return data
 }
 
-/**
- * Toggle a user's vote on a feedback item. Returns the resulting state.
- * The vote_count column is maintained by a DB trigger.
- */
+/** Get feedback statistics for dashboard. */
+export async function getFeedbackStats(organizationId: string) {
+  const db = createServiceClient()
+  
+  // Get sentiment score (average sentiment)
+  const { data: sentimentData, error: sentimentError } = await db
+    .from("feedback")
+    .select("sentiment_score")
+    .eq("organization_id", organizationId)
+    .not("sentiment_score", "is", null)
+    
+  // Get response metrics
+  const { count: totalItems, error: countError } = await db
+    .from("feedback")
+    .select("*", { count: "exact", head: true })
+    .eq("organization_id", organizationId)
+    
+  // Get open items count
+  const { count: openItems, error: openError } = await db
+    .from("feedback")
+    .select("*", { count: "exact", head: true })
+    .eq("organization_id", organizationId)
+    .in("status", ["new", "in_progress"])
+    
+  if (sentimentError || countError || openError) {
+    console.log("[v0] getFeedbackStats failed:", sentimentError?.message, countError?.message, openError?.message)
+    return {
+      sentimentScore: 0,
+      responseTime: 0,
+      categorizationAccuracy: 0,
+      responseRate: 0,
+      openItems: 0,
+      totalItems: 0
+    }
+  }
+  
+  // Calculate metrics
+  const sentimentScore = sentimentData && sentimentData.length > 0
+    ? Math.round(sentimentData.reduce((sum, item) => sum + (item.sentiment_score || 0), 0) / sentimentData.length)
+    : 0
+  
+  const responseRate = totalItems > 0 ? Math.round(((totalItems - (openItems || 0)) / totalItems) * 100) : 0
+  
+  // Default values for metrics not available in current schema
+  const responseTime = 0
+  const categorizationAccuracy = 0
+  
+  return {
+    sentimentScore,
+    responseTime,
+    categorizationAccuracy,
+    responseRate,
+    openItems: openItems || 0,
+    totalItems
+  }
+}
+
+/** Vote for feedback. */
 export async function voteFeedback(
   organizationId: string,
   feedbackId: string,
   userId: string,
 ): Promise<{ voted: boolean; voteCount: number }> {
-  const parent = await getFeedback(organizationId, feedbackId)
-  if (!parent) throw new Error("feedback not found")
-
   const db = createServiceClient()
-  const { data: existing, error: selErr } = await db
+  let voted = false
+
+  // Check if already voted
+  const { data: existing, error: checkError } = await db
     .from("feedback_votes")
-    .select("user_id")
+    .select("*")
+    .eq("organization_id", organizationId)
     .eq("feedback_id", feedbackId)
     .eq("user_id", userId)
     .maybeSingle()
-  if (selErr) {
-    console.log("[v0] toggleVote select failed:", selErr.message)
-    throw new Error("failed to read vote")
+
+  if (checkError) {
+    console.log("[v0] voteFeedback check failed:", checkError.message)
+    throw new Error("failed to check vote status")
   }
 
-  let voted: boolean
   if (existing) {
+    // Remove vote
     const { error } = await db
       .from("feedback_votes")
       .delete()
+      .eq("organization_id", organizationId)
       .eq("feedback_id", feedbackId)
       .eq("user_id", userId)
     if (error) {
-      console.log("[v0] toggleVote delete failed:", error.message)
+      console.log("[v0] voteFeedback delete failed:", error.message)
       throw new Error("failed to remove vote")
     }
     voted = false
   } else {
-    const { error } = await db.from("feedback_votes").insert({
-      feedback_id: feedbackId,
-      organization_id: organizationId,
-      user_id: userId,
-    })
-    if (error) {
-      console.log("[v0] toggleVote insert failed:", error.message)
-      throw new Error("failed to add vote")
-    }
-    voted = true
+    // Add vote
+    const { error } = await db
+      .from("feedback_votes")
+      .insert({
+        organization_id: organizationId,
+        feedback_id: feedbackId,
+        user_id: userId,
+      })
+      if (error) {
+        console.log("[v0] voteFeedback insert failed:", error.message)
+        throw new Error("failed to add vote")
+      }
+      voted = true
   }
 
   const updated = await getFeedback(organizationId, feedbackId)
