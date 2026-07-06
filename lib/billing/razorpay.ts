@@ -137,6 +137,10 @@ export async function updateRazorpaySubscription(
   }
 }
 
+export async function retryRazorpayPayment(subscriptionId: string): Promise<void> {
+  await razorpayInstance.post(`/subscriptions/${subscriptionId}/retry`, {})
+}
+
 export async function cancelRazorpaySubscription(organizationId: string): Promise<boolean> {
   try {
     const supabase = await createServiceClient()

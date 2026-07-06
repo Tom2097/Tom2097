@@ -2,6 +2,17 @@
 
 import { createServiceClient } from "@/lib/supabase/service"
 import { logger } from "@/lib/logging"
+import {
+  getActiveKycProvider,
+  getKycProviderConfig,
+  createDocumentCheck,
+  createFaceCheck,
+} from "@/lib/identity/kyc-providers"
+import type {
+  KycProviderConfig,
+  DocumentCheckOptions,
+  FaceCheckOptions,
+} from "@/lib/identity/kyc-providers"
 
 interface KYCVerificationResult {
   verified: boolean
@@ -38,20 +49,7 @@ interface KYCVerificationOptions {
 export async function verifyIdentityWithKYC(
   options: KYCVerificationOptions
 ): Promise<KYCVerificationResult> {
-  // In a real implementation, this would integrate with a KYC provider like:
-  // - Onfido
-  // - Jumio
-  // - Trulioo
-  // - Shufti Pro
-  // - Sumsub
-  // For now, we'll simulate the behavior
-
   const { userId, selfieImage, idType, idNumber, idFrontImage, fullName } = options
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const userIdForStorage = userId // Used in real implementation
-
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1500))
 
   // Validate required fields
   if (!selfieImage || !idType) {
@@ -63,13 +61,74 @@ export async function verifyIdentityWithKYC(
     }
   }
 
-  // Simulate KYC verification
+  const providerName = getActiveKycProvider()
+
+  if (providerName !== "simulated") {
+    const config = getKycProviderConfig(providerName)
+    if (config) {
+      const result = await performProviderKycCheck(config, options)
+      await storeKYCVerificationResult(userId, result)
+      return result
+    }
+  }
+
+  // Fall back to simulated verification
   const result = await simulateKYCVerification(options)
-
-  // Store verification result
   await storeKYCVerificationResult(userId, result)
-
   return result
+}
+
+async function performProviderKycCheck(
+  config: KycProviderConfig,
+  options: KYCVerificationOptions
+): Promise<KYCVerificationResult> {
+  const documentType = mapIdTypeToDocumentType(options.idType)
+  const documentOptions: DocumentCheckOptions = {
+    documentFront: options.idFrontImage || "",
+    documentBack: options.idBackImage,
+    documentType,
+    country: options.address?.split(",").pop()?.trim(),
+  }
+  const faceOptions: FaceCheckOptions = {
+    selfieImage: options.selfieImage,
+    liveness: true,
+  }
+
+  const [docResult, faceResult] = await Promise.all([
+    createDocumentCheck(config, documentOptions),
+    createFaceCheck(config, faceOptions),
+  ])
+
+  const score = Math.round((docResult.score + faceResult.score) / 2) / 100
+  const requiresManualReview = score < 0.8
+
+  return {
+    verified: score >= 0.8,
+    confidenceScore: score,
+    faceMatch: faceResult.result === "clear",
+    idValid: docResult.result === "clear",
+    idType: options.idType,
+    idNumber: options.idNumber,
+    nameMatch: docResult.breakdown.name_match === true,
+    verificationMethod: requiresManualReview ? undefined : "automated",
+    requiresManualReview,
+    manualReviewNotes: requiresManualReview ? "Confidence score below threshold" : undefined,
+  }
+}
+
+function mapIdTypeToDocumentType(
+  idType: string
+): DocumentCheckOptions["documentType"] {
+  switch (idType) {
+    case "passport":
+      return "passport"
+    case "drivers_license":
+      return "driving_licence"
+    case "national_id":
+      return "national_identity_card"
+    default:
+      return "passport"
+  }
 }
 
 /**

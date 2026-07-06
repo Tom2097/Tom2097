@@ -2,6 +2,7 @@
 
 import { createServiceClient } from "@/lib/supabase/service"
 import { logger } from "@/lib/logging"
+import { lookupRegistry } from "@/lib/company/registry-apis"
 
 interface CompanyVerificationResult {
   verified: boolean
@@ -27,14 +28,7 @@ interface RegistryVerificationOptions {
 export async function verifyCompanyAgainstRegistry(
   options: RegistryVerificationOptions
 ): Promise<CompanyVerificationResult> {
-  // In a real implementation, this would call MCA/GST APIs for India,
-  // Companies House for UK, etc.
-  // For now, we'll simulate the behavior.
-
   const { registrationNumber, country, companyName, website } = options
-
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1000))
 
   // Check if registration number format is valid for the country
   const isValidFormat = validateRegistrationNumberFormat(registrationNumber, country)
@@ -46,7 +40,21 @@ export async function verifyCompanyAgainstRegistry(
     }
   }
 
-  // Simulate registry API response
+  // Try real registry API first
+  const registryResult = await lookupRegistry(registrationNumber, country)
+
+  if (registryResult.found) {
+    return {
+      verified: true,
+      companyName: registryResult.companyName,
+      registrationNumber: registryResult.registrationNumber,
+      address: registryResult.address,
+      status: registryResult.status === "dissolved" ? "inactive" : registryResult.status,
+      verificationMethod: "registry_api"
+    }
+  }
+
+  // Fall back to simulated lookup if real API not found
   const registryData = await simulateRegistryLookup(registrationNumber, country)
 
   if (registryData.verified) {

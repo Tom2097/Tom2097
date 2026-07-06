@@ -35,7 +35,9 @@ export const stripe = {
     cancel: async (id: string) => (await getStripeInstance()).subscriptions.cancel(id),
   },
   invoices: {
+    create: async (params: Stripe.InvoiceCreateParams) => (await getStripeInstance()).invoices.create(params),
     list: async (params: Stripe.InvoiceListParams) => (await getStripeInstance()).invoices.list(params),
+    pay: async (id: string, params?: Stripe.InvoicePayParams) => (await getStripeInstance()).invoices.pay(id, params),
   },
   refunds: {
     create: async (params: Stripe.RefundCreateParams) => (await getStripeInstance()).refunds.create(params),

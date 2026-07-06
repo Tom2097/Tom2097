@@ -1,13 +1,30 @@
 import { NextRequest, NextResponse } from "next/server"
-import { predictRUL } from "@/lib/predictive/maintenance"
+import { getAuthenticatedUser, handleAuthError } from "@/lib/auth/server-auth"
+import { ingestTelemetry, calculateRUL, getMaintenanceSchedule } from "@/lib/predictive/maintenance"
 
 export async function POST(req: NextRequest) {
   try {
-    const { telemetry, threshold } = await req.json()
-    if (!telemetry?.length) return NextResponse.json({ error: "No telemetry data" }, { status: 400 })
-    const result = predictRUL(telemetry, threshold)
-    return NextResponse.json(result)
+    await getAuthenticatedUser()
+    const body = await req.json()
+    const success = await ingestTelemetry(body)
+    return NextResponse.json({ success })
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    return handleAuthError(err as Error)
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const user = await getAuthenticatedUser()
+    const { searchParams } = new URL(request.url)
+    const assetId = searchParams.get("assetId")
+    if (assetId) {
+      const rul = await calculateRUL(assetId)
+      return NextResponse.json({ rul })
+    }
+    const schedule = await getMaintenanceSchedule(user.id)
+    return NextResponse.json({ schedule })
+  } catch (err) {
+    return handleAuthError(err as Error)
   }
 }

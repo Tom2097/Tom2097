@@ -11,6 +11,8 @@ import {
   trackSubscriptionCancelled,
 } from "@/lib/analytics/billing-events"
 import { getPlanById } from "@/lib/products"
+import { calculateProration, executePlanChange } from "./proration"
+import { recordFailedPayment, retryDunning, getDunningStatus } from "./dunning"
 
 import type { SubscriptionRecord } from "./types"
 
@@ -351,6 +353,23 @@ export async function acknowledgeYearlyReminder(organizationId: string): Promise
     .from("subscriptions")
     .update({ cancel_at: null })
     .eq("organization_id", organizationId)
+}
+
+export { calculateProration, executePlanChange, recordFailedPayment, retryDunning, getDunningStatus }
+
+export async function getDunningStatusForOrg(organizationId: string) {
+  return getDunningStatus(organizationId)
+}
+
+export async function retryFailedPayment(organizationId: string) {
+  const supabase = await createServiceClient()
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .single()
+  if (!sub) return { success: false, error: "No subscription" }
+  return retryDunning(sub.id, organizationId)
 }
 
 function getMonthsSinceStart(startDate: string): number {

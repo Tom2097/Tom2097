@@ -1,5 +1,6 @@
 
 import { createServiceClient } from '@/lib/supabase/service'
+import { isEntitled, checkFeatureAccess, type FeatureId } from '@/lib/entitlements/gate'
 
 // Default feature flags (can be overridden by database)
 export const DEFAULT_FEATURE_FLAGS = {
@@ -13,6 +14,17 @@ export const DEFAULT_FEATURE_FLAGS = {
 }
 
 export type FeatureFlag = keyof typeof DEFAULT_FEATURE_FLAGS
+
+// Maps feature flags to their corresponding entitlement feature IDs
+export const ENTITLEMENT_FEATURE_MAP: Record<FeatureFlag, FeatureId> = {
+  ai_intelligence: "ai_intelligence",
+  advanced_analytics: "advanced_analytics",
+  custom_roles: "custom_roles",
+  usage_billing: "usage_billing",
+  support_tickets: "support_tickets",
+  document_processing: "document_processing",
+  compliance_checks: "compliance_checks",
+}
 
 export async function getFeatureFlags(organizationId: string): Promise<Record<FeatureFlag, boolean>> {
   try {
@@ -31,7 +43,26 @@ export async function getFeatureFlags(organizationId: string): Promise<Record<Fe
     }
     
     // Merge default flags with organization-specific overrides
-    return { ...DEFAULT_FEATURE_FLAGS, ...(data?.feature_flags || {}) }
+    const merged = { ...DEFAULT_FEATURE_FLAGS, ...(data?.feature_flags || {}) }
+    
+    // Fetch subscription to check entitlements
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("plan_id, status")
+      .eq("organization_id", organizationId)
+      .maybeSingle()
+    
+    const planId = sub?.status === "active" ? sub.plan_id : null
+    
+    // Override flags based on entitlement gating (subscription plan)
+    for (const flag of Object.keys(merged) as FeatureFlag[]) {
+      const featureId = ENTITLEMENT_FEATURE_MAP[flag]
+      if (!isEntitled(planId, featureId)) {
+        merged[flag] = false
+      }
+    }
+    
+    return merged
   } catch (err) {
     console.error('[FeatureFlags] Unexpected error:', err)
     return DEFAULT_FEATURE_FLAGS
