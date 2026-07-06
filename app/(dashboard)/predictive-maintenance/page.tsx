@@ -84,7 +84,10 @@ export default function PredictiveMaintenancePage() {
 
   useEffect(() => {
     const cancelled = { current: false };
-    fetchSchedule(cancelled);
+    setLoading(true);
+    fetchSchedule(cancelled).finally(() => {
+      if (!cancelled.current) setLoading(false);
+    });
     return () => { cancelled.current = true; };
   }, [fetchSchedule]);
 

@@ -46,6 +46,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

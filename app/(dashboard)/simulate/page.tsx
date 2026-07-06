@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Plus, Eye, CheckCircle2, XCircle, AlertTriangle, ArrowRight, Trash2, FlaskConical } from "lucide-react"
+import { Search, Plus, Eye, CheckCircle2, XCircle, AlertTriangle, ArrowRight, Trash2, FlaskConical, Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
