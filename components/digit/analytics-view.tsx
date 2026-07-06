@@ -39,6 +39,12 @@ export interface AnalyticsViewData {
     lower_bound: number
     upper_bound: number
   }>
+  anomalySummary?: {
+    total: number
+    high: number
+    medium: number
+    low: number
+  }
 }
 
 const PERIODS: Array<{ value: string; days: number }> = [
