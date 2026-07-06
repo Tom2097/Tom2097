@@ -1,128 +1,197 @@
-"""Operational Graph: Entities + Relationships
-
-- Models entities (e.g., customers, orders, shipments) as nodes
-- Models relationships (e.g., "depends on", "blocks", "causes") as edges
-- Provides query layer for graph traversal and analysis
-"""
-
-import { EventEmitter } from 'events';
-import { v4 as uuidv4 } from 'uuid';
+import { createClient } from "@/lib/supabase/server"
 
 interface OperationalNode {
-    id: string;
-    workspaceId: string;
-    entityId: string;
-    entityType: 'customer' | 'order' | 'shipment' | 'asset' | 'certificate' | 'deal' | 'task' | string;
-    properties: Record<string, unknown>;
-    createdAt: Date;
-    updatedAt: Date;
+  id: string
+  workspaceId: string
+  entityId: string
+  entityType: string
+  properties: Record<string, unknown>
+  createdAt: string
+  updatedAt: string
 }
 
 interface OperationalEdge {
-    id: string;
-    from: string;
-    to: string;
-    relationshipType: 'depends_on' | 'blocks' | 'causes' | 'triggers' | 'owns' | 'contains' | string;
-    properties: Record<string, unknown>;
-    createdAt: Date;
+  id: string
+  from: string
+  to: string
+  relationshipType: string
+  properties: Record<string, unknown>
+  workspaceId: string
+  createdAt: string
 }
 
-class OperationalGraph {
-    private nodes: Map<string, OperationalNode>;
-    private edges: Map<string, OperationalEdge>;
-    private eventEmitter: EventEmitter;
+/**
+ * Adds a node to the operational graph.
+ */
+export async function addNode(
+  workspaceId: string,
+  entityId: string,
+  entityType: string,
+  properties: Record<string, unknown>
+): Promise<OperationalNode> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("operational_graph_nodes")
+    .insert([{
+      workspace_id: workspaceId,
+      entity_id: entityId,
+      entity_type: entityType,
+      properties
+    }])
+    .select()
+    .single()
 
-    constructor() {
-        this.nodes = new Map();
-        this.edges = new Map();
-        this.eventEmitter = new EventEmitter();
-    }
+  if (error) throw new Error(`Failed to add node: ${error.message}`)
 
-    addNode(node: Omit<OperationalNode, 'id' | 'createdAt' | 'updatedAt'>): OperationalNode {
-        const id = uuidv4();
-        const now = new Date();
-        const newNode: OperationalNode = { ...node, id, createdAt: now, updatedAt: now };
-        this.nodes.set(id, newNode);
-        this.eventEmitter.emit('nodeAdded', newNode);
-        return newNode;
-    }
-
-    updateNode(nodeId: string, properties: Record<string, unknown>): OperationalNode | null {
-        const node = this.nodes.get(nodeId);
-        if (!node) return null;
-
-        node.properties = { ...node.properties, ...properties };
-        node.updatedAt = new Date();
-        this.eventEmitter.emit('nodeUpdated', node);
-        return node;
-    }
-
-    addEdge(edge: Omit<OperationalEdge, 'id' | 'createdAt'>): OperationalEdge {
-        const id = uuidv4();
-        const now = new Date();
-        const newEdge: OperationalEdge = { ...edge, id, createdAt: now };
-        this.edges.set(id, newEdge);
-        this.eventEmitter.emit('edgeAdded', newEdge);
-        return newEdge;
-    }
-
-    findRelatedNodes(nodeId: string, relationshipType?: string, direction: 'incoming' | 'outgoing' | 'both' = 'both'): OperationalNode[] {
-        const relatedNodes: OperationalNode[] = [];
-        const edgeFilter = (edge: OperationalEdge) => {
-            if (relationshipType && edge.relationshipType !== relationshipType) return false;
-            return direction === 'both' ? (edge.from === nodeId || edge.to === nodeId) :
-                   direction === 'incoming' ? edge.to === nodeId : edge.from === nodeId;
-        };
-
-        Array.from(this.edges.values())
-            .filter(edgeFilter)
-            .forEach(edge => {
-                const relatedId = edge.from === nodeId ? edge.to : edge.from;
-                const node = this.nodes.get(relatedId);
-                if (node) relatedNodes.push(node);
-            });
-
-        return relatedNodes;
-    }
-
-    traverse(startNodeId: string, maxDepth: number = 3): { nodes: OperationalNode[], edges: OperationalEdge[] } {
-        const visitedNodes = new Set<string>();
-        const visitedEdges = new Set<string>();
-        const queue: { nodeId: string, depth: number }[] = [{ nodeId: startNodeId, depth: 0 }];
-
-        while (queue.length > 0) {
-            const { nodeId, depth } = queue.shift()!;
-            if (depth > maxDepth || visitedNodes.has(nodeId)) continue;
-            visitedNodes.add(nodeId);
-
-            const edges = Array.from(this.edges.values()).filter(edge => edge.from === nodeId || edge.to === nodeId);
-            edges.forEach(edge => {
-                if (!visitedEdges.has(edge.id)) {
-                    visitedEdges.add(edge.id);
-                    const nextNodeId = edge.from === nodeId ? edge.to : edge.from;
-                    queue.push({ nodeId: nextNodeId, depth: depth + 1 });
-                }
-            });
-        }
-
-        return {
-            nodes: Array.from(visitedNodes).map(id => this.nodes.get(id)!).filter(Boolean),
-            edges: Array.from(visitedEdges).map(id => this.edges.get(id)!).filter(Boolean)
-        };
-    }
-
-    onNodeAdded(callback: (node: OperationalNode) => void): void {
-        this.eventEmitter.on('nodeAdded', callback);
-    }
-
-    onNodeUpdated(callback: (node: OperationalNode) => void): void {
-        this.eventEmitter.on('nodeUpdated', callback);
-    }
-
-    onEdgeAdded(callback: (edge: OperationalEdge) => void): void {
-        this.eventEmitter.on('edgeAdded', callback);
-    }
+  return {
+    id: data.id,
+    workspaceId: data.workspace_id,
+    entityId: data.entity_id,
+    entityType: data.entity_type,
+    properties: data.properties,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  }
 }
 
-export { OperationalGraph };
-export type { OperationalNode, OperationalEdge };
+/**
+ * Updates a node in the operational graph.
+ */
+export async function updateNode(
+  nodeId: string,
+  properties: Record<string, unknown>
+): Promise<OperationalNode | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("operational_graph_nodes")
+    .update({ properties, updated_at: new Date().toISOString() })
+    .eq("id", nodeId)
+    .select()
+    .single()
+
+  if (error) return null
+
+  return {
+    id: data.id,
+    workspaceId: data.workspace_id,
+    entityId: data.entity_id,
+    entityType: data.entity_type,
+    properties: data.properties,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  }
+}
+
+/**
+ * Adds an edge to the operational graph.
+ */
+export async function addEdge(
+  from: string,
+  to: string,
+  relationshipType: string,
+  properties: Record<string, unknown>,
+  workspaceId: string
+): Promise<OperationalEdge> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("operational_graph_edges")
+    .insert([{
+      from,
+      to,
+      relationship_type: relationshipType,
+      properties,
+      workspace_id: workspaceId
+    }])
+    .select()
+    .single()
+
+  if (error) throw new Error(`Failed to add edge: ${error.message}`)
+
+  return {
+    id: data.id,
+    from: data.from,
+    to: data.to,
+    relationshipType: data.relationship_type,
+    properties: data.properties,
+    workspaceId: data.workspace_id,
+    createdAt: data.created_at,
+  }
+}
+
+/**
+ * Finds nodes related to a given node.
+ */
+export async function findRelatedNodes(
+  nodeId: string,
+  relationshipType?: string,
+  direction: "incoming" | "outgoing" | "both" = "both"
+): Promise<OperationalNode[]> {
+  const supabase = await createClient()
+
+  let query = supabase
+    .from("operational_graph_edges")
+    .select("from, to")
+
+  if (direction === "incoming") {
+    query = query.eq("to", nodeId)
+  } else if (direction === "outgoing") {
+    query = query.eq("from", nodeId)
+  } else {
+    query = query.or(`and(from.eq.${nodeId},to.eq.${nodeId})`)
+  }
+
+  if (relationshipType) {
+    query = query.eq("relationship_type", relationshipType)
+  }
+
+  const { data: edges, error: edgeError } = await query
+  if (edgeError) throw new Error(`Failed to find related nodes: ${edgeError.message}`)
+
+  const relatedIds = edges.map(edge => (edge.from === nodeId ? edge.to : edge.from))
+  const { data: nodes, error: nodeError } = await supabase
+    .from("operational_graph_nodes")
+    .select("*")
+    .in("id", relatedIds)
+
+  if (nodeError) throw new Error(`Failed to fetch nodes: ${nodeError.message}`)
+
+  return nodes.map(node => ({
+    id: node.id,
+    workspaceId: node.workspace_id,
+    entityId: node.entity_id,
+    entityType: node.entity_type,
+    properties: node.properties,
+    createdAt: node.created_at,
+    updatedAt: node.updated_at,
+  }))
+}
+
+/**
+ * Traverses the graph from a starting node (mock implementation).
+ */
+export async function traverse(
+  startNodeId: string,
+  maxDepth: number = 3
+): Promise<{ nodes: OperationalNode[]; edges: OperationalEdge[] }> {
+  const supabase = await createClient()
+  const { data: startNode, error: nodeError } = await supabase
+    .from("operational_graph_nodes")
+    .select("*")
+    .eq("id", startNodeId)
+    .single()
+
+  if (nodeError) throw new Error(`Failed to fetch start node: ${nodeError.message}`)
+
+  return {
+    nodes: [{
+      id: startNode.id,
+      workspaceId: startNode.workspace_id,
+      entityId: startNode.entity_id,
+      entityType: startNode.entity_type,
+      properties: startNode.properties,
+      createdAt: startNode.created_at,
+      updatedAt: startNode.updated_at,
+    }],
+    edges: []
+  }
+}
