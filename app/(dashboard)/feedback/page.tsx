@@ -158,9 +158,9 @@ export default function FeedbackPage() {
   }
 
   const handleVote = async (feedbackId: string) => {
-    if (!ctx?.organizationId) return
+    if (!ctx?.organizationId || !ctx?.userId) return
     try {
-      await voteFeedback(ctx.organizationId, feedbackId)
+      await voteFeedback(ctx.organizationId, feedbackId, ctx.userId)
       await fetchFeedback(ctx.organizationId)
     } catch (error) {
       console.error("Failed to vote:", error)

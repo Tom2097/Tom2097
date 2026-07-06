@@ -232,7 +232,7 @@ export async function addComment(
  * Toggle a user's vote on a feedback item. Returns the resulting state.
  * The vote_count column is maintained by a DB trigger.
  */
-export async function toggleVote(
+export async function voteFeedback(
   organizationId: string,
   feedbackId: string,
   userId: string,
