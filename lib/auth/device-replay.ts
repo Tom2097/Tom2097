@@ -16,11 +16,11 @@ export interface ReplayAttempt {
   blocked: boolean
 }
 
-export function hashPasscode(passcode: string): string {
+export async function hashPasscode(passcode: string): Promise<string> {
   return createHash("sha256").update(passcode).digest("hex")
 }
 
-export function generateAntiReplayToken(): string {
+export async function generateAntiReplayToken(): Promise<string> {
   return randomBytes(32).toString("hex")
 }
 
