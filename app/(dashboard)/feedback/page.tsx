@@ -138,7 +138,7 @@ export default function FeedbackPage() {
     setSubmitting(true)
     setFormError("")
     try {
-      await createFeedback(ctx.organizationId, {
+      await submitFeedback(ctx.organizationId, ctx.userId, {
         title: form.title,
         body: form.body,
         type: form.type,
