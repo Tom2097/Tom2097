@@ -1,149 +1,145 @@
-import { createServiceClient } from "@/lib/supabase/service"
-import { sendWhatsAppMessage, sendWhatsAppTemplate, type WhatsAppMessage } from "@/lib/operational/whatsapp"
-import { addTimelineEntry, createTask } from "./extensions"
+"use strict";
 
-export interface CrmWhatsAppConfig {
-  organizationId: string
-  webhookVerified: boolean
-  autoCreateContact: boolean
-  autoCreateLead: boolean
-  nurtureEnabled: boolean
-  defaultAssignee: string | null
-}
+import axios from "axios";
+import { z } from "zod";
 
-export async function getCrmWhatsAppConfig(
-  organizationId: string,
-): Promise<CrmWhatsAppConfig> {
-  const db = createServiceClient()
-  const { data } = await db
-    .from("organization_settings")
-    .select("whatsapp_config")
-    .eq("id", organizationId)
-    .maybeSingle()
+// Schema for WhatsApp message
+const WhatsAppMessageSchema = z.object({
+  id: z.string().optional(),
+  to: z.string(), // Phone number in international format
+  from: z.string(), // Business phone number
+  body: z.string(),
+  templateName: z.string().optional(),
+  templateParams: z.record(z.string(), z.string()).optional(),
+  dealId: z.string().optional(),
+  contactId: z.string().optional(),
+  timestamp: z.date().optional(),
+});
 
-    const config = (data as { whatsapp_config?: { webhookVerified?: unknown; autoCreateContact?: unknown; autoCreateLead?: unknown; nurtureEnabled?: unknown; defaultAssignee?: unknown } })?.whatsapp_config || {}
-  return {
-    organizationId,
-    webhookVerified: config.webhookVerified === true,
-    autoCreateContact: config.autoCreateContact !== false,
-    autoCreateLead: config.autoCreateLead !== false,
-    nurtureEnabled: config.nurtureEnabled !== false,
-    defaultAssignee: typeof config.defaultAssignee === 'string' ? config.defaultAssignee : null,
-  }
-}
+export type WhatsAppMessage = z.infer<typeof WhatsAppMessageSchema>;
 
-export async function handleIncomingCrmWhatsApp(
-  organizationId: string,
-  msg: WhatsAppMessage,
-  config: CrmWhatsAppConfig,
-): Promise<string | null> {
-  const db = createServiceClient()
+// Schema for WhatsApp template
+const WhatsAppTemplateSchema = z.object({
+  name: z.string(),
+  body: z.string(),
+  params: z.array(z.string()).optional(),
+});
 
-  const { data: existingContact } = await db
-    .from("crm_contacts")
-    .select("id")
-    .eq("organization_id", organizationId)
-    .or(`phone.eq.${msg.from},email.eq.${msg.from}@inbound.whatsapp`)
-    .maybeSingle()
+export type WhatsAppTemplate = z.infer<typeof WhatsAppTemplateSchema>;
 
-  let contactId = existingContact?.id as string | undefined
+// Mock templates (replace with database or config)
+const TEMPLATES: Record<string, WhatsAppTemplate> = {
+  followUp: {
+    name: "follow_up",
+    body: "Hi {{name}}, just checking in on our last conversation about {{product}}. Let me know if you have any questions!",
+    params: ["name", "product"],
+  },
+  proposal: {
+    name: "proposal",
+    body: "Hi {{name}}, I've sent over the proposal for {{deal}}. Let me know your thoughts!",
+    params: ["name", "deal"],
+  },
+  reEngage: {
+    name: "re_engage",
+    body: "Hi {{name}}, it's been a while since we last spoke. Would you be open to a quick catch-up next week?",
+    params: ["name"],
+  },
+};
 
-  if (!contactId && config.autoCreateContact) {
-    const { data: contact } = await db.from("crm_contacts").insert({
-      organization_id: organizationId,
-      first_name: `WA-${msg.from.slice(-4)}`,
-      phone: msg.from,
-      email: `${msg.from}@inbound.whatsapp`,
-      status: config.autoCreateLead ? "lead" : "active",
-      source: "whatsapp",
-    }).select("id").single()
+/**
+ * Sends a WhatsApp message via WhatsApp Business API.
+ * @param message - WhatsAppMessage
+ * @param apiKey - WhatsApp Business API key
+ * @param apiUrl - WhatsApp Business API URL
+ * @returns Promise with message ID
+ */
+export const sendWhatsAppMessage = async (
+  message: WhatsAppMessage,
+  apiKey: string,
+  apiUrl: string,
+): Promise<string> => {
+  try {
+    const payload: Record<string, unknown> = {
+      messaging_product: "whatsapp",
+      to: message.to,
+      type: "text",
+      text: { body: message.body },
+    };
 
-    if (contact) {
-      contactId = contact.id as string
-      await addTimelineEntry(organizationId, "system", {
-        entity_type: "contact",
-        entity_id: contactId,
-        entry_type: "note",
-        title: "Contact created via WhatsApp",
-        description: `Auto-created from incoming WhatsApp message: ${msg.body.slice(0, 200)}`,
-        metadata: { source: "whatsapp", whatsapp_message_id: msg.id },
-      })
+    if (message.templateName) {
+      const template = TEMPLATES[message.templateName];
+      if (!template) throw new Error(`Template ${message.templateName} not found`);
+
+      payload.type = "template";
+      payload.template = {
+        name: template.name,
+        language: { code: "en_US" },
+        components: [
+          {
+            type: "body",
+            parameters: Object.entries(message.templateParams || {}).map(([key, value]) => ({
+              type: "text",
+              text: value,
+            })),
+          },
+        ],
+      };
     }
-  }
 
-  if (contactId) {
-    await addTimelineEntry(organizationId, "system", {
-      entity_type: "contact",
-      entity_id: contactId,
-      entry_type: "whatsapp",
-      title: `WhatsApp message received`,
-      description: msg.body.slice(0, 500),
-      metadata: {
-        source: "whatsapp",
-        whatsapp_message_id: msg.id,
-        message_type: msg.type,
-        has_media: !!msg.mediaUrl,
+    const response = await axios.post(apiUrl, payload, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
-    })
+    });
+
+    return response.data.messages[0].id;
+  } catch (error) {
+    console.error("Failed to send WhatsApp message:", error);
+    throw error;
   }
+};
 
-  if (config.nurtureEnabled && msg.body.toLowerCase().includes("interested")) {
-    await createTask(organizationId, "system", {
-      entity_type: "contact",
-      entity_id: contactId,
-      title: `Follow up with WhatsApp lead ${msg.from}`,
-      description: `Lead expressed interest via WhatsApp: "${msg.body.slice(0, 200)}"`,
-      priority: "high",
-      assigned_to: config.defaultAssignee,
-    })
-  }
+/**
+ * Logs a WhatsApp conversation to a deal timeline.
+ * @param message - WhatsAppMessage
+ * @param dealId - Deal ID to log the message to
+ */
+export const logWhatsAppToDeal = (
+  message: WhatsAppMessage,
+  dealId: string,
+): void => {
+  // In a real implementation, this would save to a database
+  console.log(`Logged WhatsApp message to deal ${dealId}:`, message.body);
+};
 
-  return contactId || null
-}
+/**
+ * Retrieves WhatsApp templates.
+ * @param name - Optional template name to filter
+ * @returns Array of WhatsAppTemplate
+ */
+export const getWhatsAppTemplates = (name?: string): WhatsAppTemplate[] => {
+  if (name) return [TEMPLATES[name]].filter(Boolean);
+  return Object.values(TEMPLATES);
+};
 
-export async function sendCrmWhatsApp(
-  organizationId: string,
-  userId: string,
-  to: string,
-  body: string,
-  contactId?: string,
-  dealId?: string,
-): Promise<boolean> {
-  const sent = await sendWhatsAppMessage(to, body)
-  if (!sent) return false
+/**
+ * Formats a WhatsApp message using a template.
+ * @param templateName - Name of the template
+ * @param params - Template parameters
+ * @returns Formatted message body
+ */
+export const formatWhatsAppMessage = (
+  templateName: string,
+  params: Record<string, string>,
+): string => {
+  const template = TEMPLATES[templateName];
+  if (!template) throw new Error(`Template ${templateName} not found`);
 
-  await addTimelineEntry(organizationId, userId, {
-    entity_type: contactId ? "contact" : "deal",
-    entity_id: (contactId || dealId)!,
-    entry_type: "whatsapp",
-    title: "WhatsApp message sent",
-    description: body.slice(0, 500),
-    metadata: { source: "whatsapp", channel: "outbound" },
-  })
+  let body = template.body;
+  Object.entries(params).forEach(([key, value]) => {
+    body = body.replace(`{{${key}}}`, value);
+  });
 
-  return true
-}
-
-export async function getWhatsAppMessageHistory(
-  organizationId: string,
-  contactId: string,
-): Promise<Array<{ role: "sent" | "received"; body: string; timestamp: string }>> {
-  const db = createServiceClient()
-  const { data } = await db
-    .from("crm_timeline")
-    .select("title, description, metadata, occurred_at")
-    .eq("organization_id", organizationId)
-    .eq("entity_type", "contact")
-    .eq("entity_id", contactId)
-    .eq("entry_type", "whatsapp")
-    .order("occurred_at", { ascending: false })
-    .limit(50)
-
-  return ((data ?? []) as Array<{
-    title: string; description: string; metadata: Record<string, unknown>; occurred_at: string
-  }>).map((e) => ({
-    role: (e.metadata?.channel === "outbound" ? "sent" : "received") as "sent" | "received",
-    body: e.description,
-    timestamp: e.occurred_at,
-  }))
-}
+  return body;
+};
