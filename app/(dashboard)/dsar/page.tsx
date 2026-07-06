@@ -293,7 +293,7 @@ export default function DsarPage() {
                                   toast.success(`Consent ${record.granted ? "revoked" : "granted"}`)
                                   fetchData()
                                 }
-                              } catch {
+                              } catch (error) {
                                  toast.error(error instanceof Error ? error.message : "Failed to update consent")
                               }
                             }}
