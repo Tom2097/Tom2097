@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, Suspense, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -25,7 +25,6 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
   const [passkeyAvailable, setPasskeyAvailable] = useState(false)
-  const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams?.get("redirect") || "/"
 
@@ -60,8 +59,7 @@ function LoginForm() {
       setError(error instanceof Error ? error.message : "Failed to login")
       setIsLoading(false)
     } else {
-      router.push(redirect)
-      router.refresh()
+      window.location.href = redirect
     }
   }
 
@@ -99,8 +97,7 @@ function LoginForm() {
         throw new Error(data.error || "Passkey verification failed")
       }
 
-      router.push(redirect)
-      router.refresh()
+      window.location.href = redirect
     } catch (err) {
       if (err instanceof Error) {
         if (err.name === "NotAllowedError") {
