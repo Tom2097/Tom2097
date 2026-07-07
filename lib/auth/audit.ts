@@ -19,6 +19,7 @@ export type AuthAuditAction =
   | "auth.login_failed"
   | "auth.session_refreshed"
   | "auth.permission_denied"
+  | "auth.trial_created"
   | "rbac.role_created"
   | "rbac.role_updated"
   | "rbac.role_deleted"

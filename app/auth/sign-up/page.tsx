@@ -70,15 +70,12 @@ export default function SignUpPage() {
     setError(null)
 
     const supabase = createClient()
-    const { data: { user }, error } = await supabase.auth.signUp({
+    const origin = typeof window !== "undefined" ? window.location.origin : ""
+    const { data: { user, session }, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo:
-          process.env.NODE_ENV === "development"
-            ? (process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
-              `${window.location.origin}/auth/callback`)
-            : `${window.location.origin}/auth/callback`,
+        emailRedirectTo: origin ? `${origin}/auth/callback` : undefined,
         data: {
           full_name: fullName,
           company_name: companyName,
@@ -89,31 +86,38 @@ export default function SignUpPage() {
     if (error) {
       setError(error instanceof Error ? error.message : "Failed to sign up")
       setIsLoading(false)
-    } else if (user) {
-      // Create organization and subscription with trial
-      try {
-        const response = await fetch('/api/auth/create-trial', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: user.id,
-            email,
-            fullName,
-            companyName,
-          }),
-        })
+      return
+    }
 
-        if (!response.ok) {
-          throw new Error('Failed to create trial')
-        }
+    // User may be null if email confirmation is required before first sign-in.
+    // In that case we still redirect to the success page.
+    if (!user) {
+      router.push("/auth/sign-up-success")
+      return
+    }
 
-        router.push("/auth/sign-up-success")
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to create trial')
-        setIsLoading(false)
+    // Create organization and subscription with trial
+    try {
+      const response = await fetch('/api/auth/create-trial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          email,
+          fullName,
+          companyName,
+        }),
+      })
+
+      const result = await response.json().catch(() => ({ error: 'Invalid response from server' }))
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create trial')
       }
-    } else {
-      setError('An unexpected error occurred. Please try again.')
+
+      router.push("/auth/sign-up-success")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create trial')
       setIsLoading(false)
     }
   }
