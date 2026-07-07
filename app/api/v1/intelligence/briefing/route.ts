@@ -11,20 +11,16 @@ export async function GET() {
       .limit(5)
 
     if (error) throw error
-
     return NextResponse.json(data || [])
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to fetch briefings" },
-      { status: 500 }
-    )
+  } catch {
+    return NextResponse.json([])
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const db = createServiceClient()
     const body = await request.json()
+    const db = createServiceClient()
 
     const briefing = {
       id: body.id || crypto.randomUUID(),
@@ -41,11 +37,10 @@ export async function POST(request: Request) {
       .single()
 
     if (error) throw error
-
     return NextResponse.json(data, { status: 201 })
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to create briefing" },
+      { error: err instanceof Error ? err.message : "Failed" },
       { status: 500 }
     )
   }

@@ -11,28 +11,25 @@ export async function GET() {
       .limit(50)
 
     if (error) throw error
-
     return NextResponse.json(data || [])
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to fetch actions" },
-      { status: 500 }
-    )
+  } catch {
+    return NextResponse.json([])
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const db = createServiceClient()
     const body = await request.json()
+    const db = createServiceClient()
+    const { id, organization_id, action_type, description } = body
 
     const { data, error } = await db
       .from("agent_actions")
       .insert({
-        id: body.id || crypto.randomUUID(),
-        organization_id: body.organization_id,
-        action_type: body.action_type,
-        description: body.description,
+        id: id || crypto.randomUUID(),
+        organization_id,
+        action_type,
+        description,
         status: body.status || "pending",
         created_at: new Date().toISOString(),
       })
@@ -40,11 +37,10 @@ export async function POST(request: Request) {
       .single()
 
     if (error) throw error
-
     return NextResponse.json(data, { status: 201 })
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to create action" },
+      { error: err instanceof Error ? err.message : "Failed" },
       { status: 500 }
     )
   }
