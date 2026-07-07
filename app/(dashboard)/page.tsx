@@ -23,7 +23,9 @@ export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   const ctx = await extractTenantContext()
-  if (!ctx) redirect('/auth/login')
+  if (!ctx) {
+    redirect('/auth/login?reason=no_context')
+  }
   const orgId = ctx.organizationId
 
   const now = new Date()
