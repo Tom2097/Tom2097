@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense, useEffect, useActionState } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AlertCircle, Loader2, Eye, EyeOff, Fingerprint, Shield } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 import { startAuthentication } from "@simplewebauthn/browser"
-import { loginAction } from "./actions"
 
 function LoginForm() {
   const [email, setEmail] = useState(() => {
@@ -21,13 +20,13 @@ function LoginForm() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(() => typeof window !== "undefined" && !!localStorage.getItem("digit_remember_email"))
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
   const [passkeyError, setPasskeyError] = useState<string | null>(null)
   const [passkeyAvailable, setPasskeyAvailable] = useState(false)
   const searchParams = useSearchParams()
   const redirect = searchParams?.get("redirect") || "/"
-
-  const [state, formAction, isPending] = useActionState(loginAction, null)
+  const errorParam = searchParams?.get("error")
 
   // Check if WebAuthn is available
   useEffect(() => {
@@ -39,6 +38,7 @@ function LoginForm() {
   }, [])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    setIsSubmitting(true)
     if (rememberMe) {
       localStorage.setItem("digit_remember_email", email)
     } else {
@@ -108,13 +108,13 @@ function LoginForm() {
         <CardTitle className="text-2xl">Welcome back</CardTitle>
         <CardDescription>Sign in to your enterprise dashboard</CardDescription>
       </CardHeader>
-      <form action={formAction} onSubmit={handleSubmit}>
+      <form action="/api/auth/login" method="POST" onSubmit={handleSubmit}>
         <input type="hidden" name="redirect" value={redirect} />
         <CardContent className="space-y-4">
-          {state?.error && (
+          {errorParam && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              {state.error}
+              {errorParam}
             </div>
           )}
 
@@ -126,7 +126,7 @@ function LoginForm() {
                 variant="outline"
                 className="w-full h-12 gap-3 border-primary/30 hover:border-primary/60 hover:bg-primary/5 transition-all"
                 onClick={handlePasskeyLogin}
-                disabled={isPasskeyLoading || isPending}
+                disabled={isPasskeyLoading || isSubmitting}
               >
                 {isPasskeyLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -199,8 +199,8 @@ function LoginForm() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isPending || isPasskeyLoading}>
-            {isPending ? (
+          <Button type="submit" className="w-full" disabled={isSubmitting || isPasskeyLoading}>
+            {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Signing in...

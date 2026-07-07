@@ -2,38 +2,44 @@ import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: Request) {
-  try {
-    const { email, password } = await request.json()
+  const contentType = request.headers.get("content-type") || ""
 
-    if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
-    }
+  let email: string
+  let password: string
+  let redirectTo = "/"
 
-    const supabase = await createClient()
+  if (contentType.includes("application/json")) {
+    const body = await request.json()
+    email = body.email
+    password = body.password
+    redirectTo = body.redirect || "/"
+  } else {
+    const formData = await request.formData()
+    email = formData.get("email") as string
+    password = formData.get("password") as string
+    redirectTo = (formData.get("redirect") as string) || "/"
+  }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error || !data?.session) {
-      return NextResponse.json(
-        { error: error?.message || "Invalid credentials" },
-        { status: 401 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: data.user.id,
-        email: data.user.email,
-      },
-    })
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Login failed" },
-      { status: 500 }
+  if (!email || !password) {
+    return NextResponse.redirect(
+      new URL(`/auth/login?error=${encodeURIComponent("Email and password required")}`, request.url)
     )
   }
+
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error || !data?.session) {
+      return NextResponse.redirect(
+        new URL(`/auth/login?error=${encodeURIComponent(error?.message || "Invalid credentials")}`, request.url)
+      )
+    }
+  } catch (err) {
+    return NextResponse.redirect(
+      new URL(`/auth/login?error=${encodeURIComponent(err instanceof Error ? err.message : "Login failed")}`, request.url)
+    )
+  }
+
+  return NextResponse.redirect(new URL(redirectTo, request.url))
 }
