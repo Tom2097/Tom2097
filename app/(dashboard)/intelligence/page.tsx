@@ -237,19 +237,21 @@ export default function IntelligencePage() {
         </TabsList>
 
         <TabsContent value="command-center" className="mt-4">
-          <ErrorBoundary><IntelligenceCommandCenter /></ErrorBoundary>
+          <ErrorBoundary>
+            <IntelligenceCommandCenter />
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="industry" className="mt-4">
-          <ErrorBoundary><IndustryIntelligenceHub /></ErrorBoundary>
+          <div className="p-8 text-center text-muted-foreground">Industry Intelligence — coming soon</div>
         </TabsContent>
 
         <TabsContent value="causal-chains" className="mt-4">
-          <ErrorBoundary><CausalChainView /></ErrorBoundary>
+          <div className="p-8 text-center text-muted-foreground">Causal Chains — coming soon</div>
         </TabsContent>
           
         <TabsContent value="predictive" className="mt-4">
-          <ErrorBoundary><PredictiveModeling /></ErrorBoundary>
+          <div className="p-8 text-center text-muted-foreground">Predictive Modeling — coming soon</div>
         </TabsContent>
       </Tabs>
     </div>
