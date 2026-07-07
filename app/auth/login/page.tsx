@@ -20,7 +20,6 @@ function LoginForm() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(() => typeof window !== "undefined" && !!localStorage.getItem("digit_remember_email"))
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
   const [passkeyError, setPasskeyError] = useState<string | null>(null)
   const [passkeyAvailable, setPasskeyAvailable] = useState(false)
@@ -36,15 +35,6 @@ function LoginForm() {
         .catch(() => setPasskeyAvailable(false))
     }
   }, [])
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    setIsSubmitting(true)
-    if (rememberMe) {
-      localStorage.setItem("digit_remember_email", email)
-    } else {
-      localStorage.removeItem("digit_remember_email")
-    }
-  }
 
   const handlePasskeyLogin = async () => {
     setIsPasskeyLoading(true)
@@ -108,7 +98,7 @@ function LoginForm() {
         <CardTitle className="text-2xl">Welcome back</CardTitle>
         <CardDescription>Sign in to your enterprise dashboard <span className="text-[10px] opacity-30">v:native</span></CardDescription>
       </CardHeader>
-      <form action="/api/auth/login" method="POST" onSubmit={handleSubmit}>
+      <form action="/api/auth/login" method="POST">
         <input type="hidden" name="redirect" value={redirect} />
         <CardContent className="space-y-4">
           {errorParam && (
@@ -126,7 +116,7 @@ function LoginForm() {
                 variant="outline"
                 className="w-full h-12 gap-3 border-primary/30 hover:border-primary/60 hover:bg-primary/5 transition-all"
                 onClick={handlePasskeyLogin}
-                disabled={isPasskeyLoading || isSubmitting}
+                disabled={isPasskeyLoading}
               >
                 {isPasskeyLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -199,15 +189,8 @@ function LoginForm() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isSubmitting || isPasskeyLoading}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              "Sign in"
-            )}
+          <Button type="submit" className="w-full">
+            Sign in
           </Button>
 
           {/* Security badge */}
