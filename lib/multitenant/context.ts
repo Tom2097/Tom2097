@@ -58,7 +58,7 @@ const getProfileForUser = cache(async (userId: string) => {
  * headers. Returns `null` (→ 401) when there is no valid session or the user has
  * no organization membership. Fails closed.
  */
-export async function extractTenantContext(
+export async function extractTenantContextServer(
   _request?: NextRequest,
 ): Promise<TenantContextMiddleware | null> {
   try {

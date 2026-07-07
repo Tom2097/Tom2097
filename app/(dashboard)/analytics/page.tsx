@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { extractTenantContext } from '@/lib/multitenant/context'
+import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { querySummary, queryTimeseries, queryBreakdown } from '@/lib/analytics/engine'
 import { getSystemHealth } from '@/lib/monitoring/engine'
 import { getAuditLogStats } from '@/lib/audit/store'

@@ -10,7 +10,7 @@ import { VerticalIntelligence } from "@/components/digit/vertical-intelligence"
 import { VerticalRecipes } from "@/components/digit/vertical-recipes"
 import { CommandPalette } from "@/components/digit/command-palette"
 import { OperationalReports } from "@/components/digit/operational-reports"
-import { RealTimeChart, ChartContainer } from "@/components/digit/real-time-chart"
+import { RealTimeChart } from "@/components/digit/real-time-chart"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -158,14 +158,26 @@ export default function OperationsPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-         <ChartContainer title="Real-Time Processing">
-          <RealTimeChart
-            data={chartData}
-            dataKey="value"
+          <Card>
+            <CardHeader>
+              <CardTitle>Real-Time Processing</CardTitle>
+            </CardHeader>
+            <CardContent>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Real-Time Processing</CardTitle>
+            </CardHeader>
+            <CardContent>
+            <RealTimeChart
+              data={chartData}
+              dataKey="value"
             type="line"
             height={280}
-          />
-        </ChartContainer>
+           />
+            </CardContent>
+          </Card>
 
         <Card>
           <CardHeader>

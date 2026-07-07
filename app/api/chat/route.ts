@@ -5,7 +5,7 @@ import {
   UIMessage,
 } from 'ai'
 import { NextResponse } from 'next/server'
-import { extractTenantContext } from '@/lib/multitenant/context'
+import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { checkTenantRateLimit } from '@/lib/multitenant/rate-limit'
 import { mistralModel } from '@/lib/ai/mistral'
 

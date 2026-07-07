@@ -7,7 +7,7 @@ import {
   evaluateAbac,
   canAccess,
 } from "@/lib/multitenant/abac"
-import { extractTenantContext } from "@/lib/multitenant/context"
+import { extractTenantContext } from "@/lib/multitenant/context.server"
 
 const handler = withAuth(async (req: NextRequest, { organizationId, userId }) => {
   try {

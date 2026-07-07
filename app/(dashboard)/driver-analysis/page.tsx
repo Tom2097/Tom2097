@@ -3,7 +3,7 @@ import { AlertTriangle, ArrowDown, ArrowRight, ArrowUp, BarChart3, Crosshair, Gi
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { extractTenantContext } from '@/lib/multitenant/context'
+import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { analyzeDriverDecomposition, getCrossWorkspaceImpact } from '@/lib/analytics/driver-decomposition'
 import { ConfidenceIndicator } from '@/components/digit/confidence-indicator'
 

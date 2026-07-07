@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { extractTenantContext } from '@/lib/multitenant/context'
+import { extractTenantContext } from '@/lib/multitenant/context.server'
 
 export async function GET() {
   try {

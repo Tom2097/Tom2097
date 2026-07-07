@@ -1,6 +1,6 @@
 import { Activity, BarChart3, TrendingUp, Target, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { extractTenantContext } from "@/lib/multitenant/context"
+import { extractTenantContext } from "@/lib/multitenant/context.server"
 import { listObjectives, computePacing } from "@/lib/analytics/okr"
 import { getCohortBenchmarks } from "@/lib/analytics/cohorts"
 import { driverDecomposition, forecastMetric } from "@/lib/analytics/forecasting"

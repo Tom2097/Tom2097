@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateText } from "ai"
-import { extractTenantContext } from "@/lib/multitenant/context"
+import { extractTenantContext } from "@/lib/multitenant/context.server"
 import { DEFAULT_CHAT_MODEL, BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
 
 export async function POST(request: NextRequest) {

@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import {
   extractTenantContext,
   type TenantContextMiddleware,
-} from "@/lib/multitenant/context"
+} from "@/lib/multitenant/context.server"
 import { getUserPermissions } from "@/lib/auth/rbac"
 import { logAuthEvent, getClientIp } from "@/lib/auth/audit"
 

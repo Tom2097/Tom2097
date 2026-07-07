@@ -1,6 +1,6 @@
 import { Boxes, Package, Truck, Wrench, Calendar, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { extractTenantContext } from "@/lib/multitenant/context"
+import { extractTenantContext } from "@/lib/multitenant/context.server"
 import { getAssetTree } from "@/lib/resources/assets"
 import { listInventory } from "@/lib/resources/inventory"
 import { getCapacityUtilization, getVendorScorecard } from "@/lib/resources/analytics"

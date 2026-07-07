@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog"
-import { Loader2, RefreshCw, MessageSquare, Smile, MessageSquarePlus, ThumbsUp, AlertTriangle, Brain, Search } from "lucide-react"
+import { Loader2, RefreshCw, MessageSquare, Smile, MessageSquarePlus, ThumbsUp, AlertTriangle, Brain, Search, Sparkles } from "lucide-react"
+import { extractTenantContext } from "@/lib/multitenant/context.server"
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer, Cell } from "recharts"
 import { ChartContainer } from "@/components/digit/live-chart"
 
@@ -93,7 +94,7 @@ export default function FeedbackPage() {
       const context = await extractTenantContext()
       if (!context) redirect('/auth/login')
       setCtx(context)
-      await fetchFeedback(context.organizationId)
+      await fetchFeedback()
     }
     fetchContext()
   }, [])
@@ -209,7 +210,7 @@ export default function FeedbackPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => fetchFeedback(ctx?.organizationId)} className="gap-1 text-sm">
+          <Button variant="ghost" size="sm" onClick={() => fetchFeedback()} className="gap-1 text-sm">
             <RefreshCw className="h-3 w-3" />
             Refresh
           </Button>

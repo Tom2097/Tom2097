@@ -1,6 +1,6 @@
 import { ShieldCheck, Activity, FileCheck, AlertTriangle, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { extractTenantContext } from "@/lib/multitenant/context"
+import { extractTenantContext } from "@/lib/multitenant/context.server"
 import { computeComplianceScore } from "@/lib/compliance/scoring"
 import { listCapa } from "@/lib/compliance/capa"
 import { runScheduledChecks } from "@/lib/compliance/checks"

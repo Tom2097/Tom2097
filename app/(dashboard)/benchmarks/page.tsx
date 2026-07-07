@@ -3,7 +3,7 @@ import { Shield, Users, BarChart3, Eye, EyeOff, Info, CheckCircle2 } from 'lucid
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { extractTenantContext } from '@/lib/multitenant/context'
+import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { getPeerComparison, DEFAULT_BENCHMARK_CONFIG } from '@/lib/analytics/cohort-benchmarking'
 import { ConfidenceIndicator } from '@/components/digit/confidence-indicator'
 

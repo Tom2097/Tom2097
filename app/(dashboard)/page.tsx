@@ -12,7 +12,7 @@ import { RealTimeChart } from '@/components/digit/real-time-chart'
 import { modules } from '@/lib/modules'
 import { getPlanById, formatPrice } from '@/lib/products'
 import { createServiceClient } from '@/lib/supabase/service'
-import { extractTenantContext } from '@/lib/multitenant/context'
+import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { getDashboardStats, getRevenueMetrics, getOperationalMetrics, getRiskMetrics } from '@/lib/dashboard/queries'
 import { listMonitors } from '@/lib/monitoring/engine'
 import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
@@ -201,7 +201,7 @@ export default async function DashboardPage() {
              <MetricCard label="Active Operations" value={stats.active_operations} subtitle="Running AI workflows" />
              <MetricCard label="Risk Score" value={riskData.length > 0 ? `${Math.round(riskData[riskData.length - 1].value)}` : '0'} subtitle="Current risk level" />
              <MetricCard label="Anomalies Detected" value={anomalies.anomalies.length} subtitle="Last 30 days" />
-             <MetricCard label="Forecast Growth" value={forecastData.length > 0 ? `${Math.round(((forecastData[forecastData.length - 1].forecast - forecastData[0].actual) / forecastData[0].actual) * 100)}%` : '0%'} subtitle="Next 6 months" />
+             <MetricCard label="Forecast Growth" value={forecastData && forecastData.length >= 2 ? `${Math.round(((forecastData[forecastData.length - 1].forecast - (forecastData[0].actual || 0)) / ((forecastData[0].actual || 1))) * 100)}%` : '0%'} subtitle="Next 6 months" />
            </MetricGrid>
          ) : (
            <Card className="p-6 text-sm text-muted-foreground">
@@ -274,9 +274,8 @@ export default async function DashboardPage() {
              </div>
               {riskData.length > 0 ? (
                 <LiveChart data={riskData.map(point => ({
-                  name: new Date(point.timestamp).toLocaleDateString(),
-                  value: point.value,
-                  severity: point.severity
+                  name: new Date((point as any).timestamp).toLocaleDateString(),
+                  value: (point as any).value,
                 }))} dataKey="value" type="line" height={200} />
               ) : (
                <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
