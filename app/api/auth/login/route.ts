@@ -30,16 +30,28 @@ export async function POST(request: Request) {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (error || !data?.session) {
-      return NextResponse.redirect(
-        new URL(`/auth/login?error=${encodeURIComponent(error?.message || "Invalid credentials")}`, request.url)
-      )
+    if (error) {
+      return new Response(`LOGIN FAILED: ${error.message}`, {
+        status: 401,
+        headers: { "Content-Type": "text/plain" },
+      })
     }
-  } catch (err) {
-    return NextResponse.redirect(
-      new URL(`/auth/login?error=${encodeURIComponent(err instanceof Error ? err.message : "Login failed")}`, request.url)
-    )
-  }
 
-  return NextResponse.redirect(new URL(redirectTo, request.url))
+    if (!data?.session) {
+      return new Response("LOGIN FAILED: no session returned", {
+        status: 401,
+        headers: { "Content-Type": "text/plain" },
+      })
+    }
+
+    return new Response(`LOGIN OK user=${data.user.email} id=${data.user.id}`, {
+      status: 200,
+      headers: { "Content-Type": "text/plain" },
+    })
+  } catch (err) {
+    return new Response(`LOGIN ERROR: ${err instanceof Error ? err.message : String(err)}`, {
+      status: 500,
+      headers: { "Content-Type": "text/plain" },
+    })
+  }
 }
