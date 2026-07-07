@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart'
-import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { Card } from '@/components/ui/card'
 import { AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react'
 import { type DetectedAnomaly } from '@/lib/analytics/anomaly-detection'
@@ -153,11 +153,15 @@ export function RealTimeChart({
     }
   }
 
+  const chartConfig = useMemo(() => ({
+    value: { label: dataKey, color: "hsl(var(--chart-1))" },
+  }), [dataKey])
+
   return (
     <Card className={className}>
-      <ResponsiveContainer width="100%" height={height}>
+      <ChartContainer config={chartConfig} className="aspect-none" style={{ minHeight: height }}>
         {renderChart() || <div />}
-      </ResponsiveContainer>
+      </ChartContainer>
       {liveAnomalies.length > 0 && (
         <div className="p-4 border-t border-border/50">
           <h4 className="font-semibold mb-2 flex items-center gap-2">
