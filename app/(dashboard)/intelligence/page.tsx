@@ -25,7 +25,13 @@ export default function IntelligencePage() {
     activeAgents: 8,
     insightsGenerated: 142,
   })
-  const [chartData, setChartData] = useState<Array<{ name: string; value: number; insights: number }>>([])
+  const [chartData, setChartData] = useState<Array<{ name: string; value: number; insights: number }>>(() =>
+    Array.from({ length: 10 }, (_, i) => ({
+      name: `T-${10 - i}`,
+      value: Math.floor(Math.random() * 30) + 40,
+      insights: Math.floor(Math.random() * 5) + 3,
+    }))
+  )
   const [anomalies, setAnomalies] = useState<Array<{ id: string; type: string; severity: string; timestamp: string }>>([])
 
   useEffect(() => {
