@@ -3,7 +3,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 import type { TenantContextMiddleware } from './types'
-export type { TenantContextMiddleware }
 
 // Re-export the server-only version
 export async function extractTenantContext(
