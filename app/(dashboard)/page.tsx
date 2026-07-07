@@ -22,7 +22,6 @@ import { forecastMetric } from '@/lib/analytics/forecasting'
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
-  try {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login?reason=no_user')
@@ -483,12 +482,4 @@ export default async function DashboardPage() {
 
     </div>
   )
-  } catch (err) {
-    return (
-      <div style={{background:"#111",color:"red",padding:40,fontFamily:"monospace"}}>
-        <h1>Dashboard Error</h1>
-        <pre>{err instanceof Error ? err.message : String(err)}</pre>
-      </div>
-    )
-  }
 }
