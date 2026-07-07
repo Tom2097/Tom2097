@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { CheckCircle2, Mail } from "lucide-react"
+import { CheckCircle2, LogIn } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 
 export default function SignUpSuccessPage() {
@@ -22,23 +22,20 @@ export default function SignUpSuccessPage() {
           <div className="mx-auto w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-4">
             <CheckCircle2 className="w-8 h-8 text-green-500" />
           </div>
-          <CardTitle className="text-2xl">Check your email</CardTitle>
-          <CardDescription>We&apos;ve sent you a confirmation link</CardDescription>
+          <CardTitle className="text-2xl">Account ready</CardTitle>
+          <CardDescription>Your account has been created and is active</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-center gap-2 p-4 rounded-lg bg-secondary/50 border border-border/50">
-            <Mail className="w-5 h-5 text-primary" />
-            <span className="text-sm text-muted-foreground">
-              Click the link in your email to activate your account
-            </span>
-          </div>
           <p className="text-sm text-muted-foreground">
-            Didn&apos;t receive the email? Check your spam folder or try signing up again.
+            You can now sign in with your email and password to start using the platform.
           </p>
         </CardContent>
         <CardFooter>
-          <Button asChild variant="outline" className="w-full">
-            <Link href="/auth/login">Back to sign in</Link>
+          <Button asChild className="w-full gap-2">
+            <Link href="/auth/login">
+              <LogIn className="w-4 h-4" />
+              Sign in
+            </Link>
           </Button>
         </CardFooter>
       </Card>

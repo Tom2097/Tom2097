@@ -66,8 +66,7 @@ export default async function AuthErrorPage({
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            This could happen if your confirmation link has expired or has already been used.
-            Please try signing in again or request a new confirmation email.
+            An unexpected error occurred during authentication. Please try signing in again.
           </p>
         </CardContent>
         <CardFooter className="flex flex-col gap-2">

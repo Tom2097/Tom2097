@@ -9,11 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, Loader2, Eye, EyeOff, Fingerprint, Shield, ArrowLeft, Key } from "lucide-react"
+import { AlertCircle, Loader2, Eye, EyeOff, Fingerprint, Shield } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 import { startAuthentication } from "@simplewebauthn/browser"
-import { SUPPORTED_PROVIDERS } from "@/lib/auth/oauth/types"
-import { toast } from "sonner"
 
 function LoginForm() {
   const [email, setEmail] = useState(() => {
@@ -27,40 +25,18 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
   const [passkeyAvailable, setPasskeyAvailable] = useState(false)
-  const [magicLinkSent, setMagicLinkSent] = useState(false)
-  const [magicLinkLoading, setMagicLinkLoading] = useState(false)
-  const [hasWebAuthnCredentials, setHasWebAuthnCredentials] = useState<boolean | null>(null)
-  const [isNewDevice, setIsNewDevice] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams?.get("redirect") || "/"
 
-  // Check if WebAuthn is available and if user has credentials
+  // Check if WebAuthn is available
   useEffect(() => {
     if (typeof window !== "undefined" && window.PublicKeyCredential) {
       PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.()
         .then((available) => setPasskeyAvailable(available))
         .catch(() => setPasskeyAvailable(false))
     }
-    
-    // Check if user has WebAuthn credentials
-    const checkWebAuthnCredentials = async () => {
-      try {
-        const response = await fetch(`/api/v1/auth/webauthn/has-credentials?email=${encodeURIComponent(email)}`)
-        if (response.ok) {
-          const data = await response.json()
-          setHasWebAuthnCredentials(data.hasCredentials)
-          setIsNewDevice(!data.hasCredentials)
-        }
-      } catch {
-        setHasWebAuthnCredentials(false)
-      }
-    }
-    
-    if (email) {
-      checkWebAuthnCredentials()
-    }
-  }, [email])
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -140,110 +116,8 @@ function LoginForm() {
     }
   }
 
-  if (isNewDevice && email) {
-    return (
-      <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Logo size="md" />
-          </div>
-          <CardTitle className="text-2xl">New Device Detected</CardTitle>
-          <CardDescription>This device is not recognized</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 text-center">
-          <div className="flex items-center justify-center gap-2 text-destructive">
-            <AlertCircle className="w-5 h-5" />
-            <p className="text-sm">This device is not registered for your account.</p>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            You can sign in with a linked SSO provider or re-enroll this device.
-          </p>
-          <div className="space-y-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-12 gap-2"
-              onClick={() => setIsNewDevice(false)}
-            >
-              <ArrowLeft className="w-4 h-4" /> Back to Sign In
-            </Button>
-            <Button
-              type="button"
-              className="w-full h-12 gap-2 bg-primary hover:bg-primary/90"
-              onClick={async () => {
-                setIsLoading(true)
-                try {
-                  // Send a fresh one-time passcode to the user's email
-                  const response = await fetch("/api/v1/auth/passwordless/request", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email }),
-                  })
-                  if (!response.ok) throw new Error("Failed to send passcode")
-                  
-                  toast.success("New passcode sent to your email")
-                  setIsNewDevice(false) // Go back to sign in to enter the new passcode
-                } catch (err) {
-                  toast.error("Failed to send passcode. Please try again.")
-                } finally {
-                  setIsLoading(false)
-                }
-              }}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Key className="w-4 h-4" />
-              )}
-              Send New Passcode
-            </Button>
-            <Button
-              type="button"
-              className="w-full h-12 gap-2 bg-secondary hover:bg-secondary/90"
-              onClick={() => router.push(`/secure-onboarding?email=${encodeURIComponent(email)}`)}
-            >
-              <Key className="w-4 h-4" /> Re-enroll This Device
-            </Button>
-          </div>
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border/50" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">or sign in with SSO</span>
-            </div>
-          </div>
-          <div className="flex justify-center gap-4">
-            {Object.entries(SUPPORTED_PROVIDERS).map(([providerId, config]) => (
-              config.enabled && !providerId.includes("azure") && (
-                <form
-                  key={providerId}
-                  action={`/api/v1/auth/oauth/${providerId}`}
-                  method="POST"
-                >
-                  <input type="hidden" name="redirect" value={redirect} />
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    size="icon"
-                    className="w-10 h-10 p-0 rounded-full"
-                    title={`Sign in with ${config.name.replace("'", "&apos;")}`}
-                  >
-                    <img
-                      src={`/icons/oauth/${providerId}.svg`}
-                      alt={config.name}
-                      className="w-5 h-5"
-                    />
-                  </Button>
-                </form>
-              )
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+  // TODO: re-enable new device verification once email system is configured
+  // if (isNewDevice && email) { ... }
 
   return (
     <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50">
@@ -260,66 +134,6 @@ function LoginForm() {
             <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
               <AlertCircle className="w-4 h-4 shrink-0" />
               {error}
-            </div>
-          )}
-
-          {/* Magic Link */}
-          {!magicLinkSent && (
-            <>
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full h-12 gap-2 text-muted-foreground hover:text-foreground"
-                onClick={async () => {
-                  if (!email) { setError("Enter your email first"); return }
-                  setMagicLinkLoading(true)
-                  setError(null)
-                  try {
-                    const res = await fetch("/api/auth/passwordless/send", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ email }),
-                    })
-                    if (!res.ok) {
-                      const data = await res.json()
-                      throw new Error(data.error || "Failed to send magic link")
-                    }
-                    setMagicLinkSent(true)
-                  } catch (err) {
-                    setError(err instanceof Error ? err.message : "Failed to send magic link")
-                  } finally {
-                    setMagicLinkLoading(false)
-                  }
-                }}
-                disabled={magicLinkLoading}
-              >
-                {magicLinkLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Shield className="w-4 h-4" />
-                )}
-                <span>Sign in with magic link (no password)</span>
-              </Button>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border/50" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">or</span>
-                </div>
-              </div>
-            </>
-          )}
-
-          {magicLinkSent && (
-            <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
-              <p className="text-sm font-medium text-foreground">Magic link sent!</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Check your email at <strong>{email}</strong> for the sign-in link.
-              </p>
-              <Button variant="ghost" size="sm" className="mt-2" onClick={() => setMagicLinkSent(false)}>
-                Use password instead
-              </Button>
             </div>
           )}
 
@@ -367,15 +181,7 @@ function LoginForm() {
             />
           </div>
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link 
-                href="/auth/forgot-password" 
-                className="text-xs text-primary hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
+            <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Input
                 id="password"
