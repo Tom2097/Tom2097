@@ -106,7 +106,7 @@ function LoginForm() {
           <Logo size="md" />
         </div>
         <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to your enterprise dashboard</CardDescription>
+        <CardDescription>Sign in to your enterprise dashboard <span className="text-[10px] opacity-30">v:native</span></CardDescription>
       </CardHeader>
       <form action="/api/auth/login" method="POST" onSubmit={handleSubmit}>
         <input type="hidden" name="redirect" value={redirect} />

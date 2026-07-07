@@ -6,18 +6,18 @@ export async function POST(request: Request) {
 
   let email: string
   let password: string
-  let redirectTo = "/"
+  let redirectTo = "/login-check"
 
   if (contentType.includes("application/json")) {
     const body = await request.json()
     email = body.email
     password = body.password
-    redirectTo = body.redirect || "/"
+    if (body.redirect) redirectTo = body.redirect
   } else {
     const formData = await request.formData()
     email = formData.get("email") as string
     password = formData.get("password") as string
-    redirectTo = (formData.get("redirect") as string) || "/"
+    redirectTo = (formData.get("redirect") as string) || "/login-check"
   }
 
   if (!email || !password) {

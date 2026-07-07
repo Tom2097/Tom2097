@@ -1,0 +1,55 @@
+import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
+
+export default async function LoginCheckPage() {
+  const results: string[] = []
+
+  try {
+    const supabase = await createClient()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+    if (userError || !user) {
+      results.push(`getUser: FAILED — ${userError?.message || "null user"}`)
+    } else {
+      results.push(`getUser: OK — ${user.email} (${user.id})`)
+    }
+
+    if (user) {
+      const serviceDb = createServiceClient()
+      const { data: profile, error: profileError } = await serviceDb
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle()
+
+      if (profileError || !profile) {
+        results.push(`profile: MISSING — ${profileError?.message || "not found"}`)
+      } else {
+        results.push(`profile: FOUND — org:${profile.organization_id} role:${profile.role}`)
+
+        const { data: org, error: orgError } = await serviceDb
+          .from("organizations")
+          .select("*")
+          .eq("id", profile.organization_id)
+          .maybeSingle()
+
+        if (orgError || !org) {
+          results.push(`org: MISSING — ${orgError?.message || "not found"}`)
+        } else {
+          results.push(`org: FOUND — ${org.name} plan:${org.plan_id}`)
+        }
+      }
+    }
+  } catch (err) {
+    results.push(`EXCEPTION: ${err instanceof Error ? err.message : String(err)}`)
+  }
+
+  return (
+    <div style={{ background: "#111", color: "#0f0", minHeight: "100vh", padding: 40, fontFamily: "monospace" }}>
+      <h1 style={{ fontSize: 24, marginBottom: 20 }}>🔍 Login Check v2</h1>
+      {results.map((r, i) => (
+        <div key={i} style={{ marginBottom: 8, fontSize: 16 }}>• {r}</div>
+      ))}
+    </div>
+  )
+}
