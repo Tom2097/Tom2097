@@ -12,7 +12,7 @@ import { RealTimeChart } from '@/components/digit/real-time-chart'
 import { modules } from '@/lib/modules'
 import { getPlanById, formatPrice } from '@/lib/products'
 import { createServiceClient } from '@/lib/supabase/service'
-import { extractTenantContext } from '@/lib/multitenant/context.server'
+import { createClient } from '@/lib/supabase/server'
 import { getDashboardStats, getRevenueMetrics, getOperationalMetrics, getRiskMetrics } from '@/lib/dashboard/queries'
 import { listMonitors } from '@/lib/monitoring/engine'
 import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
@@ -22,11 +22,26 @@ import { forecastMetric } from '@/lib/analytics/forecasting'
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
-  const ctx = await extractTenantContext()
-  if (!ctx) {
-    redirect('/auth/login?reason=no_context')
-  }
-  const orgId = ctx.organizationId
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login?reason=no_user')
+
+  const serviceDb = createServiceClient()
+  const { data: profile } = await serviceDb
+    .from("profiles")
+    .select("organization_id, role, team_id")
+    .eq("id", user.id)
+    .maybeSingle()
+  if (!profile) redirect('/auth/login?reason=no_profile')
+
+  const { data: org } = await serviceDb
+    .from("organizations")
+    .select("plan_id, feature_flags, trial_ends_at, billing_period_ends_at")
+    .eq("id", profile.organization_id)
+    .maybeSingle()
+  if (!org) redirect('/auth/login?reason=no_org')
+
+  const orgId = profile.organization_id
 
   const now = new Date()
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
