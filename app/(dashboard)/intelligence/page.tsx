@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IntelligenceCommandCenter } from "@/components/digit/intelligence-command-center"
@@ -235,19 +236,19 @@ export default function IntelligencePage() {
         </TabsList>
 
         <TabsContent value="command-center" className="mt-4">
-          <IntelligenceCommandCenter />
+          <ErrorBoundary><IntelligenceCommandCenter /></ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="industry" className="mt-4">
-          <IndustryIntelligenceHub />
+          <ErrorBoundary><IndustryIntelligenceHub /></ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="causal-chains" className="mt-4">
-          <CausalChainView />
+          <ErrorBoundary><CausalChainView /></ErrorBoundary>
         </TabsContent>
-         
+          
         <TabsContent value="predictive" className="mt-4">
-          <PredictiveModeling />
+          <ErrorBoundary><PredictiveModeling /></ErrorBoundary>
         </TabsContent>
       </Tabs>
     </div>
