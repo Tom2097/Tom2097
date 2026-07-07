@@ -56,10 +56,13 @@ export default async function CRMPage() {
   if (!ctx) redirect('/auth/login')
   const orgId = ctx.organizationId
 
+  const now = new Date()
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+
   const [pipeline, pipelineRealtime, anomalies, forecast, contactsResult] = await Promise.all([
     getPipelineSummary(orgId),
     getPipelineSummaryRealtime(orgId),
-    detectAnomalies(orgId, 'crm_deal_value', { start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), end: new Date().toISOString() }),
+    detectAnomalies(orgId, 'crm_deal_value', { start: thirtyDaysAgo.toISOString(), end: now.toISOString() }),
     forecastMetric(orgId, 'crm_deal_value', 6),
     listContacts(orgId, { limit: 100 }),
   ])

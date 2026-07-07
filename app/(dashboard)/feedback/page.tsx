@@ -89,16 +89,6 @@ export default function FeedbackPage() {
   const [filterType, setFilterType] = useState<FeedbackType | 'all'>('all')
   const [sort, setSort] = useState<'recent' | 'votes'>('recent')
 
-  useEffect(() => {
-    const fetchContext = async () => {
-      const context = await extractTenantContext()
-      if (!context) redirect('/auth/login')
-      setCtx(context)
-      await fetchFeedback()
-    }
-    fetchContext()
-  }, [])
-
   const fetchFeedback = async () => {
     if (!ctx?.organizationId) return
     setLoading(true)
@@ -127,6 +117,16 @@ export default function FeedbackPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const fetchContext = async () => {
+      const context = await extractTenantContext()
+      if (!context) redirect('/auth/login')
+      setCtx(context)
+      await fetchFeedback()
+    }
+    fetchContext()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

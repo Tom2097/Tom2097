@@ -26,6 +26,9 @@ export default async function DashboardPage() {
   if (!ctx) redirect('/auth/login')
   const orgId = ctx.organizationId
 
+  const now = new Date()
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+
   const db = createServiceClient()
   const [stats, revenueData, operationalData, riskData, forecastData, anomalies, subResult, monitorsResult] = await Promise.all([
     getDashboardStats(orgId),
@@ -33,7 +36,7 @@ export default async function DashboardPage() {
     getOperationalMetrics(orgId),
     getRiskMetrics(orgId),
     forecastMetric(orgId, 'revenue', 6),
-    detectAnomalies(orgId, 'revenue', { start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), end: new Date().toISOString() }),
+    detectAnomalies(orgId, 'revenue', { start: thirtyDaysAgo.toISOString(), end: now.toISOString() }),
     db
       .from('subscriptions')
       .select('plan_id, status, current_period_end')
@@ -71,7 +74,7 @@ export default async function DashboardPage() {
                 <p className="font-medium text-foreground">You&apos;re on a 7-day free trial</p>
                 <p className="text-sm text-muted-foreground">
                   {subscription?.current_period_end
-                    ? `Trial ends ${new Date(subscription.current_period_end || Date.now()).toLocaleDateString()}`
+                    ? `Trial ends ${new Date(subscription.current_period_end).toLocaleDateString()}`
                     : 'Upgrade to unlock all features'}
                 </p>
               </div>
