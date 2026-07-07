@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -69,41 +68,13 @@ export default function SignUpPage() {
     setIsLoading(true)
     setError(null)
 
-    const supabase = createClient()
-    const origin = typeof window !== "undefined" ? window.location.origin : ""
-    const { data: { user, session }, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: origin ? `${origin}/auth/callback` : undefined,
-        data: {
-          full_name: fullName,
-          company_name: companyName,
-        },
-      },
-    })
-
-    if (error) {
-      setError(error instanceof Error ? error.message : "Failed to sign up")
-      setIsLoading(false)
-      return
-    }
-
-    // User may be null if email confirmation is required before first sign-in.
-    // In that case we still redirect to the success page.
-    if (!user) {
-      router.push("/auth/sign-up-success")
-      return
-    }
-
-    // Create organization and subscription with trial
     try {
-      const response = await fetch('/api/auth/create-trial', {
+      const response = await fetch('/api/auth/sign-up', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: user.id,
           email,
+          password,
           fullName,
           companyName,
         }),
@@ -112,12 +83,12 @@ export default function SignUpPage() {
       const result = await response.json().catch(() => ({ error: 'Invalid response from server' }))
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create trial')
+        throw new Error(result.error || 'Failed to create account')
       }
 
       router.push("/auth/sign-up-success")
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create trial')
+      setError(err instanceof Error ? err.message : 'Failed to create account')
       setIsLoading(false)
     }
   }
