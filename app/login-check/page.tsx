@@ -50,6 +50,9 @@ export default async function LoginCheckPage() {
       {results.map((r, i) => (
         <div key={i} style={{ marginBottom: 8, fontSize: 16 }}>• {r}</div>
       ))}
+      <div style={{marginTop:20}}>
+        <a href="/" style={{color:"#0ff",fontSize:18}}>Go to Dashboard →</a>
+      </div>
     </div>
   )
 }
