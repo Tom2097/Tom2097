@@ -31,27 +31,21 @@ export async function POST(request: Request) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      return new Response(`LOGIN FAILED: ${error.message}`, {
-        status: 401,
-        headers: { "Content-Type": "text/plain" },
-      })
+      return NextResponse.redirect(
+        new URL(`/auth/login?error=${encodeURIComponent(error.message)}`, request.url)
+      )
     }
 
     if (!data?.session) {
-      return new Response("LOGIN FAILED: no session returned", {
-        status: 401,
-        headers: { "Content-Type": "text/plain" },
-      })
+      return NextResponse.redirect(
+        new URL(`/auth/login?error=no_session`, request.url)
+      )
     }
 
-    return new Response(`LOGIN OK user=${data.user.email} id=${data.user.id}`, {
-      status: 200,
-      headers: { "Content-Type": "text/plain" },
-    })
+    return NextResponse.redirect(new URL("/login-check", request.url))
   } catch (err) {
-    return new Response(`LOGIN ERROR: ${err instanceof Error ? err.message : String(err)}`, {
-      status: 500,
-      headers: { "Content-Type": "text/plain" },
-    })
+    return NextResponse.redirect(
+      new URL(`/auth/login?error=${encodeURIComponent(err instanceof Error ? err.message : "Login failed")}`, request.url)
+    )
   }
 }
