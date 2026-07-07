@@ -159,7 +159,7 @@ export function RealTimeChart({
 
   return (
     <Card className={className}>
-      <ChartContainer config={chartConfig} className="aspect-none" style={{ minHeight: height }}>
+      <ChartContainer config={chartConfig} style={{ minHeight: height, height }}>
         {renderChart() || <div />}
       </ChartContainer>
       {liveAnomalies.length > 0 && (
