@@ -30,7 +30,7 @@ export default async function DashboardPage() {
   const serviceDb = createServiceClient()
   const { data: profile, error: profileErr } = await serviceDb
     .from("profiles")
-    .select("organization_id, role, team_id")
+    .select("organization_id, role")
     .eq("id", user.id)
     .maybeSingle()
   if (!profile) {

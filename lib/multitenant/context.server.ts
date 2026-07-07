@@ -30,7 +30,7 @@ export async function extractTenantContext(
     //    to bypass RLS policies that may not be configured yet.
     const { data: profile, error: profileError } = await serviceDb
       .from('profiles')
-      .select('organization_id, role, team_id')
+      .select('organization_id, role')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -59,7 +59,7 @@ export async function extractTenantContext(
       organizationId: profile.organization_id,
       userId: user.id,
       email: user.email || '',
-      teamId: profile.team_id || null,
+      teamId: null,
       role: profile.role,
       planId: org.plan_id,
       featureFlags: org.feature_flags || [],
