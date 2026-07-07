@@ -39,7 +39,7 @@ export default async function DashboardPage() {
 
   const { data: org, error: orgErr } = await serviceDb
     .from("organizations")
-    .select("plan_id, feature_flags, trial_ends_at, billing_period_ends_at")
+    .select("name, slug, created_at")
     .eq("id", profile.organization_id)
     .maybeSingle()
   if (!org) {

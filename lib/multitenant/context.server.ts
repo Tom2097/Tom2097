@@ -44,7 +44,7 @@ export async function extractTenantContext(
     // 3. Resolve the organization's plan and feature flags via service client.
     const { data: org, error: orgError } = await serviceDb
       .from('organizations')
-      .select('plan_id, feature_flags, trial_ends_at, billing_period_ends_at')
+      .select('name, slug, created_at')
       .eq('id', profile.organization_id)
       .maybeSingle()
 
@@ -61,10 +61,10 @@ export async function extractTenantContext(
       email: user.email || '',
       teamId: null,
       role: profile.role,
-      planId: org.plan_id,
-      featureFlags: org.feature_flags || [],
-      trialEndsAt: org.trial_ends_at,
-      billingPeriodEndsAt: org.billing_period_ends_at,
+      planId: undefined,
+      featureFlags: [],
+      trialEndsAt: undefined,
+      billingPeriodEndsAt: undefined,
     }
   } catch (error) {
     console.error('[v0] extractTenantContext failed:', error)
