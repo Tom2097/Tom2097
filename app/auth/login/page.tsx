@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense, useEffect } from "react"
+import { useState, Suspense, useEffect, useActionState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AlertCircle, Loader2, Eye, EyeOff, Fingerprint, Shield } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 import { startAuthentication } from "@simplewebauthn/browser"
+import { loginAction } from "./actions"
 
 function LoginForm() {
   const [email, setEmail] = useState(() => {
@@ -20,12 +21,13 @@ function LoginForm() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(() => typeof window !== "undefined" && !!localStorage.getItem("digit_remember_email"))
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
+  const [passkeyError, setPasskeyError] = useState<string | null>(null)
   const [passkeyAvailable, setPasskeyAvailable] = useState(false)
   const searchParams = useSearchParams()
   const redirect = searchParams?.get("redirect") || "/"
+
+  const [state, formAction, isPending] = useActionState(loginAction, null)
 
   // Check if WebAuthn is available
   useEffect(() => {
@@ -36,39 +38,17 @@ function LoginForm() {
     }
   }, [])
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
-
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     if (rememberMe) {
       localStorage.setItem("digit_remember_email", email)
     } else {
       localStorage.removeItem("digit_remember_email")
     }
-
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || "Login failed")
-      }
-
-      window.location.href = redirect
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to login")
-      setIsLoading(false)
-    }
   }
 
   const handlePasskeyLogin = async () => {
     setIsPasskeyLoading(true)
-    setError(null)
+    setPasskeyError(null)
 
     try {
       // 1. Get authentication options from server
@@ -104,12 +84,12 @@ function LoginForm() {
     } catch (err) {
       if (err instanceof Error) {
         if (err.name === "NotAllowedError") {
-          setError("Passkey authentication was canceled.")
+          setPasskeyError("Passkey authentication was canceled.")
         } else {
-          setError(err.message)
+          setPasskeyError(err.message)
         }
       } else {
-        setError("An unexpected error occurred.")
+        setPasskeyError("An unexpected error occurred.")
       }
     } finally {
       setIsPasskeyLoading(false)
@@ -128,12 +108,13 @@ function LoginForm() {
         <CardTitle className="text-2xl">Welcome back</CardTitle>
         <CardDescription>Sign in to your enterprise dashboard</CardDescription>
       </CardHeader>
-      <form onSubmit={handleLogin}>
+      <form action={formAction} onSubmit={handleSubmit}>
+        <input type="hidden" name="redirect" value={redirect} />
         <CardContent className="space-y-4">
-          {error && (
+          {state?.error && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              {error}
+              {state.error}
             </div>
           )}
 
@@ -145,7 +126,7 @@ function LoginForm() {
                 variant="outline"
                 className="w-full h-12 gap-3 border-primary/30 hover:border-primary/60 hover:bg-primary/5 transition-all"
                 onClick={handlePasskeyLogin}
-                disabled={isPasskeyLoading || isLoading}
+                disabled={isPasskeyLoading || isPending}
               >
                 {isPasskeyLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -172,6 +153,7 @@ function LoginForm() {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="you@company.com"
               value={email}
@@ -185,6 +167,7 @@ function LoginForm() {
             <div className="relative">
               <Input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
@@ -216,8 +199,8 @@ function LoginForm() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isLoading || isPasskeyLoading}>
-            {isLoading ? (
+          <Button type="submit" className="w-full" disabled={isPending || isPasskeyLoading}>
+            {isPending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Signing in...
