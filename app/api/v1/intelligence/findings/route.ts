@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error
 
-    return NextResponse.json(data || [])
+    return NextResponse.json({ findings: data || [] })
   } catch {
-    return NextResponse.json([])
+    return NextResponse.json({ findings: [] })
   }
 }

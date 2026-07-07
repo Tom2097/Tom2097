@@ -11,9 +11,9 @@ export async function GET() {
       .limit(50)
 
     if (error) throw error
-    return NextResponse.json(data || [])
+    return NextResponse.json({ actions: data || [] })
   } catch {
-    return NextResponse.json([])
+    return NextResponse.json({ actions: [] })
   }
 }
 
