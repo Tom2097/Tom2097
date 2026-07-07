@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { ArrowRight, Activity, Zap, Shield, Globe, Crown, Lock, ChevronRight, RefreshCw, AlertTriangle, BarChart2, TrendingUp, MessageSquare, Users, FileText, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -23,23 +22,29 @@ export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login?reason=no_user')
+  const { data: { user }, error: userErr } = await supabase.auth.getUser()
+  if (!user) {
+    return <Err msg="getUser returned null" detail={userErr?.message} />
+  }
 
   const serviceDb = createServiceClient()
-  const { data: profile } = await serviceDb
+  const { data: profile, error: profileErr } = await serviceDb
     .from("profiles")
     .select("organization_id, role, team_id")
     .eq("id", user.id)
     .maybeSingle()
-  if (!profile) redirect('/auth/login?reason=no_profile')
+  if (!profile) {
+    return <Err msg="Profile not found" detail={profileErr?.message} uid={user.id} />
+  }
 
-  const { data: org } = await serviceDb
+  const { data: org, error: orgErr } = await serviceDb
     .from("organizations")
     .select("plan_id, feature_flags, trial_ends_at, billing_period_ends_at")
     .eq("id", profile.organization_id)
     .maybeSingle()
-  if (!org) redirect('/auth/login?reason=no_org')
+  if (!org) {
+    return <Err msg="Org not found" detail={orgErr?.message} oid={profile.organization_id} />
+  }
 
   const orgId = profile.organization_id
 
@@ -480,6 +485,22 @@ export default async function DashboardPage() {
       </section>
 
 
+    </div>
+  )
+}
+
+function Err({ msg, detail, uid, oid }: { msg: string; detail?: string; uid?: string; oid?: string }) {
+  return (
+    <div style={{background:"#111",color:"#f44",padding:40,fontFamily:"monospace",minHeight:"100vh"}}>
+      <h1 style={{fontSize:24,marginBottom:16}}>Dashboard Auth Error: {msg}</h1>
+      {detail && <p>Detail: {detail}</p>}
+      {uid && <p>User: {uid}</p>}
+      {oid && <p>Org: {oid}</p>}
+      <div style={{marginTop:20}}>
+        <a href="/login-check" style={{color:"#0ff"}}>Go to Login Check →</a>
+        {' | '}
+        <a href="/auth/login" style={{color:"#0ff"}}>Back to Login →</a>
+      </div>
     </div>
   )
 }

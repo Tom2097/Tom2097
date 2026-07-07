@@ -26,6 +26,8 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const redirect = searchParams?.get("redirect") || "/"
   const errorParam = searchParams?.get("error")
+  const reasonParam = searchParams?.get("reason")
+  const displayError = errorParam || (reasonParam ? `Auth check failed: ${reasonParam}` : null)
 
   // Check if WebAuthn is available
   useEffect(() => {
@@ -101,10 +103,10 @@ function LoginForm() {
       <form action="/api/auth/login" method="POST">
         <input type="hidden" name="redirect" value={redirect} />
         <CardContent className="space-y-4">
-          {errorParam && (
+          {displayError && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              {errorParam}
+              {displayError}
             </div>
           )}
 
