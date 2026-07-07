@@ -5,6 +5,7 @@ import { ChartContainer } from '@/components/digit/live-chart'
 import { LiveChart } from '@/components/digit/live-chart'
 import { RealTimeChart } from '@/components/digit/real-time-chart'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { CrmContactsManager, type CrmContactRow } from '@/components/digit/crm-contacts-manager'
 import { CrmLeadInbox } from '@/components/digit/crm-lead-inbox'
 import { CrmTimeline } from '@/components/digit/crm-timeline'
@@ -124,7 +125,7 @@ export default async function CRMPage() {
 
        {/* Real-Time Pipeline Charts */}
        <div className="grid gap-6 lg:grid-cols-2">
-         <ChartContainer title="Sales Pipeline" subtitle="Real-time deal value by stage with anomaly detection">
+          <ChartContainer title="Sales Pipeline">
            {hasPipeline ? (
              <RealTimeChart
                data={pipelineData}
@@ -140,7 +141,7 @@ export default async function CRMPage() {
            )}
          </ChartContainer>
 
-         <ChartContainer title="Pipeline Health" subtitle="Real-time deal flow analytics">
+          <ChartContainer title="Pipeline Health">
            <div className="grid grid-cols-2 gap-4 h-[280px]">
              <div className="rounded-xl border border-border/50 bg-card p-4">
                <div className="flex items-center justify-between mb-2">

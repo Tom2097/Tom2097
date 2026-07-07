@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ModuleCard, ModuleGrid } from '@/components/digit/module-card'
-import { ChartContainer } from '@/components/ui/chart'
+import { ChartContainer } from '@/components/digit/live-chart'
 import { LiveChart } from '@/components/digit/live-chart'
 import { RealTimeChart } from '@/components/digit/real-time-chart'
 import { modules } from '@/lib/modules'
@@ -71,7 +71,7 @@ export default async function DashboardPage() {
                 <p className="font-medium text-foreground">You&apos;re on a 7-day free trial</p>
                 <p className="text-sm text-muted-foreground">
                   {subscription?.current_period_end
-                    ? `Trial ends ${new Date(subscription.current_period_end).toLocaleDateString()}`
+                    ? `Trial ends ${new Date(subscription.current_period_end || Date.now()).toLocaleDateString()}`
                     : 'Upgrade to unlock all features'}
                 </p>
               </div>
@@ -272,9 +272,13 @@ export default async function DashboardPage() {
                <h3 className="text-lg font-semibold">Risk Exposure</h3>
                <AlertTriangle className="h-5 w-5 text-yellow-500" />
              </div>
-             {riskData.length > 0 ? (
-               <LiveChart data={riskData} dataKey="value" type="line" height={200} />
-             ) : (
+              {riskData.length > 0 ? (
+                <LiveChart data={riskData.map(point => ({
+                  name: new Date(point.timestamp).toLocaleDateString(),
+                  value: point.value,
+                  severity: point.severity
+                }))} dataKey="value" type="line" height={200} />
+              ) : (
                <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
                  No risk data available.
                </div>
@@ -445,7 +449,7 @@ export default async function DashboardPage() {
 
       {/* Operational Performance */}
       <section>
-        <ChartContainer title="Operational Performance" subtitle="24-hour system performance metrics">
+         <ChartContainer title="Operational Performance">
           {operationalData.length > 0 ? (
             <LiveChart data={operationalData} dataKey="value" type="line" height={250} />
           ) : (

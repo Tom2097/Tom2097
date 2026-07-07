@@ -8,6 +8,7 @@ import { IndustryIntelligenceHub } from "@/components/digit/industry-intelligenc
 import { CausalChainView } from "@/components/digit/causal-chain-view"
 import { PredictiveModeling } from "@/components/digit/predictive-modeling"
 import { RealTimeChart } from "@/components/digit/real-time-chart"
+import { ChartContainer } from "@/components/digit/live-chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Brain, BarChart3, Network, Sparkles, RefreshCw, Activity, Cpu, MemoryStick, Zap, AlertTriangle, TrendingUp } from "lucide-react"
@@ -133,7 +134,7 @@ export default function IntelligencePage() {
 
       {/* Real-Time Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartContainer title="Operational Graph Activity" subtitle="Real-time graph operations and insights">
+         <ChartContainer title="Operational Graph Activity">
           <RealTimeChart
             data={chartData}
             dataKey="value"

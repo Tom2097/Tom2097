@@ -10,13 +10,13 @@ import { VerticalIntelligence } from "@/components/digit/vertical-intelligence"
 import { VerticalRecipes } from "@/components/digit/vertical-recipes"
 import { CommandPalette } from "@/components/digit/command-palette"
 import { OperationalReports } from "@/components/digit/operational-reports"
-import { RealTimeChart } from "@/components/digit/real-time-chart"
+import { RealTimeChart, ChartContainer } from "@/components/digit/real-time-chart"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Inbox, Beaker, BookTemplate, Columns, ArrowLeftRight, Brain, FileSearch, MessageSquare, Sparkles, ListTree, Zap, FileText, BarChart2, RefreshCw, AlertTriangle, MessageCircle, Users, Activity } from "lucide-react"
+import { Inbox, Beaker, BookTemplate, Columns, ArrowLeftRight, Brain, FileSearch, MessageSquare, Sparkles, ListTree, Zap, FileText, BarChart2, RefreshCw, AlertTriangle, MessageCircle, Users, Activity, Mail } from "lucide-react"
 
 const sampleDocuments = [
   { id: "doc-1", name: "Invoice_Acme_2024.pdf", content: "INVOICE #INV-001\nDate: 2024-01-15\nVendor: Acme Corp\nTotal: $12,500.00\nItems:\n  - Widget A x 50: $5,000\n  - Widget B x 30: $7,500" },
@@ -158,7 +158,7 @@ export default function OperationsPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartContainer title="Real-Time Processing" subtitle="Documents and entities processed">
+         <ChartContainer title="Real-Time Processing">
           <RealTimeChart
             data={chartData}
             dataKey="value"

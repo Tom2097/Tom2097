@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog"
 import { Loader2, RefreshCw, MessageSquare, Smile, MessageSquarePlus, ThumbsUp, AlertTriangle, Brain, Search } from "lucide-react"
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer, Cell } from "recharts"
-import { ChartContainer } from "@/components/digit/analytics-view"
+import { ChartContainer } from "@/components/digit/live-chart"
 
 // Feedback types
 const FEEDBACK_TYPES = ["bug", "feature", "general"] as const
