@@ -1,6 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service"
 
-interface ComplianceMetric {
+export interface ComplianceMetric {
   framework: string
   total_controls: number
   passed_controls: number

@@ -183,7 +183,7 @@ export async function getPerformanceMetrics(
 
     return results
   } catch (error) {
-    logger.logError("[Metrics] Error fetching performance metrics:", error)
+    logger.logError("[Metrics] Error fetching performance metrics:", error instanceof Error ? { message: error.message } : { error: String(error) })
     throw new Error("Failed to fetch performance metrics")
   }
 }
@@ -249,7 +249,7 @@ export async function compareMetrics(
       isImproving,
     }
   } catch (error) {
-    logger.logError("[Metrics] Error comparing metrics:", error)
+    logger.logError("[Metrics] Error comparing metrics:", error instanceof Error ? { message: error.message } : { error: String(error) })
     throw new Error("Failed to compare metrics")
   }
 }
@@ -287,7 +287,7 @@ export async function getMetricTrends(
 
     return results
   } catch (error) {
-    logger.logError("[Metrics] Error fetching metric trends:", error)
+    logger.logError("[Metrics] Error fetching metric trends:", error instanceof Error ? { message: error.message } : { error: String(error) })
     throw new Error("Failed to fetch metric trends")
   }
 }

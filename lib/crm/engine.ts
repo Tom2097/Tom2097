@@ -630,22 +630,13 @@ export async function getPipelineSummaryRealtime(organizationId: string): Promis
   const normalizedDistribution = leadScoreDistribution.map(v => v / maxDist)
   
   // Get AI recommendations count
-  const { data: aiData } = await db
+  const { count: aiRecommendationsCount } = await db
     .from("ai_recommendations")
-    .select("id", { count: "exact" })
+    .select("*", { count: "exact", head: true })
     .eq("organization_id", organizationId)
     .eq("status", "pending")
   
-  const aiRecommendations = aiData?.count || 0
-  
-  // Get WhatsApp activity (messages per day in last 7 days)
-  const { data: whatsappActivityData } = await db
-    .from("whatsapp_messages")
-    .select("created_at", { count: "exact" })
-    .eq("organization_id", organizationId)
-    .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-  
-  const whatsappActivity = whatsappActivityData?.count ? Math.round(whatsappActivityData.count / 7) : 0
+  const aiRecommendations = aiRecommendationsCount || 0
   
   return {
     whatsappConnected,
@@ -654,7 +645,6 @@ export async function getPipelineSummaryRealtime(organizationId: string): Promis
     avgLeadScore: Number(avgLeadScore.toFixed(1)),
     leadScoreDistribution: normalizedDistribution,
     aiRecommendations,
-    whatsappActivity,
   }
 }
 

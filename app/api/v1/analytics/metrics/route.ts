@@ -1,15 +1,14 @@
 "use server"
 
-import { NextResponse } from "next/server"
-import { createRouteHandlerClient } from "@/lib/supabase/server"
-import { getPerformanceMetrics, compareMetrics, getMetricTrends } from "@/lib/analytics/metrics"
+import { type NextRequest, NextResponse } from "next/server"
+import { getPerformanceMetrics, compareMetrics, type MetricConfig } from "@/lib/analytics/metrics"
 import { withAuth } from "@/lib/auth/with-auth"
 import { logger } from "@/lib/logging"
 
 /**
  * Default metric configurations
  */
-const DEFAULT_METRICS = [
+const DEFAULT_METRICS: MetricConfig[] = [
   {
     name: "Revenue",
     type: "revenue",
@@ -59,88 +58,84 @@ const DEFAULT_METRICS = [
  * 
  * Returns performance metrics for the organization
  */
-export async function GET(request: Request) {
-  return withAuth(async (request, context) => {
-    const { searchParams } = new URL(request.url)
-    const start = searchParams.get("start")
-    const end = searchParams.get("end")
-    const metricNames = searchParams.getAll("metric")
+export const GET = withAuth(async (request: NextRequest, context) => {
+  const { searchParams } = new URL(request.url)
+  const start = searchParams.get("start")
+  const end = searchParams.get("end")
+  const metricNames = searchParams.getAll("metric")
 
-    if (!start || !end) {
-      return NextResponse.json(
-        { success: false, error: "Missing required parameters: start, end" },
-        { status: 400 }
-      )
-    }
+  if (!start || !end) {
+    return NextResponse.json(
+      { success: false, error: "Missing required parameters: start, end" },
+      { status: 400 }
+    )
+  }
 
-    try {
-      // Filter metrics based on query params
-      const metricsToFetch = metricNames.length > 0
-        ? DEFAULT_METRICS.filter(m => metricNames.includes(m.name))
-        : DEFAULT_METRICS
+  try {
+    // Filter metrics based on query params
+    const metricsToFetch = metricNames.length > 0
+      ? DEFAULT_METRICS.filter(m => metricNames.includes(m.name))
+      : DEFAULT_METRICS
 
-      const metrics = await getPerformanceMetrics(
-        context.organizationId,
-        metricsToFetch,
-        { start, end }
-      )
+    const metrics = await getPerformanceMetrics(
+      context.organizationId,
+      metricsToFetch,
+      { start, end }
+    )
 
-      return NextResponse.json({
-        success: true,
-        data: metrics,
-      })
-    } catch (error) {
-      logger.logError("[API] Error fetching metrics:", error)
-      return NextResponse.json(
-        { success: false, error: "Failed to fetch metrics" },
-        { status: 500 }
-      )
-    }
-  })(request)
-}
+    return NextResponse.json({
+      success: true,
+      data: metrics,
+    })
+  } catch (error) {
+    logger.logError("[API] Error fetching metrics:", error instanceof Error ? { message: error.message } : { error: String(error) })
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch metrics" },
+      { status: 500 }
+    )
+  }
+})
 
 /**
  * POST /api/v1/analytics/metrics/compare
  * 
  * Compare metrics between two time periods
  */
-export async function POST(request: Request) {
-  return withAuth(async (request, context) => {
-    const { metricName, period1, period2 } = await request.json()
+export const POST = withAuth(async (request: NextRequest, context) => {
+  const { metricName, period1, period2 } = await request.json()
 
-    if (!metricName || !period1 || !period2) {
+  if (!metricName || !period1 || !period2) {
+    return NextResponse.json(
+      { success: false, error: "Missing required parameters: metricName, period1, period2" },
+      { status: 400 }
+    )
+  }
+
+  try {
+    const metricConfig = DEFAULT_METRICS.find(m => m.name === metricName)
+    if (!metricConfig) {
       return NextResponse.json(
-        { success: false, error: "Missing required parameters: metricName, period1, period2" },
-        { status: 400 }
+        { success: false, error: "Metric not found" },
+        { status: 404 }
       )
     }
 
-    try {
-      const metricConfig = DEFAULT_METRICS.find(m => m.name === metricName)
-      if (!metricConfig) {
-        return NextResponse.json(
-          { success: false, error: "Metric not found" },
-          { status: 404 }
-        )
-      }
+    const comparison = await compareMetrics(
+      context.organizationId,
+      metricConfig,
+      period1,
+      period2
+    )
 
-      const comparison = await compareMetrics(
-        context.organizationId,
-        metricConfig,
-        period1,
-        period2
-      )
-
-      return NextResponse.json({
-        success: true,
-        data: comparison,
-      })
-    } catch (error) {
-      logger.logError("[API] Error comparing metrics:", error)
-      return NextResponse.json(
-        { success: false, error: "Failed to compare metrics" },
-        { status: 500 }
-      )
-    }
-  })(request)
-}
+    return NextResponse.json({
+      success: true,
+      data: comparison,
+    })
+  } catch (error) {
+    logger.logError("[API] Error comparing metrics:", error instanceof Error ? { message: error.message } : { error: String(error) })
+    return NextResponse.json(
+      { success: false, error: "Failed to compare metrics" },
+      { status: 500 }
+    )
+  }
+})

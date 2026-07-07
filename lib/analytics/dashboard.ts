@@ -110,7 +110,7 @@ export async function getDashboardMetrics(
       retentionRate,
     }
   } catch (error) {
-    logger.logError("[Dashboard] Error fetching metrics:", error)
+    logger.logError("[Dashboard] Error fetching metrics:", error instanceof Error ? { message: error.message } : { error: String(error) })
     throw new Error("Failed to fetch dashboard metrics")
   }
 }
@@ -146,7 +146,7 @@ export async function getDashboardTimeseries(
       value: Number(r.value),
     }))
   } catch (error) {
-    logger.logError("[Dashboard] Error fetching timeseries:", error)
+    logger.logError("[Dashboard] Error fetching timeseries:", error instanceof Error ? { message: error.message } : { error: String(error) })
     throw new Error("Failed to fetch timeseries data")
   }
 }
@@ -172,7 +172,7 @@ export async function getDashboardAnomalies(
       summary: result.summary,
     }
   } catch (error) {
-    logger.logError("[Dashboard] Error fetching anomalies:", error)
+    logger.logError("[Dashboard] Error fetching anomalies:", error instanceof Error ? { message: error.message } : { error: String(error) })
     throw new Error("Failed to fetch anomaly data")
   }
 }

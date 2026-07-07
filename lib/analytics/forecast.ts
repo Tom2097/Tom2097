@@ -154,7 +154,7 @@ export async function generateStatisticalForecast(
 
     if (error) throw error
 
-    const points = (data ?? []).map((r: { bucket: string; value: number | string }) => ({
+    const points: TimeseriesPoint[] = (data ?? []).map((r: { bucket: string; value: number | string }) => ({
       bucket: r.bucket,
       value: Number(r.value),
     }))
@@ -197,11 +197,11 @@ export async function generateStatisticalForecast(
       if (seasonality === "weekly") {
         const dayOfWeek = nextDate.getDay()
         const historicalValues = points
-          .filter(p => new Date(p.bucket).getDay() === dayOfWeek)
-          .map(p => p.value)
+          .filter((p: TimeseriesPoint) => new Date(p.bucket).getDay() === dayOfWeek)
+          .map((p: TimeseriesPoint) => p.value)
         if (historicalValues.length > 0) {
-          const avg = historicalValues.reduce((a, b) => a + b, 0) / historicalValues.length
-          seasonalValue = predictedValue * (avg / points.reduce((a, b) => a + b.value, 0) / points.length)
+          const avg = historicalValues.reduce((a: number, b: number) => a + b, 0) / historicalValues.length
+          seasonalValue = predictedValue * (avg / points.reduce((a: number, b: TimeseriesPoint) => a + b.value, 0) / points.length)
         }
       }
 
@@ -212,7 +212,7 @@ export async function generateStatisticalForecast(
 
       // Calculate confidence interval (simplified)
       const stdDev = Math.sqrt(
-        points.reduce((sq, p) => sq + Math.pow(p.value - (regression.slope * points.indexOf(p) + regression.intercept), 2), 0) /
+        points.reduce((sq: number, p: TimeseriesPoint) => sq + Math.pow(p.value - (regression.slope * points.indexOf(p) + regression.intercept), 2), 0) /
           points.length
       )
       const zScore = 1.96 // 95% confidence
@@ -225,13 +225,13 @@ export async function generateStatisticalForecast(
 
     // Calculate model metrics (on training data)
     const mae = points.reduce(
-      (sum, p) => sum + Math.abs(p.value - (regression.slope * points.indexOf(p) + regression.intercept)),
+      (sum: number, p: TimeseriesPoint) => sum + Math.abs(p.value - (regression.slope * points.indexOf(p) + regression.intercept)),
       0
     ) / points.length
 
     const rmse = Math.sqrt(
       points.reduce(
-        (sq, p) => sq + Math.pow(p.value - (regression.slope * points.indexOf(p) + regression.intercept), 2),
+        (sq: number, p: TimeseriesPoint) => sq + Math.pow(p.value - (regression.slope * points.indexOf(p) + regression.intercept), 2),
         0
       ) / points.length
     )
@@ -248,7 +248,7 @@ export async function generateStatisticalForecast(
       seasonality,
     }
   } catch (error) {
-    logger.logError("[Forecast] Error generating statistical forecast:", error)
+    logger.logError("[Forecast] Error generating statistical forecast:", error instanceof Error ? { message: error.message } : { error: String(error) })
     throw new Error("Failed to generate forecast")
   }
 }
@@ -338,11 +338,11 @@ Data:`
 
       throw new Error("Invalid AI response format")
     } catch (error) {
-      logger.logError("[Forecast] Error parsing AI response:", error)
+      logger.logError("[Forecast] Error parsing AI response:", error instanceof Error ? { message: error.message } : { error: String(error) })
       throw new Error("Failed to parse AI forecast")
     }
   } catch (error) {
-    logger.logError("[Forecast] Error generating AI forecast:", error)
+    logger.logError("[Forecast] Error generating AI forecast:", error instanceof Error ? { message: error.message } : { error: String(error) })
     throw new Error("Failed to generate AI forecast")
   }
 }
@@ -373,7 +373,7 @@ export async function generateForecast(
 
     if (error) throw error
 
-    const points = (data ?? []).map((r: { bucket: string; value: number | string }) => ({
+    const points: TimeseriesPoint[] = (data ?? []).map((r: { bucket: string; value: number | string }) => ({
       bucket: r.bucket,
       value: Number(r.value),
     }))
@@ -389,7 +389,7 @@ export async function generateForecast(
       return generateStatisticalForecast(organizationId, eventName, dateRange, opts)
     }
   } catch (error) {
-    logger.logError("[Forecast] Error generating forecast:", error)
+    logger.logError("[Forecast] Error generating forecast:", error instanceof Error ? { message: error.message } : { error: String(error) })
     throw new Error("Failed to generate forecast")
   }
 }

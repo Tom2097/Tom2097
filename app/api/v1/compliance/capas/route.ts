@@ -1,9 +1,10 @@
 "use server"
 
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
 import { createCapa, listCapa } from "@/lib/compliance/capa"
 import { appendComplianceAudit } from "@/lib/compliance/audit-trail"
+import { getClientIp } from "@/lib/auth/audit"
 
 // GET /api/v1/compliance/capas
 export const GET = withAuth(async (req: NextRequest, { organizationId }) => {
@@ -27,9 +28,9 @@ export const POST = withAuth(async (req: NextRequest, { organizationId, userId }
     "capa_records",
     capa.id,
     "CREATE",
-    capa,
+    capa as unknown as Record<string, unknown>,
     userId,
-    req.ip
+    getClientIp(req.headers)
   )
 
   return NextResponse.json(capa)

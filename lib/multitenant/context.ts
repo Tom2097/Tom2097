@@ -2,6 +2,8 @@ import { cache } from "react"
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
+import { extractTenantContext } from "./context.server"
+import type { TenantContextMiddleware } from "./types"
 
 /**
  * Tenant context (Module #1).
@@ -18,14 +20,6 @@ import { createServiceClient } from "@/lib/supabase/service"
  * session the browser app already uses, so the frontend and backend share one
  * identity model.
  */
-
-export interface TenantContextMiddleware {
-  tenantId: string
-  organizationId: string
-  userId: string
-  email: string
-  role: "admin" | "member" | "viewer"
-}
 
 function normalizeRole(role: string | null | undefined): "admin" | "member" | "viewer" {
   if (role === "admin" || role === "owner") return "admin"

@@ -52,8 +52,8 @@ export async function submitFeedback(
       body: input.body,
       type: pick(FEEDBACK_TYPES, input.type, "general"),
       category: input.category || "general",
-      priority: pick(FEEDBACK_PRIORITIES, input.priority, "medium"),
-      status: "new",
+      priority: pick(FEEDBACK_PRIORITIES, input.priority, "normal"),
+      status: "open",
       rating: input.rating,
       submitted_by: submittedBy,
       metadata: input.metadata,
@@ -132,8 +132,8 @@ export async function updateFeedback(
       body: update.body,
       type: update.type ? pick(FEEDBACK_TYPES, update.type, "general") : undefined,
       category: update.category,
-      priority: update.priority ? pick(FEEDBACK_PRIORITIES, update.priority, "medium") : undefined,
-      status: update.status ? pick(FEEDBACK_STATUSES, update.status, "new") : undefined,
+      priority: update.priority ? pick(FEEDBACK_PRIORITIES, update.priority, "normal") : undefined,
+      status: update.status ? pick(FEEDBACK_STATUSES, update.status, "open") : undefined,
       rating: update.rating,
       metadata: update.metadata,
     })
@@ -208,7 +208,9 @@ export async function getFeedbackStats(organizationId: string) {
     ? Math.round(sentimentData.reduce((sum, item) => sum + (item.sentiment_score || 0), 0) / sentimentData.length)
     : 0
   
-  const responseRate = totalItems > 0 ? Math.round(((totalItems - (openItems || 0)) / totalItems) * 100) : 0
+  const totalItemsNum = totalItems || 0
+  const openItemsNum = openItems || 0
+  const responseRate = totalItemsNum > 0 ? Math.round(((totalItemsNum - openItemsNum) / totalItemsNum) * 100) : 0
   
   // Default values for metrics not available in current schema
   const responseTime = 0
@@ -219,8 +221,8 @@ export async function getFeedbackStats(organizationId: string) {
     responseTime,
     categorizationAccuracy,
     responseRate,
-    openItems: openItems || 0,
-    totalItems
+    openItems: openItemsNum,
+    totalItems: totalItemsNum
   }
 }
 

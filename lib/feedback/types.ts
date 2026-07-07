@@ -66,11 +66,13 @@ export interface FeedbackUpdate {
   category?: string
   title?: string
   body?: string | null
+  rating?: number | null
+  metadata?: Record<string, unknown>
 }
 
 export interface ListFeedbackOptions {
-  limit: number
-  offset: number
+  limit?: number
+  offset?: number
   status?: FeedbackStatus | null
   type?: FeedbackType | null
   priority?: FeedbackPriority | null

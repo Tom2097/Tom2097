@@ -156,7 +156,7 @@ export function RealTimeChart({
   return (
     <Card className={className}>
       <ResponsiveContainer width="100%" height={height}>
-        {renderChart()}
+        {renderChart() || <div />}
       </ResponsiveContainer>
       {liveAnomalies.length > 0 && (
         <div className="p-4 border-t border-border/50">

@@ -2,7 +2,7 @@ import { LayoutGrid, Activity, FileText, Workflow } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
-import { extractTenantContext } from '@/lib/multitenant/context'
+import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { getSystemHealth, listMonitors } from '@/lib/monitoring/engine'
 import { getOperationalMetrics } from '@/lib/dashboard/queries'
 

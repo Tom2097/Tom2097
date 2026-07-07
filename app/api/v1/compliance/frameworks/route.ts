@@ -1,9 +1,10 @@
 "use server"
 
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
 import { createServiceClient } from "@/lib/supabase/service"
 import { appendComplianceAudit } from "@/lib/compliance/audit-trail"
+import { getClientIp } from "@/lib/auth/audit"
 
 // GET /api/v1/compliance/frameworks
 export const GET = withAuth(async (req: NextRequest, { organizationId }) => {
@@ -42,9 +43,9 @@ export const POST = withAuth(async (req: NextRequest, { organizationId, userId }
     "compliance_frameworks",
     data.id,
     "CREATE",
-    data,
+    data as Record<string, unknown>,
     userId,
-    req.ip
+    getClientIp(req.headers)
   )
 
   return NextResponse.json(data)

@@ -12,10 +12,10 @@ interface AuditTrailViewerProps {
 export function AuditTrailViewer({ entries }: AuditTrailViewerProps) {
   const getActionBadgeVariant = (action: string) => {
     switch (action) {
-      case "CREATE": return "success"
-      case "UPDATE": return "info"
+      case "CREATE": return "default"
+      case "UPDATE": return "secondary"
       case "DELETE": return "destructive"
-      default: return "secondary"
+      default: return "outline"
     }
   }
 

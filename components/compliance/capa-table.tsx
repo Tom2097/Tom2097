@@ -17,10 +17,10 @@ export function CapaTable({ capas, onView, onEdit }: CapaTableProps) {
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case "open": return "destructive"
-      case "investigation": return "warning"
-      case "action": return "info"
+      case "investigation": return "secondary"
+      case "action": return "default"
       case "verification": return "secondary"
-      case "closed": return "success"
+      case "closed": return "default"
       default: return "outline"
     }
   }
@@ -28,7 +28,7 @@ export function CapaTable({ capas, onView, onEdit }: CapaTableProps) {
   const getSeverityBadgeVariant = (severity: string) => {
     switch (severity) {
       case "minor": return "secondary"
-      case "major": return "warning"
+      case "major": return "default"
       case "critical": return "destructive"
       default: return "outline"
     }

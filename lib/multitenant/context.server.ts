@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
-import { TenantContextMiddleware } from './types'
+import type { TenantContextMiddleware } from './types'
+export type { TenantContextMiddleware }
 
 // Re-export the server-only version
 export async function extractTenantContext(
@@ -48,9 +49,10 @@ export async function extractTenantContext(
     }
 
     return {
+      tenantId: profile.organization_id,
+      organizationId: profile.organization_id,
       userId: user.id,
       email: user.email || '',
-      organizationId: profile.organization_id,
       teamId: profile.team_id || null,
       role: profile.role,
       planId: org.plan_id,
