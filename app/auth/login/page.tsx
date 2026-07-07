@@ -3,7 +3,6 @@
 import { useState, Suspense, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -42,24 +41,28 @@ function LoginForm() {
     setIsLoading(true)
     setError(null)
 
-    // Handle remember me
     if (rememberMe) {
       localStorage.setItem("digit_remember_email", email)
     } else {
       localStorage.removeItem("digit_remember_email")
     }
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
 
-    if (error) {
-      setError(error instanceof Error ? error.message : "Failed to login")
-      setIsLoading(false)
-    } else {
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Login failed")
+      }
+
       window.location.href = redirect
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to login")
+      setIsLoading(false)
     }
   }
 
