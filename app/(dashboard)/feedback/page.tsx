@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { redirect } from "next/navigation"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog"
 import { Loader2, RefreshCw, MessageSquare, Smile, MessageSquarePlus, ThumbsUp, AlertTriangle, Brain, Search, Sparkles } from "lucide-react"
-import { extractTenantContext } from "@/lib/multitenant/context.server"
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer, Cell } from "recharts"
 import { ChartContainer } from "@/components/digit/live-chart"
 
@@ -76,10 +74,10 @@ type FeedbackMetrics = {
 }
 
 export default function FeedbackPage() {
-  const [ctx, setCtx] = useState<any>(null)
   const [feedback, setFeedback] = useState<FeedbackItem[]>([])
   const [metrics, setMetrics] = useState<FeedbackMetrics>({ sentimentScore: 0, responseTime: 0, categorizationAccuracy: 0, responseRate: 0, openItems: 0, totalItems: 0 })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const [open, setOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState<FeedbackForm>({ title: "", body: "", type: "general", category: "", priority: "medium" })
@@ -89,9 +87,9 @@ export default function FeedbackPage() {
   const [filterType, setFilterType] = useState<FeedbackType | 'all'>('all')
   const [sort, setSort] = useState<'recent' | 'votes'>('recent')
 
-  const fetchFeedback = async () => {
-    if (!ctx?.organizationId) return
+  const fetchFeedback = useCallback(async () => {
     setLoading(true)
+    setError("")
     try {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
@@ -100,6 +98,16 @@ export default function FeedbackPage() {
       if (sort) params.set('sort', sort)
       
       const response = await fetch(`/api/v1/feedback?${params.toString()}`)
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError("Please sign in to view feedback.")
+        } else {
+          setError("Failed to load feedback.")
+        }
+        setFeedback([])
+        return
+      }
+      
       const { stats, items } = await response.json()
       
       setMetrics({
@@ -113,24 +121,22 @@ export default function FeedbackPage() {
       setFeedback(items)
     } catch (error) {
       console.error("Failed to fetch feedback:", error)
+      setError("Failed to load feedback.")
     } finally {
       setLoading(false)
     }
-  }
+  }, [search, filterStatus, filterType, sort])
 
+  // Debounced fetch on mount and when filters/sort/search change
   useEffect(() => {
-    const fetchContext = async () => {
-      const context = await extractTenantContext()
-      if (!context) redirect('/auth/login')
-      setCtx(context)
-      await fetchFeedback()
-    }
-    fetchContext()
-  }, [])
+    const timer = setTimeout(() => {
+      fetchFeedback()
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [search, filterStatus, filterType, sort, fetchFeedback])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!ctx?.organizationId) return
     
     if (!form.title.trim()) {
       setFormError("Title is required")
@@ -167,7 +173,6 @@ export default function FeedbackPage() {
   }
 
   const handleVote = async (feedbackId: string) => {
-    if (!ctx?.organizationId) return
     try {
       const response = await fetch('/api/v1/feedback/vote', {
         method: 'POST',
@@ -399,6 +404,14 @@ export default function FeedbackPage() {
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
+      ) : error ? (
+        <Card className="border-destructive/50">
+          <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+            <AlertTriangle className="h-10 w-10 text-destructive/60" />
+            <CardTitle className="text-base">{error}</CardTitle>
+            <Button variant="outline" onClick={() => fetchFeedback()}>Try Again</Button>
+          </CardContent>
+        </Card>
       ) : feedback.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
