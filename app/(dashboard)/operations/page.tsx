@@ -12,6 +12,7 @@ import { CommandPalette } from "@/components/digit/command-palette"
 import { OperationalReports } from "@/components/digit/operational-reports"
 import { RealTimeChart } from "@/components/digit/real-time-chart"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -158,26 +159,21 @@ export default function OperationsPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Real-Time Processing</CardTitle>
-            </CardHeader>
-            <CardContent>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Real-Time Processing</CardTitle>
-            </CardHeader>
-            <CardContent>
-            <RealTimeChart
-              data={chartData}
-              dataKey="value"
-            type="line"
-            height={280}
-           />
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Real-Time Processing</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ErrorBoundary>
+              <RealTimeChart
+                data={chartData}
+                dataKey="value"
+                type="line"
+                height={280}
+              />
+            </ErrorBoundary>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

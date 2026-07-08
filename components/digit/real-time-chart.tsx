@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart'
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { Card } from '@/components/ui/card'
@@ -32,48 +32,49 @@ export function RealTimeChart({
   forecast = [],
   className,
 }: RealTimeChartProps) {
-  const [chartData, setChartData] = useState(data)
-  const [liveAnomalies, setLiveAnomalies] = useState<DetectedAnomaly[]>(anomalies)
-  const [liveForecast, setLiveForecast] = useState<ForecastPoint[]>(forecast)
+  const getAnomalyForPoint = useCallback((name: string) => {
+    return anomalies.find(a => a.bucket === name || a.timestamp === name)
+  }, [anomalies])
 
-  useEffect(() => {
-    // Update chart data when props change
-    const updateData = () => {
-      setChartData(data)
-      setLiveAnomalies(anomalies)
-      setLiveForecast(forecast)
+  const getForecastForPoint = useCallback((timestamp: string) => {
+    return forecast.find(f => f.timestamp === timestamp)
+  }, [forecast])
+
+  const dotRenderer = useCallback((props: { cx?: number; cy?: number; payload?: { name?: string } }) => {
+    const anomaly = props.payload?.name ? getAnomalyForPoint(props.payload.name) : undefined
+    if (anomaly) {
+      return (
+        <circle cx={props.cx} cy={props.cy} r={6} fill="#ef4444" />
+      )
     }
-    
-    updateData()
-  }, [data, anomalies, forecast])
+    return <circle cx={props.cx} cy={props.cy} r={3} fill="hsl(var(--chart-1))" />
+  }, [getAnomalyForPoint])
 
-  const getAnomalyForPoint = (name: string) => {
-    return liveAnomalies.find(a => a.bucket === name || a.timestamp === name)
-  }
-
-  const getForecastForPoint = (timestamp: string) => {
-    return liveForecast.find(f => f.timestamp === timestamp)
-  }
-
-  const renderChart = () => {
-    const commonProps = {
-      data: chartData,
-      margin: { top: 5, right: 30, left: 20, bottom: 5 },
-    }
-
-    const anomalyAnnotations = liveAnomalies.map((anomaly, index) => {
-      const x = chartData.findIndex(d => d.name === anomaly.bucket || d.timestamp === anomaly.timestamp)
+  const anomalyAnnotations = useMemo(() => {
+    return anomalies.map((anomaly, index) => {
+      const x = data.findIndex(d => d.name === anomaly.bucket || d.timestamp === anomaly.timestamp)
       if (x === -1) return null
       return (
         <g key={`anomaly-${index}`}>
-          <circle cx={x} cy={chartData[x]?.value} r={8} fill="#ef4444" fillOpacity={0.6} />
-          <text x={x} y={chartData[x]?.value - 10} textAnchor="middle" fill="#fff" fontSize={10} fontWeight="bold">
+          <circle cx={x} cy={data[x]?.value} r={8} fill="#ef4444" fillOpacity={0.6} />
+          <text x={x} y={(data[x]?.value || 0) - 10} textAnchor="middle" fill="#fff" fontSize={10} fontWeight="bold">
             !
           </text>
         </g>
       )
     }).filter(Boolean)
+  }, [anomalies, data])
 
+  const chartConfig = useMemo(() => ({
+    value: { label: dataKey, color: "hsl(var(--chart-1))" },
+  }), [dataKey])
+
+  const commonProps = useMemo(() => ({
+    data,
+    margin: { top: 5, right: 30, left: 20, bottom: 5 },
+  }), [data])
+
+  const renderChart = () => {
     switch (type) {
       case 'area':
         return (
@@ -96,7 +97,7 @@ export function RealTimeChart({
               fillOpacity={1}
               fill="url(#colorValue)"
             />
-            {liveForecast.length > 0 && (
+            {forecast.length > 0 && (
               <Area
                 type="monotone"
                 dataKey="forecast"
@@ -106,6 +107,7 @@ export function RealTimeChart({
                 dot={false}
               />
             )}
+            {anomalyAnnotations}
           </AreaChart>
         )
       case 'line':
@@ -121,15 +123,7 @@ export function RealTimeChart({
               dataKey={dataKey}
               stroke="hsl(var(--chart-1))"
               strokeWidth={2}
-              dot={(props) => {
-                const anomaly = getAnomalyForPoint(props.payload.name)
-                if (anomaly) {
-                  return (
-                    <circle cx={props.cx} cy={props.cy} r={6} fill="#ef4444" />
-                  )
-                }
-                return <circle cx={props.cx} cy={props.cy} r={3} fill="hsl(var(--chart-1))" />
-              }}
+              dot={dotRenderer}
             />
           </LineChart>
         )
@@ -153,23 +147,19 @@ export function RealTimeChart({
     }
   }
 
-  const chartConfig = useMemo(() => ({
-    value: { label: dataKey, color: "hsl(var(--chart-1))" },
-  }), [dataKey])
-
   return (
     <Card className={className}>
       <ChartContainer config={chartConfig} style={{ minHeight: height, height }}>
         {renderChart() || <div />}
       </ChartContainer>
-      {liveAnomalies.length > 0 && (
+      {anomalies.length > 0 && (
         <div className="p-4 border-t border-border/50">
           <h4 className="font-semibold mb-2 flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-red-500" />
             Detected Anomalies
           </h4>
           <div className="space-y-2 text-xs">
-             {liveAnomalies.slice(0, 3).map((anomaly, index) => {
+             {anomalies.slice(0, 3).map((anomaly, index) => {
                const trend = anomaly.deviation > 0 ? 'up' : 'down'
                return (
                 <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-secondary/30">
@@ -198,7 +188,7 @@ export function RealTimeChart({
           </div>
         </div>
       )}
-      {liveForecast.length > 0 && (
+      {forecast.length > 0 && (
         <div className="p-4 border-t border-border/50">
           <h4 className="font-semibold mb-2 flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-blue-500" />
@@ -208,12 +198,12 @@ export function RealTimeChart({
             <div>
               <div className="font-medium">Next 6 months</div>
               <div className="text-muted-foreground">
-                {Math.round(((liveForecast[liveForecast.length - 1].forecast - chartData[0]?.value) / chartData[0]?.value) * 100)}% growth projected
+                {Math.round(((forecast[forecast.length - 1].forecast - data[0]?.value) / data[0]?.value) * 100)}% growth projected
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-blue-500">
-                {Math.round(liveForecast[liveForecast.length - 1].forecast)}
+                {Math.round(forecast[forecast.length - 1].forecast)}
               </span>
               <TrendingUp className="h-3 w-3 text-blue-500" />
             </div>

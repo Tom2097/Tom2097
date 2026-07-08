@@ -142,14 +142,16 @@ export default function IntelligencePage() {
 
       {/* Real-Time Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
-         <ChartContainer title="Operational Graph Activity">
-          <RealTimeChart
-            data={chartData}
-            dataKey="value"
-            type="line"
-            height={280}
-          />
-        </ChartContainer>
+        <ErrorBoundary>
+          <ChartContainer title="Operational Graph Activity">
+            <RealTimeChart
+              data={chartData}
+              dataKey="value"
+              type="line"
+              height={280}
+            />
+          </ChartContainer>
+        </ErrorBoundary>
 
         <Card>
           <CardHeader>
