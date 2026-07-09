@@ -1,3 +1,5 @@
+"use client"
+
 import Link from 'next/link'
 import { ArrowRight, Activity, Zap, Shield, Globe, Crown, Lock, ChevronRight, RefreshCw, AlertTriangle, BarChart2, TrendingUp, MessageSquare, Users, FileText, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -16,11 +18,14 @@ import { getDashboardStats, getRevenueMetrics, getOperationalMetrics, getRiskMet
 import { listMonitors } from '@/lib/monitoring/engine'
 import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
 import { forecastMetric } from '@/lib/analytics/forecasting'
+import { useI18n } from '@/lib/i18n/client'
 
 // Tenant-scoped, always rendered with fresh data.
-export const dynamic = 'force-dynamic'
 
-export default async function DashboardPage() {
+// Disable Next.js dynamic rendering for this page (client component)
+
+export default function DashboardPage() {
+  const { t } = useI18n();
   const supabase = await createClient()
   const { data: { user }, error: userErr } = await supabase.auth.getUser()
   if (!user) {
