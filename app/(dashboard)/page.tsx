@@ -23,69 +23,126 @@ import { useI18n } from '@/lib/i18n/client'
 // Tenant-scoped, always rendered with fresh data.
 
 // Disable Next.js dynamic rendering for this page (client component)
-
 export default function DashboardPage() {
   const { t } = useI18n();
-  const supabase = await createClient()
-  const { data: { user }, error: userErr } = await supabase.auth.getUser()
-  if (!user) {
-    return <Err msg="getUser returned null" detail={userErr?.message} />
+  const [dashboardData, setDashboardData] = useState({
+    user: null,
+    profile: null,
+    org: null,
+    stats: null,
+    revenueData: [],
+    operationalData: [],
+    riskData: [],
+    forecastData: [],
+    anomalies: { anomalies: [] },
+    subResult: { data: null },
+    monitorsResult: { monitors: [], total: 0 },
+    loading: true,
+    error: null
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const supabase = await createClient();
+        const { data: { user }, error: userErr } = await supabase.auth.getUser();
+        if (!user) {
+          setDashboardData(prev => ({ ...prev, error: { msg: "getUser returned null", detail: userErr?.message } }));
+          return;
+        }
+
+        const serviceDb = createServiceClient();
+        const { data: profile, error: profileErr } = await serviceDb
+          .from("profiles")
+          .select("organization_id, role")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (!profile) {
+          setDashboardData(prev => ({ ...prev, error: { msg: "Profile not found", detail: profileErr?.message, uid: user.id } }));
+          return;
+        }
+
+        const { data: org, error: orgErr } = await serviceDb
+          .from("organizations")
+          .select("name, slug, created_at")
+          .eq("id", profile.organization_id)
+          .maybeSingle();
+        if (!org) {
+          setDashboardData(prev => ({ ...prev, error: { msg: "Org not found", detail: orgErr?.message, oid: profile.organization_id } }));
+          return;
+        }
+
+        const orgId = profile.organization_id;
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+        const db = createServiceClient();
+        const [stats, revenueData, operationalData, riskData, forecastData, anomalies, subResult, monitorsResult] = await Promise.all([
+          getDashboardStats(orgId),
+          getRevenueMetrics(orgId),
+          getOperationalMetrics(orgId),
+          getRiskMetrics(orgId),
+          forecastMetric(orgId, 'revenue', 6),
+          detectAnomalies(orgId, 'revenue', { start: thirtyDaysAgo.toISOString(), end: now.toISOString() }),
+          db
+            .from('subscriptions')
+            .select('plan_id, status, current_period_end')
+            .eq('organization_id', orgId)
+            .maybeSingle(),
+          listMonitors(orgId, { enabledOnly: true, limit: 4 }).catch(() => ({ monitors: [], total: 0 })),
+        ]);
+
+        setDashboardData({
+          user,
+          profile,
+          org,
+          stats,
+          revenueData,
+          operationalData,
+          riskData,
+          forecastData,
+          anomalies,
+          subResult,
+          monitorsResult,
+          loading: false,
+          error: null
+        });
+      } catch (err) {
+        setDashboardData(prev => ({ ...prev, error: { msg: "Failed to load dashboard", detail: err instanceof Error ? err.message : "Unknown error" }, loading: false }));
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (dashboardData.loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
-  const serviceDb = createServiceClient()
-  const { data: profile, error: profileErr } = await serviceDb
-    .from("profiles")
-    .select("organization_id, role")
-    .eq("id", user.id)
-    .maybeSingle()
-  if (!profile) {
-    return <Err msg="Profile not found" detail={profileErr?.message} uid={user.id} />
+  if (dashboardData.error) {
+    return <Err msg={dashboardData.error.msg} detail={dashboardData.error.detail} uid={dashboardData.error.uid} oid={dashboardData.error.oid} />;
   }
 
-  const { data: org, error: orgErr } = await serviceDb
-    .from("organizations")
-    .select("name, slug, created_at")
-    .eq("id", profile.organization_id)
-    .maybeSingle()
-  if (!org) {
-    return <Err msg="Org not found" detail={orgErr?.message} oid={profile.organization_id} />
-  }
-
-  const orgId = profile.organization_id
-
-  const now = new Date()
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-
-  const db = createServiceClient()
-  const [stats, revenueData, operationalData, riskData, forecastData, anomalies, subResult, monitorsResult] = await Promise.all([
-    getDashboardStats(orgId),
-    getRevenueMetrics(orgId),
-    getOperationalMetrics(orgId),
-    getRiskMetrics(orgId),
-    forecastMetric(orgId, 'revenue', 6),
-    detectAnomalies(orgId, 'revenue', { start: thirtyDaysAgo.toISOString(), end: now.toISOString() }),
-    db
-      .from('subscriptions')
-      .select('plan_id, status, current_period_end')
-      .eq('organization_id', orgId)
-      .maybeSingle(),
-    listMonitors(orgId, { enabledOnly: true, limit: 4 }).catch(() => ({ monitors: [], total: 0 })),
-  ])
+  const { user, profile, org, stats, revenueData, operationalData, riskData, forecastData, anomalies, subResult, monitorsResult } = dashboardData;
 
   const subscription = subResult.data as
     | { plan_id: string; status: string; current_period_end: string | null }
-    | null
-  const isTrialing = subscription?.status === 'trialing'
-  const isActive = subscription?.status === 'active'
-  const hasSubscription = isTrialing || isActive
-  const plan = subscription ? getPlanById(subscription.plan_id) : null
+    | null;
+  const isTrialing = subscription?.status === 'trialing';
+  const isActive = subscription?.status === 'active';
+  const hasSubscription = isTrialing || isActive;
+  const plan = subscription ? getPlanById(subscription.plan_id) : null;
 
   // Module access is gated by the plan's module allowance.
-  const accessibleModuleCount = plan?.limits.modules || 1
-  const accessibleModules = modules.slice(0, accessibleModuleCount)
-  const lockedModules = modules.slice(accessibleModuleCount)
+  const accessibleModuleCount = plan?.limits.modules || 1;
+  const accessibleModules = modules.slice(0, accessibleModuleCount);
+  const lockedModules = modules.slice(accessibleModuleCount);
 
-  const operations = monitorsResult.monitors
+  const operations = monitorsResult.monitors;
 
   return (
     <div className="space-y-8">
