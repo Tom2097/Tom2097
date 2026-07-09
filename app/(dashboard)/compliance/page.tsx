@@ -8,7 +8,7 @@ import { getTranslator } from "@/lib/i18n/server"
 
 export default async function CompliancePage() {
   const ctx = await extractTenantContext()
-  const t = await getTranslator(ctx?.locale)
+  const t = await getTranslator()
   const orgId = ctx?.organizationId
 
   const [score, capas, checks] = orgId

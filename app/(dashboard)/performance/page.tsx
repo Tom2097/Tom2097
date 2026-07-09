@@ -8,7 +8,7 @@ import { getTranslator } from "@/lib/i18n/server"
 
 export default async function PerformancePage() {
   const ctx = await extractTenantContext()
-  const t = await getTranslator(ctx?.locale)
+  const t = await getTranslator()
   const orgId = ctx?.organizationId
 
   const [objectives, benchmarks, drivers, forecast] = orgId
