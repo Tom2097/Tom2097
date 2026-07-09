@@ -263,9 +263,9 @@ export default function FeedbackPage() {
                       <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v as FeedbackType }))}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {FEEDBACK_TYPES.map((t) => (
-             <SelectItem key={t} value={t}>{t("feedback.page." + t)}</SelectItem>
-                          ))}
+                           {FEEDBACK_TYPES.map((type) => (
+              <SelectItem key={type} value={type}>{t("feedback.page." + type)}</SelectItem>
+                           ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -378,8 +378,8 @@ export default function FeedbackPage() {
           <SelectTrigger className="w-36"><SelectValue placeholder="All statuses" /></SelectTrigger>
           <SelectContent>
              <SelectItem value="all">{t("feedback.page.all")} {t("feedback.page.status").toLowerCase()}</SelectItem>
-            {FEEDBACK_STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>{t(`feedback.page.${s}`)}</SelectItem>
+            {FEEDBACK_STATUSES.map((status) => (
+              <SelectItem key={status} value={status}>{t(`feedback.page.${status}`)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
