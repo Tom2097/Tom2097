@@ -54,5 +54,115 @@
     "country": "Country",
     "currency": "Currency",
     "timezone": "Timezone"
+  },
+  "dashboard": {
+    "subscription": {
+      "trial": {
+        "title": "You're on a 7-day free trial",
+        "ends": "Trial ends",
+        "upgradeToUnlock": "Upgrade to unlock all features",
+        "upgradeNow": "Upgrade Now"
+      },
+      "active": {
+        "planSuffix": "Plan",
+        "activeBadge": "Active",
+        "modules": "modules",
+        "users": "users",
+        "unlimited": "Unlimited",
+        "perMonth": "/mo",
+        "manage": "Manage",
+        "upgrade": "Upgrade"
+      }
+    },
+    "hero": {
+      "liveIntelligence": "Live Enterprise Intelligence",
+      "description": "DigiT is an intelligent framework that learns from enterprise operations, improves workflows, predicts outcomes, and enables better decision-making.",
+      "launchAnalytics": "Launch AI Analytics",
+      "exploreModules": "Explore Modules",
+      "aiNetwork": "AI NETWORK",
+      "enterpriseSystems": "ENTERPRISE SYSTEMS"
+    },
+    "liveMetrics": {
+      "title": "Live Metrics",
+      "subtitle": "Real-time operational intelligence monitoring",
+      "refresh": "Refresh",
+      "systemsOperational": "Systems Operational"
+    },
+    "metrics": {
+      "aiAccuracy": "AI Accuracy",
+      "enterpriseClients": "Enterprise Clients",
+      "dataStreams": "Data Streams",
+      "activeOperations": "Active Operations",
+      "runningWorkflows": "Running AI workflows",
+      "riskScore": "Risk Score",
+      "currentRiskLevel": "Current risk level",
+      "anomaliesDetected": "Anomalies Detected",
+      "last30Days": "Last 30 days",
+      "forecastGrowth": "Forecast Growth",
+      "next6Months": "Next 6 months",
+      "noMetrics": "No operational metrics recorded yet. Stats will appear here once your workspace begins reporting."
+    },
+    "charts": {
+      "revenueForecast": {
+        "title": "Enterprise Revenue Forecast",
+        "subtitle": "AI prediction model with anomaly detection",
+        "noData": "No revenue data available yet."
+      },
+      "operationalPerformance": {
+        "title": "Operational Performance",
+        "subtitle": "Real-time system metrics",
+        "noData": "No operational data available yet.",
+        "fallbackNoData": "No operational performance data available yet."
+      }
+    },
+    "riskCompliance": {
+      "title": "Risk & Compliance",
+      "subtitle": "Real-time risk monitoring and compliance status",
+      "activeAlerts": "active alerts",
+      "riskExposure": "Risk Exposure",
+      "anomalyDetection": "Anomaly Detection",
+      "noRiskData": "No risk data available.",
+      "noAnomalies": "No anomalies detected.",
+      "networkStatus": "Network Status",
+      "uptime": "Uptime",
+      "response": "Response",
+      "activeMonitors": "Active Monitors",
+      "noMonitors": "No active monitors configured."
+    },
+    "keyMetrics": {
+      "title": "Key Metrics Summary",
+      "communicationVolume": {
+        "title": "Communication Volume",
+        "subtitle": "Messages processed this week"
+      },
+      "userEngagement": {
+        "title": "User Engagement",
+        "subtitle": "Active users this month"
+      },
+      "documentProcessing": {
+        "title": "Document Processing",
+        "subtitle": "Documents ingested this month"
+      },
+      "growthTrend": {
+        "title": "Growth Trend",
+        "subtitle": "MoM growth"
+      }
+    },
+    "modules": {
+      "title": "Enterprise AI Modules",
+      "accessible": "You have access to {count} of {total} modules",
+      "fallbackDescription": "Intelligent systems connected through one operational ecosystem",
+      "viewAll": "View All Systems",
+      "upgradeToUnlock": "Upgrade to unlock",
+      "viewPlans": "View Plans"
+    },
+    "error": {
+      "authError": "Dashboard Auth Error:",
+      "detail": "Detail:",
+      "user": "User:",
+      "org": "Org:",
+      "goToLoginCheck": "Go to Login Check →",
+      "backToLogin": "Back to Login →"
+    }
   }
 }

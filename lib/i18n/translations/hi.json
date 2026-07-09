@@ -54,5 +54,115 @@
     "country": "देश",
     "currency": "मुद्रा",
     "timezone": "समय क्षेत्र"
+  },
+  "dashboard": {
+    "subscription": {
+      "trial": {
+        "title": "आप 7-दिन के मुफ्त परीक्षण पर हैं",
+        "ends": "परीक्षण समाप्त होता है",
+        "upgradeToUnlock": "सभी सुविधाओं को अनलॉक करने के लिए अपग्रेड करें",
+        "upgradeNow": "अभी अपग्रेड करें"
+      },
+      "active": {
+        "planSuffix": "योजना",
+        "activeBadge": "सक्रिय",
+        "modules": "मॉड्यूल",
+        "users": "उपयोगकर्ता",
+        "unlimited": "असीमित",
+        "perMonth": "/माह",
+        "manage": "प्रबंधित करें",
+        "upgrade": "अपग्रेड"
+      }
+    },
+    "hero": {
+      "liveIntelligence": "लाइव एंटरप्राइज इंटेलिजेंस",
+      "description": "DigiT एक बुद्धिमान ढांचा है जो एंटरप्राइज संचालन से सीखता है, वर्कफ़्लो में सुधार करता है, परिणामों की भविष्यवाणी करता है और बेहतर निर्णय लेने में सक्षम बनाता है।",
+      "launchAnalytics": "एआई एनालिटिक्स लॉन्च करें",
+      "exploreModules": "मॉड्यूल एक्सप्लोर करें",
+      "aiNetwork": "एआई नेटवर्क",
+      "enterpriseSystems": "एंटरप्राइज सिस्टम"
+    },
+    "liveMetrics": {
+      "title": "लाइव मेट्रिक्स",
+      "subtitle": "रियल-टाइम ऑपरेशनल इंटेलिजेंस मॉनिटरिंग",
+      "refresh": "ताज़ा करें",
+      "systemsOperational": "सिस्टम चालू हैं"
+    },
+    "metrics": {
+      "aiAccuracy": "एआई सटीकता",
+      "enterpriseClients": "एंटरप्राइज क्लाइंट",
+      "dataStreams": "डेटा स्ट्रीम",
+      "activeOperations": "सक्रिय ऑपरेशन",
+      "runningWorkflows": "चल रहे एआई वर्कफ़्लो",
+      "riskScore": "जोखिम स्कोर",
+      "currentRiskLevel": "वर्तमान जोखिम स्तर",
+      "anomaliesDetected": "विसंगतियाँ पता चलीं",
+      "last30Days": "पिछले 30 दिन",
+      "forecastGrowth": "विकास पूर्वानुमान",
+      "next6Months": "अगले 6 महीने",
+      "noMetrics": "अभी तक कोई ऑपरेशनल मेट्रिक्स रिकॉर्ड नहीं की गई हैं। जैसे ही आपका वर्कस्पेस रिपोर्टिंग शुरू करेगा, आँकड़े यहाँ दिखाई देंगे।"
+    },
+    "charts": {
+      "revenueForecast": {
+        "title": "एंटरप्राइज राजस्व पूर्वानुमान",
+        "subtitle": "विसंगति पहचान के साथ एआई पूर्वानुमान मॉडल",
+        "noData": "अभी तक कोई राजस्व डेटा उपलब्ध नहीं है।"
+      },
+      "operationalPerformance": {
+        "title": "ऑपरेशनल प्रदर्शन",
+        "subtitle": "रियल-टाइम सिस्टम मेट्रिक्स",
+        "noData": "अभी तक कोई ऑपरेशनल डेटा उपलब्ध नहीं है।",
+        "fallbackNoData": "अभी तक कोई ऑपरेशनल प्रदर्शन डेटा उपलब्ध नहीं है।"
+      }
+    },
+    "riskCompliance": {
+      "title": "जोखिम और अनुपालन",
+      "subtitle": "रियल-टाइम जोखिम मॉनिटरिंग और अनुपालन स्थिति",
+      "activeAlerts": "सक्रिय अलर्ट",
+      "riskExposure": "जोखिम एक्सपोज़र",
+      "anomalyDetection": "विसंगति पहचान",
+      "noRiskData": "कोई जोखिम डेटा उपलब्ध नहीं है।",
+      "noAnomalies": "कोई विसंगतियाँ नहीं मिलीं।",
+      "networkStatus": "नेटवर्क स्थिति",
+      "uptime": "अपटाइम",
+      "response": "प्रतिक्रिया",
+      "activeMonitors": "सक्रिय मॉनिटर",
+      "noMonitors": "कोई सक्रिय मॉनिटर कॉन्फ़िगर नहीं किए गए हैं।"
+    },
+    "keyMetrics": {
+      "title": "मुख्य मेट्रिक्स सारांश",
+      "communicationVolume": {
+        "title": "संचार मात्रा",
+        "subtitle": "इस सप्ताह संसाधित संदेश"
+      },
+      "userEngagement": {
+        "title": "उपयोगकर्ता जुड़ाव",
+        "subtitle": "इस महीने सक्रिय उपयोगकर्ता"
+      },
+      "documentProcessing": {
+        "title": "दस्तावेज़ प्रसंस्करण",
+        "subtitle": "इस महीने संसाधित दस्तावेज़"
+      },
+      "growthTrend": {
+        "title": "विकास प्रवृत्ति",
+        "subtitle": "महीने-दर-महीने विकास"
+      }
+    },
+    "modules": {
+      "title": "एंटरप्राइज एआई मॉड्यूल",
+      "accessible": "आपके पास {total} में से {count} मॉड्यूल का एक्सेस है",
+      "fallbackDescription": "एक ऑपरेशनल इकोसिस्टम के माध्यम से जुड़े बुद्धिमान सिस्टम",
+      "viewAll": "सभी सिस्टम देखें",
+      "upgradeToUnlock": "अनलॉक करने के लिए अपग्रेड करें",
+      "viewPlans": "योजनाएं देखें"
+    },
+    "error": {
+      "authError": "डैशबोर्ड प्रमाणीकरण त्रुटि:",
+      "detail": "विवरण:",
+      "user": "उपयोगकर्ता:",
+      "org": "संगठन:",
+      "goToLoginCheck": "लॉगिन चेक पर जाएं →",
+      "backToLogin": "लॉगिन पर वापस जाएं →"
+    }
   }
 }

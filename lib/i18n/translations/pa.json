@@ -20,7 +20,7 @@
     "signUp": "ਸਾਈਨ ਅਪ",
     "signOut": "ਸਾਈਨ ਆਉਟ",
     "search": "ਖੋਜ",
-    "searchPlaceholder": "ਮੋਡ్యੂਲ, ਡੇਟਾ, ਇਨਸਾਈਟਸ ਖੋਜੋ...",
+    "searchPlaceholder": "ਮੋਡਿਊਲ, ਡੇਟਾ, ਇਨਸਾਈਟਸ ਖੋਜੋ...",
     "notifications": "ਸੂਚਨਾਵਾਂ",
     "save": "ਸਹੇਜੋ",
     "cancel": "ਰੱਦ ਕਰੋ",
@@ -54,5 +54,116 @@
     "country": "ਦੇਸ਼",
     "currency": "ਮੁਦਰਾ",
     "timezone": "ਸਮਾਂ ਖੇਤਰ"
+  },
+  "dashboard": {
+    "subscription": {
+      "trial": {
+        "title": "ਤੁਸੀਂ 7-ਦਿਨਾਂ ਦੀ ਮੁਫ਼ਤ ਅਜ਼ਮਾਇਸ਼ 'ਤੇ ਹੋ",
+        "ends": "ਅਜ਼ਮਾਇਸ਼ ਖਤਮ ਹੁੰਦੀ ਹੈ",
+        "upgradeToUnlock": "ਸਾਰੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਨੂੰ ਅਨਲੌਕ ਕਰਨ ਲਈ ਅਪਗ੍ਰੇਡ ਕਰੋ",
+        "upgradeNow": "ਹੁਣੇ ਅਪਗ੍ਰੇਡ ਕਰੋ"
+      },
+      "active": {
+        "planSuffix": "ਯੋਜਨਾ",
+        "activeBadge": "ਸਰਗਰਮ",
+        "modules": "ਮੋਡਿਊਲ",
+        "users": "ਉਪਭੋਗਤਾ",
+        "unlimited": "ਅਸੀਮਤ",
+        "perMonth": "/ਮਹੀਨਾ",
+        "manage": "ਪ੍ਰਬੰਧਿਤ ਕਰੋ",
+        "upgrade": "ਅਪਗ੍ਰੇਡ"
+      }
+    },
+    "hero": {
+      "liveIntelligence": "ਲਾਈਵ ਐਂਟਰਪ੍ਰਾਈਜ਼ ਇੰਟੈਲੀਜੈਂਸ",
+      "description": "DigiT ਇੱਕ ਬੁੱਧੀਮਾਨ ਫਰੇਮਵਰਕ ਹੈ ਜੋ ਐਂਟਰਪ੍ਰਾਈਜ਼ ਓਪਰੇਸ਼ਨਾਂ ਤੋਂ ਸਿੱਖਦਾ ਹੈ, ਵਰਕਫਲੋਜ਼ ਵਿੱਚ ਸੁਧਾਰ ਕਰਦਾ ਹੈ, ਨਤੀਜਿਆਂ ਦੀ ਭਵਿੱਖਬਾਣੀ ਕਰਦਾ ਹੈ ਅਤੇ ਬਿਹਤਰ ਫੈਸਲੇ ਲੈਣ ਵਿੱਚ ਸਮਰੱਥ ਬਣਾਉਂਦਾ ਹੈ।",
+      "launchAnalytics": "ਏਆਈ ਐਨਾਲਿਟਿਕਸ ਲਾਂਚ ਕਰੋ",
+      "exploreModules": "ਮੋਡਿਊਲ ਐਕਸਪਲੋਰ ਕਰੋ",
+      "aiNetwork": "ਏਆਈ ਨੈੱਟਵਰਕ",
+      "enterpriseSystems": "ਐਂਟਰਪ੍ਰਾਈਜ਼ ਸਿਸਟਮ"
+    },
+    "liveMetrics": {
+      "title": "ਲਾਈਵ ਮੈਟ੍ਰਿਕਸ",
+      "subtitle": "ਰੀਅਲ-ਟਾਈਮ ਓਪਰੇਸ਼ਨਲ ਇੰਟੈਲੀਜੈਂਸ ਨਿਗਰਾਨੀ",
+      "refresh": "ਤਾਜ਼ਾ ਕਰੋ",
+      "systemsOperational": "ਸਿਸਟਮ ਚਾਲੂ ਹਨ"
+    },
+    "metrics": {
+      "aiAccuracy": "ਏਆਈ ਸ਼ੁੱਧਤਾ",
+      "enterpriseClients": "ਐਂਟਰਪ੍ਰਾਈਜ਼ ਕਲਾਇੰਟ",
+      "dataStreams": "ਡੇਟਾ ਸਟ੍ਰੀਮ",
+      "activeOperations": "ਸਰਗਰਮ ਓਪਰੇਸ਼ਨ",
+      "runningWorkflows": "ਚੱਲ ਰਹੇ ਏਆਈ ਵਰਕਫਲੋ",
+      "riskScore": "ਜੋਖਮ ਸਕੋਰ",
+      "currentRiskLevel": "ਮੌਜੂਦਾ ਜੋਖਮ ਪੱਧਰ",
+      "anomaliesDetected": "ਵਿਸੰਗਤੀਆਂ ਦਾ ਪਤਾ ਲੱਗਾ",
+      "last30Days": "ਪਿਛਲੇ 30 ਦਿਨ",
+      "forecastGrowth": "ਵਿਕਾਸ ਦਾ ਪੂਰਵਾਨੁਮਾਨ",
+      "next6Months": "ਅਗਲੇ 6 ਮਹੀਨੇ",
+      "noMetrics": "ਅਜੇ ਤੱਕ ਕੋਈ ਓਪਰੇਸ਼ਨਲ ਮੈਟ੍ਰਿਕਸ ਰਿਕਾਰਡ ਨਹੀਂ ਕੀਤੇ ਗਏ। ਜਿਵੇਂ ਹੀ ਤੁਹਾਡਾ ਵਰਕਸਪੇਸ ਰਿਪੋਰਟਿੰਗ ਸ਼ੁਰੂ ਕਰੇਗਾ, ਅੰਕੜੇ ਇੱਥੇ ਦਿਖਾਈ ਦੇਣਗੇ।"
+    },
+    "charts": {
+      "revenueForecast": {
+        "title": "ਐਂਟਰਪ੍ਰਾਈਜ਼ ਰੈਵੇਨਿਊ ਪੂਰਵਾਨੁਮਾਨ",
+        "subtitle": "ਵਿਸੰਗਤੀ ਖੋਜ ਦੇ ਨਾਲ ਏਆਈ ਪੂਰਵਾਨੁਮਾਨ ਮਾਡਲ",
+        "noData": "ਅਜੇ ਤੱਕ ਕੋਈ ਰੈਵੇਨਿਊ ਡੇਟਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।"
+      },
+      "operationalPerformance": {
+        "title": "ਓਪਰੇਸ਼ਨਲ ਪ੍ਰਦਰਸ਼ਨ",
+        "subtitle": "ਰੀਅਲ-ਟਾਈਮ ਸਿਸਟਮ ਮੈਟ੍ਰਿਕਸ",
+        "noData": "ਅਜੇ ਤੱਕ ਕੋਈ ਓਪਰੇਸ਼ਨਲ ਡੇਟਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।",
+        "fallbackNoData": "ਅਜੇ ਤੱਕ ਕੋਈ ਓਪਰੇਸ਼ਨਲ ਪ੍ਰਦਰਸ਼ਨ ਡੇਟਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।"
+      }
+    },
+    "riskCompliance": {
+      "title": "ਜੋਖਮ ਅਤੇ ਅਨੁਪਾਲਨ",
+      "subtitle": "ਰੀਅਲ-ਟਾਈਮ ਜੋਖਮ ਨਿਗਰਾਨੀ ਅਤੇ ਅਨੁਪਾਲਨ ਸਥਿਤੀ",
+      "activeAlerts": "ਸਰਗਰਮ ਚੇਤਾਵਨੀਆਂ",
+      "riskExposure": "ਜੋਖਮ ਐਕਸਪੋਜ਼ਰ",
+      "anomalyDetection": "ਵਿਸੰਗਤੀ ਖੋਜ",
+      "noRiskData": "ਕੋਈ ਜੋਖਮ ਡੇਟਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।",
+      "noAnomalies": "ਕੋਈ ਵਿਸੰਗਤੀਆਂ ਨਹੀਂ ਮਿਲੀਆਂ।",
+      "networkStatus": "ਨੈੱਟਵਰਕ ਸਥਿਤੀ",
+      "uptime": "ਅਪਟਾਈਮ",
+      "response": "ਪ੍ਰਤੀਕਿਰਆ",
+      "activeMonitors": "ਸਰਗਰਮ ਮਾਨੀਟਰ",
+      "noMonitors": "ਕੋਈ ਸਰਗਰਮ ਮਾਨੀਟਰ ਕੌਂਫਿਗਰ ਨਹੀਂ ਕੀਤੇ ਗਏ ਹਨ।"
+    },
+    "keyMetrics": {
+      "title": "ਮੁੱਖ ਮੈਟ੍ਰਿਕਸ ਸਾਰांਸ਼",
+      "communicationVolume": {
+        "title": "ਸੰਚਾਰ ਵਾਲੀਅਮ",
+        "subtitle": "ਇਸ ਹਫਤੇ ਪ੍ਰੋਸੈਸ ਕੀਤੇ ਸੰਦੇਸ਼"
+      },
+      "userEngagement": {
+        "title": "ਉਪਭੋਗਤਾ ਜੁੜाव",
+        "subtitle": "ਇਸ ਮਹੀਨੇ ਸਰਗਰਮ ਉਪਭੋਗਤਾ"
+      },
+      "documentProcessing": {
+        "title": "ਦਸਤਾਵੇਜ਼ ਪ੍ਰੋਸੈਸਿੰਗ",
+        "subtitle": "ਇਸ ਮਹੀਨੇ ਪ੍ਰੋਸੈਸ ਕੀਤੇ ਦਸਤਾਵੇਜ਼"
+      },
+      "growthTrend": {
+        "title": "ਵਿਕਾਸ ਰੁਝਾਨ",
+        "subtitle": "ਮਹੀਨਾ-ਦਰ-ਮਹੀਨਾ ਵਿਕਾਸ"
+      }
+    },
+    "modules": {
+      "title": "ਐਂਟਰਪ੍ਰਾਈਜ਼ ਏਆਈ ਮੋਡਿਊਲ",
+      "accessible": "ਤੁਹਾਡੇ ਕੋਲ {total} ਵਿੱਚੋਂ {count} ਮੋਡਿਊਲ ਦਾ ਪਹੁੰਚ ਹੈ",
+      "fallbackDescription": "ਇੱਕ ਓਪਰੇਸ਼ਨਲ ਈਕੋਸਿਸਟਮ ਦੁਆਰਾ ਜੁੜੇ ਬੁੱਧੀਮਾਨ ਸਿਸਟਮ",
+      "viewAll": "ਸਾਰੇ ਸਿਸਟਮ ਵੇਖੋ",
+      "upgradeToUnlock": "ਅਨਲੌਕ ਕਰਨ ਲਈ ਅਪਗ੍ਰੇਡ ਕਰੋ",
+      "viewPlans": "ਯੋਜਨਾਵਾਂ ਵੇਖੋ"
+    },
+    "error": {
+      "authError": "ਡੈਸ਼ਬੋਰਡ ਪ੍ਰਮਾਣੀਕਰਨ ਗਲਤੀ:",
+      "detail": "ਵੇਰਵਾ:",
+      "user": "ਉਪਭੋਗਤਾ:",
+      "org": "ਸੰਸਥਾ:",
+      "goToLoginCheck": "ਲੌਗਇਨ ਚੈੱਕ 'ਤੇ ਜਾਓ →",
+      "backToLogin": "ਲੌਗਇਨ 'ਤੇ ਵਾਪਸ ਜਾਓ →"
+    }
   }
+}
 }
