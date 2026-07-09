@@ -162,7 +162,12 @@
       "quality": "गुणवत्ता",
       "cost": "लागत",
       "responsiveness": "प्रतिक्रियाशीलता",
-      "total": "कुल"
+      "total": "कुल",
+      "acrossAllCategories": "सभी श्रेणियों में",
+      "belowReorderPoint": "पुनः ऑर्डर बिंदु से नीचे",
+      "of": "का",
+      "free": "खाली",
+      "scorecardsActive": "स्कोरकार्ड सक्रिय"
     }
   },
   "performance": {

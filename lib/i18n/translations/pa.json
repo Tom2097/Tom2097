@@ -162,7 +162,12 @@
       "quality": "ਗੁਣਵੱਤਾ",
       "cost": "ਲਾਗਤ",
       "responsiveness": "ਪ੍ਰਤੀਕਿਰਿਆਸ਼ੀਲਤਾ",
-      "total": "ਕੁੱਲ"
+      "total": "ਕੁੱਲ",
+      "acrossAllCategories": "ਸਾਰੀਆਂ ਸ਼੍ਰੇਣੀਆਂ ਵਿੱਚ",
+      "belowReorderPoint": "ਮੁੜ ਆਰਡਰ ਬਿੰਦੂ ਤੋਂ ਹੇਠਾਂ",
+      "of": "ਦਾ",
+      "free": "ਖਾਲੀ",
+      "scorecardsActive": "ਸਕੋਰਕਾਰਡ ਸਰਗਰਮ"
     }
   },
   "performance": {
