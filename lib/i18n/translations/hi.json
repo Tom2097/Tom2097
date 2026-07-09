@@ -200,13 +200,7 @@
       "totalObjectives": "कुल उद्देश्य",
       "decompositionFactors": "विघटन कारक",
       "forecastPeriods": "पूर्वानुमान अवधि",
-      "projectedDataPoints": "प्रक्षेपित डेटा बिंदु",
-      "total": "कुल",
-      "acrossAllCategories": "सभी श्रेणियों में",
-      "belowReorderPoint": "पुनः ऑर्डर बिंदु से नीचे",
-      "of": "का",
-      "free": "खाली",
-      "scorecardsActive": "स्कोरकार्ड सक्रिय"
+      "projectedDataPoints": "प्रक्षेपित डेटा बिंदु"
     }
   },
   "feedback": {
@@ -309,7 +303,12 @@
       "checkName": "जांच का नाम",
       "expiry": "समाप्ति",
       "daysLeft": "{days} दिन बचे",
-      "expired": "समाप्त"
+      "expired": "समाप्त",
+      "noFrameworkScores": "अभी तक कोई फ्रेमवर्क स्कोर नहीं",
+      "ready": "तैयार",
+      "needsWork": "काम की आवश्यकता",
+      "total": "कुल",
+      "frameworksTracked": "फ्रेमवर्क ट्रैक किए गए"
     }
   },
   "analytics": {
@@ -900,12 +899,7 @@
         "viewed": "देखा गया",
         "accepted": "स्वीकृत",
         "rejected": "अस्वीकृत",
-      "expired": "समाप्त",
-      "noFrameworkScores": "अभी तक कोई फ्रेमवर्क स्कोर नहीं",
-      "ready": "तैयार",
-      "needsWork": "काम की आवश्यकता",
-      "total": "कुल",
-      "frameworksTracked": "फ्रेमवर्क ट्रैक किए गए"
+        "expired": "समाप्त"
       }
     },
     "leadInbox": {

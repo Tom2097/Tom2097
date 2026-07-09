@@ -200,13 +200,7 @@
       "totalObjectives": "ਕੁੱਲ ਉਦੇਸ਼",
       "decompositionFactors": "ਵਿਘਟਨ ਕਾਰਕ",
       "forecastPeriods": "ਪੂਰਵਾਨੁਮਾਨ ਅਵਧੀ",
-      "projectedDataPoints": "ਪ੍ਰੋਜੈਕਟਡ ਡੇਟਾ ਪੁਆਇੰਟ",
-      "total": "ਕੁੱਲ",
-      "acrossAllCategories": "ਸਾਰੀਆਂ ਸ਼੍ਰੇਣੀਆਂ ਵਿੱਚ",
-      "belowReorderPoint": "ਮੁੜ ਆਰਡਰ ਬਿੰਦੂ ਤੋਂ ਹੇਠਾਂ",
-      "of": "ਦਾ",
-      "free": "ਖਾਲੀ",
-      "scorecardsActive": "ਸਕੋਰਕਾਰਡ ਸਰਗਰਮ"
+      "projectedDataPoints": "ਪ੍ਰੋਜੈਕਟਡ ਡੇਟਾ ਪੁਆਇੰਟ"
     }
   },
   "feedback": {
