@@ -338,7 +338,7 @@
       "openIncidentsDetected": "Open Incidents Detected",
       "unresolvedIncidents": "{count} unresolved incident{plural} across {total} monitored service{servicesPlural}.",
       "servicesDown": "{down} down, {degraded} degraded. Current uptime {uptime}%.",
-      "topEvent": '"{name}" leads activity with {value} events in the last {days} days.',
+      "topEvent": "\"{name}\" leads activity with {value} events in the last {days} days.",
       "activityTrendingUp": "Activity Trending Up",
       "activitySlowing": "Activity Slowing",
       "activityChange": "Platform activity is {direction} {change}% across the second half of this window.",
