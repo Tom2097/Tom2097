@@ -55,6 +55,113 @@
     "currency": "मुद्रा",
     "timezone": "समय क्षेत्र"
   },
+  "settings": {
+    "title": "सेटिंग्स",
+    "description": "अपनी सदस्यता, टीम और प्राथमिकताएं प्रबंधित करें",
+    "successBanner": "आपकी सदस्यता सफलतापूर्वक सक्रिय कर दी गई है!",
+    "subscription": {
+      "plan": "{{planName}} योजना",
+      "status": {
+        "active": "सक्रिय",
+        "trialing": "ट्रायल"
+      },
+      "price": "{{price}}/माह",
+      "trialPeriod": "7-दिन का मुफ्त परीक्षण पूर्ण सुविधाओं के साथ",
+      "planFeatures": "योजना की विशेषताएं",
+      "nextBillingDate": "अगली बिलिंग तिथि: {{date}}",
+      "cancelAtPeriodEnd": "बिलिंग अवधि के अंत में रद्द होगा",
+      "trialNoBilling": "ट्रायल अवधि - अपग्रेड तक कोई बिलिंग नहीं",
+      "availablePlans": "उपलब्ध योजनाएं",
+      "current": "वर्तमान",
+      "popular": "लोकप्रिय",
+      "month": "/माह",
+      "startTrial": "ट्रायल शुरू करें",
+      "upgrade": "अपग्रेड",
+      "usageLimits": "उपयोग और सीमाएं"
+    },
+    "team": {
+      "title": "टीम सदस्य",
+      "description": "अपने संगठन तक किसकी पहुंच है प्रबंधित करें",
+      "inviteMember": "सदस्य आमंत्रित करें",
+      "inviteDialog": {
+        "title": "टीम सदस्य आमंत्रित करें",
+        "description": "अपने संगठन में शामिल होने के लिए आमंत्रण भेजें",
+        "emailLabel": "ईमेल पता",
+        "emailPlaceholder": "सहकर्मी@कंपनी.कॉम",
+        "roleLabel": "भूमिका",
+        "roleOptions": {
+          "member": "सदस्य",
+          "admin": "एडमिन",
+          "viewer": "दर्शक"
+        },
+        "cancel": "रद्द करें",
+        "sendInvitation": "आमंत्रण भेजें"
+      },
+      "status": {
+        "active": "सक्रिय",
+        "owner": "मालिक"
+      },
+      "inviteDescription": "अपने एआई एनालिटिक्स डैशबोर्ड पर सहयोग करने के लिए टीम सदस्यों को आमंत्रित करें।"
+    },
+    "organization": {
+      "details": "संगठन विवरण",
+      "nameLabel": "संगठन का नाम",
+      "urlLabel": "संगठन यूआरएल",
+      "urlPrefix": "digit.app/",
+      "saveChanges": "परिवर्तन सहेजें",
+      "apiKeys": {
+        "title": "एपीआई कुंजियां",
+        "description": "अपनी एकीकरणों के लिए एपीआई एक्सेस कुंजियां प्रबंधित करें",
+        "generateKey": "कुंजी जनरेट करें",
+        "newKey": "आपकी नई एपीआई कुंजी",
+        "copyKeyWarning": "इस कुंजी को अभी कॉपी करें। आप इसे दोबारा नहीं देख पाएंगे।",
+        "noKeys": "अभी तक कोई एपीआई कुंजी नहीं बनाई गई",
+        "generateKeyDescription": "DigiT को अपने सिस्टम के साथ एकीकृत करने के लिए एपीआई कुंजी जनरेट करें"
+      }
+    },
+    "security": {
+      "title": "सुरक्षा सेटिंग्स",
+      "twoFactorAuth": {
+        "title": "टू-फैक्टर प्रमाणीकरण",
+        "description": "अपने खाते में अतिरिक्त सुरक्षा परत जोड़ें",
+        "setupTitle": "टू-फैक्टर प्रमाणीकरण सेट अप करें",
+        "setupDescription": "अपने प्रमाणक ऐप के साथ QR कोड स्कैन करें",
+        "disableTitle": "टू-फैक्टर प्रमाणीकरण अक्षम करें",
+        "disableDescription": "पुष्टि के लिए अपने प्रमाणक ऐप से एक TOTP कोड दर्ज करें",
+        "verifyCodeLabel": "TOTP कोड से सत्यापित करें",
+        "backupCodes": {
+          "title": "बैकअप कोड",
+          "description": "इन्हें सुरक्षित स्थान पर सहेजें। प्रत्येक कोड केवल एक बार उपयोग किया जा सकता है।"
+        },
+        "cancel": "रद्द करें",
+        "verifyEnable": "सत्यापित करें और सक्षम करें",
+        "disable": "अक्षम करें"
+      },
+      "emailNotifications": {
+        "title": "ईमेल सूचनाएं",
+        "description": "ईमेल के माध्यम से सुरक्षा अलर्ट प्राप्त करें"
+      },
+      "changePassword": {
+        "title": "पासवर्ड बदलें",
+        "currentPassword": "वर्तमान पासवर्ड",
+        "newPassword": "नया पासवर्ड",
+        "confirmPassword": "नया पासवर्ड पुष्टि करें",
+        "updatePassword": "पासवर्ड अपडेट करें"
+      },
+      "dangerZone": {
+        "title": "खतरे का क्षेत्र",
+        "description": "एक बार जब आप अपना खाता हटा देते हैं, तो वापस नहीं आ सकते। कृपया निश्चित रहें।",
+        "deleteAccount": "खाता हटाएं",
+        "deleteDialog": {
+          "title": "खाता हटाएं",
+          "description": "यह आपके खाते और सभी संबद्ध डेटा को स्थायी रूप से हटा देगा। पुष्टि के लिए **{{confirmation}}** टाइप करें।",
+          "confirmationPlaceholder": "पुष्टि के लिए DELETE टाइप करें",
+          "cancel": "रद्द करें",
+          "deleteAccount": "मेरा खाता हटाएं"
+        }
+      }
+    }
+  },
   "auth": {
     "login": {
       "welcomeBack": "वापस स्वागत है",

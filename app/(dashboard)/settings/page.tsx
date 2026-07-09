@@ -49,6 +49,7 @@ import { UsageMonitor } from "@/components/digit/usage-monitor"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
+import { useI18n } from "@/lib/i18n/client"
 
 interface Profile {
   id: string
@@ -95,12 +96,13 @@ function SuccessBanner() {
       className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-green-600"
     >
       <Check className="w-5 h-5" />
-      <span>Your subscription has been activated successfully!</span>
+      <span>{t("settings.successBanner")}</span>
     </motion.div>
   )
 }
 
 export default function SettingsPage() {
+  const { t } = useI18n();
   const [profile, setProfile] = useState<Profile | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [organization, setOrganization] = useState<Organization | null>(null)
@@ -429,8 +431,8 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8 p-6 md:p-8">
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
-        <p className="text-muted-foreground">Manage your subscription, team, and preferences</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">{t("settings.title")}</h1>
+        <p className="text-muted-foreground">{t("settings.description")}</p>
       </div>
 
       {toast && (
@@ -481,7 +483,7 @@ export default function SettingsPage() {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-xl font-semibold text-foreground">
-                      {currentPlan?.name || "Free Trial"} Plan
+                      {t("settings.subscription.plan", { planName: currentPlan?.name || t("settings.subscription.status.trialing") })}
                     </h2>
                     <Badge 
                       variant="secondary" 
@@ -490,13 +492,13 @@ export default function SettingsPage() {
                         : "bg-amber-500/20 text-amber-600 border-amber-500/30"
                       }
                     >
-                      {subscription?.status || "trialing"}
+                      {t(`settings.subscription.status.${subscription?.status || "trialing"}`)}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {currentPlan 
-                      ? `${formatPrice(currentPlan.priceInCents)}/month`
-                      : "7-day free trial with full access"
+                      ? t("settings.subscription.price", { price: formatPrice(currentPlan.priceInCents) })
+                      : t("settings.subscription.trialPeriod")
                     }
                   </p>
                 </div>
@@ -523,7 +525,7 @@ export default function SettingsPage() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-3">Plan Features</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-3">{t("settings.subscription.planFeatures")}</p>
                   <ul className="space-y-2">
                     {(currentPlan?.features || [
                       "7-day free trial",
@@ -543,21 +545,18 @@ export default function SettingsPage() {
                   {subscription?.current_period_end ? (
                     <div className="space-y-2">
                       <p className="text-sm">
-                        Next billing date:{" "}
-                        <span className="font-medium text-foreground">
-                          {new Date(subscription.current_period_end).toLocaleDateString()}
-                        </span>
+                        {t("settings.subscription.nextBillingDate", { date: new Date(subscription.current_period_end).toLocaleDateString() })}
                       </p>
                       {subscription.cancel_at_period_end && (
                         <div className="flex items-center gap-2 text-amber-600 text-sm">
                           <AlertCircle className="w-4 h-4" />
-                          Cancels at end of billing period
+                          {t("settings.subscription.cancelAtPeriodEnd")}
                         </div>
                       )}
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      Trial period - no billing until you upgrade
+                      {t("settings.subscription.trialNoBilling")}
                     </p>
                   )}
                 </div>
@@ -566,7 +565,7 @@ export default function SettingsPage() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <h3 className="text-lg font-semibold mb-4">Available Plans</h3>
+            <h3 className="text-lg font-semibold mb-4">{t("settings.subscription.availablePlans")}</h3>
             <div className="grid md:grid-cols-3 gap-4">
               {SUBSCRIPTION_PLANS.map((plan) => (
                 <Card 
@@ -579,12 +578,12 @@ export default function SettingsPage() {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-lg font-semibold">{plan.name}</h4>
-                    {subscription?.plan_id === plan.id && <Badge>Current</Badge>}
-                    {plan.popular && subscription?.plan_id !== plan.id && <Badge variant="secondary">Popular</Badge>}
+                    {subscription?.plan_id === plan.id && <Badge>{t("settings.subscription.current")}</Badge>}
+                    {plan.popular && subscription?.plan_id !== plan.id && <Badge variant="secondary">{t("settings.subscription.popular")}</Badge>}
                   </div>
                   <div className="flex items-baseline gap-1 mb-4">
                     <span className="text-2xl font-bold">{formatPrice(plan.priceInCents)}</span>
-                    <span className="text-muted-foreground text-sm">/month</span>
+                    <span className="text-muted-foreground text-sm">{t("settings.subscription.month")}</span>
                   </div>
                   <ul className="space-y-2 mb-4">
                     {plan.features.slice(0, 4).map((feature, i) => (
@@ -597,7 +596,7 @@ export default function SettingsPage() {
                   {subscription?.plan_id !== plan.id && (
                     <Button variant="outline" className="w-full" asChild>
                       <Link href="/pricing">
-                        {!subscription?.plan_id ? "Start Trial" : "Upgrade"}
+                        {!subscription?.plan_id ? t("settings.subscription.startTrial") : t("settings.subscription.upgrade")}
                       </Link>
                     </Button>
                   )}
@@ -608,7 +607,7 @@ export default function SettingsPage() {
 
           {currentPlan && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <h3 className="text-lg font-semibold mb-4">Usage & Limits</h3>
+              <h3 className="text-lg font-semibold mb-4">{t("settings.subscription.usageLimits")}</h3>
               <UsageMonitor
               />
             </motion.div>
@@ -621,57 +620,57 @@ export default function SettingsPage() {
             <Card className="p-6 border-border/50 bg-card/50">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-foreground">Team Members</h3>
+                  <h3 className="text-lg font-semibold text-foreground">{t("settings.team.title")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Manage who has access to your organization
+                    {t("settings.team.description")}
                   </p>
                 </div>
                 <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
                   <DialogTrigger asChild>
                     <Button>
                       <Users className="w-4 h-4 mr-2" />
-                      Invite Member
+                      {t("settings.team.inviteMember")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Invite Team Member</DialogTitle>
+                      <DialogTitle>{t("settings.team.inviteDialog.title")}</DialogTitle>
                       <DialogDescription>
-                        Send an invitation to join your organization
+                        {t("settings.team.inviteDialog.description")}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       <div className="space-y-2">
-                        <Label htmlFor="inviteEmail">Email Address</Label>
+                        <Label htmlFor="inviteEmail">{t("settings.team.inviteDialog.emailLabel")}</Label>
                         <Input
                           id="inviteEmail"
                           type="email"
-                          placeholder="colleague@company.com"
+                          placeholder={t("settings.team.inviteDialog.emailPlaceholder")}
                           value={inviteEmail}
                           onChange={(e) => setInviteEmail(e.target.value)}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="inviteRole">Role</Label>
+                        <Label htmlFor="inviteRole">{t("settings.team.inviteDialog.roleLabel")}</Label>
                         <Select value={inviteRole} onValueChange={setInviteRole}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="member">Member</SelectItem>
-                            <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="viewer">Viewer</SelectItem>
+                            <SelectItem value="member">{t("settings.team.inviteDialog.roleOptions.member")}</SelectItem>
+                            <SelectItem value="admin">{t("settings.team.inviteDialog.roleOptions.admin")}</SelectItem>
+                            <SelectItem value="viewer">{t("settings.team.inviteDialog.roleOptions.viewer")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setInviteOpen(false)}>
-                        Cancel
+                        {t("settings.team.inviteDialog.cancel")}
                       </Button>
                       <Button onClick={handleInvite} disabled={!inviteEmail || inviting}>
                         {inviting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                        Send Invitation
+                        {t("settings.team.inviteDialog.sendInvitation")}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -691,13 +690,13 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <Badge variant="secondary" className="bg-chart-2/20 text-chart-2">active</Badge>
-                  <Badge>{profile?.role || 'owner'}</Badge>
+                  <Badge variant="secondary" className="bg-chart-2/20 text-chart-2">{t("settings.team.status.active")}</Badge>
+                  <Badge>{profile?.role || t("settings.team.status.owner")}</Badge>
                 </div>
               </div>
 
               <p className="text-sm text-muted-foreground mt-4">
-                Invite team members to collaborate on your AI analytics dashboard.
+                {t("settings.team.inviteDescription")}
               </p>
             </Card>
           </motion.div>
@@ -707,10 +706,10 @@ export default function SettingsPage() {
         <TabsContent value="organization" className="space-y-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="p-6 border-border/50 bg-card/50">
-              <h3 className="text-lg font-semibold text-foreground mb-6">Organization Details</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-6">{t("settings.organization.details")}</h3>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="orgName">Organization Name</Label>
+                  <Label htmlFor="orgName">{t("settings.organization.nameLabel")}</Label>
                   <Input 
                     id="orgName"
                     value={orgName}
@@ -719,9 +718,9 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="orgSlug">Organization URL</Label>
+                  <Label htmlFor="orgSlug">{t("settings.organization.urlLabel")}</Label>
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm">digit.app/</span>
+                    <span className="text-muted-foreground text-sm">{t("settings.organization.urlPrefix")}</span>
                     <Input 
                       id="orgSlug"
                       value={orgSlug}
@@ -733,7 +732,7 @@ export default function SettingsPage() {
               </div>
               <Button className="mt-6" onClick={handleSaveOrg} disabled={savingOrg || !orgName}>
                 {savingOrg ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                Save Changes
+                {t("settings.organization.saveChanges")}
               </Button>
             </Card>
           </motion.div>
@@ -742,8 +741,8 @@ export default function SettingsPage() {
             <Card className="p-6 border-border/50 bg-card/50">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-foreground">API Keys</h3>
-                  <p className="text-sm text-muted-foreground">Manage your API access keys for integrations</p>
+                  <h3 className="text-lg font-semibold text-foreground">{t("settings.organization.apiKeys.title")}</h3>
+                  <p className="text-sm text-muted-foreground">{t("settings.organization.apiKeys.description")}</p>
                 </div>
                 <Button onClick={handleGenerateKey} disabled={generatingKey}>
                   {generatingKey ? (
@@ -751,7 +750,7 @@ export default function SettingsPage() {
                   ) : (
                     <Key className="w-4 h-4 mr-2" />
                   )}
-                  Generate Key
+                  {t("settings.organization.apiKeys.generateKey")}
                 </Button>
               </div>
 
@@ -759,10 +758,10 @@ export default function SettingsPage() {
                 <div className="mb-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
                   <div className="flex items-center gap-2 mb-2">
                     <AlertCircle className="w-4 h-4 text-amber-600" />
-                    <p className="text-sm font-medium text-amber-600">Your new API key</p>
+                    <p className="text-sm font-medium text-amber-600">{t("settings.organization.apiKeys.newKey")}</p>
                   </div>
                   <p className="text-xs text-amber-600/80 mb-3">
-                    Copy this key now. You won&apos;t be able to see it again.
+                    {t("settings.organization.apiKeys.copyKeyWarning")}
                   </p>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 p-2 rounded bg-background text-sm font-mono break-all">
@@ -784,8 +783,8 @@ export default function SettingsPage() {
               {apiKeys.length === 0 && !apiKeysLoading ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Key className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No API keys created yet</p>
-                  <p className="text-sm mt-2">Generate an API key to integrate DigiT with your systems</p>
+                  <p>{t("settings.organization.apiKeys.noKeys")}</p>
+                  <p className="text-sm mt-2">{t("settings.organization.apiKeys.generateKeyDescription")}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -814,7 +813,7 @@ export default function SettingsPage() {
         <TabsContent value="security" className="space-y-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="p-6 border-border/50 bg-card/50">
-              <h3 className="text-lg font-semibold text-foreground mb-6">Security Settings</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-6">{t("settings.security.title")}</h3>
               
               <div className="space-y-6">
                 <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
@@ -823,8 +822,8 @@ export default function SettingsPage() {
                       <Shield className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">Two-Factor Authentication</p>
-                      <p className="text-xs text-muted-foreground">Add an extra layer of security to your account</p>
+                      <p className="text-sm font-medium text-foreground">{t("settings.security.twoFactorAuth.title")}</p>
+                      <p className="text-xs text-muted-foreground">{t("settings.security.twoFactorAuth.description")}</p>
                     </div>
                   </div>
                   {twoFactorAuth ? (
@@ -834,9 +833,9 @@ export default function SettingsPage() {
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Disable Two-Factor Authentication</DialogTitle>
+                          <DialogTitle>{t("settings.security.twoFactorAuth.disableTitle")}</DialogTitle>
                           <DialogDescription>
-                            Enter a TOTP code from your authenticator app to confirm
+                            {t("settings.security.twoFactorAuth.disableDescription")}
                           </DialogDescription>
                         </DialogHeader>
                         <div className="py-4 space-y-4">
@@ -849,10 +848,10 @@ export default function SettingsPage() {
                           />
                         </div>
                         <DialogFooter>
-                          <Button variant="outline" onClick={() => setTwoFADisableOpen(false)}>Cancel</Button>
+                          <Button variant="outline" onClick={() => setTwoFADisableOpen(false)}>{t("settings.security.twoFactorAuth.cancel")}</Button>
                           <Button variant="destructive" onClick={handle2FADisable} disabled={!twoFADisableCode || verifying2FA}>
                             {verifying2FA ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                            Disable
+                            {t("settings.security.twoFactorAuth.disable")}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -864,9 +863,9 @@ export default function SettingsPage() {
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-md">
                         <DialogHeader>
-                          <DialogTitle>Set Up Two-Factor Authentication</DialogTitle>
+                          <DialogTitle>{t("settings.security.twoFactorAuth.setupTitle")}</DialogTitle>
                           <DialogDescription>
-                            Scan the QR code with your authenticator app
+                            {t("settings.security.twoFactorAuth.setupDescription")}
                           </DialogDescription>
                         </DialogHeader>
                         <div className="py-4 space-y-6">
@@ -876,7 +875,7 @@ export default function SettingsPage() {
                             </div>
                           )}
                           <div className="space-y-2">
-                            <Label htmlFor="twoFACode">Verify with TOTP code</Label>
+                            <Label htmlFor="twoFACode">{t("settings.security.twoFactorAuth.verifyCodeLabel")}</Label>
                             <Input
                               id="twoFACode"
                               placeholder="000000"
@@ -888,8 +887,8 @@ export default function SettingsPage() {
                           </div>
                           {backupCodes.length > 0 && (
                             <div className="p-4 rounded-lg bg-muted/50">
-                              <p className="text-sm font-medium mb-2">Backup Codes</p>
-                              <p className="text-xs text-muted-foreground mb-3">Save these in a secure place. Each code can only be used once.</p>
+                              <p className="text-sm font-medium mb-2">{t("settings.security.twoFactorAuth.backupCodes.title")}</p>
+                              <p className="text-xs text-muted-foreground mb-3">{t("settings.security.twoFactorAuth.backupCodes.description")}</p>
                               <div className="grid grid-cols-2 gap-2">
                                 {backupCodes.map((code, i) => (
                                   <code key={i} className="text-xs font-mono bg-background p-1 rounded text-center">{code}</code>
@@ -900,11 +899,11 @@ export default function SettingsPage() {
                         </div>
                         <DialogFooter>
                           <Button variant="outline" onClick={() => { setTwoFASetupOpen(false); setQrCode(null); setBackupCodes([]); setTwoFASetupCode(""); }}>
-                            Cancel
+                            {t("settings.security.twoFactorAuth.cancel")}
                           </Button>
                           <Button onClick={handle2FAVerify} disabled={!twoFASetupCode || verifying2FA}>
                             {verifying2FA ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                            Verify & Enable
+                            {t("settings.security.twoFactorAuth.verifyEnable")}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -918,8 +917,8 @@ export default function SettingsPage() {
                       <CreditCard className="w-5 h-5 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">Email Notifications</p>
-                      <p className="text-xs text-muted-foreground">Receive security alerts via email</p>
+                      <p className="text-sm font-medium text-foreground">{t("settings.security.emailNotifications.title")}</p>
+                      <p className="text-xs text-muted-foreground">{t("settings.security.emailNotifications.description")}</p>
                     </div>
                   </div>
                   <Switch 
@@ -941,7 +940,7 @@ export default function SettingsPage() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card className="p-6 border-border/50 bg-card/50">
-              <h3 className="text-lg font-semibold text-foreground mb-6">Change Password</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-6">{t("settings.security.changePassword.title")}</h3>
               <div className="space-y-4 max-w-md">
                 {passwordError && (
                   <div className="flex items-center gap-2 text-sm text-destructive">
@@ -950,7 +949,7 @@ export default function SettingsPage() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Label htmlFor="currentPassword">{t("settings.security.changePassword.currentPassword")}</Label>
                   <Input 
                     id="currentPassword" 
                     type="password" 
@@ -960,7 +959,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="newPassword">{t("settings.security.changePassword.newPassword")}</Label>
                   <Input 
                     id="newPassword" 
                     type="password" 
@@ -970,7 +969,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Label htmlFor="confirmPassword">{t("settings.security.changePassword.confirmPassword")}</Label>
                   <Input 
                     id="confirmPassword" 
                     type="password" 
@@ -981,7 +980,7 @@ export default function SettingsPage() {
                 </div>
                 <Button onClick={handleChangePassword} disabled={changingPassword}>
                   {changingPassword ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  Update Password
+                  {t("settings.security.changePassword.updatePassword")}
                 </Button>
               </div>
             </Card>
@@ -989,38 +988,37 @@ export default function SettingsPage() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <Card className="p-6 border-destructive/20 bg-destructive/5">
-              <h3 className="text-lg font-semibold text-destructive mb-2">Danger Zone</h3>
+              <h3 className="text-lg font-semibold text-destructive mb-2">{t("settings.security.dangerZone.title")}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Once you delete your account, there is no going back. Please be certain.
+                {t("settings.security.dangerZone.description")}
               </p>
               <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="destructive">Delete Account</Button>
+                  <Button variant="destructive">{t("settings.security.dangerZone.deleteAccount")}</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Delete Account</DialogTitle>
+                    <DialogTitle>{t("settings.security.dangerZone.deleteDialog.title")}</DialogTitle>
                     <DialogDescription>
-                      This will permanently delete your account and all associated data.
-                      Type <strong>DELETE</strong> to confirm.
+                      {t("settings.security.dangerZone.deleteDialog.description", { confirmation: "DELETE" })}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="py-4">
                     <Input
-                      placeholder="Type DELETE to confirm"
+                      placeholder={t("settings.security.dangerZone.deleteDialog.confirmationPlaceholder")}
                       value={deleteConfirm}
                       onChange={(e) => setDeleteConfirm(e.target.value)}
                     />
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+                    <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t("settings.security.dangerZone.deleteDialog.cancel")}</Button>
                     <Button 
                       variant="destructive" 
                       onClick={handleDeleteAccount} 
                       disabled={deleteConfirm !== "DELETE" || deleting}
                     >
                       {deleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                      Delete My Account
+                      {t("settings.security.dangerZone.deleteDialog.deleteAccount")}
                     </Button>
                   </DialogFooter>
                 </DialogContent>

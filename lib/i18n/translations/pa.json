@@ -55,6 +55,113 @@
     "currency": "ਮੁਦਰਾ",
     "timezone": "ਸਮਾਂ ਖੇਤਰ"
   },
+  "settings": {
+    "title": "ਸੈਟਿੰਗਜ਼",
+    "description": "ਆਪਣੀ ਸਬਸਕ੍ਰਿਪਸ਼ਨ, ਟੀਮ ਅਤੇ ਤਰਜੀਹਾਂ ਪ੍ਰਬੰਧਿਤ ਕਰੋ",
+    "successBanner": "ਤੁਹਾਡੀ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਸਫਲਤਾਪੂਰਵਕ ਸਰਗਰਮ ਕਰ ਦਿੱਤੀ ਗਈ ਹੈ!",
+    "subscription": {
+      "plan": "{{planName}} ਪਲਾਨ",
+      "status": {
+        "active": "ਸਰਗਰਮ",
+        "trialing": "ਟ੍ਰਾਇਲ"
+      },
+      "price": "{{price}}/ਮਹੀਨਾ",
+      "trialPeriod": "7-ਦਿਨਾਂ ਦੀ ਮੁਫ਼ਤ ਅਜ਼ਮਾਇਸ਼ ਪੂਰੀ ਪਹੁੰਚ ਨਾਲ",
+      "planFeatures": "ਪਲਾਨ ਦੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ",
+      "nextBillingDate": "ਅਗਲੀ ਬਿਲਿੰਗ ਤਾਰੀਖ: {{date}}",
+      "cancelAtPeriodEnd": "ਬਿਲਿੰਗ ਅਵਧੀ ਦੇ ਅੰਤ 'ਤੇ ਰੱਦ ਹੋਵੇਗਾ",
+      "trialNoBilling": "ਟ੍ਰਾਇਲ ਅਵਧੀ - ਅਪਗ੍ਰੇਡ ਤੱਕ ਕੋਈ ਬਿਲਿੰਗ ਨਹੀਂ",
+      "availablePlans": "ਉਪਲਬਧ ਪਲਾਨ",
+      "current": "ਮੌਜੂਦਾ",
+      "popular": "ਲੋਕਪ੍ਰਿਯ",
+      "month": "/ਮਹੀਨਾ",
+      "startTrial": "ਟ੍ਰਾਇਲ ਸ਼ੁਰੂ ਕਰੋ",
+      "upgrade": "ਅਪਗ੍ਰੇਡ",
+      "usageLimits": "ਵਰਤੋਂ ਅਤੇ ਸੀਮਾਵਾਂ"
+    },
+    "team": {
+      "title": "ਟੀਮ ਮੈਂਬਰ",
+      "description": "ਆਪਣੇ ਸੰਗਠਨ ਤੱਕ ਕਿਸਦੀ ਪਹੁੰਚ ਹੈ ਪ੍ਰਬੰਧਿਤ ਕਰੋ",
+      "inviteMember": "ਮੈਂਬਰ ਨੂੰ ਸੱਦਾ ਦਿਓ",
+      "inviteDialog": {
+        "title": "ਟੀਮ ਮੈਂਬਰ ਨੂੰ ਸੱਦਾ ਦਿਓ",
+        "description": "ਆਪਣੇ ਸੰਗਠਨ ਵਿੱਚ ਸ਼ਾਮਲ ਹੋਣ ਲਈ ਸੱਦਾ ਭੇਜੋ",
+        "emailLabel": "ਈਮੇਲ ਪਤਾ",
+        "emailPlaceholder": "ਸਹਿਕਰਮੀ@ਕੰਪਨੀ.ਕਾਮ",
+        "roleLabel": "ਭੂਮਿਕਾ",
+        "roleOptions": {
+          "member": "ਮੈਂਬਰ",
+          "admin": "ਐਡਮਿਨ",
+          "viewer": "ਦਰਸ਼ਕ"
+        },
+        "cancel": "ਰੱਦ ਕਰੋ",
+        "sendInvitation": "ਸੱਦਾ ਭੇਜੋ"
+      },
+      "status": {
+        "active": "ਸਰਗਰਮ",
+        "owner": "ਮਾਲਕ"
+      },
+      "inviteDescription": "ਆਪਣੇ AI ਵਿਸ਼ਲੇਸ਼ਣ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਸਹਿਯੋਗ ਕਰਨ ਲਈ ਟੀਮ ਮੈਂਬਰਾਂ ਨੂੰ ਸੱਦਾ ਦਿਓ।"
+    },
+    "organization": {
+      "details": "ਸੰਗਠਨ ਵੇਰਵੇ",
+      "nameLabel": "ਸੰਗਠਨ ਦਾ ਨਾਮ",
+      "urlLabel": "ਸੰਗਠਨ URL",
+      "urlPrefix": "digit.app/",
+      "saveChanges": "ਬਦਲਾਅ ਸੰਭਾਲੋ",
+      "apiKeys": {
+        "title": "API ਕੁੰਜੀਆਂ",
+        "description": "ਆਪਣੀਆਂ ਏਕੀਕਰਣਾਂ ਲਈ API ਪਹੁੰਚ ਕੁੰਜੀਆਂ ਪ੍ਰਬੰਧਿਤ ਕਰੋ",
+        "generateKey": "ਕੁੰਜੀ ਬਣਾਓ",
+        "newKey": "ਤੁਹਾਡੀ ਨਵੀਂ API ਕੁੰਜੀ",
+        "copyKeyWarning": "ਇਸ ਕੁੰਜੀ ਨੂੰ ਹੁਣੇ ਕਾਪੀ ਕਰੋ। ਤੁਸੀਂ ਇਸਨੂੰ ਦੁਬਾਰਾ ਨਹੀਂ ਦੇਖ ਸਕੋਗੇ।",
+        "noKeys": "ਹਾਲੇ ਤੱਕ ਕੋਈ API ਕੁੰਜੀ ਨਹੀਂ ਬਣਾਈ ਗਈ",
+        "generateKeyDescription": "DigiT ਨੂੰ ਆਪਣੇ ਸਿਸਟਮਾਂ ਨਾਲ ਏਕੀਕ੍ਰਿਤ ਕਰਨ ਲਈ API ਕੁੰਜੀ ਬਣਾਓ"
+      }
+    },
+    "security": {
+      "title": "ਸੁਰੱਖਿਆ ਸੈਟਿੰਗਜ਼",
+      "twoFactorAuth": {
+        "title": "ਦੋ-ਪੜਾਵੀ ਪ੍ਰਮਾਣੀਕਰਨ",
+        "description": "ਆਪਣੇ ਖਾਤੇ ਵਿੱਚ ਇੱਕ ਵਾਧੂ ਸੁਰੱਖਿਆ ਪਰਤ ਜੋੜੋ",
+        "setupTitle": "ਦੋ-ਪੜਾਵੀ ਪ੍ਰਮਾਣੀਕਰਨ ਸੈਟ ਅਪ ਕਰੋ",
+        "setupDescription": "ਆਪਣੇ ਪ੍ਰਮਾਣਕ ਐਪ ਨਾਲ QR ਕੋਡ ਸਕੈਨ ਕਰੋ",
+        "disableTitle": "ਦੋ-ਪੜਾਵੀ ਪ੍ਰਮਾਣੀਕਰਨ ਅਸਮਰੱਥ ਕਰੋ",
+        "disableDescription": "ਪੁਸ਼ਟੀ ਲਈ ਆਪਣੇ ਪ੍ਰਮਾਣਕ ਐਪ ਤੋਂ ਇੱਕ TOTP ਕੋਡ ਦਰਜ ਕਰੋ",
+        "verifyCodeLabel": "TOTP ਕੋਡ ਨਾਲ ਪੁਸ਼ਟੀ ਕਰੋ",
+        "backupCodes": {
+          "title": "ਬੈਕਅੱਪ ਕੋਡ",
+          "description": "ਇਹਨਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਥਾਂ 'ਤੇ ਸੰਭਾਲੋ। ਹਰ ਕੋਡ ਸਿਰਫ਼ ਇੱਕ ਵਾਰ ਵਰਤਿਆ ਜਾ ਸਕਦਾ ਹੈ।"
+        },
+        "cancel": "ਰੱਦ ਕਰੋ",
+        "verifyEnable": "ਪੁਸ਼ਟੀ ਕਰੋ ਅਤੇ ਸਰਗਰਮ ਕਰੋ",
+        "disable": "ਅਸਮਰੱਥ ਕਰੋ"
+      },
+      "emailNotifications": {
+        "title": "ਈਮੇਲ ਸੂਚਨਾਵਾਂ",
+        "description": "ਈਮੇਲ ਰਾਹੀਂ ਸੁਰੱਖਿਆ ਚੇਤਾਵਨੀਆਂ ਪ੍ਰਾਪਤ ਕਰੋ"
+      },
+      "changePassword": {
+        "title": "ਪਾਸਵਰਡ ਬਦਲੋ",
+        "currentPassword": "ਮੌਜੂਦਾ ਪਾਸਵਰਡ",
+        "newPassword": "ਨਵਾਂ ਪਾਸਵਰਡ",
+        "confirmPassword": "ਨਵਾਂ ਪਾਸਵਰਡ ਪੁਸ਼ਟੀ ਕਰੋ",
+        "updatePassword": "ਪਾਸਵਰਡ ਅਪਡੇਟ ਕਰੋ"
+      },
+      "dangerZone": {
+        "title": "ਖਤਰੇ ਦਾ ਖੇਤਰ",
+        "description": "ਇੱਕ ਵਾਰ ਜਦੋਂ ਤੁਸੀਂ ਆਪਣਾ ਖਾਤਾ ਮਿਟਾ ਦਿੰਦੇ ਹੋ, ਤਾਂ ਵਾਪਸ ਨਹੀਂ ਆ ਸਕਦੇ। ਕਿਰਪਾ ਕਰਕੇ ਯਕੀਨੀ ਬਣਾਓ।",
+        "deleteAccount": "ਖਾਤਾ ਮਿਟਾਓ",
+        "deleteDialog": {
+          "title": "ਖਾਤਾ ਮਿਟਾਓ",
+          "description": "ਇਹ ਤੁਹਾਡੇ ਖਾਤੇ ਅਤੇ ਸਾਰੇ ਸੰਬੰਧਿਤ ਡੇਟਾ ਨੂੰ ਸਥਾਈ ਤੌਰ 'ਤੇ ਮਿਟਾ ਦੇਵੇਗਾ। ਪੁਸ਼ਟੀ ਲਈ **{{confirmation}}** ਟਾਈਪ ਕਰੋ।",
+          "confirmationPlaceholder": "ਪੁਸ਼ਟੀ ਲਈ DELETE ਟਾਈਪ ਕਰੋ",
+          "cancel": "ਰੱਦ ਕਰੋ",
+          "deleteAccount": "ਮੇਰਾ ਖਾਤਾ ਮਿਟਾਓ"
+        }
+      }
+    }
+  },
   "auth": {
     "login": {
       "welcomeBack": "ਵਾਪਸ ਸਵਾਗਤ ਹੈ",

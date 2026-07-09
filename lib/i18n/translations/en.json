@@ -55,6 +55,113 @@
     "currency": "Currency",
     "timezone": "Timezone"
   },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your subscription, team, and preferences",
+    "successBanner": "Your subscription has been activated successfully!",
+    "subscription": {
+      "plan": "{{planName}} Plan",
+      "status": {
+        "active": "active",
+        "trialing": "trialing"
+      },
+      "price": "{{price}}/month",
+      "trialPeriod": "7-day free trial with full access",
+      "planFeatures": "Plan Features",
+      "nextBillingDate": "Next billing date: {{date}}",
+      "cancelAtPeriodEnd": "Cancels at end of billing period",
+      "trialNoBilling": "Trial period - no billing until you upgrade",
+      "availablePlans": "Available Plans",
+      "current": "Current",
+      "popular": "Popular",
+      "month": "/month",
+      "startTrial": "Start Trial",
+      "upgrade": "Upgrade",
+      "usageLimits": "Usage & Limits"
+    },
+    "team": {
+      "title": "Team Members",
+      "description": "Manage who has access to your organization",
+      "inviteMember": "Invite Member",
+      "inviteDialog": {
+        "title": "Invite Team Member",
+        "description": "Send an invitation to join your organization",
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "colleague@company.com",
+        "roleLabel": "Role",
+        "roleOptions": {
+          "member": "Member",
+          "admin": "Admin",
+          "viewer": "Viewer"
+        },
+        "cancel": "Cancel",
+        "sendInvitation": "Send Invitation"
+      },
+      "status": {
+        "active": "active",
+        "owner": "owner"
+      },
+      "inviteDescription": "Invite team members to collaborate on your AI analytics dashboard."
+    },
+    "organization": {
+      "details": "Organization Details",
+      "nameLabel": "Organization Name",
+      "urlLabel": "Organization URL",
+      "urlPrefix": "digit.app/",
+      "saveChanges": "Save Changes",
+      "apiKeys": {
+        "title": "API Keys",
+        "description": "Manage your API access keys for integrations",
+        "generateKey": "Generate Key",
+        "newKey": "Your new API key",
+        "copyKeyWarning": "Copy this key now. You won't be able to see it again.",
+        "noKeys": "No API keys created yet",
+        "generateKeyDescription": "Generate an API key to integrate DigiT with your systems"
+      }
+    },
+    "security": {
+      "title": "Security Settings",
+      "twoFactorAuth": {
+        "title": "Two-Factor Authentication",
+        "description": "Add an extra layer of security to your account",
+        "setupTitle": "Set Up Two-Factor Authentication",
+        "setupDescription": "Scan the QR code with your authenticator app",
+        "disableTitle": "Disable Two-Factor Authentication",
+        "disableDescription": "Enter a TOTP code from your authenticator app to confirm",
+        "verifyCodeLabel": "Verify with TOTP code",
+        "backupCodes": {
+          "title": "Backup Codes",
+          "description": "Save these in a secure place. Each code can only be used once."
+        },
+        "cancel": "Cancel",
+        "verifyEnable": "Verify & Enable",
+        "disable": "Disable"
+      },
+      "emailNotifications": {
+        "title": "Email Notifications",
+        "description": "Receive security alerts via email"
+      },
+      "changePassword": {
+        "title": "Change Password",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password",
+        "updatePassword": "Update Password"
+      },
+      "dangerZone": {
+        "title": "Danger Zone",
+        "description": "Once you delete your account, there is no going back. Please be certain.",
+        "deleteAccount": "Delete Account",
+        "deleteDialog": {
+          "title": "Delete Account",
+          "description": "This will permanently delete your account and all associated data. Type **{{confirmation}}** to confirm.",
+          "confirmationPlaceholder": "Type DELETE to confirm",
+          "cancel": "Cancel",
+          "deleteAccount": "Delete My Account"
+        }
+      }
+    }
+  },
   "auth": {
     "login": {
       "welcomeBack": "Welcome back",
