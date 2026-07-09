@@ -1,5 +1,3 @@
-'use server'
-
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/auth/with-auth'
 import { createServiceClient } from '@/lib/supabase/service'
@@ -27,11 +25,27 @@ export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
       .select('locale, country, timezone')
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('[Locale API] Supabase error:', error)
+      // Helpful message for the most common failure mode: migration not applied.
+      if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+        return NextResponse.json(
+          { error: 'Locale columns not ready', message: 'Run migration 20260709120000_add_profile_locale_region.sql' },
+          { status: 400 }
+        )
+      }
+      return NextResponse.json(
+        { error: 'Failed to update locale', message: error.message },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json(data)
   } catch (error) {
     console.error('[Locale API] Failed to update locale:', error)
-    return NextResponse.json({ error: 'Failed to update locale' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to update locale' },
+      { status: 500 }
+    )
   }
 })
