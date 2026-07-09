@@ -11,8 +11,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AlertCircle, Loader2, Eye, EyeOff, Fingerprint, Shield } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 import { startAuthentication } from "@simplewebauthn/browser"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 function LoginForm() {
+  const { t } = useI18n()
   const [email, setEmail] = useState(() => {
     if (typeof window !== "undefined") return localStorage.getItem("digit_remember_email") || ""
     return ""
