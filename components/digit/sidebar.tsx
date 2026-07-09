@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo, LogoIcon } from '@/components/digit/logo'
+import { useI18n } from '@/components/providers/i18n-provider'
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 // Base modules available to all users
@@ -48,6 +49,7 @@ interface SidebarProps {
 
 export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const pathname = usePathname()
+  const { t } = useI18n()
   const { data: ownerData } = useSWR<{ isOwner: boolean }>('/api/platform/owner-check', fetcher)
   const isOwner = ownerData?.isOwner ?? false
   
@@ -97,7 +99,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
             )}
           >
             <LayoutDashboard className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Dashboard</span>}
+            {!isCollapsed && <span>{t('sidebar.dashboard')}</span>}
           </Link>
 
           {!isCollapsed && <div className="h-4" />}
@@ -118,10 +120,10 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                     ? "bg-primary/10 text-primary digit-glow-sm"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 )}
-                title={isCollapsed ? module.title : undefined}
+                title={isCollapsed ? t(`sidebar.${module.id}`) : undefined}
               >
                 <Icon className="h-5 w-5 shrink-0" />
-                {!isCollapsed && <span>{module.title}</span>}
+                {!isCollapsed && <span>{t(`sidebar.${module.id}`)}</span>}
               </Link>
             )
           })}
@@ -144,10 +146,10 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                     ? "bg-primary/10 text-primary digit-glow-sm"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 )}
-                title={isCollapsed ? module.title : undefined}
+                title={isCollapsed ? t(`sidebar.${module.id}`) : undefined}
               >
                 <Icon className="h-5 w-5 shrink-0" />
-                {!isCollapsed && <span>{module.title}</span>}
+                {!isCollapsed && <span>{t(`sidebar.${module.id}`)}</span>}
               </Link>
             )
           })}
@@ -165,12 +167,12 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                     ? "bg-primary/10 text-primary digit-glow-sm"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 )}
-                title={isCollapsed ? 'Admin' : undefined}
+                title={isCollapsed ? t('sidebar.admin') : undefined}
               >
                 <Activity className="h-5 w-5 shrink-0" />
                 {!isCollapsed && (
                   <span className="flex items-center gap-2">
-                    Admin
+                    {t('sidebar.admin')}
                     <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
                       Owner
                     </span>
@@ -185,12 +187,12 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                     ? "bg-primary/10 text-primary digit-glow-sm"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 )}
-                title={isCollapsed ? 'Platform Capacity' : undefined}
+                title={isCollapsed ? t('sidebar.platformCapacity') : undefined}
               >
                 <Gauge className="h-5 w-5 shrink-0" />
                 {!isCollapsed && (
                   <span className="flex items-center gap-2">
-                    Platform Capacity
+                    {t('sidebar.platformCapacity')}
                     <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
                       Owner
                     </span>
@@ -207,10 +209,10 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                 ? "bg-primary/10 text-primary digit-glow-sm"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}
-            title={isCollapsed ? 'Pricing & Plans' : undefined}
+            title={isCollapsed ? t('sidebar.pricing') : undefined}
           >
             <CreditCard className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Pricing & Plans</span>}
+            {!isCollapsed && <span>{t('sidebar.pricing')}</span>}
           </Link>
           <Link
             href="/configure"
@@ -220,10 +222,10 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                 ? "bg-primary/10 text-primary digit-glow-sm"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}
-            title={isCollapsed ? 'Configure Workspace' : undefined}
+            title={isCollapsed ? t('sidebar.configureWorkspace') : undefined}
           >
             <Settings className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Configure Workspace</span>}
+            {!isCollapsed && <span>{t('sidebar.configureWorkspace')}</span>}
           </Link>
         </div>
       </div>

@@ -20,6 +20,7 @@
     "signUp": "ਸਾਈਨ ਅਪ",
     "signOut": "ਸਾਈਨ ਆਉਟ",
     "search": "ਖੋਜ",
+    "searchPlaceholder": "ਮੋਡ్యੂਲ, ਡੇਟਾ, ਇਨਸਾਈਟਸ ਖੋਜੋ...",
     "notifications": "ਸੂਚਨਾਵਾਂ",
     "save": "ਸਹੇਜੋ",
     "cancel": "ਰੱਦ ਕਰੋ",
@@ -33,6 +34,21 @@
     "pricing": "ਕੀਮਤ",
     "features": "ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ",
     "contact": "ਸੰਪਰਕ"
+  },
+  "sidebar": {
+    "dashboard": "ਡੈਸ਼ਬੋਰਡ",
+    "crm": "ਸਮਾਰਟ ਸੀਆਰਐਮ",
+    "operations": "ਓਪਰੇਸ਼ਨਜ਼",
+    "performance": "ਪ੍ਰਦਰਸ਼ਨ",
+    "resources": "ਸਰੋਤ",
+    "compliance": "ਅਨੁਪਾਲਨ",
+    "feedback": "ਫੀਡਬੈਕ",
+    "intelligence": "ਏਆਈ ਇੰਟੈਲੀਜੈਂਸ",
+    "analytics": "ਏਆਈ ਐਨਾਲਿਟਿਕਸ",
+    "admin": "ਐਡਮਿਨ",
+    "platformCapacity": "ਪਲੇਟਫਾਰਮ ਸਮਰੱਥਾ",
+    "pricing": "ਕੀਮਤ ਅਤੇ ਯੋਜਨਾਵਾਂ",
+    "configureWorkspace": "ਵਰਕਸਪੇਸ ਕਨਫ਼ਿਗਰ ਕਰੋ"
   },
   "region": {
     "country": "ਦੇਸ਼",

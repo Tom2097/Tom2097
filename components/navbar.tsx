@@ -7,6 +7,7 @@ import { LanguageSwitcher } from '@/components/language-switcher'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logger } from "@/lib/logging-client"
+import { useI18n } from '@/components/providers/i18n-provider'
 
 interface NavbarProps {
   userId?: string
@@ -14,6 +15,7 @@ interface NavbarProps {
 
 export function Navbar({ userId }: NavbarProps) {
   const pathname = usePathname()
+  const { t } = useI18n()
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur-sm">
@@ -33,10 +35,10 @@ export function Navbar({ userId }: NavbarProps) {
           </Link>
           <div className="hidden gap-4 md:flex">
             <Link href="/dashboard" className={pathname === '/dashboard' ? 'font-medium' : 'text-muted-foreground'}>
-              Dashboard
+              {t('common.dashboard')}
             </Link>
             <Link href="/analytics" className={pathname === '/analytics' ? 'font-medium' : 'text-muted-foreground'}>
-              Analytics
+              {t('common.analytics')}
             </Link>
           </div>
         </div>
@@ -45,7 +47,7 @@ export function Navbar({ userId }: NavbarProps) {
           <FeedbackWidget userId={userId} />
           <LanguageSwitcher />
           <Button variant="outline" size="sm" asChild>
-            <Link href="/login">Login</Link>
+            <Link href="/login">{t('common.login')}</Link>
           </Button>
         </div>
       </div>

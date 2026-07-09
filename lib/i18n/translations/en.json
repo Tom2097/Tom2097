@@ -20,6 +20,7 @@
     "signUp": "Sign Up",
     "signOut": "Sign Out",
     "search": "Search",
+    "searchPlaceholder": "Search modules, data, insights...",
     "notifications": "Notifications",
     "save": "Save",
     "cancel": "Cancel",
@@ -33,6 +34,21 @@
     "pricing": "Pricing",
     "features": "Features",
     "contact": "Contact"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "crm": "Smart CRM",
+    "operations": "Operations",
+    "performance": "Performance",
+    "resources": "Resources",
+    "compliance": "Compliance",
+    "feedback": "Feedback",
+    "intelligence": "AI Intelligence",
+    "analytics": "AI Analytics",
+    "admin": "Admin",
+    "platformCapacity": "Platform Capacity",
+    "pricing": "Pricing & Plans",
+    "configureWorkspace": "Configure Workspace"
   },
   "region": {
     "country": "Country",

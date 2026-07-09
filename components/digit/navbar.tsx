@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { createClient } from '@/lib/supabase/client'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
+import { useI18n } from '@/components/providers/i18n-provider'
 
 // Search items database
 const searchItems = [
@@ -79,6 +80,7 @@ interface Profile {
 }
 
 export function Navbar({ onOpenAI }: NavbarProps) {
+  const { t } = useI18n()
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
@@ -199,7 +201,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
           <Input 
             ref={inputRef}
-            placeholder="Search modules, data, insights..." 
+            placeholder={t('common.searchPlaceholder')} 
             className="w-80 bg-secondary/50 pl-10 pr-16 text-sm focus:bg-secondary"
             value={searchQuery}
             onChange={(e) => {

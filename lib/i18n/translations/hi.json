@@ -20,6 +20,7 @@
     "signUp": "साइन अप",
     "signOut": "साइन आउट",
     "search": "खोजें",
+    "searchPlaceholder": "मॉड्यूल, डेटा, इनसाइट्स खोजें...",
     "notifications": "सूचनाएं",
     "save": "सहेजें",
     "cancel": "रद्द करें",
@@ -33,6 +34,21 @@
     "pricing": "मूल्य निर्धारण",
     "features": "विशेषताएं",
     "contact": "संपर्क"
+  },
+  "sidebar": {
+    "dashboard": "डैशबोर्ड",
+    "crm": "स्मार्ट सीआरएम",
+    "operations": "ऑपरेशंस",
+    "performance": "प्रदर्शन",
+    "resources": "संसाधन",
+    "compliance": "अनुपालन",
+    "feedback": "फीडबैक",
+    "intelligence": "एआई इंटेलिजेंस",
+    "analytics": "एआई एनालिटिक्स",
+    "admin": "एडमिन",
+    "platformCapacity": "प्लेटफॉर्म क्षमता",
+    "pricing": "मूल्य निर्धारण और योजनाएं",
+    "configureWorkspace": "वर्कस्पेस कॉन्फ़िगर करें"
   },
   "region": {
     "country": "देश",
