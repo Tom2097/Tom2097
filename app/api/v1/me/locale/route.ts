@@ -27,29 +27,16 @@ export const PATCH = withAuth(async (req: NextRequest, { userId }) => {
 
     if (error) {
       console.error('[Locale API] Supabase error:', error)
-      // The most common failure is that the migration adding locale/country/timezone
-      // columns has not been applied. Return the requested values so the UI keeps
-      // working (cookie is the source of truth) while still surfacing the issue.
-      const msg = (error.message || '').toLowerCase()
-      const isMissingColumn =
-        msg.includes('column') ||
-        msg.includes('locale') ||
-        msg.includes('country') ||
-        msg.includes('timezone')
-      if (isMissingColumn) {
-        return NextResponse.json(
-          {
-            locale: locale || null,
-            country: country || null,
-            timezone: timezone || null,
-            warning: 'Profile columns not ready. Run migration 20260709120000_add_profile_locale_region.sql to persist locale preferences.',
-          },
-          { status: 200 }
-        )
-      }
+      // Return the requested values so the UI keeps working (cookie is the source
+      // of truth) while surfacing the issue for debugging.
       return NextResponse.json(
-        { error: 'Failed to update locale', message: error.message },
-        { status: 400 }
+        {
+          locale: locale || null,
+          country: country || null,
+          timezone: timezone || null,
+          warning: `Could not persist locale preference: ${error.message || 'unknown database error'}. Run migration 20260709120000_add_profile_locale_region.sql if columns are missing.`,
+        },
+        { status: 200 }
       )
     }
 
