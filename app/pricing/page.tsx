@@ -17,6 +17,7 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
 import { Logo } from "@/components/digit/logo"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 const tierIcons = {
   starter: Rocket,
@@ -161,6 +162,7 @@ const PricingCard = React.memo(function PricingCard({
 })
 
 function PricingContent() {
+  const { t } = useI18n()
   const [isAnnual, setIsAnnual] = useState(true)
   const [currency, setCurrency] = useState(() =>
     typeof document !== 'undefined' && getCookie('NEXT_REGION') === 'IN' ? 'INR' : 'USD'

@@ -1,10 +1,14 @@
+"use client"
+
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, LogIn } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 export default function SignUpSuccessPage() {
+  const { t } = useI18n()
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* Animated background */}
