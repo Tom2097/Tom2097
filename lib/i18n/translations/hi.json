@@ -334,7 +334,7 @@
       "openIncidentsDetected": "खुले घटनाक्रम का पता चला",
       "unresolvedIncidents": "{total} मॉनिटर की गई सेवा{servicesPlural} में {count} अनसुलझा घटनाक्रम{plural}।",
       "servicesDown": "{down} डाउन, {degraded} डिग्रेडेड। वर्तमान अपटाइम {uptime}%।",
-      "topEvent": '"{name}" गतिविधि में {value} इवेंट्स के साथ अग्रणी है पिछले {days} दिनों में।',
+      "topEvent": "\"{name}\" गतिविधि में {value} इवेंट्स के साथ अग्रणी है पिछले {days} दिनों में।",
       "activityTrendingUp": "गतिविधि में वृद्धि",
       "activitySlowing": "गतिविधि में कमी",
       "activityChange": "प्लेटफ़ॉर्म गतिविधि इस अवधि के दूसरे भाग में {change}% {direction} है।",

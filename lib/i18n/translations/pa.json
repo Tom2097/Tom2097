@@ -339,7 +339,7 @@
       "openIncidentsDetected": "ਖੁੱਲ੍ਹੀਆਂ ਘਟਨਾਵਾਂ ਦਾ ਪਤਾ ਲੱਗਾ",
       "unresolvedIncidents": "{total} ਨਿਗਰਾਨੀ ਸੇਵਾ{servicesPlural} ਵਿੱਚ {count} ਅਣਸੁਲਝੀ ਘਟਨਾ{plural}।",
       "servicesDown": "{down} ਡਾਊਨ, {degraded} ਡੀਗ੍ਰੇਡਡ। ਮੌਜੂਦਾ ਅਪਟਾਈਮ {uptime}%।",
-      "topEvent": '"{name}" ਗਤੀਵਿਧੀ ਵਿੱਚ {value} ਇਵੈਂਟਸ ਨਾਲ ਅਗਵਾਈ ਕਰ ਰਿਹਾ ਹੈ ਪਿਛਲੇ {days} ਦਿਨਾਂ ਵਿੱਚ।',
+      "topEvent": "\"{name}\" ਗਤੀਵਿਧੀ ਵਿੱਚ {value} ਇਵੈਂਟਸ ਨਾਲ ਅਗਵਾਈ ਕਰ ਰਿਹਾ ਹੈ ਪਿਛਲੇ {days} ਦਿਨਾਂ ਵਿੱਚ।",
       "activityTrendingUp": "ਗਤੀਵਿਧੀ ਵਿੱਚ ਵਾਧਾ",
       "activitySlowing": "ਗਤੀਵਿਧੀ ਵਿੱਚ ਕਮੀ",
       "activityChange": "ਪਲੇਟਫਾਰਮ ਗਤੀਵਿਧੀ ਇਸ ਮਿਆਦ ਦੇ ਦੂਜੇ ਅੱਧ ਵਿੱਚ {change}% {direction} ਹੈ।",
