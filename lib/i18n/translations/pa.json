@@ -55,6 +55,119 @@
     "currency": "ਮੁਦਰਾ",
     "timezone": "ਸਮਾਂ ਖੇਤਰ"
   },
+  "auth": {
+    "login": {
+      "welcomeBack": "ਵਾਪਸ ਸਵਾਗਤ ਹੈ",
+      "signInToDashboard": "ਆਪਣੇ ਐਂਟਰਪ੍ਰਾਈਜ਼ ਡੈਸ਼ਬੋਰਡ ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰੋ",
+      "signInWithPasskey": "ਫੇਸ ਆਈਡੀ / ਪਾਸਕੀ ਨਾਲ ਸਾਈਨ ਇਨ ਕਰੋ",
+      "authenticating": "ਪ੍ਰਮਾਣੀਕਰਨ ਹੋ ਰਿਹਾ ਹੈ...",
+      "orContinueWithEmail": "ਜਾਂ ਈਮੇਲ ਨਾਲ ਜਾਰੀ ਰੱਖੋ",
+      "email": "ਈਮੇਲ",
+      "emailPlaceholder": "ਤੁਹਾਡਾ@ਕੰਪਨੀ.ਕਾਮ",
+      "password": "ਪਾਸਵਰਡ",
+      "passwordPlaceholder": "ਆਪਣਾ ਪਾਸਵਰਡ ਦਰਜ ਕਰੋ",
+      "showPassword": "ਪਾਸਵਰਡ ਦਿਖਾਓ",
+      "hidePassword": "ਪਾਸਵਰਡ ਓਹਲੇ ਕਰੋ",
+      "rememberMe": "ਮੈਨੂੰ ਯਾਦ ਰੱਖੋ",
+      "signIn": "ਸਾਈਨ ਇਨ ਕਰੋ",
+      "protectedBySecurity": "ਐਂਟਰਪ੍ਰਾਈਜ਼-ਗ੍ਰੇਡ ਸੁਰੱਖਿਆ ਦੁਆਰਾ ਸੁਰੱਖਿਅਤ",
+      "dontHaveAccount": "ਖਾਤਾ ਨਹੀਂ ਹੈ?",
+      "signUp": "ਸਾਈਨ ਅਪ ਕਰੋ",
+      "passkeyError": "ਪਾਸਕੀ ਪ੍ਰਮਾਣੀਕਰਨ ਰੱਦ ਕਰ ਦਿੱਤਾ ਗਿਆ।",
+      "passkeyErrorGeneric": "ਇੱਕ ਅਣਕਿਆਸੀ ਗਲਤੀ ਹੋਈ।"
+    },
+    "signUpSuccess": {
+      "accountReady": "ਖਾਤਾ ਤਿਆਰ ਹੈ",
+      "accountActive": "ਤੁਹਾਡਾ ਖਾਤਾ ਬਣ ਗਿਆ ਹੈ ਅਤੇ ਸਰਗਰਮ ਹੈ",
+      "signInNow": "ਹੁਣ ਤੁਸੀਂ ਆਪਣੇ ਈਮੇਲ ਅਤੇ ਪਾਸਵਰਡ ਨਾਲ ਸਾਈਨ ਇਨ ਕਰਕੇ ਪਲੇਟਫਾਰਮ ਦੀ ਵਰਤੋਂ ਸ਼ੁਰੂ ਕਰ ਸਕਦੇ ਹੋ।",
+      "signIn": "ਸਾਈਨ ਇਨ ਕਰੋ"
+    },
+    "error": {
+      "atCapacity": "ਅਸੀਂ ਸਮਰੱਥਾ 'ਤੇ ਹਾਂ",
+      "onboardingWaves": "ਨਿਯੰਤਰਿਤ ਪੜਾਵਾਂ ਵਿੱਚ ਓਨਬੋਰਡਿੰਗ",
+      "authError": "ਪ੍ਰਮਾਣੀਕਰਨ ਗਲਤੀ",
+      "somethingWentWrong": "ਸਾਈਨ ਇਨ ਦੌਰਾਨ ਕੁਝ ਗਲਤ ਹੋ ਗਿਆ",
+      "tryAgain": "ਪ੍ਰਮਾਣੀਕਰਨ ਦੌਰਾਨ ਇੱਕ ਅਣਕਿਆਸੀ ਗਲਤੀ ਹੋਈ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਸਾਈਨ ਇਨ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+      "trySigningIn": "ਸਾਈਨ ਇਨ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
+      "createAccount": "ਨਵਾਂ ਖਾਤਾ ਬਣਾਓ"
+    },
+    "onboarding": {
+      "stage1": {
+        "title": "ਤੁਹਾਡੀ ਪਹਿਚਾਣ",
+        "desc": "ਪਹਿਚਾਣ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ"
+      },
+      "stage2": {
+        "title": "ਤੁਹਾਡੀ ਕੰਪਨੀ",
+        "desc": "ਕੰਪਨੀ ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ"
+      },
+      "stage3": {
+        "title": "ਤੁਹਾਡੀ ਭੂਮਿਕਾ",
+        "desc": "ਆਪਣੀ ਸਥਿਤੀ ਅਤੇ ਅਧਿਕਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ"
+      },
+      "stage4": {
+        "title": "ਸੁਰੱਖਿਅਤ ਪਹੁੰਚ",
+        "desc": "DigiT ਨੂੰ ਇਸ ਡਿਵਾਈਸ 'ਤੇ ਲਾਕ ਕਰੋ"
+      },
+      "fullName": "ਪੂਰਾ ਨਾਮ",
+      "fullNamePlaceholder": "ਜੌਨ ਡੋ",
+      "workEmail": "ਕੰਮ ਦਾ ਈਮੇਲ",
+      "workEmailPlaceholder": "john@company.com",
+      "phoneNumber": "ਫੋਨ ਨੰਬਰ",
+      "phoneNumberPlaceholder": "+1 234 567 8900",
+      "governmentId": "ਸਰਕਾਰੀ ਆਈਡੀ (ਵਿਕਲਪਿਕ)",
+      "idType": "ਆਈਡੀ ਕਿਸਮ ਚੁਣੋ...",
+      "idTypePassport": "ਪਾਸਪੋਰਟ",
+      "idTypeDriversLicense": "ਡ੍ਰਾਈਵਿੰਗ ਲਾਇਸੈਂਸ",
+      "idTypeNationalId": "ਰਾਸ਼ਟਰੀ ਆਈਡੀ",
+      "idNumber": "ਆਈਡੀ ਨੰਬਰ",
+      "uploadId": "ਆਈਡੀ ਅਪਲੋਡ ਕਰੋ (ਵਿਕਲਪਿਕ)",
+      "uploadFront": "ਸਾਹਮਣੇ",
+      "uploadBack": "ਪਿੱਛੇ",
+      "captureLivePhoto": "ਲਾਈਵ ਫੋਟੋ ਲਓ",
+      "verifyIdentity": "ਪਹਿਚਾਣ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
+      "verifyIdentityDesc": "ਅਸੀਂ ਤੁਹਾਡੀ ਸੈਲਫੀ ਨੂੰ ਸਰਕਾਰੀ ਪਹਿਚਾਣ ਪੱਤਰ ਨਾਲ ਮਿਲਾਵਾਂਗੇ ਅਤੇ ਲਾਈਵਨੈਸ ਚੈੱਕ ਕਰਾਂਗੇ",
+      "companyLegalName": "ਕੰਪਨੀ ਦਾ ਕਾਨੂੰਨੀ ਨਾਮ",
+      "companyLegalNamePlaceholder": "ਐਕਮੇ ਕਾਰਪੋਰੇਸ਼ਨ",
+      "registrationNumber": "ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਨੰਬਰ",
+      "registrationNumberPlaceholder": "CIN, GST, ਜਾਂ EIN ਨੰਬਰ",
+      "website": "ਵੈੱਬਸਾਈਟ",
+      "websitePlaceholder": "https://company.com",
+      "registeredAddress": "ਰਜਿਸਟਰਡ ਪਤਾ",
+      "registeredAddressPlaceholder": "123 ਬਿਜ਼ਨਸ ਸਟ੍ਰੀਟ, ਸ਼ਹਿਰ, ਦੇਸ਼",
+      "country": "ਦੇਸ਼",
+      "countryPlaceholder": "ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਦਾ ਦੇਸ਼",
+      "verifyCompany": "ਕੰਪਨੀ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
+      "verifyCompanyDesc": "ਅਸੀਂ ਤੁਹਾਡੀ ਕੰਪਨੀ ਨੂੰ ਅਧਿਕਾਰਤ ਵਪਾਰਕ ਰਜਿਸਟਰੀਆਂ (ਭਾਰਤ ਲਈ MCA/GST) ਦੇ ਵਿਰੁੱਧ ਪੁਸ਼ਟੀ ਕਰਾਂਗੇ",
+      "yourPosition": "ਤੁਹਾਡੀ ਸਥਿਤੀ",
+      "yourPositionPlaceholder": "ਸੀਈਓ, ਸੀਟੀਓ, ਮੈਨੇਜਰ, ਆਦਿ",
+      "yourRole": "ਤੁਹਾਡੀ ਭੂਮਿਕਾ",
+      "roleOwner": "ਮਾਲਕ",
+      "roleOwnerDesc": "ਕੰਪਨੀ ਪ੍ਰਬੰਧਿਤ ਕਰਨ ਦਾ ਪੂਰਾ ਅਧਿਕਾਰ",
+      "roleAdmin": "ਐਡਮਿਨ",
+      "roleAdminDesc": "ਉਪਭੋਗਤਾਵਾਂ ਅਤੇ ਸੈਟਿੰਗਾਂ ਪ੍ਰਬੰਧਿਤ ਕਰੋ",
+      "roleMember": "ਮੈਂਬਰ",
+      "roleMemberDesc": "ਮਿਆਰੀ ਪਹੁੰਚ",
+      "authorityConfirm": "ਮੈਂ ਪੁਸ਼ਟੀ ਕਰਦਾ/ਕਰਦੀ ਹਾਂ ਕਿ ਮੇਰੇ ਕੋਲ ਇਸ ਕੰਪਨੀ ਦੀ ਪ੍ਰਤੀਨਿਧਤਾ ਕਰਨ ਅਤੇ ਇਸਨੂੰ DigiT 'ਤੇ ਓਨਬੋਰਡ ਕਰਨ ਦਾ ਅਧਿਕਾਰ ਹੈ",
+      "secureAccess": "ਆਪਣੀ ਪਹੁੰਚ ਸੁਰੱਖਿਅਤ ਕਰੋ",
+      "secureAccessDesc": "ਅਸੀਂ {email} 'ਤੇ ਇੱਕ ਵਾਰ ਦਾ ਪਾਸਕੋਡ ਭੇਜਾਂਗੇ",
+      "sendPasscode": "ਪਾਸਕੋਡ ਭੇਜੋ",
+      "enterPasscode": "ਪਾਸਕੋਡ ਦਰਜ ਕਰੋ",
+      "passcodeDesc": "ਆਪਣੇ ਈਮੇਲ 'ਤੇ 6-ਅੰਕਾਂ ਦਾ ਪਾਸਕੋਡ ਦੇਖੋ",
+      "resendPasscode": "ਪਾਸਕੋਡ ਦੁਬਾਰਾ ਭੇਜੋ",
+      "registerDevice": "ਇਸ ਡਿਵਾਈਸ ਨੂੰ ਰਜਿਸਟਰ ਕਰੋ",
+      "registerDeviceDesc": "ਸੁਰੱਖਿਅਤ, ਪਾਸਵਰਡ-ਰਹਿਤ ਪਹੁੰਚ ਲਈ DigiT ਨੂੰ ਇਸ ਡਿਵਾਈਸ 'ਤੇ ਲਾਕ ਕਰੋ",
+      "registerDeviceButton": "ਡਿਵਾਈਸ ਰਜਿਸਟਰ ਕਰੋ",
+      "deviceRegistered": "ਡਿਵਾਈਸ ਰਜਿਸਟਰ ਹੋ ਗਈ",
+      "deviceRegisteredDesc": "ਇਹ ਡਿਵਾਈਸ ਹੁਣ ਤੁਹਾਡੇ DigiT ਖਾਤੇ ਨਾਲ ਲਾਕ ਹੋ ਗਈ ਹੈ",
+      "back": "ਪਿੱਛੇ",
+      "continue": "ਜਾਰੀ ਰੱਖੋ",
+      "completeOnboarding": "ਓਨਬੋਰਡਿੰਗ ਪੂਰੀ ਕਰੋ"
+    },
+    "pricing": {
+      "signIn": "ਸਾਈਨ ਇਨ ਕਰੋ",
+      "startFreeTrial": "ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਸ਼ੁਰੂ ਕਰੋ"
+    }
+  },
   "dashboard": {
     "subscription": {
       "trial": {

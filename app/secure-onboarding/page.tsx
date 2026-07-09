@@ -18,12 +18,12 @@ import { verifyIdentityWithKYC, requestKYCManualReview } from "@/lib/identity/ky
 import { logAuditEvent } from "@/lib/audit-logging"
 
 // Onboarding stages aligned with Secure Onboarding Spec
-const ONBOARDING_STAGES = [
-  { id: "identity", title: "Your Identity", description: "Verify who you are", icon: User },
-  { id: "company", title: "Your Company", description: "Verify your company registration", icon: Building2 },
-  { id: "role", title: "Your Role", description: "Confirm your position and authority", icon: Shield },
-  { id: "access", title: "Secure Access", description: "Lock DigiT to this device", icon: Key },
-]
+  const ONBOARDING_STAGES = [
+    { id: "identity", title: t("auth.onboarding.stage1.title"), description: t("auth.onboarding.stage1.desc"), icon: User },
+    { id: "company", title: t("auth.onboarding.stage2.title"), description: t("auth.onboarding.stage2.desc"), icon: Building2 },
+    { id: "role", title: t("auth.onboarding.stage3.title"), description: t("auth.onboarding.stage3.desc"), icon: Shield },
+    { id: "access", title: t("auth.onboarding.stage4.title"), description: t("auth.onboarding.stage4.desc"), icon: Key },
+  ]
 
 interface OnboardingData {
   // Stage 1: Identity
@@ -377,150 +377,150 @@ export default function SecureOnboardingPage() {
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label>Full Name</Label>
-                        <Input
-                          value={data.fullName}
-                          onChange={(e) => updateData("fullName", e.target.value)}
-                          placeholder="John Doe"
-                          className="bg-background/50"
-                        />
+                       <Label>{t("auth.onboarding.fullName")}</Label>
+                       <Input
+                         value={data.fullName}
+                         onChange={(e) => updateData("fullName", e.target.value)}
+                         placeholder={t("auth.onboarding.fullNamePlaceholder")}
+                         className="bg-background/50"
+                       />
                       </div>
                       <div className="space-y-2">
-                        <Label>Work Email</Label>
-                        <Input
-                          value={data.email}
-                          onChange={(e) => updateData("email", e.target.value)}
-                          placeholder="john@company.com"
-                          type="email"
-                          className="bg-background/50"
-                        />
+                       <Label>{t("auth.onboarding.workEmail")}</Label>
+                       <Input
+                         value={data.email}
+                         onChange={(e) => updateData("email", e.target.value)}
+                         placeholder={t("auth.onboarding.workEmailPlaceholder")}
+                         type="email"
+                         className="bg-background/50"
+                       />
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Phone Number</Label>
-                      <Input
-                        value={data.phone}
-                        onChange={(e) => updateData("phone", e.target.value)}
-                        placeholder="+1 234 567 8900"
-                        className="bg-background/50"
-                      />
+                     <div className="space-y-2">
+                       <Label>{t("auth.onboarding.phoneNumber")}</Label>
+                       <Input
+                         value={data.phone}
+                         onChange={(e) => updateData("phone", e.target.value)}
+                         placeholder={t("auth.onboarding.phoneNumberPlaceholder")}
+                         className="bg-background/50"
+                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Government ID (Optional)</Label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <select
-                          value={data.governmentIdType}
-                          onChange={(e) => updateData("governmentIdType", e.target.value)}
-                          className="w-full h-10 px-3 rounded-lg border border-border/50 bg-background/50 text-sm"
-                        >
-                          <option value="">Select ID type...</option>
-                           <option value="passport">Passport</option>
-                           <option value="drivers_license">Driver&apos;s License</option>
-                           <option value="national_id">National ID</option>
-                        </select>
-                        <Input
-                          value={data.governmentIdNumber}
-                          onChange={(e) => updateData("governmentIdNumber", e.target.value)}
-                          placeholder="ID number"
-                          className="bg-background/50"
-                        />
+                     <Label>{t("auth.onboarding.governmentId")}</Label>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <select
+                         value={data.governmentIdType}
+                         onChange={(e) => updateData("governmentIdType", e.target.value)}
+                         className="w-full h-10 px-3 rounded-lg border border-border/50 bg-background/50 text-sm"
+                       >
+                         <option value="">{t("auth.onboarding.idType")}</option>
+                          <option value="passport">{t("auth.onboarding.idTypePassport")}</option>
+                          <option value="drivers_license">{t("auth.onboarding.idTypeDriversLicense")}</option>
+                          <option value="national_id">{t("auth.onboarding.idTypeNationalId")}</option>
+                       </select>
+                       <Input
+                         value={data.governmentIdNumber}
+                         onChange={(e) => updateData("governmentIdNumber", e.target.value)}
+                         placeholder={t("auth.onboarding.idNumber")}
+                         className="bg-background/50"
+                       />
                       </div>
                     </div>
                     {data.governmentIdType && (
                       <div className="space-y-2">
                         <Label>Upload ID (Optional)</Label>
                         <div className="flex gap-2">
-                          <Button variant="outline" className="gap-2">
-                            <Upload className="w-4 h-4" /> Front
-                          </Button>
-                          <Button variant="outline" className="gap-2">
-                            <Upload className="w-4 h-4" /> Back
-                          </Button>
+                         <Button variant="outline" className="gap-2">
+                           <Upload className="w-4 h-4" /> {t("auth.onboarding.uploadFront")}
+                         </Button>
+                         <Button variant="outline" className="gap-2">
+                           <Upload className="w-4 h-4" /> {t("auth.onboarding.uploadBack")}
+                         </Button>
                         </div>
                       </div>
                     )}
                     <div className="text-center">
-                      <Button
-                        onClick={() => setIsCapturingPhoto(true)}
-                        className="gap-2"
-                      >
-                        <Camera className="w-4 h-4" /> Capture Live Photo
-                      </Button>
+                       <Button
+                         onClick={() => setIsCapturingPhoto(true)}
+                         className="gap-2"
+                       >
+                         <Camera className="w-4 h-4" /> {t("auth.onboarding.captureLivePhoto")}
+                       </Button>
                     </div>
                      {data.photoDataUrl && data.fullName && (
                        <div className="text-center space-y-2 pt-4">
-                         <Button
-                           variant="outline"
-                           className="gap-2"
-                           onClick={async () => {
-                             if (!data.photoDataUrl || !data.fullName) {
-                               toast.error("Please provide selfie and full name")
-                               return
-                             }
+                          <Button
+                            variant="outline"
+                            className="gap-2"
+                            onClick={async () => {
+                              if (!data.photoDataUrl || !data.fullName) {
+                                toast.error("Please provide selfie and full name")
+                                return
+                              }
                             
-                             setIsLoading(true)
-                             try {
-                               // Simulate liveness detection
-                               const livenessResult = await checkLiveness(data.photoDataUrl)
-                               if (!livenessResult.live) {
-                                 toast.error("Liveness check failed. Please try again.")
-                                 await logAuditEvent(userId || "", "onboarding", "liveness_check_failed", { reason: "not_live" })
-                                 return
-                               }
-                               await logAuditEvent(userId || "", "onboarding", "liveness_check_passed", { confidence: livenessResult.confidence })
-                              
-                                const result = await verifyIdentityWithKYC({
-                                  userId: userId || "",
-                                  selfieImage: data.photoDataUrl,
-                                  idType: data.governmentIdType || "",
-                                  idNumber: data.governmentIdNumber || "",
-                                  fullName: data.fullName || ""
-                                })
-                              
-                               if (result.verified) {
-                                 toast.success("Identity verified successfully!")
-                                 await logAuditEvent(userId || "", "onboarding", "identity_verified", { method: result.verificationMethod })
-                               } else if (result.requiresManualReview) {
-                                 toast.info("Identity verification requires manual review")
-                                 await logAuditEvent(userId || "", "onboarding", "identity_manual_review_requested", { reason: result.manualReviewNotes })
-                                 // Request manual review
-                                  const reviewResult = await requestKYCManualReview(
-                                    userId || "",
-                                    {
-                                      userId: userId || "",
-                                      selfieImage: data.photoDataUrl,
-                                      idType: data.governmentIdType || "",
-                                      idNumber: data.governmentIdNumber || "",
-                                      fullName: data.fullName || ""
-                                    }
-                                  )
+                              setIsLoading(true)
+                              try {
+                                // Simulate liveness detection
+                                const livenessResult = await checkLiveness(data.photoDataUrl)
+                                if (!livenessResult.live) {
+                                  toast.error("Liveness check failed. Please try again.")
+                                  await logAuditEvent(userId || "", "onboarding", "liveness_check_failed", { reason: "not_live" })
+                                  return
+                                }
+                                await logAuditEvent(userId || "", "onboarding", "liveness_check_passed", { confidence: livenessResult.confidence })
                                 
-                                 if (reviewResult.success) {
-                                   toast.info("Manual review requested. You will be notified of the result.")
-                                 }
-                               } else {
-                                 toast.error("Identity verification failed")
-                                 await logAuditEvent(userId || "", "onboarding", "identity_verification_failed", { reason: "automated_check_failed" })
-                               }
-     } catch (err) {
-       toast.error("Verification failed. Please try again.")
-       await logAuditEvent(userId || "", "onboarding", "identity_verification_error", { error: err instanceof Error ? err.message : "unknown_error" })
-     } finally {
-                               setIsLoading(false)
-                             }
-                           }}
-                           disabled={isLoading}
-                         >
-                           {isLoading ? (
-                             <Loader2 className="w-4 h-4 animate-spin" />
-                           ) : (
-                             <Shield className="w-4 h-4" />
-                           )}
-                           Verify Identity
-                         </Button>
-                         <p className="text-xs text-muted-foreground">
-                           We will match your selfie with your government identification and check liveness
-                         </p>
+                                 const result = await verifyIdentityWithKYC({
+                                   userId: userId || "",
+                                   selfieImage: data.photoDataUrl,
+                                   idType: data.governmentIdType || "",
+                                   idNumber: data.governmentIdNumber || "",
+                                   fullName: data.fullName || ""
+                                 })
+                                
+                                if (result.verified) {
+                                  toast.success("Identity verified successfully!")
+                                  await logAuditEvent(userId || "", "onboarding", "identity_verified", { method: result.verificationMethod })
+                                } else if (result.requiresManualReview) {
+                                  toast.info("Identity verification requires manual review")
+                                  await logAuditEvent(userId || "", "onboarding", "identity_manual_review_requested", { reason: result.manualReviewNotes })
+                                  // Request manual review
+                                   const reviewResult = await requestKYCManualReview(
+                                     userId || "",
+                                     {
+                                       userId: userId || "",
+                                       selfieImage: data.photoDataUrl,
+                                       idType: data.governmentIdType || "",
+                                       idNumber: data.governmentIdNumber || "",
+                                       fullName: data.fullName || ""
+                                     }
+                                   )
+                                  
+                                  if (reviewResult.success) {
+                                    toast.info("Manual review requested. You will be notified of the result.")
+                                  }
+                                } else {
+                                  toast.error("Identity verification failed")
+                                  await logAuditEvent(userId || "", "onboarding", "identity_verification_failed", { reason: "automated_check_failed" })
+                                }
+      }} catch (err) {
+        toast.error("Verification failed. Please try again.")
+        await logAuditEvent(userId || "", "onboarding", "identity_verification_error", { error: err instanceof Error ? err.message : "unknown_error" })
+      } finally {
+                                setIsLoading(false)
+                              }
+                            }}
+                            disabled={isLoading}
+                          >
+                            {isLoading ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Shield className="w-4 h-4" />
+                            )}
+                            {t("auth.onboarding.verifyIdentity")}
+                          </Button>
+                          <p className="text-xs text-muted-foreground">
+                            {t("auth.onboarding.verifyIdentityDesc")}
+                          </p>
                        </div>
                      )}
                   </div>
@@ -538,130 +538,130 @@ export default function SecureOnboardingPage() {
                 {/* Stage 2: Company */}
                 {currentStage === 1 && (
                   <div className="space-y-6">
-                    <div className="space-y-2">
-                      <Label>Company Legal Name</Label>
-                      <Input
-                        value={data.companyName}
-                        onChange={(e) => updateData("companyName", e.target.value)}
-                        placeholder="Acme Corporation"
-                        className="bg-background/50"
-                      />
+                     <div className="space-y-2">
+                       <Label>{t("auth.onboarding.companyLegalName")}</Label>
+                       <Input
+                         value={data.companyName}
+                         onChange={(e) => updateData("companyName", e.target.value)}
+                         placeholder={t("auth.onboarding.companyLegalNamePlaceholder")}
+                         className="bg-background/50"
+                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label>Registration Number</Label>
-                        <Input
-                          value={data.companyRegistrationNumber}
-                          onChange={(e) => updateData("companyRegistrationNumber", e.target.value)}
-                          placeholder="CIN, GST, or EIN number"
-                          className="bg-background/50"
-                        />
+                       <Label>{t("auth.onboarding.registrationNumber")}</Label>
+                       <Input
+                         value={data.companyRegistrationNumber}
+                         onChange={(e) => updateData("companyRegistrationNumber", e.target.value)}
+                         placeholder={t("auth.onboarding.registrationNumberPlaceholder")}
+                         className="bg-background/50"
+                       />
                       </div>
                       <div className="space-y-2">
-                        <Label>Website</Label>
-                        <Input
-                          value={data.companyWebsite}
-                          onChange={(e) => updateData("companyWebsite", e.target.value)}
-                          placeholder="https://company.com"
-                          type="url"
-                          className="bg-background/50"
-                        />
+                       <Label>{t("auth.onboarding.website")}</Label>
+                       <Input
+                         value={data.companyWebsite}
+                         onChange={(e) => updateData("companyWebsite", e.target.value)}
+                         placeholder={t("auth.onboarding.websitePlaceholder")}
+                         type="url"
+                         className="bg-background/50"
+                       />
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Registered Address</Label>
-                      <Input
-                        value={data.companyAddress}
-                        onChange={(e) => updateData("companyAddress", e.target.value)}
-                        placeholder="123 Business St, City, Country"
-                        className="bg-background/50"
-                      />
+                     <div className="space-y-2">
+                       <Label>{t("auth.onboarding.registeredAddress")}</Label>
+                       <Input
+                         value={data.companyAddress}
+                         onChange={(e) => updateData("companyAddress", e.target.value)}
+                         placeholder={t("auth.onboarding.registeredAddressPlaceholder")}
+                         className="bg-background/50"
+                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label>Country</Label>
-                      <Input
-                        value={data.companyCountry}
-                        onChange={(e) => updateData("companyCountry", e.target.value)}
-                        placeholder="Country of registration"
-                        className="bg-background/50"
-                      />
+                     <div className="space-y-2">
+                       <Label>{t("auth.onboarding.country")}</Label>
+                       <Input
+                         value={data.companyCountry}
+                         onChange={(e) => updateData("companyCountry", e.target.value)}
+                         placeholder={t("auth.onboarding.countryPlaceholder")}
+                         className="bg-background/50"
+                       />
                     </div>
                     <div className="text-center space-y-2">
-                       <Button
-                         variant="outline"
-                         className="gap-2"
-                         onClick={async () => {
-                           if (!data.companyRegistrationNumber || !data.companyCountry) {
-                             toast.error("Registration number and country are required")
-                             return
-                           }
-                           
-                           setIsLoading(true)
-                           try {
-                             // Check if registration number matches MCA/GST format for India
-                             const isIndianCompany = data.companyCountry.toLowerCase() === "in"
-                             if (isIndianCompany) {
-                               const isMCA = /^[A-Z]{5}[0-9]{4}[A-Z]{2}[0-9]{6}$/.test(data.companyRegistrationNumber)
-                               const isGST = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/.test(data.companyRegistrationNumber)
-                               
-                               if (!isMCA && !isGST) {
-                                 toast.warning("Registration number does not match MCA or GST format for India")
-                                 await logAuditEvent(userId || "", "onboarding", "company_verification_warning", { reason: "invalid_mca_gst_format" })
-                               }
-                             }
-                             
-                             const result = await verifyCompanyAgainstRegistry({
-                               registrationNumber: data.companyRegistrationNumber,
-                               country: data.companyCountry,
-                               companyName: data.companyName,
-                               website: data.companyWebsite
-                             })
+                        <Button
+                          variant="outline"
+                          className="gap-2"
+                          onClick={async () => {
+                            if (!data.companyRegistrationNumber || !data.companyCountry) {
+                              toast.error("Registration number and country are required")
+                              return
+                            }
                             
-                             if (result.verified) {
-                               toast.success("Company verified successfully!")
-                               await logAuditEvent(userId || "", "onboarding", "company_verified", { method: result.verificationMethod })
-                               // Update company data with verified information
-                               if (result.companyName) updateData("companyName", result.companyName)
-                               if (result.address) updateData("companyAddress", result.address)
-                             } else if (result.requiresManualReview) {
-                               toast.info("Company verification requires manual review")
-                               await logAuditEvent(userId || "", "onboarding", "company_manual_review_requested", { reason: result.manualReviewNotes })
-                               // Request manual review
-                               const reviewResult = await requestManualReview(userId || "", {
-                                 registrationNumber: data.companyRegistrationNumber,
-                                 country: data.companyCountry,
-                                 companyName: data.companyName,
-                                 userProvidedName: data.companyName,
-                                 userProvidedWebsite: data.companyWebsite,
-                                 userProvidedAddress: data.companyAddress
-                               })
+                            setIsLoading(true)
+                            try {
+                              // Check if registration number matches MCA/GST format for India
+                              const isIndianCompany = data.companyCountry.toLowerCase() === "in"
+                              if (isIndianCompany) {
+                                const isMCA = /^[A-Z]{5}[0-9]{4}[A-Z]{2}[0-9]{6}$/.test(data.companyRegistrationNumber)
+                                const isGST = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/.test(data.companyRegistrationNumber)
+                                
+                                if (!isMCA && !isGST) {
+                                  toast.warning("Registration number does not match MCA or GST format for India")
+                                  await logAuditEvent(userId || "", "onboarding", "company_verification_warning", { reason: "invalid_mca_gst_format" })
+                                }
+                              }
                               
-                               if (reviewResult.success) {
-                                 toast.info("Manual review requested. You will be notified of the result.")
-                               }
-                             } else {
-                               toast.error("Company verification failed")
-                               await logAuditEvent(userId || "", "onboarding", "company_verification_failed", { reason: "automated_check_failed" })
-                             }
-                           } catch (err) {
-                             toast.error("Verification failed. Please try again.")
-                             await logAuditEvent(userId || "", "onboarding", "company_verification_error", { error: err instanceof Error ? err.message : "unknown_error" })
-                           } finally {
-                             setIsLoading(false)
-                           }
-                         }}
-                         disabled={isLoading}
-                       >
-                         {isLoading ? (
-                           <Loader2 className="w-4 h-4 animate-spin" />
-                         ) : (
-                           <Building2 className="w-4 h-4" />
-                         )}
-                         Verify Company
-                       </Button>
-                       <p className="text-xs text-muted-foreground">
-                         We will verify your company against official business registries (MCA/GST for India)
-                       </p>
+                              const result = await verifyCompanyAgainstRegistry({
+                                registrationNumber: data.companyRegistrationNumber,
+                                country: data.companyCountry,
+                                companyName: data.companyName,
+                                website: data.companyWebsite
+                              })
+                              
+                              if (result.verified) {
+                                toast.success("Company verified successfully!")
+                                await logAuditEvent(userId || "", "onboarding", "company_verified", { method: result.verificationMethod })
+                                // Update company data with verified information
+                                if (result.companyName) updateData("companyName", result.companyName)
+                                if (result.address) updateData("companyAddress", result.address)
+                              } else if (result.requiresManualReview) {
+                                toast.info("Company verification requires manual review")
+                                await logAuditEvent(userId || "", "onboarding", "company_manual_review_requested", { reason: result.manualReviewNotes })
+                                // Request manual review
+                                const reviewResult = await requestManualReview(userId || "", {
+                                  registrationNumber: data.companyRegistrationNumber,
+                                  country: data.companyCountry,
+                                  companyName: data.companyName,
+                                  userProvidedName: data.companyName,
+                                  userProvidedWebsite: data.companyWebsite,
+                                  userProvidedAddress: data.companyAddress
+                                })
+                                
+                                if (reviewResult.success) {
+                                  toast.info("Manual review requested. You will be notified of the result.")
+                                }
+                              } else {
+                                toast.error("Company verification failed")
+                                await logAuditEvent(userId || "", "onboarding", "company_verification_failed", { reason: "automated_check_failed" })
+                              }
+                            } catch (err) {
+                              toast.error("Verification failed. Please try again.")
+                              await logAuditEvent(userId || "", "onboarding", "company_verification_error", { error: err instanceof Error ? err.message : "unknown_error" })
+                            } finally {
+                              setIsLoading(false)
+                            }
+                          }}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Building2 className="w-4 h-4" />
+                          )}
+                          {t("auth.onboarding.verifyCompany")}
+                        </Button>
+                        <p className="text-xs text-muted-foreground">
+                          {t("auth.onboarding.verifyCompanyDesc")}
+                        </p>
                        {data.companyCountry.toLowerCase() === "in" && (
                          <div className="mt-2 p-2 bg-yellow-50/50 rounded-md text-xs text-yellow-700 flex items-start gap-2">
                            <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
@@ -675,45 +675,45 @@ export default function SecureOnboardingPage() {
                 {/* Stage 3: Role */}
                 {currentStage === 2 && (
                   <div className="space-y-6">
-                    <div className="space-y-2">
-                      <Label>Your Position</Label>
-                      <Input
-                        value={data.position}
-                        onChange={(e) => updateData("position", e.target.value)}
-                        placeholder="CEO, CTO, Manager, etc."
-                        className="bg-background/50"
-                      />
+                     <div className="space-y-2">
+                       <Label>{t("auth.onboarding.yourPosition")}</Label>
+                       <Input
+                         value={data.position}
+                         onChange={(e) => updateData("position", e.target.value)}
+                         placeholder={t("auth.onboarding.yourPositionPlaceholder")}
+                         className="bg-background/50"
+                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Your Role</Label>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {[
-                          { value: "owner", label: "Owner", description: "Full authority to manage the company" },
-                          { value: "admin", label: "Admin", description: "Manage users and settings" },
-                          { value: "member", label: "Member", description: "Standard access" },
-                        ].map((role) => (
-                          <button
-                            key={role.value}
-                            onClick={() => updateData("role", role.value as "owner" | "admin" | "member")}
-                            className={cn(
-                              "flex flex-col items-start gap-2 p-4 rounded-xl border-2 transition-all text-left",
-                              data.role === role.value
-                                ? "border-primary bg-primary/10"
-                                : "border-border/50 hover:border-primary/50"
-                            )}
-                          >
-                            <div className="flex items-center gap-2">
-                              <div className={cn(
-                                "w-4 h-4 rounded-full border-2 flex items-center justify-center",
-                                data.role === role.value ? "border-primary bg-primary" : "border-muted-foreground"
-                              )}>
-                                {data.role === role.value && <Check className="w-3 h-3 text-primary-foreground" />}
-                              </div>
-                              <span className="font-medium">{role.label}</span>
-                            </div>
-                            <span className="text-xs text-muted-foreground">{role.description}</span>
-                          </button>
-                        ))}
+                       <Label>{t("auth.onboarding.yourRole")}</Label>
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                         {[
+                           { value: "owner", label: t("auth.onboarding.roleOwner"), description: t("auth.onboarding.roleOwnerDesc") },
+                           { value: "admin", label: t("auth.onboarding.roleAdmin"), description: t("auth.onboarding.roleAdminDesc") },
+                           { value: "member", label: t("auth.onboarding.roleMember"), description: t("auth.onboarding.roleMemberDesc") },
+                         ].map((role) => (
+                           <button
+                             key={role.value}
+                             onClick={() => updateData("role", role.value as "owner" | "admin" | "member")}
+                             className={cn(
+                               "flex flex-col items-start gap-2 p-4 rounded-xl border-2 transition-all text-left",
+                               data.role === role.value
+                                 ? "border-primary bg-primary/10"
+                                 : "border-border/50 hover:border-primary/50"
+                             )}
+                           >
+                             <div className="flex items-center gap-2">
+                               <div className={cn(
+                                 "w-4 h-4 rounded-full border-2 flex items-center justify-center",
+                                 data.role === role.value ? "border-primary bg-primary" : "border-muted-foreground"
+                               )}>
+                                 {data.role === role.value && <Check className="w-3 h-3 text-primary-foreground" />}
+                               </div>
+                               <span className="font-medium">{role.label}</span>
+                             </div>
+                             <span className="text-xs text-muted-foreground">{role.description}</span>
+                           </button>
+                         ))}
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
@@ -724,9 +724,9 @@ export default function SecureOnboardingPage() {
                         onChange={(e) => updateData("authorityConfirmed", e.target.checked)}
                         className="mt-1 rounded"
                       />
-                      <Label htmlFor="authorityConfirmed" className="text-sm">
-                        I confirm I have the authority to represent this company and onboard it to DigiT
-                      </Label>
+                     <Label htmlFor="authorityConfirmed" className="text-sm">
+                       {t("auth.onboarding.authorityConfirm")}
+                     </Label>
                     </div>
                   </div>
                 )}
@@ -739,30 +739,30 @@ export default function SecureOnboardingPage() {
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
                           <Key className="w-8 h-8 text-primary" />
                         </div>
-                        <h3 className="text-lg font-semibold">Secure Your Access</h3>
-                        <p className="text-muted-foreground">
-                          We will send a one-time passcode to <span className="font-medium">{data.email}</span>
-                        </p>
-                        <Button
-                          onClick={sendPasscode}
-                          disabled={isLoading}
-                          className="gap-2"
-                        >
-                          {isLoading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <ArrowRight className="w-4 h-4" />
-                          )}
-                          Send Passcode
-                        </Button>
+                         <h3 className="text-lg font-semibold">{t("auth.onboarding.secureAccess")}</h3>
+                         <p className="text-muted-foreground">
+                           {t("auth.onboarding.secureAccessDesc", { email: data.email })}
+                         </p>
+                         <Button
+                           onClick={sendPasscode}
+                           disabled={isLoading}
+                           className="gap-2"
+                         >
+                           {isLoading ? (
+                             <Loader2 className="w-4 h-4 animate-spin" />
+                           ) : (
+                             <ArrowRight className="w-4 h-4" />
+                           )}
+                           {t("auth.onboarding.sendPasscode")}
+                         </Button>
                       </div>
                     ) : !passcodeVerified ? (
                       <div className="space-y-4">
                         <div className="text-center">
-                          <h3 className="text-lg font-semibold mb-2">Enter Passcode</h3>
-                          <p className="text-sm text-muted-foreground mb-6">
-                            Check your email for a 6-character passcode
-                          </p>
+                           <h3 className="text-lg font-semibold mb-2">{t("auth.onboarding.enterPasscode")}</h3>
+                           <p className="text-sm text-muted-foreground mb-6">
+                             {t("auth.onboarding.passcodeDesc")}
+                           </p>
                         </div>
                         <div className="flex justify-center gap-2 mb-4">
                           {[...Array(6)].map((_, i) => (
@@ -787,13 +787,13 @@ export default function SecureOnboardingPage() {
                         </div>
                         {error && <p className="text-sm text-destructive text-center">{error}</p>}
                         <div className="text-center">
-                          <Button
-                            variant="link"
-                            onClick={sendPasscode}
-                            disabled={isLoading}
-                          >
-                            {isLoading ? "Sending..." : "Resend passcode"}
-                          </Button>
+                           <Button
+                             variant="link"
+                             onClick={sendPasscode}
+                             disabled={isLoading}
+                           >
+                             {isLoading ? t("common.loading") : t("auth.onboarding.resendPasscode")}
+                           </Button>
                         </div>
                       </div>
                     ) : !data.deviceCredential ? (
@@ -801,22 +801,22 @@ export default function SecureOnboardingPage() {
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
                           <Shield className="w-8 h-8 text-primary" />
                         </div>
-                        <h3 className="text-lg font-semibold">Register This Device</h3>
-                        <p className="text-muted-foreground">
-                          Lock DigiT to this device for secure, passwordless access
-                        </p>
-                        <Button
-                          onClick={registerDevice}
-                          disabled={isRegisteringDevice}
-                          className="gap-2"
-                        >
-                          {isRegisteringDevice ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Key className="w-4 h-4" />
-                          )}
-                          Register Device
-                        </Button>
+                         <h3 className="text-lg font-semibold">{t("auth.onboarding.registerDevice")}</h3>
+                         <p className="text-muted-foreground">
+                           {t("auth.onboarding.registerDeviceDesc")}
+                         </p>
+                         <Button
+                           onClick={registerDevice}
+                           disabled={isRegisteringDevice}
+                           className="gap-2"
+                         >
+                           {isRegisteringDevice ? (
+                             <Loader2 className="w-4 h-4 animate-spin" />
+                           ) : (
+                             <Key className="w-4 h-4" />
+                           )}
+                           {t("auth.onboarding.registerDeviceButton")}
+                         </Button>
                         {error && <p className="text-sm text-destructive">{error}</p>}
                         <p className="text-xs text-muted-foreground">
                           This will create a device-bound passkey that only works on this device
@@ -827,10 +827,10 @@ export default function SecureOnboardingPage() {
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 mb-4">
                           <Check className="w-8 h-8 text-green-500" />
                         </div>
-                        <h3 className="text-lg font-semibold">Device Registered</h3>
-                        <p className="text-muted-foreground">
-                          This device is now locked to your DigiT account
-                        </p>
+                         <h3 className="text-lg font-semibold">{t("auth.onboarding.deviceRegistered")}</h3>
+                         <p className="text-muted-foreground">
+                           {t("auth.onboarding.deviceRegisteredDesc")}
+                         </p>
                         <div className="bg-secondary/50 rounded-lg p-4 text-left">
                           <div className="flex items-center gap-2 mb-2">
                             <Key className="w-4 h-4 text-primary" />
@@ -847,23 +847,23 @@ export default function SecureOnboardingPage() {
 
                 {/* Navigation */}
                 <div className="flex items-center justify-between mt-8 pt-6 border-t border-border/50">
-                  <Button
-                    variant="ghost"
-                    onClick={handleBack}
-                    disabled={currentStage === 0 || isLoading}
-                    className="gap-2"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleNext}
-                    disabled={!canProceed() || isLoading}
-                    className="gap-2 bg-gradient-to-r from-primary to-cyan-600 hover:from-primary/90 hover:to-cyan-600/90"
-                  >
-                    {currentStage === ONBOARDING_STAGES.length - 1 ? "Complete Onboarding" : "Continue"}
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
+                   <Button
+                     variant="ghost"
+                     onClick={handleBack}
+                     disabled={currentStage === 0 || isLoading}
+                     className="gap-2"
+                   >
+                     <ArrowLeft className="w-4 h-4" />
+                     {t("auth.onboarding.back")}
+                   </Button>
+                   <Button
+                     onClick={handleNext}
+                     disabled={!canProceed() || isLoading}
+                     className="gap-2 bg-gradient-to-r from-primary to-cyan-600 hover:from-primary/90 hover:to-cyan-600/90"
+                   >
+                     {currentStage === ONBOARDING_STAGES.length - 1 ? t("auth.onboarding.completeOnboarding") : t("auth.onboarding.continue")}
+                     <ArrowRight className="w-4 h-4" />
+                   </Button>
                 </div>
               </CardContent>
             </Card>

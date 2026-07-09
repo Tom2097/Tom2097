@@ -76,12 +76,12 @@ function LoginForm() {
     } catch (err) {
       if (err instanceof Error) {
         if (err.name === "NotAllowedError") {
-          setPasskeyError("Passkey authentication was canceled.")
+          setPasskeyError(t("auth.login.passkeyError"))
         } else {
           setPasskeyError(err.message)
         }
       } else {
-        setPasskeyError("An unexpected error occurred.")
+        setPasskeyError(t("auth.login.passkeyErrorGeneric"))
       }
     } finally {
       setIsPasskeyLoading(false)
@@ -97,8 +97,8 @@ function LoginForm() {
         <div className="flex items-center justify-center gap-2 mb-4">
           <Logo size="md" />
         </div>
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to your enterprise dashboard <span className="text-[10px] opacity-30">v:native</span></CardDescription>
+         <CardTitle className="text-2xl">{t("auth.login.welcomeBack")}</CardTitle>
+         <CardDescription>{t("auth.login.signInToDashboard")} <span className="text-[10px] opacity-30">v:native</span></CardDescription>
       </CardHeader>
       <form action="/api/auth/login" method="POST">
         <input type="hidden" name="redirect" value={redirect} />
@@ -125,9 +125,9 @@ function LoginForm() {
                 ) : (
                   <Fingerprint className="w-5 h-5 text-primary" />
                 )}
-                <span className="font-medium">
-                  {isPasskeyLoading ? "Authenticating..." : "Sign in with Face ID / Passkey"}
-                </span>
+                 <span className="font-medium">
+                   {isPasskeyLoading ? t("auth.login.authenticating") : t("auth.login.signInWithPasskey")}
+                 </span>
               </Button>
 
               <div className="relative">
@@ -135,47 +135,47 @@ function LoginForm() {
                   <span className="w-full border-t border-border/50" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">or continue with email</span>
+                  <span className="bg-card px-2 text-muted-foreground">{t("auth.login.orContinueWithEmail")}</span>
                 </div>
               </div>
             </>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-secondary/50"
-            />
+             <Label htmlFor="email">{t("auth.login.email")}</Label>
+             <Input
+               id="email"
+               name="email"
+               type="email"
+               placeholder={t("auth.login.emailPlaceholder")}
+               value={email}
+               onChange={(e) => setEmail(e.target.value)}
+               required
+               className="bg-secondary/50"
+             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-secondary/50 pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
+             <Label htmlFor="password">{t("auth.login.password")}</Label>
+             <div className="relative">
+               <Input
+                 id="password"
+                 name="password"
+                 type={showPassword ? "text" : "password"}
+                 placeholder={t("auth.login.passwordPlaceholder")}
+                 value={password}
+                 onChange={(e) => setPassword(e.target.value)}
+                 required
+                 className="bg-secondary/50 pr-10"
+               />
+               <button
+                 type="button"
+                 onClick={() => setShowPassword(!showPassword)}
+                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                 aria-label={showPassword ? t("auth.login.hidePassword") : t("auth.login.showPassword")}
+               >
+                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+               </button>
+             </div>
           </div>
 
           {/* Remember Me */}
@@ -185,28 +185,28 @@ function LoginForm() {
               checked={rememberMe}
               onCheckedChange={(checked) => setRememberMe(checked === true)}
             />
-            <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer">
-              Remember me
-            </Label>
+             <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer">
+               {t("auth.login.rememberMe")}
+             </Label>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full">
-            Sign in
-          </Button>
+           <Button type="submit" className="w-full">
+             {t("auth.login.signIn")}
+           </Button>
 
           {/* Security badge */}
-          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-            <Shield className="w-3 h-3" />
-            <span>Protected by enterprise-grade security</span>
-          </div>
+           <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+             <Shield className="w-3 h-3" />
+             <span>{t("auth.login.protectedBySecurity")}</span>
+           </div>
 
-          <p className="text-sm text-muted-foreground text-center">
-            Don&apos;t have an account?{" "}
-            <Link href="/auth/sign-up" className="text-primary hover:underline">
-              Sign up
-            </Link>
-          </p>
+           <p className="text-sm text-muted-foreground text-center">
+             {t("auth.login.dontHaveAccount")}{" "}
+             <Link href="/auth/sign-up" className="text-primary hover:underline">
+               {t("auth.login.signUp")}
+             </Link>
+           </p>
         </CardFooter>
       </form>
     </Card>

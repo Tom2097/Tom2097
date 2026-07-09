@@ -28,8 +28,8 @@ export default async function AuthErrorPage({
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Clock className="w-8 h-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl text-balance">We&apos;re at capacity</CardTitle>
-            <CardDescription>Onboarding in controlled waves</CardDescription>
+             <CardTitle className="text-2xl text-balance">{t("auth.error.atCapacity")}</CardTitle>
+             <CardDescription>{t("auth.error.onboardingWaves")}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground text-pretty">{CAPACITY_MESSAGES.tenantsFull}</p>
@@ -61,21 +61,21 @@ export default async function AuthErrorPage({
           <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
             <AlertTriangle className="w-8 h-8 text-destructive" />
           </div>
-          <CardTitle className="text-2xl">Authentication Error</CardTitle>
-          <CardDescription>Something went wrong during sign in</CardDescription>
+           <CardTitle className="text-2xl">{t("auth.error.authError")}</CardTitle>
+           <CardDescription>{t("auth.error.somethingWentWrong")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            An unexpected error occurred during authentication. Please try signing in again.
-          </p>
+           <p className="text-sm text-muted-foreground">
+             {t("auth.error.tryAgain")}
+           </p>
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
-          <Button asChild className="w-full">
-            <Link href="/auth/login">Try signing in</Link>
-          </Button>
-          <Button asChild variant="outline" className="w-full">
-            <Link href="/auth/sign-up">Create new account</Link>
-          </Button>
+           <Button asChild className="w-full">
+             <Link href="/auth/login">{t("auth.error.trySigningIn")}</Link>
+           </Button>
+           <Button asChild variant="outline" className="w-full">
+             <Link href="/auth/sign-up">{t("auth.error.createAccount")}</Link>
+           </Button>
         </CardFooter>
       </Card>
     </div>

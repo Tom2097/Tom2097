@@ -55,6 +55,119 @@
     "currency": "Currency",
     "timezone": "Timezone"
   },
+  "auth": {
+    "login": {
+      "welcomeBack": "Welcome back",
+      "signInToDashboard": "Sign in to your enterprise dashboard",
+      "signInWithPasskey": "Sign in with Face ID / Passkey",
+      "authenticating": "Authenticating...",
+      "orContinueWithEmail": "or continue with email",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "rememberMe": "Remember me",
+      "signIn": "Sign in",
+      "protectedBySecurity": "Protected by enterprise-grade security",
+      "dontHaveAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "passkeyError": "Passkey authentication was canceled.",
+      "passkeyErrorGeneric": "An unexpected error occurred."
+    },
+    "signUpSuccess": {
+      "accountReady": "Account ready",
+      "accountActive": "Your account has been created and is active",
+      "signInNow": "You can now sign in with your email and password to start using the platform.",
+      "signIn": "Sign in"
+    },
+    "error": {
+      "atCapacity": "We're at capacity",
+      "onboardingWaves": "Onboarding in controlled waves",
+      "authError": "Authentication Error",
+      "somethingWentWrong": "Something went wrong during sign in",
+      "tryAgain": "An unexpected error occurred during authentication. Please try signing in again.",
+      "trySigningIn": "Try signing in",
+      "createAccount": "Create new account"
+    },
+    "onboarding": {
+      "stage1": {
+        "title": "Your Identity",
+        "desc": "Verify who you are"
+      },
+      "stage2": {
+        "title": "Your Company",
+        "desc": "Verify your company registration"
+      },
+      "stage3": {
+        "title": "Your Role",
+        "desc": "Confirm your position and authority"
+      },
+      "stage4": {
+        "title": "Secure Access",
+        "desc": "Lock DigiT to this device"
+      },
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "John Doe",
+      "workEmail": "Work Email",
+      "workEmailPlaceholder": "john@company.com",
+      "phoneNumber": "Phone Number",
+      "phoneNumberPlaceholder": "+1 234 567 8900",
+      "governmentId": "Government ID (Optional)",
+      "idType": "Select ID type...",
+      "idTypePassport": "Passport",
+      "idTypeDriversLicense": "Driver's License",
+      "idTypeNationalId": "National ID",
+      "idNumber": "ID number",
+      "uploadId": "Upload ID (Optional)",
+      "uploadFront": "Front",
+      "uploadBack": "Back",
+      "captureLivePhoto": "Capture Live Photo",
+      "verifyIdentity": "Verify Identity",
+      "verifyIdentityDesc": "We will match your selfie with your government identification and check liveness",
+      "companyLegalName": "Company Legal Name",
+      "companyLegalNamePlaceholder": "Acme Corporation",
+      "registrationNumber": "Registration Number",
+      "registrationNumberPlaceholder": "CIN, GST, or EIN number",
+      "website": "Website",
+      "websitePlaceholder": "https://company.com",
+      "registeredAddress": "Registered Address",
+      "registeredAddressPlaceholder": "123 Business St, City, Country",
+      "country": "Country",
+      "countryPlaceholder": "Country of registration",
+      "verifyCompany": "Verify Company",
+      "verifyCompanyDesc": "We will verify your company against official business registries (MCA/GST for India)",
+      "yourPosition": "Your Position",
+      "yourPositionPlaceholder": "CEO, CTO, Manager, etc.",
+      "yourRole": "Your Role",
+      "roleOwner": "Owner",
+      "roleOwnerDesc": "Full authority to manage the company",
+      "roleAdmin": "Admin",
+      "roleAdminDesc": "Manage users and settings",
+      "roleMember": "Member",
+      "roleMemberDesc": "Standard access",
+      "authorityConfirm": "I confirm I have the authority to represent this company and onboard it to DigiT",
+      "secureAccess": "Secure Your Access",
+      "secureAccessDesc": "We will send a one-time passcode to {email}",
+      "sendPasscode": "Send Passcode",
+      "enterPasscode": "Enter Passcode",
+      "passcodeDesc": "Check your email for a 6-character passcode",
+      "resendPasscode": "Resend passcode",
+      "registerDevice": "Register This Device",
+      "registerDeviceDesc": "Lock DigiT to this device for secure, passwordless access",
+      "registerDeviceButton": "Register Device",
+      "deviceRegistered": "Device Registered",
+      "deviceRegisteredDesc": "This device is now locked to your DigiT account",
+      "back": "Back",
+      "continue": "Continue",
+      "completeOnboarding": "Complete Onboarding"
+    },
+    "pricing": {
+      "signIn": "Sign In",
+      "startFreeTrial": "Start Free Trial"
+    }
+  },
   "dashboard": {
     "subscription": {
       "trial": {

@@ -203,28 +203,28 @@ function PricingContent() {
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Logo size="md" link />
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Dashboard
-            </Link>
-            <Link href="/pricing" className="text-sm text-foreground font-medium">
-              Pricing
-            </Link>
-            {loadingUser ? (
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-            ) : user ? (
-              <Button size="sm" asChild>
-                <Link href="/settings">My Account</Link>
-              </Button>
-            ) : (
-              <>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/auth/login">Sign In</Link>
-                </Button>
-                <Button size="sm" asChild>
-                  <Link href="/auth/sign-up">Start Free Trial</Link>
-                </Button>
-              </>
-            )}
+             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+               {t("common.dashboard")}
+             </Link>
+             <Link href="/pricing" className="text-sm text-foreground font-medium">
+               {t("navigation.pricing")}
+             </Link>
+             {loadingUser ? (
+               <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+             ) : user ? (
+               <Button size="sm" asChild>
+                 <Link href="/settings">{t("common.settings")}</Link>
+               </Button>
+             ) : (
+               <>
+                 <Button variant="outline" size="sm" asChild>
+                   <Link href="/auth/login">{t("auth.pricing.signIn")}</Link>
+                 </Button>
+                 <Button size="sm" asChild>
+                   <Link href="/auth/sign-up">{t("auth.pricing.startFreeTrial")}</Link>
+                 </Button>
+               </>
+             )}
           </nav>
         </div>
       </header>

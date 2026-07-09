@@ -22,19 +22,19 @@ export default function SignUpSuccessPage() {
           <div className="mx-auto w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-4">
             <CheckCircle2 className="w-8 h-8 text-green-500" />
           </div>
-          <CardTitle className="text-2xl">Account ready</CardTitle>
-          <CardDescription>Your account has been created and is active</CardDescription>
+           <CardTitle className="text-2xl">{t("auth.signUpSuccess.accountReady")}</CardTitle>
+           <CardDescription>{t("auth.signUpSuccess.accountActive")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            You can now sign in with your email and password to start using the platform.
-          </p>
+           <p className="text-sm text-muted-foreground">
+             {t("auth.signUpSuccess.signInNow")}
+           </p>
         </CardContent>
         <CardFooter>
           <Button asChild className="w-full gap-2">
             <Link href="/auth/login">
-              <LogIn className="w-4 h-4" />
-              Sign in
+               <LogIn className="w-4 h-4" />
+               {t("auth.signUpSuccess.signIn")}
             </Link>
           </Button>
         </CardFooter>
