@@ -16,14 +16,9 @@ import { verifyCompanyAgainstRegistry, requestManualReview } from "@/lib/company
 import { roleRequiresApproval, requestRoleApproval } from "@/lib/company/role-approval"
 import { verifyIdentityWithKYC, requestKYCManualReview } from "@/lib/identity/kyc-verification"
 import { logAuditEvent } from "@/lib/audit-logging"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 // Onboarding stages aligned with Secure Onboarding Spec
-  const ONBOARDING_STAGES = [
-    { id: "identity", title: t("auth.onboarding.stage1.title"), description: t("auth.onboarding.stage1.desc"), icon: User },
-    { id: "company", title: t("auth.onboarding.stage2.title"), description: t("auth.onboarding.stage2.desc"), icon: Building2 },
-    { id: "role", title: t("auth.onboarding.stage3.title"), description: t("auth.onboarding.stage3.desc"), icon: Shield },
-    { id: "access", title: t("auth.onboarding.stage4.title"), description: t("auth.onboarding.stage4.desc"), icon: Key },
-  ]
 
 interface OnboardingData {
   // Stage 1: Identity
@@ -72,8 +67,16 @@ const DEFAULT_DATA: OnboardingData = {
 }
 
 export default function SecureOnboardingPage() {
+  const { t } = useI18n()
   const router = useRouter()
   const [currentStage, setCurrentStage] = useState(0)
+
+  const ONBOARDING_STAGES = [
+    { id: "identity", title: t("auth.onboarding.stage1.title"), description: t("auth.onboarding.stage1.desc"), icon: User },
+    { id: "company", title: t("auth.onboarding.stage2.title"), description: t("auth.onboarding.stage2.desc"), icon: Building2 },
+    { id: "role", title: t("auth.onboarding.stage3.title"), description: t("auth.onboarding.stage3.desc"), icon: Shield },
+    { id: "access", title: t("auth.onboarding.stage4.title"), description: t("auth.onboarding.stage4.desc"), icon: Key },
+  ]
   const [data, setData] = useState<OnboardingData>(DEFAULT_DATA)
   const [isLoading, setIsLoading] = useState(false)
   const [isCapturingPhoto, setIsCapturingPhoto] = useState(false)
