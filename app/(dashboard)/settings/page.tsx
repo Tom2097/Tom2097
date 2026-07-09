@@ -83,7 +83,7 @@ interface ApiKey {
   last_used_at: string | null
 }
 
-function SuccessBanner() {
+function SuccessBanner({ t }: { t: (key: string, params?: Record<string, string | number>) => string }) {
   const searchParams = useSearchParams()
   const success = searchParams?.get("success")
   
@@ -452,7 +452,7 @@ export default function SettingsPage() {
       )}
 
       <Suspense fallback={null}>
-        <SuccessBanner />
+        <SuccessBanner t={t} />
       </Suspense>
 
       <Tabs defaultValue="subscription" className="space-y-6">
