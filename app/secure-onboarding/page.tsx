@@ -501,8 +501,8 @@ export default function SecureOnboardingPage() {
                                 } else {
                                   toast.error("Identity verification failed")
                                   await logAuditEvent(userId || "", "onboarding", "identity_verification_failed", { reason: "automated_check_failed" })
-                                }
-      }} catch (err) {
+                                 }
+      } catch (err) {
         toast.error("Verification failed. Please try again.")
         await logAuditEvent(userId || "", "onboarding", "identity_verification_error", { error: err instanceof Error ? err.message : "unknown_error" })
       } finally {
