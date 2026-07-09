@@ -162,7 +162,9 @@ const PricingCard = React.memo(function PricingCard({
 
 function PricingContent() {
   const [isAnnual, setIsAnnual] = useState(true)
-  const [currency, setCurrency] = useState("USD")
+  const [currency, setCurrency] = useState(() =>
+    typeof document !== 'undefined' && getCookie('NEXT_REGION') === 'IN' ? 'INR' : 'USD'
+  )
   const [selectedTier, setSelectedTier] = useState<string | null>(null)
   const [showCheckout, setShowCheckout] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -178,12 +180,6 @@ function PricingContent() {
       setUser(user)
       setLoadingUser(false)
     })
-
-    // Region-based currency default: India → INR, otherwise USD.
-    const region = getCookie('NEXT_REGION')
-    if (region === 'IN') {
-      setCurrency('INR')
-    }
   }, [])
 
   const handleSelectPlan = (tierId: string) => {
