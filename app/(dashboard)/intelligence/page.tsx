@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useI18n } from "@/components/providers/i18n-provider"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -15,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { Brain, BarChart3, Network, Sparkles, RefreshCw, Activity, Cpu, MemoryStick, Zap, AlertTriangle, TrendingUp } from "lucide-react"
 
 export default function IntelligencePage() {
+  const { t } = useI18n()
   const [activeTab, setActiveTab] = useState("command-center")
   const [metrics, setMetrics] = useState({
     agentStatus: "active",
@@ -82,35 +84,35 @@ export default function IntelligencePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">AI Intelligence</h1>
-          <p className="text-muted-foreground">
-            Real-time monitoring, causal reasoning, and autonomous agents
-          </p>
+           <h1 className="text-3xl font-bold tracking-tight">{t("intelligence.page.title")}</h1>
+           <p className="text-muted-foreground">
+             {t("intelligence.page.subtitle")}
+           </p>
         </div>
-        <Button variant="ghost" size="sm" className="gap-1 text-sm">
-          <RefreshCw className="h-3 w-3" />
-          Refresh
-        </Button>
+         <Button variant="ghost" size="sm" className="gap-1 text-sm">
+           <RefreshCw className="h-3 w-3" />
+           {t("intelligence.page.refresh")}
+         </Button>
       </div>
 
       {/* Intelligence Metrics */}
       <div className="grid gap-6 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Agent Status</CardTitle>
+             <CardTitle className="text-sm font-medium">{t("intelligence.page.agentStatus")}</CardTitle>
             <Brain className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${metrics.agentStatus === 'active' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
-              <div className="text-2xl font-bold capitalize">{metrics.agentStatus}</div>
-            </div>
-            <p className="text-xs text-muted-foreground">{metrics.activeAgents} agents active</p>
+               <div className="text-2xl font-bold capitalize">{t(`intelligence.page.${metrics.agentStatus}`)}</div>
+             </div>
+             <p className="text-xs text-muted-foreground">{metrics.activeAgents} {t("intelligence.page.agentsActive")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Reasoning Accuracy</CardTitle>
+             <CardTitle className="text-sm font-medium">{t("intelligence.page.reasoningAccuracy")}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -143,7 +145,7 @@ export default function IntelligencePage() {
       {/* Real-Time Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
         <ErrorBoundary>
-          <ChartContainer title="Operational Graph Activity">
+           <ChartContainer title={t("intelligence.page.operationalGraphActivity")}>
             <RealTimeChart
               data={chartData}
               dataKey="value"
@@ -156,11 +158,11 @@ export default function IntelligencePage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>System Status</span>
+               <span>{t("intelligence.page.systemStatus")}</span>
               {metrics.anomalyDetection > 0 && (
                 <Badge variant="destructive" className="gap-1">
                   <AlertTriangle className="h-3 w-3" />
-                  {metrics.anomalyDetection} alerts
+                   {metrics.anomalyDetection} {t("intelligence.page.alerts")}
                 </Badge>
               )}
             </CardTitle>
@@ -171,8 +173,8 @@ export default function IntelligencePage() {
                 <div className="flex items-center gap-3">
                   <Zap className="h-5 w-5 text-blue-500" />
                   <div>
-                    <div className="font-medium">Insights Generated</div>
-                    <div className="text-sm text-muted-foreground">{metrics.insightsGenerated} today</div>
+                     <div className="font-medium">{t("intelligence.page.insightsGenerated")}</div>
+                     <div className="text-sm text-muted-foreground">{metrics.insightsGenerated} {t("intelligence.page.today")}</div>
                   </div>
                 </div>
                 <TrendingUp className="h-4 w-4 text-blue-500" />
@@ -182,8 +184,8 @@ export default function IntelligencePage() {
                 <div className="flex items-center gap-3">
                   <Network className="h-5 w-5 text-purple-500" />
                   <div>
-                    <div className="font-medium">Graph Complexity</div>
-                    <div className="text-sm text-muted-foreground">{metrics.graphComplexity} nodes</div>
+                     <div className="font-medium">{t("intelligence.page.graphComplexity")}</div>
+                     <div className="text-sm text-muted-foreground">{metrics.graphComplexity} {t("intelligence.page.nodes")}</div>
                   </div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
@@ -191,10 +193,10 @@ export default function IntelligencePage() {
 
               {anomalies.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-border/50">
-                  <h4 className="font-semibold mb-2 flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-red-500" />
-                    Recent Anomalies
-                  </h4>
+                   <h4 className="font-semibold mb-2 flex items-center gap-2">
+                     <AlertTriangle className="h-4 w-4 text-red-500" />
+                     {t("intelligence.page.recentAnomalies")}
+                   </h4>
                   <div className="space-y-2 text-xs">
                     {anomalies.slice(-3).map((anomaly) => (
                       <div key={anomaly.id} className="flex items-center justify-between p-2 rounded-lg bg-destructive/10">
@@ -220,22 +222,22 @@ export default function IntelligencePage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="command-center" className="gap-2">
-            <Brain className="w-4 h-4" />
-            Command Center
-          </TabsTrigger>
-          <TabsTrigger value="industry" className="gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Industry Hub
-          </TabsTrigger>
-          <TabsTrigger value="causal-chains" className="gap-2">
-            <Network className="w-4 h-4" />
-            Causal Chains
-          </TabsTrigger>
-          <TabsTrigger value="predictive" className="gap-2">
-            <Sparkles className="w-4 h-4" />
-            Predictive Modeling
-          </TabsTrigger>
+           <TabsTrigger value="command-center" className="gap-2">
+             <Brain className="w-4 h-4" />
+             {t("intelligence.page.commandCenter")}
+           </TabsTrigger>
+           <TabsTrigger value="industry" className="gap-2">
+             <BarChart3 className="w-4 h-4" />
+             {t("intelligence.page.industryIntelligence")}
+           </TabsTrigger>
+           <TabsTrigger value="causal-chains" className="gap-2">
+             <Network className="w-4 h-4" />
+             {t("intelligence.page.causalChain")}
+           </TabsTrigger>
+           <TabsTrigger value="predictive" className="gap-2">
+             <Sparkles className="w-4 h-4" />
+             {t("intelligence.page.predictiveModeling")}
+           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="command-center" className="mt-4">
@@ -245,15 +247,15 @@ export default function IntelligencePage() {
         </TabsContent>
 
         <TabsContent value="industry" className="mt-4">
-          <div className="p-8 text-center text-muted-foreground">Industry Intelligence — coming soon</div>
+           <div className="p-8 text-center text-muted-foreground">{t("intelligence.page.comingSoon", { feature: t("intelligence.page.industryIntelligence") })}</div>
         </TabsContent>
 
         <TabsContent value="causal-chains" className="mt-4">
-          <div className="p-8 text-center text-muted-foreground">Causal Chains — coming soon</div>
+           <div className="p-8 text-center text-muted-foreground">{t("intelligence.page.comingSoon", { feature: t("intelligence.page.causalChain") })}</div>
         </TabsContent>
           
         <TabsContent value="predictive" className="mt-4">
-          <div className="p-8 text-center text-muted-foreground">Predictive Modeling — coming soon</div>
+           <div className="p-8 text-center text-muted-foreground">{t("intelligence.page.comingSoon", { feature: t("intelligence.page.predictiveModeling") })}</div>
         </TabsContent>
       </Tabs>
     </div>

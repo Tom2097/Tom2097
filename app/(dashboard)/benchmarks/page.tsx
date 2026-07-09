@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { getPeerComparison, DEFAULT_BENCHMARK_CONFIG } from '@/lib/analytics/cohort-benchmarking'
 import { ConfidenceIndicator } from '@/components/digit/confidence-indicator'
+import { getTranslator } from '@/lib/i18n/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,10 +25,10 @@ const METRIC_ICONS: Record<string, typeof BarChart3> = {
 }
 
 function getPercentileRank(value: number, p25: number, p50: number, p75: number): { rank: string; color: string; label: string } {
-  if (value >= p75) return { rank: 'top', color: 'text-emerald-500', label: 'Above 75th percentile' }
-  if (value >= p50) return { rank: 'above-average', color: 'text-blue-500', label: 'Above median' }
-  if (value >= p25) return { rank: 'below-average', color: 'text-amber-500', label: 'Below median' }
-  return { rank: 'bottom', color: 'text-red-500', label: 'Below 25th percentile' }
+  if (value >= p75) return { rank: 'above75th', color: 'text-emerald-500', label: 'above75th' }
+  if (value >= p50) return { rank: 'aboveMedian', color: 'text-blue-500', label: 'aboveMedian' }
+  if (value >= p25) return { rank: 'belowMedian', color: 'text-amber-500', label: 'belowMedian' }
+  return { rank: 'below25th', color: 'text-red-500', label: 'below25th' }
 }
 
 function formatMetricValue(metric: string, value: number): string {
@@ -38,6 +39,7 @@ function formatMetricValue(metric: string, value: number): string {
 
 export default async function BenchmarksPage() {
   const ctx = await extractTenantContext()
+  const t = await getTranslator(ctx?.locale)
   if (!ctx) redirect('/auth/login')
 
   const orgId = ctx.organizationId
@@ -51,9 +53,9 @@ export default async function BenchmarksPage() {
             <BarChart3 className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Cohort Benchmarking</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t("benchmarks.page.title")}</h1>
             <p className="text-sm text-muted-foreground">
-              Anonymized peer comparison with {DEFAULT_BENCHMARK_CONFIG.kAnonymityThreshold}-anonymity and differential privacy
+              {t("benchmarks.page.subtitle")}
             </p>
           </div>
         </div>
@@ -66,41 +68,41 @@ export default async function BenchmarksPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card className="border-indigo-500/20 bg-indigo-500/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Cohort Size</CardTitle>
+             <CardTitle className="text-sm font-medium text-muted-foreground">{t("benchmarks.page.sampleSize")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-foreground">{comparisons.length > 0 ? comparisons[0].sampleSize : 'N/A'}</p>
-            <p className="text-xs text-muted-foreground mt-1">Organizations in peer group</p>
+             <p className="text-xs text-muted-foreground mt-1">{t("benchmarks.page.organizationsInPeerGroup")}</p>
           </CardContent>
         </Card>
         <Card className="border-emerald-500/20 bg-emerald-500/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Privacy Status</CardTitle>
+             <CardTitle className="text-sm font-medium text-muted-foreground">{t("benchmarks.page.privacyStatus")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               {comparisons.some(r => r.anonymized) ? (
                 <>
                   <EyeOff className="h-5 w-5 text-amber-500" />
-                  <p className="text-lg font-semibold text-foreground">Noise Added</p>
-                </>
-              ) : (
-                <>
-                  <Eye className="h-5 w-5 text-emerald-500" />
-                  <p className="text-lg font-semibold text-foreground">Clear</p>
-                </>
+                   <p className="text-lg font-semibold text-foreground">{t("benchmarks.page.noiseAdded")}</p>
+                 </>
+               ) : (
+                 <>
+                   <Eye className="h-5 w-5 text-emerald-500" />
+                   <p className="text-lg font-semibold text-foreground">{t("benchmarks.page.clear")}</p>
+                 </>
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {comparisons.some(r => r.anonymized)
-                ? 'Laplace noise applied to small cohorts'
-                : 'Cohort size meets k-anonymity threshold'}
+               {comparisons.some(r => r.anonymized)
+                 ? t("benchmarks.page.laplaceNoiseApplied")
+                 : t("benchmarks.page.cohortSizeMeetsThreshold")}
             </p>
           </CardContent>
         </Card>
         <Card className="border-blue-500/20 bg-blue-500/5 sm:col-span-2 lg:col-span-1">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Dimensions</CardTitle>
+             <CardTitle className="text-sm font-medium text-muted-foreground">{t("benchmarks.page.dimensions")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-1.5">
@@ -141,7 +143,7 @@ export default async function BenchmarksPage() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                           <Icon className="h-4 w-4 text-primary" />
                         </div>
-                        <CardTitle className="text-base">{label}</CardTitle>
+                         <CardTitle className="text-base">{t(`benchmarks.page.${result.metric}`)}</CardTitle>
                       </div>
                       <div className="flex items-center gap-1.5">
                         {result.anonymized ? (
@@ -158,25 +160,25 @@ export default async function BenchmarksPage() {
                         </Badge>
                       </div>
                     </div>
-                    <CardDescription>
-                      {result.cohort} cohort &mdash; {label}
-                    </CardDescription>
+                       <CardDescription>
+                         {result.cohort} {t("benchmarks.page.cohort")} — {t(`benchmarks.page.${result.metric}`)}
+                       </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-baseline justify-between">
                       <span className="text-3xl font-bold text-foreground">
                         {formatMetricValue(result.metric, result.value)}
                       </span>
-                      <span className={`text-sm font-medium ${percentile.color}`}>
-                        {percentile.label}
-                      </span>
+                       <span className={`text-sm font-medium ${percentile.color}`}>
+                         {t(`benchmarks.page.${percentile.label}`)}
+                       </span>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>P25: {formatMetricValue(result.metric, result.percentile25)}</span>
-                        <span>P50: {formatMetricValue(result.metric, result.percentile50)}</span>
-                        <span>P75: {formatMetricValue(result.metric, result.percentile75)}</span>
+                       <span>{t("benchmarks.page.p25")}: {formatMetricValue(result.metric, result.percentile25)}</span>
+                       <span>{t("benchmarks.page.p50")}: {formatMetricValue(result.metric, result.percentile50)}</span>
+                       <span>{t("benchmarks.page.p75")}: {formatMetricValue(result.metric, result.percentile75)}</span>
                       </div>
                       <div className="relative h-2 rounded-full bg-secondary">
                         <div
@@ -193,20 +195,20 @@ export default async function BenchmarksPage() {
                           }}
                         />
                       </div>
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Low</span>
-                        <span>High</span>
-                      </div>
+                       <div className="flex justify-between text-xs text-muted-foreground">
+                         <span>{t("benchmarks.page.low")}</span>
+                         <span>{t("benchmarks.page.high")}</span>
+                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Info className="h-3 w-3" />
-                      <span>
-                        {result.anonymized
-                          ? `Value obfuscated with Laplace noise (ε=${DEFAULT_BENCHMARK_CONFIG.epsilon}) to protect cohort anonymity`
-                          : `Clear value — cohort of ${result.sampleSize} meets k=${DEFAULT_BENCHMARK_CONFIG.kAnonymityThreshold} threshold`
-                        }
-                      </span>
+                       <span>
+                         {result.anonymized
+                           ? t("benchmarks.page.valueObfuscated", { epsilon: DEFAULT_BENCHMARK_CONFIG.epsilon })
+                           : t("benchmarks.page.clearValue", { sampleSize: result.sampleSize, k: DEFAULT_BENCHMARK_CONFIG.kAnonymityThreshold })
+                         }
+                       </span>
                     </div>
                   </CardContent>
                 </Card>

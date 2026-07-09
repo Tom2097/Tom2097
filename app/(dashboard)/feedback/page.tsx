@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useI18n } from "@/components/providers/i18n-provider"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -74,6 +75,7 @@ type FeedbackMetrics = {
 }
 
 export default function FeedbackPage() {
+  const { t } = useI18n()
   const [feedback, setFeedback] = useState<FeedbackItem[]>([])
   const [metrics, setMetrics] = useState<FeedbackMetrics>({ sentimentScore: 0, responseTime: 0, categorizationAccuracy: 0, responseRate: 0, openItems: 0, totalItems: 0 })
   const [loading, setLoading] = useState(true)
@@ -139,7 +141,7 @@ export default function FeedbackPage() {
     e.preventDefault()
     
     if (!form.title.trim()) {
-      setFormError("Title is required")
+      setFormError(t("feedback.page.requiredField"))
       return
     }
     
@@ -193,15 +195,15 @@ export default function FeedbackPage() {
 
   // Sample chart data
   const sentimentData = [
-    { name: 'Positive', value: metrics.sentimentScore, sentiment: 1 },
-    { name: 'Neutral', value: 100 - metrics.sentimentScore - 10, sentiment: 0 },
-    { name: 'Negative', value: 10, sentiment: -1 }
+    { name: t("feedback.page.positive"), value: metrics.sentimentScore, sentiment: 1 },
+    { name: t("feedback.page.neutral"), value: 100 - metrics.sentimentScore - 10, sentiment: 0 },
+    { name: t("feedback.page.negative"), value: 10, sentiment: -1 }
   ]
 
   const categorizationData = [
-    { name: 'Bug Reports', value: 45 },
-    { name: 'Feature Requests', value: 30 },
-    { name: 'General', value: 25 }
+    { name: t("feedback.page.bugReports"), value: 45 },
+    { name: t("feedback.page.featureRequests"), value: 30 },
+    { name: t("feedback.page.general"), value: 25 }
   ]
 
   return (
@@ -209,47 +211,47 @@ export default function FeedbackPage() {
       {/* Header */}
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Feedback Intelligence</h1>
-          <p className="text-sm text-muted-foreground">
-            {total} item{total !== 1 ? 's' : ''} — AI-powered feedback analysis and response tracking
-          </p>
+           <h1 className="text-2xl font-bold text-foreground">{t("feedback.page.title")}</h1>
+           <p className="text-sm text-muted-foreground">
+             {total} {t("feedback.page.item", { count: total })} — {t("feedback.page.subtitle")}
+           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => fetchFeedback()} className="gap-1 text-sm">
             <RefreshCw className="h-3 w-3" />
-            Refresh
+            {t("feedback.page.refresh")}
           </Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1 text-sm">
-                <MessageSquare className="h-3 w-3" />
-                Submit Feedback
-              </Button>
+               <Button variant="outline" size="sm" className="gap-1 text-sm">
+                 <MessageSquare className="h-3 w-3" />
+                 {t("feedback.page.newFeedback")}
+               </Button>
             </DialogTrigger>
             <DialogContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <DialogHeader>
-                  <DialogTitle>Submit Feedback</DialogTitle>
-                  <DialogDescription>
-                    Share your thoughts, suggestions, or report issues.
-                  </DialogDescription>
+                   <DialogTitle>{t("feedback.page.formTitle")}</DialogTitle>
+                   <DialogDescription>
+                     {t("feedback.page.formDescription")}
+                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="fb-title">Title *</Label>
+                     <Label htmlFor="fb-title">{t("feedback.page.title")} *</Label>
                     <Input
                       id="fb-title"
-                      placeholder="Short summary"
+                       placeholder={t("feedback.page.titlePlaceholder")}
                       value={form.title}
                       onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                       maxLength={300}
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="fb-body">Details</Label>
+                     <Label htmlFor="fb-body">{t("feedback.page.body")}</Label>
                     <Textarea
                       id="fb-body"
-                      placeholder="Describe in detail..."
+                       placeholder={t("feedback.page.bodyPlaceholder")}
                       value={form.body}
                       onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
                       rows={4}
@@ -257,18 +259,18 @@ export default function FeedbackPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1.5">
-                      <Label>Type</Label>
+                       <Label>{t("feedback.page.type")}</Label>
                       <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v as FeedbackType }))}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {FEEDBACK_TYPES.map((t) => (
-                            <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>
+             <SelectItem key={t} value={t}>{t("feedback.page." + t)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <Label>Priority</Label>
+                       <Label>{t("feedback.page.priority")}</Label>
                       <Select value={form.priority} onValueChange={(v) => setForm((f) => ({ ...f, priority: v as FeedbackPriority }))}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -281,16 +283,16 @@ export default function FeedbackPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1.5">
-                      <Label htmlFor="fb-category">Category</Label>
+                      <Label htmlFor="fb-category">{t("feedback.page.category")}</Label>
                       <Input
                         id="fb-category"
-                        placeholder="e.g. dashboard, billing"
+                        placeholder={t("feedback.page.categoryPlaceholder")}
                         value={form.category}
                         onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                       />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <Label htmlFor="fb-rating">Rating (1–5)</Label>
+                      <Label htmlFor="fb-rating">{t("feedback.page.rating")}</Label>
                       <Input
                         id="fb-rating"
                         type="number"
@@ -305,10 +307,10 @@ export default function FeedbackPage() {
                 </div>
                 {formError && <p className="text-sm text-destructive">{formError}</p>}
                 <div className="flex justify-end gap-2 pt-1">
-                  <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                  <Button type="button" variant="outline" onClick={() => setOpen(false)}>{t("feedback.page.cancel")}</Button>
                   <Button type="submit" disabled={submitting}>
                     {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Submit
+                    {t("feedback.page.submit")}
                   </Button>
                 </div>
               </form>
@@ -321,37 +323,37 @@ export default function FeedbackPage() {
       <div className="grid gap-6 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sentiment Score</CardTitle>
+             <CardTitle className="text-sm font-medium">{t("feedback.page.sentimentAnalysis")}</CardTitle>
             <Smile className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.sentimentScore}%</div>
-            <p className="text-xs text-muted-foreground">Positive sentiment</p>
+             <p className="text-xs text-muted-foreground">{t("feedback.page.positiveSentiment")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Response Time</CardTitle>
+             <CardTitle className="text-sm font-medium">{t("feedback.page.responseTime")}</CardTitle>
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.responseTime}h</div>
-            <p className="text-xs text-muted-foreground">Avg response time</p>
+             <p className="text-xs text-muted-foreground">{t("feedback.page.avgResponseTime")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Categorization</CardTitle>
+             <CardTitle className="text-sm font-medium">{t("feedback.page.categorization")}</CardTitle>
             <Brain className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.categorizationAccuracy}%</div>
-            <p className="text-xs text-muted-foreground">Accuracy</p>
+             <p className="text-xs text-muted-foreground">{t("feedback.page.accuracy")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Response Rate</CardTitle>
+             <CardTitle className="text-sm font-medium">{t("feedback.page.responseRate")}</CardTitle>
             <RefreshCw className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -375,27 +377,27 @@ export default function FeedbackPage() {
         <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as FeedbackStatus | 'all')}>
           <SelectTrigger className="w-36"><SelectValue placeholder="All statuses" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
+             <SelectItem value="all">{t("feedback.page.all")} {t("feedback.page.status").toLowerCase()}</SelectItem>
             {FEEDBACK_STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>{s.replace('_', ' ')}</SelectItem>
+              <SelectItem key={s} value={s}>{t(`feedback.page.${s}`)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={filterType} onValueChange={(v) => setFilterType(v as FeedbackType | 'all')}>
-          <SelectTrigger className="w-36"><SelectValue placeholder="All types" /></SelectTrigger>
+           <SelectTrigger className="w-36"><SelectValue placeholder={t("feedback.page.all") + " " + t("feedback.page.type").toLowerCase()} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
+             <SelectItem value="all">{t("feedback.page.all")} {t("feedback.page.type").toLowerCase()}</SelectItem>
             {FEEDBACK_TYPES.map((t) => (
               <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={sort} onValueChange={(v) => setSort(v as 'recent' | 'votes')}>
-          <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="recent">Most Recent</SelectItem>
-            <SelectItem value="votes">Most Voted</SelectItem>
-          </SelectContent>
+           <SelectTrigger className="w-32"><SelectValue placeholder={t("feedback.page.sortBy")} /></SelectTrigger>
+           <SelectContent>
+             <SelectItem value="recent">{t("feedback.page.recent")}</SelectItem>
+             <SelectItem value="votes">{t("feedback.page.votes")}</SelectItem>
+           </SelectContent>
         </Select>
       </div>
 
@@ -408,17 +410,17 @@ export default function FeedbackPage() {
         <Card className="border-destructive/50">
           <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
             <AlertTriangle className="h-10 w-10 text-destructive/60" />
-            <CardTitle className="text-base">{error}</CardTitle>
-            <Button variant="outline" onClick={() => fetchFeedback()}>Try Again</Button>
+             <CardTitle className="text-base">{error}</CardTitle>
+             <Button variant="outline" onClick={() => fetchFeedback()}>{t("feedback.page.tryAgain")}</Button>
           </CardContent>
         </Card>
       ) : feedback.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
             <MessageSquarePlus className="h-10 w-10 text-muted-foreground/40" />
-            <CardTitle className="text-base">No feedback yet</CardTitle>
-            <CardDescription>Be the first to submit a bug report, feature request, or idea.</CardDescription>
-            <Button variant="outline" onClick={() => setOpen(true)}>Submit Feedback</Button>
+             <CardTitle className="text-base">{t("feedback.page.noFeedback")}</CardTitle>
+             <CardDescription>{t("feedback.page.beFirst")}</CardDescription>
+             <Button variant="outline" onClick={() => setOpen(true)}>{t("feedback.page.submitFeedback")}</Button>
           </CardContent>
         </Card>
       ) : (
@@ -443,7 +445,7 @@ export default function FeedbackPage() {
                     <button
                       onClick={() => handleVote(item.id)}
                       className="flex shrink-0 flex-col items-center gap-0.5 rounded-md border border-border px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-                      aria-label={`Vote for ${item.title}`}
+                       aria-label={t("feedback.page.voteFor", { title: item.title })}
                     >
                       <ThumbsUp className="h-3.5 w-3.5" />
                       <span className="font-medium">{item.vote_count}</span>
@@ -453,10 +455,10 @@ export default function FeedbackPage() {
                 <CardContent className="pb-3 pt-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary" className={`text-xs ${STATUS_COLORS[item.status]}`}>
-                      {item.status.replace('_', ' ')}
+                       {t(`feedback.page.${item.status}`)}
                     </Badge>
                     <Badge variant="secondary" className={`text-xs ${PRIORITY_COLORS[item.priority]}`}>
-                      {item.priority}
+                       {t(`feedback.page.${item.priority}`)}
                     </Badge>
                     {item.category && item.category !== 'general' && (
                       <Badge variant="outline" className="text-xs">{item.category}</Badge>
@@ -464,9 +466,9 @@ export default function FeedbackPage() {
                     {item.rating && (
                       <span className="text-xs text-muted-foreground">{'★'.repeat(item.rating)}</span>
                     )}
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      {new Date(item.created_at).toLocaleDateString()}
-                    </span>
+                     <span className="ml-auto text-xs text-muted-foreground">
+                       {t("feedback.page.createdAt")}: {new Date(item.created_at).toLocaleDateString()}
+                     </span>
                   </div>
                 </CardContent>
               </Card>

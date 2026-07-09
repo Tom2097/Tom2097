@@ -34,6 +34,7 @@ import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { getPipelineSummary, listContacts, getPipelineSummaryRealtime } from '@/lib/crm/engine'
 import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
 import { forecastMetric } from '@/lib/analytics/forecasting'
+import { getTranslator } from '@/lib/i18n/server'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export const dynamic = 'force-dynamic'
@@ -52,6 +53,7 @@ function formatCurrency(value: number, currency: string): string {
 }
 
 export default async function CRMPage() {
+  const { t } = await getTranslator()
   const ctx = await extractTenantContext()
   if (!ctx) redirect('/auth/login')
   const orgId = ctx.organizationId
@@ -94,8 +96,8 @@ export default async function CRMPage() {
             <Users className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Smart CRM</h1>
-            <p className="text-sm text-muted-foreground">AI-driven customer management and engagement</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("crm.page.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("crm.page.subtitle")}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -105,54 +107,54 @@ export default async function CRMPage() {
 
        <div className="flex items-center justify-between mb-6">
          <div>
-           <h2 className="text-2xl font-bold text-foreground">CRM Intelligence</h2>
-           <p className="text-sm text-muted-foreground">Real-time pipeline analytics and AI insights</p>
+           <h2 className="text-2xl font-bold text-foreground">{t("crm.page.intelligenceTitle")}</h2>
+           <p className="text-sm text-muted-foreground">{t("crm.page.intelligenceSubtitle")}</p>
          </div>
          <Button variant="ghost" size="sm" className="gap-1 text-sm">
            <RefreshCw className="h-3 w-3" />
-           Refresh
+           {t("crm.page.refresh")}
          </Button>
        </div>
 
        {/* Metrics */}
        <MetricGrid columns={4}>
-         <MetricCard label="Total Contacts" value={contactsResult.total} variant="highlight" />
-         <MetricCard label="Open Deals" value={pipeline.open_deals} />
-         <MetricCard label="Pipeline Value" value={formatCurrency(pipeline.total_open_value, pipeline.currency)} />
-         <MetricCard label="Avg Deal Size" value={formatCurrency(avgDealValue, pipeline.currency)} />
-         <MetricCard label="Win Rate" value={(() => { const won = pipeline.stages.find(s => s.stage === 'won')?.count ?? 0; const lost = pipeline.stages.find(s => s.stage === 'lost')?.count ?? 0; const total = won + lost; return total > 0 ? `${Math.round((won / total) * 100)}%` : '0%' })()} />
-         <MetricCard label="Anomalies" value={anomalies.anomalies.length} subtitle="Last 30 days" />
-         <MetricCard label="Forecast Growth" value={forecast && forecast.length >= 2 ? `${Math.round(((forecast[forecast.length - 1].forecast - (forecast[0].actual || 0)) / ((forecast[0].actual || 1))) * 100)}%` : '0%'} subtitle="Next 6 months" />
-          <MetricCard label="WhatsApp Integration" value={pipelineRealtime.whatsappConnected ? 'Connected' : 'Disconnected'} variant={pipelineRealtime.whatsappConnected ? 'highlight' : 'glass'} />
+         <MetricCard label={t("crm.page.totalContacts")} value={contactsResult.total} variant="highlight" />
+         <MetricCard label={t("crm.page.openDeals")} value={pipeline.open_deals} />
+         <MetricCard label={t("crm.page.pipelineValue")} value={formatCurrency(pipeline.total_open_value, pipeline.currency)} />
+         <MetricCard label={t("crm.page.avgDealSize")} value={formatCurrency(avgDealValue, pipeline.currency)} />
+         <MetricCard label={t("crm.page.winRate")} value={(() => { const won = pipeline.stages.find(s => s.stage === 'won')?.count ?? 0; const lost = pipeline.stages.find(s => s.stage === 'lost')?.count ?? 0; const total = won + lost; return total > 0 ? `${Math.round((won / total) * 100)}%` : '0%' })()} />
+         <MetricCard label={t("crm.page.anomalies")} value={anomalies.anomalies.length} subtitle={t("crm.page.last30Days")} />
+         <MetricCard label={t("crm.page.forecastGrowth")} value={forecast && forecast.length >= 2 ? `${Math.round(((forecast[forecast.length - 1].forecast - (forecast[0].actual || 0)) / ((forecast[0].actual || 1))) * 100)}%` : '0%'} subtitle={t("crm.page.next6Months")} />
+          <MetricCard label={t("crm.page.whatsappIntegration")} value={pipelineRealtime.whatsappConnected ? t("crm.page.connected") : t("crm.page.disconnected")} variant={pipelineRealtime.whatsappConnected ? 'highlight' : 'glass'} />
        </MetricGrid>
 
        {/* Real-Time Pipeline Charts */}
        <div className="grid gap-6 lg:grid-cols-2">
-          <ChartContainer title="Sales Pipeline">
-           {hasPipeline ? (
-             <RealTimeChart
-               data={pipelineData}
-               dataKey="value"
-               type="bar"
-               height={280}
-               anomalies={anomalies.anomalies}
-             />
-           ) : (
-             <div className="flex h-[280px] items-center justify-center text-center text-sm text-muted-foreground">
-               No deals in the pipeline yet. Add a deal to see stage progression.
-             </div>
-           )}
-         </ChartContainer>
+           <ChartContainer title={t("crm.page.salesPipeline")}>
+            {hasPipeline ? (
+              <RealTimeChart
+                data={pipelineData}
+                dataKey="value"
+                type="bar"
+                height={280}
+                anomalies={anomalies.anomalies}
+              />
+            ) : (
+              <div className="flex h-[280px] items-center justify-center text-center text-sm text-muted-foreground">
+                {t("crm.page.noDealsYet")}
+              </div>
+            )}
+          </ChartContainer>
 
-          <ChartContainer title="Pipeline Health">
-           <div className="grid grid-cols-2 gap-4 h-[280px]">
-             <div className="rounded-xl border border-border/50 bg-card p-4">
-               <div className="flex items-center justify-between mb-2">
-                 <h4 className="text-sm font-medium">Deal Velocity</h4>
-                 <TrendingUpIcon className="h-4 w-4 text-blue-500" />
-               </div>
-               <div className="text-2xl font-bold">{pipelineRealtime.dealVelocity.toFixed(1)}</div>
-               <p className="text-xs text-muted-foreground">deals/week</p>
+           <ChartContainer title={t("crm.page.pipelineHealth")}>
+            <div className="grid grid-cols-2 gap-4 h-[280px]">
+              <div className="rounded-xl border border-border/50 bg-card p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium">{t("crm.page.dealVelocity")}</h4>
+                  <TrendingUpIcon className="h-4 w-4 text-blue-500" />
+                </div>
+                <div className="text-2xl font-bold">{pipelineRealtime.dealVelocity.toFixed(1)}</div>
+                <p className="text-xs text-muted-foreground">{t("crm.page.dealsPerWeek")}</p>
                <div className="mt-4 h-20 flex items-end gap-1">
                  {pipelineRealtime.velocityTrend.map((value, index) => (
                    <div key={index} className="flex-1 bg-blue-500/20 rounded-t-sm" style={{ height: `${value * 50}px` }}></div>
@@ -160,13 +162,13 @@ export default async function CRMPage() {
                </div>
              </div>
 
-             <div className="rounded-xl border border-border/50 bg-card p-4">
-               <div className="flex items-center justify-between mb-2">
-                 <h4 className="text-sm font-medium">Lead Scoring</h4>
-                 <Brain className="h-4 w-4 text-purple-500" />
-               </div>
-               <div className="text-2xl font-bold">{pipelineRealtime.avgLeadScore.toFixed(1)}</div>
-               <p className="text-xs text-muted-foreground">avg score</p>
+              <div className="rounded-xl border border-border/50 bg-card p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium">{t("crm.page.leadScoring")}</h4>
+                  <Brain className="h-4 w-4 text-purple-500" />
+                </div>
+                <div className="text-2xl font-bold">{pipelineRealtime.avgLeadScore.toFixed(1)}</div>
+                <p className="text-xs text-muted-foreground">{t("crm.page.avgScore")}</p>
                <div className="mt-4 h-20 flex items-end gap-1">
                  {pipelineRealtime.leadScoreDistribution.map((value, index) => (
                    <div key={index} className="flex-1 bg-purple-500/20 rounded-t-sm" style={{ height: `${value * 100}px` }}></div>
@@ -285,28 +287,28 @@ export default async function CRMPage() {
       <Tabs defaultValue="ai-sdr" className="w-full">
         <div className="relative">
           <TabsList className="w-full justify-start overflow-x-auto flex-nowrap gap-0.5 [&>button]:px-2 [&>button]:py-1 [&>button]:text-[11px]">
-            <TabsTrigger value="ai-sdr" className="gap-0.5"><Sparkles className="w-3 h-3" /> AI</TabsTrigger>
-            <TabsTrigger value="next-best-action" className="gap-0.5"><Zap className="w-3 h-3" /> Actions</TabsTrigger>
-            <TabsTrigger value="deal-health" className="gap-0.5"><AlertTriangle className="w-3 h-3" /> Health</TabsTrigger>
-            <TabsTrigger value="conversations" className="gap-0.5"><MessageSquare className="w-3 h-3" /> Talk</TabsTrigger>
-            <TabsTrigger value="duplicates" className="gap-0.5"><Copy className="w-3 h-3" /> Dups</TabsTrigger>
-            <TabsTrigger value="leads" className="gap-0.5"><BarChart3 className="w-3 h-3" /> Leads</TabsTrigger>
-            <TabsTrigger value="pipeline" className="gap-0.5"><Target className="w-3 h-3" /> Pipe</TabsTrigger>
-            <TabsTrigger value="quotes" className="gap-0.5"><FileText className="w-3 h-3" /> Quotes</TabsTrigger>
-            <TabsTrigger value="contacts" className="gap-0.5"><Users className="w-3 h-3" /> People</TabsTrigger>
-            <TabsTrigger value="hierarchy" className="gap-0.5"><Users className="w-3 h-3" /> Orgs</TabsTrigger>
-            <TabsTrigger value="nurture" className="gap-0.5"><MessageSquare className="w-3 h-3" /> Nurture</TabsTrigger>
-            <TabsTrigger value="forecast" className="gap-0.5"><BarChart3 className="w-3 h-3" /> Forecast</TabsTrigger>
-            <TabsTrigger value="events" className="gap-0.5"><Layers className="w-3 h-3" /> Events</TabsTrigger>
-            <TabsTrigger value="briefing" className="gap-0.5"><Sun className="w-3 h-3" /> Daily</TabsTrigger>
-            <TabsTrigger value="vertical-signals" className="gap-0.5"><TrendingUpIcon className="w-3 h-3" /> Mkts</TabsTrigger>
-            <TabsTrigger value="lead-roi" className="gap-0.5"><DollarSign className="w-3 h-3" /> ROI</TabsTrigger>
-            <TabsTrigger value="communications" className="gap-0.5"><Mail className="w-3 h-3" /> Comm</TabsTrigger>
-            <TabsTrigger value="tasks" className="gap-0.5"><Target className="w-3 h-3" /> Tasks</TabsTrigger>
-            <TabsTrigger value="timeline" className="gap-0.5"><Phone className="w-3 h-3" /> Time</TabsTrigger>
-            <TabsTrigger value="success" className="gap-0.5"><Heart className="w-3 h-3" /> CS</TabsTrigger>
-            <TabsTrigger value="support" className="gap-0.5"><Ticket className="w-3 h-3" /> Tickets</TabsTrigger>
-            <TabsTrigger value="analytics" className="gap-0.5"><Target className="w-3 h-3" /> Analytics</TabsTrigger>
+            <TabsTrigger value="ai-sdr" className="gap-0.5"><Sparkles className="w-3 h-3" /> {t("crm.tabs.ai")}</TabsTrigger>
+            <TabsTrigger value="next-best-action" className="gap-0.5"><Zap className="w-3 h-3" /> {t("crm.tabs.actions")}</TabsTrigger>
+            <TabsTrigger value="deal-health" className="gap-0.5"><AlertTriangle className="w-3 h-3" /> {t("crm.tabs.health")}</TabsTrigger>
+            <TabsTrigger value="conversations" className="gap-0.5"><MessageSquare className="w-3 h-3" /> {t("crm.tabs.talk")}</TabsTrigger>
+            <TabsTrigger value="duplicates" className="gap-0.5"><Copy className="w-3 h-3" /> {t("crm.tabs.duplicates")}</TabsTrigger>
+            <TabsTrigger value="leads" className="gap-0.5"><BarChart3 className="w-3 h-3" /> {t("crm.tabs.leads")}</TabsTrigger>
+            <TabsTrigger value="pipeline" className="gap-0.5"><Target className="w-3 h-3" /> {t("crm.tabs.pipeline")}</TabsTrigger>
+            <TabsTrigger value="quotes" className="gap-0.5"><FileText className="w-3 h-3" /> {t("crm.tabs.quotes")}</TabsTrigger>
+            <TabsTrigger value="contacts" className="gap-0.5"><Users className="w-3 h-3" /> {t("crm.tabs.people")}</TabsTrigger>
+            <TabsTrigger value="hierarchy" className="gap-0.5"><Users className="w-3 h-3" /> {t("crm.tabs.organizations")}</TabsTrigger>
+            <TabsTrigger value="nurture" className="gap-0.5"><MessageSquare className="w-3 h-3" /> {t("crm.tabs.nurture")}</TabsTrigger>
+            <TabsTrigger value="forecast" className="gap-0.5"><BarChart3 className="w-3 h-3" /> {t("crm.tabs.forecast")}</TabsTrigger>
+            <TabsTrigger value="events" className="gap-0.5"><Layers className="w-3 h-3" /> {t("crm.tabs.events")}</TabsTrigger>
+            <TabsTrigger value="briefing" className="gap-0.5"><Sun className="w-3 h-3" /> {t("crm.tabs.daily")}</TabsTrigger>
+            <TabsTrigger value="vertical-signals" className="gap-0.5"><TrendingUpIcon className="w-3 h-3" /> {t("crm.tabs.markets")}</TabsTrigger>
+            <TabsTrigger value="lead-roi" className="gap-0.5"><DollarSign className="w-3 h-3" /> {t("crm.tabs.roi")}</TabsTrigger>
+            <TabsTrigger value="communications" className="gap-0.5"><Mail className="w-3 h-3" /> {t("crm.tabs.communications")}</TabsTrigger>
+            <TabsTrigger value="tasks" className="gap-0.5"><Target className="w-3 h-3" /> {t("crm.tabs.tasks")}</TabsTrigger>
+            <TabsTrigger value="timeline" className="gap-0.5"><Phone className="w-3 h-3" /> {t("crm.tabs.timeline")}</TabsTrigger>
+            <TabsTrigger value="success" className="gap-0.5"><Heart className="w-3 h-3" /> {t("crm.tabs.customerSuccess")}</TabsTrigger>
+            <TabsTrigger value="support" className="gap-0.5"><Ticket className="w-3 h-3" /> {t("crm.tabs.tickets")}</TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-0.5"><Target className="w-3 h-3" /> {t("crm.tabs.analytics")}</TabsTrigger>
           </TabsList>
           <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
         </div>

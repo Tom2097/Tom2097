@@ -4,9 +4,11 @@ import { extractTenantContext } from "@/lib/multitenant/context.server"
 import { computeComplianceScore } from "@/lib/compliance/scoring"
 import { listCapa } from "@/lib/compliance/capa"
 import { runScheduledChecks } from "@/lib/compliance/checks"
+import { getTranslator } from "@/lib/i18n/server"
 
 export default async function CompliancePage() {
   const ctx = await extractTenantContext()
+  const t = await getTranslator(ctx?.locale)
   const orgId = ctx?.organizationId
 
   const [score, capas, checks] = orgId
@@ -28,48 +30,48 @@ export default async function CompliancePage() {
             <ShieldCheck className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Compliance Workspace</h1>
-            <p className="text-sm text-muted-foreground">CAPA, audit trails, compliance scoring, and regulatory checks</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("compliance.page.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("compliance.page.subtitle")}</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline"><FileCheck className="h-4 w-4 mr-2" />New CAPA</Button>
-          <Button><Activity className="h-4 w-4 mr-2" />Run Audit</Button>
+           <Button variant="outline"><FileCheck className="h-4 w-4 mr-2" />{t("compliance.page.newCapa")}</Button>
+           <Button><Activity className="h-4 w-4 mr-2" />{t("compliance.page.runAudit")}</Button>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-2xl border border-border/50 bg-card p-6">
-          <p className="text-sm text-muted-foreground">Compliance Score</p>
+           <p className="text-sm text-muted-foreground">{t("compliance.page.complianceScore")}</p>
           <p className={`text-3xl font-bold ${overallScore >= 80 ? "text-green-500" : overallScore >= 50 ? "text-amber-500" : "text-red-500"}`}>
             {overallScore}%
           </p>
           <p className="text-xs text-muted-foreground mt-1">Weighted across frameworks</p>
         </div>
         <div className="rounded-2xl border border-border/50 bg-card p-6">
-          <p className="text-sm text-muted-foreground">Open CAPAs</p>
+           <p className="text-sm text-muted-foreground">{t("compliance.page.openCapas")}</p>
           <p className="text-3xl font-bold text-foreground">{openCapas}</p>
-          <p className="text-xs text-muted-foreground mt-1">{capas.length} total</p>
+          <p className="text-xs text-muted-foreground mt-1">{capas.length} {t("compliance.page.total")}</p>
         </div>
         <div className="rounded-2xl border border-border/50 bg-card p-6">
-          <p className="text-sm text-muted-foreground">Expired Certificates</p>
+           <p className="text-sm text-muted-foreground">{t("compliance.page.expiredChecks")}</p>
           <p className={`text-3xl font-bold ${checks.expired > 0 ? "text-red-500" : "text-green-500"}`}>{checks.expired}</p>
-          <p className="text-xs text-muted-foreground mt-1">{checks.expiring} expiring soon</p>
+          <p className="text-xs text-muted-foreground mt-1">{checks.expiring} {t("compliance.page.checksExpiringSoon").toLowerCase()}</p>
         </div>
         <div className="rounded-2xl border border-border/50 bg-card p-6">
-          <p className="text-sm text-muted-foreground">Audit Readiness</p>
-          <p className="text-3xl font-bold text-foreground">{overallScore >= 70 ? "Ready" : "Needs Work"}</p>
-          <p className="text-xs text-muted-foreground mt-1">{score?.by_framework?.length ?? 0} frameworks tracked</p>
+           <p className="text-sm text-muted-foreground">{t("compliance.page.expiringChecks")}</p>
+          <p className="text-3xl font-bold text-foreground">{overallScore >= 70 ? t("compliance.page.ready") : t("compliance.page.needsWork")}</p>
+          <p className="text-xs text-muted-foreground mt-1">{score?.by_framework?.length ?? 0} {t("compliance.page.frameworksTracked")}</p>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-border/50 bg-card p-6">
-          <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />Open CAPAs
-          </h3>
+           <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
+             <AlertTriangle className="h-5 w-5 text-amber-500" />{t("compliance.page.recentCapas")}
+           </h3>
           {openCapas === 0 ? (
-            <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">No open CAPAs</div>
+             <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">{t("compliance.page.noCapas")}</div>
           ) : (
             <div className="space-y-3">
               {capas.filter((c) => c.status !== "closed").slice(0, 10).map((capa) => (
@@ -91,9 +93,9 @@ export default async function CompliancePage() {
         </div>
 
         <div className="rounded-2xl border border-border/50 bg-card p-6">
-          <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
-            <Calendar className="h-5 w-5 text-blue-500" />Score by Framework
-          </h3>
+           <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
+             <Calendar className="h-5 w-5 text-blue-500" />{t("compliance.page.complianceChecks")}
+           </h3>
           {score?.by_framework && score.by_framework.length > 0 ? (
             <div className="space-y-3">
               {score.by_framework.map((fw, i) => (
@@ -110,7 +112,7 @@ export default async function CompliancePage() {
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">No framework scores yet</div>
+             <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">{t("compliance.page.noFrameworkScores")}</div>
           )}
         </div>
       </div>

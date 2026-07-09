@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useI18n } from "@/components/providers/i18n-provider"
 import { UniversalIntake } from "@/components/digit/universal-intake"
 import { DocumentFeed } from "@/components/digit/document-feed"
 import { SplitView } from "@/components/digit/split-view"
@@ -26,6 +27,7 @@ const sampleDocuments = [
 ]
 
 export default function OperationsPage() {
+  const { t } = useI18n()
   const [selectedDoc, setSelectedDoc] = useState<{ id: string; name: string; content?: string; extracted_entities?: Record<string, unknown> } | null>(null)
   const [feedItems, setFeedItems] = useState<Array<{ id: string; name: string; content?: string; extracted_entities?: Record<string, unknown> }>>([])
   const [metrics, setMetrics] = useState({
@@ -101,14 +103,14 @@ export default function OperationsPage() {
             <Inbox className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Operations Workspace</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t("operations.page.title")}</h1>
             <p className="text-sm text-muted-foreground">Unified intake hub — ingest, understand, act, and review</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="gap-1 text-sm">
             <RefreshCw className="h-3 w-3" />
-            Refresh
+            {t("operations.page.refresh")}
           </Button>
           <CommandPalette />
         </div>
@@ -118,7 +120,7 @@ export default function OperationsPage() {
       <div className="grid gap-6 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ingestion Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("operations.page.documentIngestion")}</CardTitle>
             <Inbox className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -138,7 +140,7 @@ export default function OperationsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Entity Accuracy</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("operations.page.entityAccuracy")}</CardTitle>
             <Brain className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -148,7 +150,7 @@ export default function OperationsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Routing Accuracy</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("operations.page.routingAccuracy")}</CardTitle>
             <Zap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -161,7 +163,7 @@ export default function OperationsPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Real-Time Processing</CardTitle>
+            <CardTitle>{t("operations.page.realTimeProcessing")}</CardTitle>
           </CardHeader>
           <CardContent>
             <ErrorBoundary>
@@ -178,7 +180,7 @@ export default function OperationsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Operational Status</span>
+              <span>{t("operations.page.operationalStatus")}</span>
               {metrics.anomalies > 0 && (
                 <Badge variant="destructive" className="gap-1">
                   <AlertTriangle className="h-3 w-3" />
@@ -193,8 +195,8 @@ export default function OperationsPage() {
                 <div className="flex items-center gap-3">
                   <MessageCircle className="h-5 w-5 text-green-500" />
                   <div>
-                    <div className="font-medium">WhatsApp Ingestion</div>
-                    <div className="text-sm text-muted-foreground">{metrics.whatsappMessages} messages today</div>
+                    <div className="font-medium">{t("operations.page.whatsappMessages")}</div>
+                    <div className="text-sm text-muted-foreground">{metrics.whatsappMessages} {t("operations.page.messagesToday")}</div>
                   </div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
@@ -204,8 +206,8 @@ export default function OperationsPage() {
                 <div className="flex items-center gap-3">
                   <Mail className="h-5 w-5 text-blue-500" />
                   <div>
-                    <div className="font-medium">Email Ingestion</div>
-                    <div className="text-sm text-muted-foreground">{metrics.emailMessages} emails today</div>
+                    <div className="font-medium">{t("operations.page.emailMessages")}</div>
+                    <div className="text-sm text-muted-foreground">{metrics.emailMessages} {t("operations.page.emailsToday")}</div>
                   </div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
@@ -215,8 +217,8 @@ export default function OperationsPage() {
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-purple-500" />
                   <div>
-                    <div className="font-medium">Active Workflows</div>
-                    <div className="text-sm text-muted-foreground">{metrics.activeWorkflows} workflows running</div>
+                    <div className="font-medium">{t("operations.page.activeWorkflows")}</div>
+                    <div className="text-sm text-muted-foreground">{metrics.activeWorkflows} {t("operations.page.workflowsRunning")}</div>
                   </div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
@@ -227,7 +229,7 @@ export default function OperationsPage() {
               <div className="mt-6 pt-4 border-t border-border/50">
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-red-500" />
-                  Recent Anomalies
+                  {t("operations.page.anomalies")}
                 </h4>
                 <div className="space-y-2 text-xs">
                   {anomalies.slice(-3).map((anomaly) => (
@@ -257,12 +259,12 @@ export default function OperationsPage() {
 
           <Tabs defaultValue="feed">
             <TabsList>
-              <TabsTrigger value="feed"><Inbox className="h-4 w-4 mr-1" />Feed</TabsTrigger>
-              <TabsTrigger value="split"><Columns className="h-4 w-4 mr-1" />Split View</TabsTrigger>
-              <TabsTrigger value="compare"><ArrowLeftRight className="h-4 w-4 mr-1" />Compare</TabsTrigger>
-            <TabsTrigger value="intelligence"><Beaker className="h-4 w-4 mr-1" />Intelligence</TabsTrigger>
-            <TabsTrigger value="recipes"><BookTemplate className="h-4 w-4 mr-1" />Recipes</TabsTrigger>
-            <TabsTrigger value="reports"><BarChart2 className="h-4 w-4 mr-1" />Reports</TabsTrigger>
+              <TabsTrigger value="feed"><Inbox className="h-4 w-4 mr-1" />{t("operations.page.documentFeed")}</TabsTrigger>
+              <TabsTrigger value="split"><Columns className="h-4 w-4 mr-1" />{t("operations.page.splitView")}</TabsTrigger>
+              <TabsTrigger value="compare"><ArrowLeftRight className="h-4 w-4 mr-1" />{t("operations.page.compare")}</TabsTrigger>
+            <TabsTrigger value="intelligence"><Beaker className="h-4 w-4 mr-1" />{t("operations.page.verticalIntelligence")}</TabsTrigger>
+            <TabsTrigger value="recipes"><BookTemplate className="h-4 w-4 mr-1" />{t("operations.page.recipes")}</TabsTrigger>
+            <TabsTrigger value="reports"><BarChart2 className="h-4 w-4 mr-1" />{t("operations.page.operationalReports")}</TabsTrigger>
           </TabsList>
 
             <TabsContent value="feed" className="mt-4">
@@ -300,36 +302,36 @@ export default function OperationsPage() {
             <CardHeader className="p-4 pb-2">
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Brain className="h-4 w-4 text-indigo-500" />
-                Understanding Layer
+                {t("operations.page.understandingLayer")}
               </CardTitle>
-              <CardDescription className="text-xs">AI-powered classification, extraction, and summarization</CardDescription>
+              <CardDescription className="text-xs">{t("operations.page.aiClassification")}</CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-2 space-y-3">
               <div className="flex items-center justify-between p-2 rounded-lg bg-blue-500/5 border border-blue-500/10">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-3.5 w-3.5 text-blue-500" />
-                  <span className="text-xs font-medium">Classification</span>
+                  <span className="text-xs font-medium">{t("operations.page.classification")}</span>
                 </div>
                 <Badge variant="secondary" className="text-[10px]">Auto</Badge>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
                 <div className="flex items-center gap-2">
                   <FileSearch className="h-3.5 w-3.5 text-emerald-500" />
-                  <span className="text-xs font-medium">Field Extraction</span>
+                  <span className="text-xs font-medium">{t("operations.page.fieldExtraction")}</span>
                 </div>
                 <Badge variant="secondary" className="text-[10px]">Invoice, Contract, +3</Badge>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-purple-500/5 border border-purple-500/10">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="h-3.5 w-3.5 text-purple-500" />
-                  <span className="text-xs font-medium">Summarization</span>
+                  <span className="text-xs font-medium">{t("operations.page.summarization")}</span>
                 </div>
                 <Badge variant="secondary" className="text-[10px]">Key Points</Badge>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-amber-500/5 border border-amber-500/10">
                 <div className="flex items-center gap-2">
                   <Zap className="h-3.5 w-3.5 text-amber-500" />
-                  <span className="text-xs font-medium">Entity Recognition</span>
+                  <span className="text-xs font-medium">{t("operations.page.entityRecognition")}</span>
                 </div>
                 <Badge variant="secondary" className="text-[10px]">People, Orgs, Dates</Badge>
               </div>
@@ -340,29 +342,29 @@ export default function OperationsPage() {
             <CardHeader className="p-4 pb-2">
               <CardTitle className="flex items-center gap-2 text-sm">
                 <ListTree className="h-4 w-4 text-amber-500" />
-                Action Layer
+                {t("operations.page.actionLayer")}
               </CardTitle>
-              <CardDescription className="text-xs">Auto-create tasks, draft responses, trigger workflows</CardDescription>
+              <CardDescription className="text-xs">{t("operations.page.autoCreateTasks")}</CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-2 space-y-3">
               <div className="flex items-center justify-between p-2 rounded-lg bg-green-500/5 border border-green-500/10">
                 <div className="flex items-center gap-2">
                   <ListTree className="h-3.5 w-3.5 text-green-500" />
-                  <span className="text-xs font-medium">Auto-Create Tasks</span>
+                  <span className="text-xs font-medium">{t("operations.page.autoTasks")}</span>
                 </div>
                 <Badge variant="secondary" className="text-[10px]">CAPA, Payables</Badge>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-blue-500/5 border border-blue-500/10">
                 <div className="flex items-center gap-2">
                   <FileText className="h-3.5 w-3.5 text-blue-500" />
-                  <span className="text-xs font-medium">Draft Response</span>
+                  <span className="text-xs font-medium">{t("operations.page.draftResponse")}</span>
                 </div>
                 <Badge variant="secondary" className="text-[10px]">AI-Powered</Badge>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-indigo-500/5 border border-indigo-500/10">
                 <div className="flex items-center gap-2">
                   <Zap className="h-3.5 w-3.5 text-indigo-500" />
-                  <span className="text-xs font-medium">Recipe Execution</span>
+                  <span className="text-xs font-medium">{t("operations.page.recipeExecution")}</span>
                 </div>
                 <Badge variant="secondary" className="text-[10px]">4 Playbooks</Badge>
               </div>

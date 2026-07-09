@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, useTransition } from 'react'
+import { useI18n } from '@/components/providers/i18n-provider'
 import {
   BarChart3,
   TrendingUp,
@@ -64,6 +65,7 @@ function pctChange(series: Array<{ value: number }>): number {
 }
 
 export function AnalyticsView(data: AnalyticsViewData) {
+  const { t } = useI18n()
   const router = useRouter()
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
@@ -93,8 +95,13 @@ export function AnalyticsView(data: AnalyticsViewData) {
   if (data.health.open_incidents > 0) {
     insights.push({
       type: 'warning',
-      title: 'Open Incidents Detected',
-      description: `${data.health.open_incidents} unresolved incident${data.health.open_incidents > 1 ? 's' : ''} across ${data.health.monitors.total} monitored service${data.health.monitors.total === 1 ? '' : 's'}.`,
+      title: t("analytics.page.openIncidentsDetected"),
+      description: t("analytics.page.unresolvedIncidents", {
+        count: data.health.open_incidents,
+        plural: data.health.open_incidents > 1 ? 's' : '',
+        total: data.health.monitors.total,
+        servicesPlural: data.health.monitors.total === 1 ? '' : 's'
+      }),
       impact: 'Needs attention',
     })
   }
@@ -102,7 +109,11 @@ export function AnalyticsView(data: AnalyticsViewData) {
     insights.push({
       type: 'warning',
       title: 'Service Health Alert',
-      description: `${data.health.monitors.down} down, ${data.health.monitors.degraded} degraded. Current uptime ${data.uptimePct}%.`,
+      description: t("analytics.page.servicesDown", {
+        down: data.health.monitors.down,
+        degraded: data.health.monitors.degraded,
+        uptime: data.uptimePct
+      }),
       impact: 'High priority',
     })
   }
@@ -111,36 +122,42 @@ export function AnalyticsView(data: AnalyticsViewData) {
     insights.push({
       type: 'insight',
       title: 'Most Active Category',
-      description: `"${top.name}" leads activity with ${top.value.toLocaleString()} events in the last ${data.days} days.`,
+      description: t("analytics.page.topEvent", {
+        name: top.name,
+        value: top.value.toLocaleString(),
+        days: data.days
+      }),
       impact: `${Math.round((top.value / Math.max(data.summary.total_events, 1)) * 100)}% of volume`,
     })
   }
   if (data.activityTrend.length >= 2) {
     insights.push({
       type: activityChange >= 0 ? 'opportunity' : 'insight',
-      title: activityChange >= 0 ? 'Activity Trending Up' : 'Activity Slowing',
-      description: `Platform activity is ${activityChange >= 0 ? 'up' : 'down'} ${Math.abs(activityChange)}% across the second half of this window.`,
-      impact: `${activityChange >= 0 ? '+' : ''}${activityChange}%`,
+      title: activityChange >= 0 ? t("analytics.page.activityTrendingUp") : t("analytics.page.activitySlowing"),
+      description: t("analytics.page.activityChange", {
+        direction: activityChange >= 0 ? t("analytics.page.opportunity").toLowerCase() : t("analytics.page.insight").toLowerCase(),
+        change: Math.abs(activityChange)
+      }),
+      impact: t("analytics.page.impact", { change: `${activityChange >= 0 ? '+' : ''}${activityChange}` }),
     })
   }
   if (insights.length === 0) {
     insights.push({
       type: 'insight',
       title: 'All Systems Nominal',
-      description: 'No incidents and steady activity across the selected window.',
+      description: t("analytics.page.steadyActivity"),
       impact: 'Healthy',
     })
   }
 
   // Live KPI rows sourced from real systems
   const kpis: Array<{ metric: string; value: string; source: string }> = [
-    { metric: 'Total Events', value: data.summary.total_events.toLocaleString(), source: 'Analytics' },
-    { metric: 'Active Users', value: data.summary.unique_users.toLocaleString(), source: 'Analytics' },
-    { metric: 'Event Types', value: data.summary.distinct_events.toLocaleString(), source: 'Analytics' },
-    { metric: 'Monitored Services', value: data.health.monitors.total.toLocaleString(), source: 'Monitoring' },
-    { metric: 'Service Uptime', value: `${data.uptimePct}%`, source: 'Monitoring' },
-    { metric: 'Open Incidents', value: data.health.open_incidents.toLocaleString(), source: 'Monitoring' },
-    { metric: 'Audit Events', value: data.auditTotal.toLocaleString(), source: 'Audit Log' },
+    { metric: t("analytics.page.totalEvents"), value: data.summary.total_events.toLocaleString(), source: t("analytics.page.sourceAnalytics") },
+    { metric: t("analytics.page.activeUsers"), value: data.summary.unique_users.toLocaleString(), source: t("analytics.page.sourceAnalytics") },
+    { metric: t("analytics.page.eventTypes"), value: data.summary.distinct_events.toLocaleString(), source: t("analytics.page.sourceAnalytics") },
+    { metric: t("analytics.page.serviceUptime"), value: `${data.uptimePct}%`, source: t("analytics.page.sourceMonitoring") },
+    { metric: t("analytics.page.openIncidents"), value: data.health.open_incidents.toLocaleString(), source: t("analytics.page.sourceMonitoring") },
+    { metric: t("analytics.page.auditEvents"), value: data.auditTotal.toLocaleString(), source: t("analytics.page.sourceAuditLog") },
   ]
 
   return (
@@ -152,8 +169,8 @@ export function AnalyticsView(data: AnalyticsViewData) {
             <BarChart3 className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">AI Analytics</h1>
-            <p className="text-sm text-muted-foreground">Live platform intelligence from your operational data</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("analytics.page.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("analytics.page.subtitle")}</p>
           </div>
         </div>
 
@@ -170,7 +187,7 @@ export function AnalyticsView(data: AnalyticsViewData) {
 
           <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing || isPending}>
             <RefreshCw className={`h-4 w-4 ${isRefreshing || isPending ? 'animate-spin' : ''}`} />
-            <span className="sr-only">Refresh data</span>
+            <span className="sr-only">{t("analytics.page.refreshData")}</span>
           </Button>
         </div>
       </div>
@@ -178,7 +195,7 @@ export function AnalyticsView(data: AnalyticsViewData) {
       {/* Key Metrics */}
       <MetricGrid columns={4}>
         <MetricCard
-          label="Total Events"
+          label={t("analytics.page.totalEvents")}
           value={data.summary.total_events.toLocaleString()}
           change={activityChange}
           trend={activityChange > 0 ? 'up' : activityChange < 0 ? 'down' : 'stable'}
@@ -186,36 +203,36 @@ export function AnalyticsView(data: AnalyticsViewData) {
           subtitle={`Last ${data.days} days`}
         />
         <MetricCard
-          label="Active Users"
+          label={t("analytics.page.activeUsers")}
           value={data.summary.unique_users.toLocaleString()}
           subtitle={`${data.summary.distinct_events} event types`}
           trend="stable"
         />
         <MetricCard
-          label="Service Uptime"
+          label={t("analytics.page.serviceUptime")}
           value={`${data.uptimePct}%`}
           subtitle={`${data.health.monitors.up}/${data.health.monitors.total} services up`}
           trend={data.uptimePct >= 99 ? 'up' : data.uptimePct >= 90 ? 'stable' : 'down'}
         />
         <MetricCard
-          label="Open Incidents"
+          label={t("analytics.page.openIncidents")}
           value={data.health.open_incidents}
-          subtitle={data.health.open_incidents === 0 ? 'All clear' : 'Needs attention'}
+          subtitle={data.health.open_incidents === 0 ? t("analytics.page.allClear") : t("analytics.page.needsAttention")}
           trend={data.health.open_incidents === 0 ? 'down' : 'up'}
         />
       </MetricGrid>
 
       {/* Charts Row */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartContainer title="Platform Activity Trend" subtitle="Event volume over the selected period (Analytics)">
+        <ChartContainer title={t("analytics.page.platformActivityTrend")} subtitle={t("analytics.page.eventVolume")}>
           {data.activityTrend.length > 0 ? (
             <LiveChart data={data.activityTrend} dataKey="value" type="area" currency={false} />
           ) : (
-            <EmptyState icon={Activity} label="No activity recorded in this window" />
+            <EmptyState icon={Activity} label={t("analytics.page.noActivity")} />
           )}
         </ChartContainer>
 
-        <ChartContainer title="Activity by Category" subtitle="Event distribution across categories (Analytics)">
+        <ChartContainer title={t("analytics.page.activityByCategory")} subtitle={t("analytics.page.eventDistribution")}>
           {data.categories.length > 0 ? (
             <LiveChart
               data={data.categories}
@@ -226,7 +243,7 @@ export function AnalyticsView(data: AnalyticsViewData) {
               currency={false}
             />
           ) : (
-            <EmptyState icon={BarChart3} label="No categorized events yet" />
+            <EmptyState icon={BarChart3} label={t("analytics.page.noCategorizedEvents")} />
           )}
         </ChartContainer>
       </div>
@@ -234,21 +251,21 @@ export function AnalyticsView(data: AnalyticsViewData) {
       {/* Operational Insights */}
       <div className="grid gap-6 lg:grid-cols-3">
         <ChartContainer
-          title="Operational Activity"
-          subtitle="Platform events vs. audit-logged actions (Analytics + Audit)"
+          title={t("analytics.page.operationalActivity")}
+          subtitle={t("analytics.page.platformVsAudit")}
           className="lg:col-span-2"
         >
           {data.operational.length > 0 ? (
             <MultiLineChart
               data={data.operational}
               lines={[
-                { dataKey: 'activity', color: '#22d3ee', name: 'Platform Events' },
-                { dataKey: 'audit', color: '#f59e0b', name: 'Audit Events' },
+                { dataKey: 'activity', color: '#22d3ee', name: t("analytics.page.platformEvents") },
+                { dataKey: 'audit', color: '#f59e0b', name: t("analytics.page.auditEventsSeries") },
               ]}
               height={280}
             />
           ) : (
-            <EmptyState icon={Activity} label="No operational activity in this window" />
+            <EmptyState icon={Activity} label={t("analytics.page.noOperationalActivity")} />
           )}
         </ChartContainer>
 
