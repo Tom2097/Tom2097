@@ -39,7 +39,7 @@ function formatMetricValue(metric: string, value: number): string {
 
 export default async function BenchmarksPage() {
   const ctx = await extractTenantContext()
-  const t = await getTranslator()
+  const { t } = await getTranslator()
   if (!ctx) redirect('/auth/login')
 
   const orgId = ctx.organizationId
