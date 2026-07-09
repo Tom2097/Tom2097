@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress"
 import { AlertTriangle, CheckCircle2, Info, Activity, BarChart3, Clock, Plus, Wrench, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 interface RULEstimate {
   assetId: string
@@ -36,6 +37,7 @@ interface MaintenanceAlert {
 }
 
 export default function PredictiveMaintenancePage() {
+  const { t } = useI18n()
   const [schedule, setSchedule] = useState<RULEstimate[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
@@ -55,6 +57,15 @@ export default function PredictiveMaintenancePage() {
   })
   const [simSending, setSimSending] = useState(false)
 
+  const numericFields = [
+    { key: "temperature", label: t('predictiveMaintenance.page.temperature') },
+    { key: "vibration", label: t('predictiveMaintenance.page.vibration') },
+    { key: "pressure", label: t('predictiveMaintenance.page.pressure') },
+    { key: "rpm", label: t('predictiveMaintenance.page.rpm') },
+    { key: "powerConsumption", label: t('predictiveMaintenance.page.powerConsumption') },
+    { key: "humidity", label: t('predictiveMaintenance.page.humidity') },
+  ] as const
+
   const fetchSchedule = useCallback(async (cancelled?: { current: boolean }) => {
     try {
       setLoading(true);
@@ -64,7 +75,7 @@ export default function PredictiveMaintenancePage() {
       
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to load maintenance schedule");
+        throw new Error(errorData.error || t('predictiveMaintenance.page.errors.loadFailed'));
       }
       
       const data = await res.json();
@@ -73,14 +84,14 @@ export default function PredictiveMaintenancePage() {
       }
     } catch (error) {
       if (!cancelled?.current) {
-        toast.error(error instanceof Error ? error.message : "Failed to load maintenance schedule");
+        toast.error(error instanceof Error ? error.message : t('predictiveMaintenance.page.errors.loadFailed'));
       }
     } finally {
       if (!cancelled?.current) {
         setLoading(false);
       }
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const cancelled = { current: false };
@@ -98,7 +109,7 @@ export default function PredictiveMaintenancePage() {
 
   const handleLookupAsset = async () => {
     if (!assetId.trim()) {
-      toast.error("Please enter an asset ID");
+      toast.error(t('predictiveMaintenance.page.errors.enterAssetId'));
       return;
     }
     
@@ -108,13 +119,13 @@ export default function PredictiveMaintenancePage() {
       
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to look up asset");
+        throw new Error(errorData.error || t('predictiveMaintenance.page.errors.lookupFailed'));
       }
       
       const data = await res.json();
       setAssetRules(data);
     } catch (error) {
-       toast.error(error instanceof Error ? error.message : "Failed to look up asset");
+       toast.error(error instanceof Error ? error.message : t('predictiveMaintenance.page.errors.lookupFailed'));
     } finally {
       setAssetLoading(false);
     }
@@ -122,22 +133,13 @@ export default function PredictiveMaintenancePage() {
 
   const validateSimForm = () => {
     if (!simForm.assetId.trim()) {
-      toast.error("Asset ID is required");
+      toast.error(t('predictiveMaintenance.page.errors.enterAssetId'));
       return false;
     }
     
-    const numericFields = [
-      { key: "temperature", label: "Temperature" },
-      { key: "vibration", label: "Vibration" },
-      { key: "pressure", label: "Pressure" },
-      { key: "rpm", label: "RPM" },
-      { key: "powerConsumption", label: "Power Consumption" },
-      { key: "humidity", label: "Humidity" },
-    ];
-    
     for (const field of numericFields) {
-      if (simForm[field.key as keyof typeof simForm] && isNaN(parseFloat(simForm[field.key as keyof typeof simForm] as string))) {
-        toast.error(`${field.label} must be a valid number`);
+      if (simForm[field.key] && isNaN(parseFloat(simForm[field.key] as string))) {
+        toast.error(t('predictiveMaintenance.page.errors.mustBeNumber', { field: field.label }));
         return false;
       }
     }
@@ -169,11 +171,10 @@ export default function PredictiveMaintenancePage() {
       
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to ingest telemetry");
+        throw new Error(errorData.error || t('predictiveMaintenance.page.errors.ingestFailed'));
       }
       
-      const data = await res.json();
-      toast.success("Telemetry ingested successfully");
+      toast.success(t('predictiveMaintenance.page.success.telemetryIngested'));
       setSimForm({
         assetId: simForm.assetId,
         temperature: "",
@@ -185,7 +186,7 @@ export default function PredictiveMaintenancePage() {
       });
       fetchSchedule();
     } catch (error) {
-       toast.error(error instanceof Error ? error.message : "Failed to ingest telemetry");
+       toast.error(error instanceof Error ? error.message : t('predictiveMaintenance.page.errors.ingestFailed'));
     } finally {
       setSimSending(false);
     }
@@ -216,10 +217,10 @@ export default function PredictiveMaintenancePage() {
 
   const actionBadge = (action: string) => {
     switch (action) {
-      case "replace": return <Badge variant="destructive">Replace</Badge>
-      case "maintain": return <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20">Maintain</Badge>
-      case "inspect": return <Badge variant="secondary">Inspect</Badge>
-      case "monitor": return <Badge variant="outline">Monitor</Badge>
+      case "replace": return <Badge variant="destructive">{t(`predictiveMaintenance.page.actions.${action}`)}</Badge>
+      case "maintain": return <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20">{t(`predictiveMaintenance.page.actions.${action}`)}</Badge>
+      case "inspect": return <Badge variant="secondary">{t(`predictiveMaintenance.page.actions.${action}`)}</Badge>
+      case "monitor": return <Badge variant="outline">{t(`predictiveMaintenance.page.actions.${action}`)}</Badge>
       default: return <Badge variant="outline">{action}</Badge>
     }
   }
@@ -232,8 +233,8 @@ export default function PredictiveMaintenancePage() {
             <Activity className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Predictive Maintenance</h1>
-            <p className="text-sm text-muted-foreground">RUL estimates, anomaly detection, and maintenance scheduling</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('predictiveMaintenance.page.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('predictiveMaintenance.page.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -243,48 +244,48 @@ export default function PredictiveMaintenancePage() {
           <CardHeader className="p-4 pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
               <AlertCircle className="h-4 w-4 text-red-500" />
-              Overdue
+              {t('predictiveMaintenance.page.overdue')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <p className="text-3xl font-bold text-red-500">{overdue.length}</p>
-            <p className="text-xs text-muted-foreground">Assets past due date</p>
+            <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.assetsPastDue')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="p-4 pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
               <Clock className="h-4 w-4 text-amber-500" />
-              Due Soon
+              {t('predictiveMaintenance.page.dueSoon')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <p className="text-3xl font-bold text-amber-500">{dueSoon.length}</p>
-            <p className="text-xs text-muted-foreground">&le;30 days remaining</p>
+            <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.daysRemaining')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="p-4 pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
               <Wrench className="h-4 w-4 text-amber-500" />
-              Needs Action
+              {t('predictiveMaintenance.page.needsAction')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <p className="text-3xl font-bold text-amber-500">{critical.length}</p>
-            <p className="text-xs text-muted-foreground">High failure probability</p>
+            <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.highFailureProbability')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="p-4 pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              Healthy
+              {t('predictiveMaintenance.page.healthy')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <p className="text-3xl font-bold text-emerald-500">{healthy.length}</p>
-            <p className="text-xs text-muted-foreground">&gt;90 days remaining</p>
+            <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.daysRemaining90')}</p>
           </CardContent>
         </Card>
       </div>
@@ -293,42 +294,42 @@ export default function PredictiveMaintenancePage() {
         <TabsList>
           <TabsTrigger value="overview" className="gap-2">
             <BarChart3 className="h-4 w-4" />
-            Schedule
+            {t('predictiveMaintenance.page.schedule')}
           </TabsTrigger>
           <TabsTrigger value="lookup" className="gap-2">
             <Info className="h-4 w-4" />
-            Asset Lookup
+            {t('predictiveMaintenance.page.assetLookup')}
           </TabsTrigger>
           <TabsTrigger value="simulator" className="gap-2">
             <Plus className="h-4 w-4" />
-            Telemetry Simulator
+            {t('predictiveMaintenance.page.telemetrySimulator')}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Maintenance Schedule</CardTitle>
-              <CardDescription>All assets ordered by remaining useful life</CardDescription>
+              <CardTitle>{t('predictiveMaintenance.page.schedule')}</CardTitle>
+              <CardDescription>{t('predictiveMaintenance.page.asset')}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="flex items-center justify-center py-8 text-muted-foreground">Loading...</div>
+                <div className="flex items-center justify-center py-8 text-muted-foreground">{t('predictiveMaintenance.page.loading')}</div>
               ) : schedule.length === 0 ? (
                 <div className="flex items-center justify-center py-8 text-muted-foreground">
-                  No assets found. Ingest telemetry data to generate RUL estimates.
+                  {t('predictiveMaintenance.page.noAssets')}
                 </div>
               ) : (
                 <div className="border rounded-lg overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Asset</TableHead>
-                        <TableHead>RUL (days)</TableHead>
-                        <TableHead>Failure Probability</TableHead>
-                        <TableHead>Confidence</TableHead>
-                        <TableHead>Action</TableHead>
-                        <TableHead>Next Maintenance</TableHead>
+                        <TableHead>{t('predictiveMaintenance.page.asset')}</TableHead>
+                        <TableHead>{t('predictiveMaintenance.page.rulDays')}</TableHead>
+                        <TableHead>{t('predictiveMaintenance.page.failureProbability')}</TableHead>
+                        <TableHead>{t('predictiveMaintenance.page.confidence')}</TableHead>
+                        <TableHead>{t('predictiveMaintenance.page.action')}</TableHead>
+                        <TableHead>{t('predictiveMaintenance.page.nextMaintenance')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -342,7 +343,7 @@ export default function PredictiveMaintenancePage() {
                                 asset.estimatedRulDays <= 30 ? "text-amber-500" :
                                 "text-muted-foreground"
                               }>
-                                {asset.estimatedRulDays === 0 ? "OVERDUE" : asset.estimatedRulDays}
+                                {asset.estimatedRulDays === 0 ? t('predictiveMaintenance.page.overdueLabel') : asset.estimatedRulDays}
                               </span>
                               {asset.estimatedRulDays > 0 && (
                                 <Progress
@@ -359,7 +360,7 @@ export default function PredictiveMaintenancePage() {
                           </TableCell>
                           <TableCell>
                             <span className={confidenceColor(asset.confidenceLevel)}>
-                              {asset.confidenceLevel.charAt(0).toUpperCase() + asset.confidenceLevel.slice(1)}
+                              {t(`predictiveMaintenance.page.confidenceLevels.${asset.confidenceLevel}`)}
                             </span>
                           </TableCell>
                           <TableCell>{actionBadge(asset.recommendedAction)}</TableCell>
@@ -377,19 +378,19 @@ export default function PredictiveMaintenancePage() {
         <TabsContent value="lookup" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Asset Lookup</CardTitle>
-              <CardDescription>View RUL estimate and recent alerts for a specific asset</CardDescription>
+              <CardTitle>{t('predictiveMaintenance.page.assetLookup')}</CardTitle>
+              <CardDescription>{t('predictiveMaintenance.page.assetLookupDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Enter asset ID..."
+                  placeholder={t('predictiveMaintenance.page.enterAssetId')}
                   value={assetId}
                   onChange={(e) => setAssetId(e.target.value)}
                   className="max-w-sm"
                 />
                 <Button onClick={handleLookupAsset} disabled={assetLoading}>
-                  {assetLoading ? "Loading..." : "Look Up"}
+                  {assetLoading ? t('predictiveMaintenance.page.loading') : t('predictiveMaintenance.page.lookUp')}
                 </Button>
               </div>
 
@@ -399,24 +400,24 @@ export default function PredictiveMaintenancePage() {
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-lg">{assetRules.rul.assetName}</CardTitle>
-                        <CardDescription>RUL Estimate</CardDescription>
+                        <CardDescription>{t('predictiveMaintenance.page.rulDays')}</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                           <div>
-                            <p className="text-sm text-muted-foreground">Remaining Life</p>
-                            <p className="text-2xl font-bold">{assetRules.rul.estimatedRulDays} <span className="text-sm font-normal text-muted-foreground">days</span></p>
+                            <p className="text-sm text-muted-foreground">{t('predictiveMaintenance.page.remainingLife')}</p>
+                            <p className="text-2xl font-bold">{assetRules.rul.estimatedRulDays} <span className="text-sm font-normal text-muted-foreground">{t('predictiveMaintenance.page.days')}</span></p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Failure Probability</p>
+                            <p className="text-sm text-muted-foreground">{t('predictiveMaintenance.page.failureProbability')}</p>
                             <p className="text-2xl font-bold">{(assetRules.rul.failureProbability * 100).toFixed(0)}%</p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Confidence</p>
-                            <p className="text-2xl font-bold capitalize">{assetRules.rul.confidenceLevel}</p>
+                            <p className="text-sm text-muted-foreground">{t('predictiveMaintenance.page.confidence')}</p>
+                            <p className="text-2xl font-bold capitalize">{t(`predictiveMaintenance.page.confidenceLevels.${assetRules.rul.confidenceLevel}`)}</p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Recommended Action</p>
+                            <p className="text-sm text-muted-foreground">{t('predictiveMaintenance.page.recommendedAction')}</p>
                             <p className="text-2xl font-bold">{actionBadge(assetRules.rul.recommendedAction)}</p>
                           </div>
                         </div>
@@ -426,12 +427,12 @@ export default function PredictiveMaintenancePage() {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle>Alerts</CardTitle>
-                      <CardDescription>Recent anomaly detections for this asset</CardDescription>
+                      <CardTitle>{t('predictiveMaintenance.page.alerts')}</CardTitle>
+                      <CardDescription>{t('predictiveMaintenance.page.recentAnomalies')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       {assetRules.alerts.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No anomalies detected in the last 24 hours.</p>
+                        <p className="text-sm text-muted-foreground">{t('predictiveMaintenance.page.noAnomalies')}</p>
                       ) : (
                         <div className="space-y-2">
                           {assetRules.alerts.map((alert, idx) => (
@@ -467,13 +468,13 @@ export default function PredictiveMaintenancePage() {
         <TabsContent value="simulator" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Telemetry Simulator</CardTitle>
-              <CardDescription>Inject test telemetry data to simulate sensor readings</CardDescription>
+              <CardTitle>{t('predictiveMaintenance.page.telemetrySimulator')}</CardTitle>
+              <CardDescription>{t('predictiveMaintenance.page.telemetryDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="sim-asset-id">Asset ID *</Label>
+                  <Label htmlFor="sim-asset-id">{t('predictiveMaintenance.page.assetIdRequired')}</Label>
                   <Input
                     id="sim-asset-id"
                     value={simForm.assetId}
@@ -481,70 +482,21 @@ export default function PredictiveMaintenancePage() {
                     placeholder="asset-001"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sim-temp">Temperature (°C)</Label>
-                  <Input
-                    id="sim-temp"
-                    type="number"
-                    value={simForm.temperature}
-                    onChange={(e) => setSimForm({ ...simForm, temperature: e.target.value })}
-                    placeholder="e.g. 75"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sim-vibe">Vibration (mm/s)</Label>
-                  <Input
-                    id="sim-vibe"
-                    type="number"
-                    value={simForm.vibration}
-                    onChange={(e) => setSimForm({ ...simForm, vibration: e.target.value })}
-                    placeholder="e.g. 12"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sim-pressure">Pressure (bar)</Label>
-                  <Input
-                    id="sim-pressure"
-                    type="number"
-                    value={simForm.pressure}
-                    onChange={(e) => setSimForm({ ...simForm, pressure: e.target.value })}
-                    placeholder="e.g. 100"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sim-rpm">RPM</Label>
-                  <Input
-                    id="sim-rpm"
-                    type="number"
-                    value={simForm.rpm}
-                    onChange={(e) => setSimForm({ ...simForm, rpm: e.target.value })}
-                    placeholder="e.g. 1500"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sim-power">Power Consumption (kW)</Label>
-                  <Input
-                    id="sim-power"
-                    type="number"
-                    value={simForm.powerConsumption}
-                    onChange={(e) => setSimForm({ ...simForm, powerConsumption: e.target.value })}
-                    placeholder="e.g. 45"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sim-humidity">Humidity (%)</Label>
-                  <Input
-                    id="sim-humidity"
-                    type="number"
-                    value={simForm.humidity}
-                    onChange={(e) => setSimForm({ ...simForm, humidity: e.target.value })}
-                    placeholder="e.g. 60"
-                  />
-                </div>
+                {numericFields.map((field) => (
+                  <div key={field.key} className="space-y-2">
+                    <Label htmlFor={`sim-${field.key}`}>{field.label}</Label>
+                    <Input
+                      id={`sim-${field.key}`}
+                      type="number"
+                      value={simForm[field.key]}
+                      onChange={(e) => setSimForm({ ...simForm, [field.key]: e.target.value })}
+                    />
+                  </div>
+                ))}
               </div>
               <div className="mt-4">
                 <Button onClick={handleSimulateTelemetry} disabled={simSending || !simForm.assetId.trim()}>
-                  {simSending ? "Sending..." : "Send Telemetry"}
+                  {simSending ? t('predictiveMaintenance.page.sending') : t('predictiveMaintenance.page.sendTelemetry')}
                 </Button>
               </div>
             </CardContent>

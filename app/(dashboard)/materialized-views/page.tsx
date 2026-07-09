@@ -39,6 +39,7 @@ import {
   Layers,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/components/providers/i18n-provider'
 
 interface MaterializedView {
   name: string
@@ -65,6 +66,7 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default function MaterializedViewsPage() {
+  const { t } = useI18n()
   const [views, setViews] = useState<MaterializedView[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshingViews, setRefreshingViews] = useState<Set<string>>(new Set())
@@ -81,10 +83,10 @@ export default function MaterializedViewsPage() {
      fetch('/api/v1/analytics/views')
        .then((r) => r.ok ? r.json() : Promise.reject())
        .then((data) => { if (!cancelled) setViews(data.views ?? []) })
-       .catch((error) => { if (!cancelled) toast.error(error instanceof Error ? error.message : 'Failed to load materialized views') })
+       .catch((error) => { if (!cancelled) toast.error(error instanceof Error ? error.message : t('materializedViews.page.errors.loadFailed')) })
        .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
-  }, [])
+  }, [t])
 
   const handleRefreshView = async (name: string) => {
     setRefreshingViews((prev) => new Set(prev).add(name))
@@ -95,13 +97,13 @@ export default function MaterializedViewsPage() {
         body: JSON.stringify({ name }),
       })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? 'Refresh failed'); return }
-      toast.success(`View "${name}" refreshed: ${data.result.rowsInserted} rows in ${data.result.durationMs}ms`)
+      if (!res.ok) { toast.error(data.error ?? t('materializedViews.page.errors.refreshFailed')); return }
+      toast.success(t('materializedViews.page.errors.viewRefreshed', { name, rows: data.result.rowsInserted, duration: data.result.durationMs }))
       const refresh = await fetch('/api/v1/analytics/views')
       const refData = await refresh.json()
       if (refData.views) setViews(refData.views)
      } catch (error) {
-       toast.error(error instanceof Error ? error.message : 'Failed to refresh view')
+       toast.error(error instanceof Error ? error.message : t('materializedViews.page.errors.refreshFailed'))
      } finally {
       setRefreshingViews((prev) => {
         const next = new Set(prev)
@@ -120,13 +122,13 @@ export default function MaterializedViewsPage() {
         body: JSON.stringify({ name: 'all' }),
       })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? 'Refresh failed'); return }
-      toast.success(`All views refreshed (${data.results.length} total)`)
+      if (!res.ok) { toast.error(data.error ?? t('materializedViews.page.errors.refreshFailed')); return }
+      toast.success(t('materializedViews.page.errors.allRefreshed', { count: data.results.length }))
       const refresh = await fetch('/api/v1/analytics/views')
       const refData = await refresh.json()
       if (refData.views) setViews(refData.views)
      } catch (error) {
-       toast.error(error instanceof Error ? error.message : 'Failed to refresh all views')
+       toast.error(error instanceof Error ? error.message : t('materializedViews.page.errors.refreshFailed'))
      } finally {
       setRefreshingAll(false)
     }
@@ -134,7 +136,7 @@ export default function MaterializedViewsPage() {
 
   const handleQueryCache = async () => {
     if (!queryWorkspace.trim()) {
-      toast.error('Please enter a workspace ID')
+      toast.error(t('materializedViews.page.errors.enterWorkspace'))
       return
     }
     setCacheLoading(true)
@@ -142,11 +144,11 @@ export default function MaterializedViewsPage() {
     try {
       const res = await fetch(`/api/v1/analytics/views/cache?workspaceId=${encodeURIComponent(queryWorkspace)}`)
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? 'Failed to load cache'); return }
+      if (!res.ok) { toast.error(data.error ?? t('materializedViews.page.errors.loadCacheFailed')); return }
       setCache(data.cache)
       setCacheDialogOpen(true)
      } catch (error) {
-       toast.error(error instanceof Error ? error.message : 'Failed to load scoring cache')
+       toast.error(error instanceof Error ? error.message : t('materializedViews.page.errors.loadCacheFailed'))
      } finally {
       setCacheLoading(false)
     }
@@ -159,11 +161,11 @@ export default function MaterializedViewsPage() {
         method: 'DELETE',
       })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? 'Failed to invalidate'); return }
-      toast.success(data.message ?? 'Cache invalidated')
+      if (!res.ok) { toast.error(data.error ?? t('materializedViews.page.errors.invalidateFailed')); return }
+      toast.success(data.message ?? t('materializedViews.page.errors.invalidateFailed'))
       if (cache) setCache({ ...cache, stale: true })
      } catch (error) {
-       toast.error(error instanceof Error ? error.message : 'Failed to invalidate cache')
+       toast.error(error instanceof Error ? error.message : t('materializedViews.page.errors.invalidateFailed'))
      }
   }
 
@@ -193,8 +195,8 @@ export default function MaterializedViewsPage() {
             <Database className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Materialized Views</h1>
-            <p className="text-sm text-muted-foreground">Database-level scoring cache and view management</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('materializedViews.page.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('materializedViews.page.subtitle')}</p>
           </div>
         </div>
         <Button
@@ -204,7 +206,7 @@ export default function MaterializedViewsPage() {
           disabled={refreshingAll}
         >
           <RefreshCw className={cn('h-4 w-4', refreshingAll && 'animate-spin')} />
-          {refreshingAll ? 'Refreshing...' : 'Refresh All'}
+          {refreshingAll ? t('materializedViews.page.refreshing') : t('materializedViews.page.refreshAll')}
         </Button>
       </div>
 
@@ -214,7 +216,7 @@ export default function MaterializedViewsPage() {
             <div className="flex items-center gap-3">
               <Layers className="h-5 w-5 text-cyan-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Total Views</p>
+                <p className="text-sm text-muted-foreground">{t('materializedViews.page.totalViews')}</p>
                 <p className="text-2xl font-bold text-foreground">{views.length}</p>
               </div>
             </div>
@@ -225,7 +227,7 @@ export default function MaterializedViewsPage() {
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-5 w-5 text-green-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Fresh</p>
+                <p className="text-sm text-muted-foreground">{t('materializedViews.page.fresh')}</p>
                 <p className="text-2xl font-bold text-green-500">{freshCount}</p>
               </div>
             </div>
@@ -236,7 +238,7 @@ export default function MaterializedViewsPage() {
             <div className="flex items-center gap-3">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Stale</p>
+                <p className="text-sm text-muted-foreground">{t('materializedViews.page.stale')}</p>
                 <p className="text-2xl font-bold text-amber-500">{staleCount}</p>
               </div>
             </div>
@@ -247,7 +249,7 @@ export default function MaterializedViewsPage() {
             <div className="flex items-center gap-3">
               <BarChart3 className="h-5 w-5 text-indigo-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Total Rows</p>
+                <p className="text-sm text-muted-foreground">{t('materializedViews.page.totalRows')}</p>
                 <p className="text-2xl font-bold text-foreground">
                   {views.reduce((s, v) => s + v.rowCount, 0).toLocaleString()}
                 </p>
@@ -261,27 +263,27 @@ export default function MaterializedViewsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Database className="h-5 w-5 text-cyan-500" />
-            View Definitions
+            {t('materializedViews.page.viewDefinitions')}
           </CardTitle>
-          <CardDescription>Materialized view status, row counts, and refresh controls</CardDescription>
+          <CardDescription>{t('materializedViews.page.viewDefinitionsDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>View Name</TableHead>
-                <TableHead>Row Count</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Refresh Interval</TableHead>
-                <TableHead>Last Refreshed</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('materializedViews.page.viewName')}</TableHead>
+                <TableHead>{t('materializedViews.page.rowCount')}</TableHead>
+                <TableHead>{t('materializedViews.page.status')}</TableHead>
+                <TableHead>{t('materializedViews.page.refreshInterval')}</TableHead>
+                <TableHead>{t('materializedViews.page.lastRefreshed')}</TableHead>
+                <TableHead className="text-right">{t('materializedViews.page.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {views.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center text-sm text-muted-foreground py-8">
-                    No materialized views defined
+                    {t('materializedViews.page.noViews')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -315,7 +317,7 @@ export default function MaterializedViewsPage() {
                     <TableCell className="text-sm text-muted-foreground">
                       {view.lastRefreshed
                         ? new Date(view.lastRefreshed).toLocaleString()
-                        : 'Never'}
+                        : t('materializedViews.page.never')}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -331,7 +333,7 @@ export default function MaterializedViewsPage() {
                             refreshingViews.has(view.name) && 'animate-spin'
                           )}
                         />
-                        {refreshingViews.has(view.name) ? 'Refreshing' : 'Refresh'}
+                        {refreshingViews.has(view.name) ? t('materializedViews.page.refreshing') : t('materializedViews.page.refresh')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -346,17 +348,17 @@ export default function MaterializedViewsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <BarChart3 className="h-5 w-5 text-indigo-500" />
-            Scoring Cache
+            {t('materializedViews.page.scoringCache')}
           </CardTitle>
-          <CardDescription>Look up and manage cached scoring data by workspace</CardDescription>
+          <CardDescription>{t('materializedViews.page.scoringCacheDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-end gap-3">
             <div className="flex-1">
-              <Label htmlFor="workspace-id">Workspace ID</Label>
+              <Label htmlFor="workspace-id">{t('materializedViews.page.workspaceId')}</Label>
               <Input
                 id="workspace-id"
-                placeholder="e.g. ws_abc123"
+                placeholder={t('materializedViews.page.workspacePlaceholder')}
                 value={queryWorkspace}
                 onChange={(e) => setQueryWorkspace(e.target.value)}
               />
@@ -371,13 +373,13 @@ export default function MaterializedViewsPage() {
               ) : (
                 <Search className="h-4 w-4" />
               )}
-              Look Up
+              {t('materializedViews.page.lookUp')}
             </Button>
           </div>
 
           {queryWorkspace && !cacheLoading && (
             <p className="mt-2 text-xs text-muted-foreground">
-              Enter a workspace ID and click &ldquo;Look Up&rdquo; to view cached scoring data
+              {t('materializedViews.page.lookUpHint')}
             </p>
           )}
         </CardContent>
@@ -388,13 +390,13 @@ export default function MaterializedViewsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-indigo-500" />
-              Scoring Cache: {workspaceId}
+              {t('materializedViews.page.cacheTitle', { workspaceId })}
             </DialogTitle>
           </DialogHeader>
           {cache && (
             <div className="space-y-4 pt-2">
               <div className="flex items-center gap-2">
-                <Label className="text-muted-foreground text-xs">Status</Label>
+                <Label className="text-muted-foreground text-xs">{t('materializedViews.page.cacheStatus')}</Label>
                 <Badge
                   variant="secondary"
                   className={cn(
@@ -404,18 +406,18 @@ export default function MaterializedViewsPage() {
                       : 'bg-green-500/10 text-green-500'
                   )}
                 >
-                  {cache.stale ? 'Stale' : 'Fresh'}
+                  {cache.stale ? t('materializedViews.page.staleStatus') : t('materializedViews.page.freshStatus')}
                 </Badge>
               </div>
 
               <div className="rounded-lg bg-secondary/30 p-4">
-                <p className="text-sm text-muted-foreground">Total Score</p>
+                <p className="text-sm text-muted-foreground">{t('materializedViews.page.totalScore')}</p>
                 <p className="text-3xl font-bold text-foreground">{cache.totalScore}</p>
               </div>
 
               <div>
                 <Label className="text-muted-foreground text-xs mb-2 block">
-                  Category Scores
+                  {t('materializedViews.page.categoryScores')}
                 </Label>
                 <div className="grid grid-cols-2 gap-2">
                   {Object.entries(cache.categoryScores).map(([key, val]) => (
@@ -430,17 +432,17 @@ export default function MaterializedViewsPage() {
               {cache.benchmarks && (
                 <div>
                   <Label className="text-muted-foreground text-xs mb-2 block">
-                    Benchmarks
+                    {t('materializedViews.page.benchmarks')}
                   </Label>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="rounded-lg bg-secondary/20 p-3">
-                      <p className="text-xs text-muted-foreground">Percentile</p>
+                      <p className="text-xs text-muted-foreground">{t('materializedViews.page.percentile')}</p>
                       <p className="text-lg font-semibold text-foreground">
-                        {cache.benchmarks.percentile}th
+                        {t('materializedViews.page.percentileValue', { percentile: cache.benchmarks.percentile })}
                       </p>
                     </div>
                     <div className="rounded-lg bg-secondary/20 p-3">
-                      <p className="text-xs text-muted-foreground">Peer Average</p>
+                      <p className="text-xs text-muted-foreground">{t('materializedViews.page.peerAverage')}</p>
                       <p className="text-lg font-semibold text-foreground">
                         {cache.benchmarks.peerAvg}
                       </p>
@@ -450,7 +452,7 @@ export default function MaterializedViewsPage() {
               )}
 
               <p className="text-xs text-muted-foreground">
-                Last calculated: {new Date(cache.lastCalculated).toLocaleString()}
+                {t('materializedViews.page.lastCalculated', { date: new Date(cache.lastCalculated).toLocaleString() })}
               </p>
 
               <div className="flex justify-end gap-2 border-t pt-4">
@@ -460,13 +462,13 @@ export default function MaterializedViewsPage() {
                   onClick={handleInvalidateCache}
                 >
                   <Trash2 className="h-4 w-4" />
-                  Invalidate Cache
+                  {t('materializedViews.page.invalidateCache')}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setCacheDialogOpen(false)}
                 >
-                  Close
+                  {t('materializedViews.page.close')}
                 </Button>
               </div>
             </div>

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
+import { useI18n } from "@/components/providers/i18n-provider"
 import {
   processBatch,
   getBatchStatus,
@@ -35,6 +36,7 @@ function formatSize(bytes: number): string {
 }
 
 export default function BulkPage() {
+  const { t } = useI18n()
   const [batches, setBatches] = useState<BatchJob[]>(() => listBatches('default'))
   const [addFileDialogOpen, setAddFileDialogOpen] = useState(false)
   const [resultsDialogOpen, setResultsDialogOpen] = useState(false)
@@ -83,19 +85,19 @@ export default function BulkPage() {
       type: f.type || 'application/octet-stream',
     }))
     setFiles(prev => [...prev, ...newFiles])
-    toast.success(`${droppedFiles.length} file(s) added`)
+    toast.success(t('bulk.page.filesAdded', { count: droppedFiles.length }))
   }
 
   const handleAddFile = () => {
     if (!newFileName.trim() || !newFileSize.trim()) {
-      toast.error("Name and size are required")
+      toast.error(t('bulk.page.errors.nameSizeRequired'))
       return
     }
     setFiles(prev => [...prev, { name: newFileName.trim(), size: Number(newFileSize), type: newFileType }])
     setNewFileName("")
     setNewFileSize("")
     setAddFileDialogOpen(false)
-    toast.success("File added to batch")
+    toast.success(t('bulk.page.success.fileAdded'))
   }
 
   const handleRemoveFile = (index: number) => {
@@ -104,14 +106,14 @@ export default function BulkPage() {
 
   const handleProcessBatch = () => {
     if (files.length === 0) {
-      toast.error("Add at least one file to process")
+      toast.error(t('bulk.page.errors.addOneFile'))
       return
     }
     setProcessing(true)
     const job = processBatch(files, 'default')
     setBatches(prev => [job, ...prev])
     setFiles([])
-    toast.success(`Batch job ${job.id.slice(0, 8)}... started`)
+    toast.success(t('bulk.page.success.batchStarted', { jobId: job.id.slice(0, 8) }))
     setProcessing(false)
   }
 
@@ -130,16 +132,16 @@ export default function BulkPage() {
             <Layers className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Bulk Processing</h1>
-            <p className="text-sm text-muted-foreground">Drag, drop, and process files in batches</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('bulk.page.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('bulk.page.subtitle')}</p>
           </div>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Drop Zone</CardTitle>
-          <CardDescription>Drag and drop files or add them manually</CardDescription>
+          <CardTitle className="text-lg">{t('bulk.page.dropZone')}</CardTitle>
+          <CardDescription>{t('bulk.page.dropZoneDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div
@@ -157,38 +159,38 @@ export default function BulkPage() {
               <Upload className={`h-8 w-8 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
             </div>
             <p className="text-sm font-medium text-foreground mb-1">
-              {isDragging ? "Drop files here" : "Drag & drop files here"}
+              {isDragging ? t('bulk.page.dropHere') : t('bulk.page.dragDrop')}
             </p>
-            <p className="text-xs text-muted-foreground mb-4">or</p>
+            <p className="text-xs text-muted-foreground mb-4">{t('bulk.page.or')}</p>
             <Dialog open={addFileDialogOpen} onOpenChange={setAddFileDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Files Manually
+                  {t('bulk.page.addFilesManually')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add File</DialogTitle>
-                  <DialogDescription>Specify file details for batch processing</DialogDescription>
+                  <DialogTitle>{t('bulk.page.addFile')}</DialogTitle>
+                  <DialogDescription>{t('bulk.page.addFileDesc')}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label>File Name</Label>
-                    <Input placeholder="data.csv" value={newFileName} onChange={e => setNewFileName(e.target.value)} />
+                    <Label>{t('bulk.page.fileName')}</Label>
+                    <Input placeholder={t('bulk.page.fileNamePlaceholder')} value={newFileName} onChange={e => setNewFileName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Size (bytes)</Label>
-                    <Input type="number" placeholder="1024" value={newFileSize} onChange={e => setNewFileSize(e.target.value)} />
+                    <Label>{t('bulk.page.sizeBytes')}</Label>
+                    <Input type="number" placeholder={t('bulk.page.sizePlaceholder')} value={newFileSize} onChange={e => setNewFileSize(e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>File Type</Label>
+                    <Label>{t('bulk.page.fileType')}</Label>
                     <Input value={newFileType} onChange={e => setNewFileType(e.target.value)} />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setAddFileDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={handleAddFile}>Add File</Button>
+                  <Button variant="outline" onClick={() => setAddFileDialogOpen(false)}>{t('bulk.page.cancel')}</Button>
+                  <Button onClick={handleAddFile}>{t('bulk.page.add')}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -197,9 +199,9 @@ export default function BulkPage() {
           {files.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">{files.length} file(s) selected</p>
+                <p className="text-sm font-medium">{t('bulk.page.filesSelected', { count: files.length })}</p>
                 <Button variant="ghost" size="sm" onClick={() => setFiles([])}>
-                  <Trash2 className="h-3 w-3 mr-1" /> Clear All
+                  <Trash2 className="h-3 w-3 mr-1" /> {t('bulk.page.clearAll')}
                 </Button>
               </div>
               {files.map((file, i) => (
@@ -217,7 +219,7 @@ export default function BulkPage() {
               ))}
               <Button className="w-full mt-2" onClick={handleProcessBatch} disabled={processing}>
                 {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                Process Batch ({files.length} files)
+                {t('bulk.page.processBatch', { count: files.length })}
               </Button>
             </div>
           )}
@@ -226,27 +228,27 @@ export default function BulkPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Batch History</CardTitle>
-          <CardDescription>{batches.length} batch job(s) processed</CardDescription>
+          <CardTitle>{t('bulk.page.batchHistory')}</CardTitle>
+          <CardDescription>{t('bulk.page.batchCount', { count: batches.length })}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           {batches.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-6">
               <Layers className="h-12 w-12 text-muted-foreground/40 mb-4" />
-              <p className="text-sm text-muted-foreground">No batch jobs yet.</p>
-              <p className="text-xs text-muted-foreground mt-1">Drop files above to start processing.</p>
+              <p className="text-sm text-muted-foreground">{t('bulk.page.noBatchJobs')}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('bulk.page.dropFilesHint')}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Job ID</TableHead>
-                  <TableHead>Files</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>Errors</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t('bulk.page.jobId')}</TableHead>
+                  <TableHead>{t('bulk.page.files')}</TableHead>
+                  <TableHead>{t('bulk.page.status')}</TableHead>
+                  <TableHead>{t('bulk.page.progress')}</TableHead>
+                  <TableHead>{t('bulk.page.errorsLabel')}</TableHead>
+                  <TableHead>{t('bulk.page.created')}</TableHead>
+                  <TableHead className="text-right">{t('bulk.page.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -281,7 +283,7 @@ export default function BulkPage() {
                         onClick={() => handleViewResults(job)}
                         disabled={job.status === 'pending'}
                       >
-                        <Eye className="h-3 w-3 mr-1" /> Results
+                        <Eye className="h-3 w-3 mr-1" /> {t('bulk.page.results')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -295,13 +297,13 @@ export default function BulkPage() {
       <Dialog open={resultsDialogOpen} onOpenChange={setResultsDialogOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Batch Results — {selectedJob?.id.slice(0, 8)}...</DialogTitle>
+            <DialogTitle>{t('bulk.page.batchResults', { jobId: selectedJob?.id.slice(0, 8) ?? '' })}...</DialogTitle>
             <DialogDescription>
-              {selectedJob?.files.length} file(s) | {selectedResults.filter(r => r.status === 'success').length} succeeded, {selectedResults.filter(r => r.status === 'error').length} failed
+              {t('bulk.page.resultSummary', { files: selectedJob?.files.length ?? 0, succeeded: selectedResults.filter(r => r.status === 'success').length, failed: selectedResults.filter(r => r.status === 'error').length })}
             </DialogDescription>
           </DialogHeader>
           {selectedResults.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4">No results available yet.</p>
+            <p className="text-sm text-muted-foreground py-4">{t('bulk.page.noResults')}</p>
           ) : (
             <div className="space-y-2">
               {selectedResults.map((result, i) => (
@@ -316,8 +318,8 @@ export default function BulkPage() {
                       : 'bg-red-500/20 text-red-500 border-red-500/30'
                     }>
                       {result.status === 'success'
-                        ? <><CheckCircle2 className="h-3 w-3 mr-1" /> Success</>
-                        : <><AlertCircle className="h-3 w-3 mr-1" /> Error</>
+                        ? <><CheckCircle2 className="h-3 w-3 mr-1" /> {t('bulk.page.success')}</>
+                        : <><AlertCircle className="h-3 w-3 mr-1" /> {t('bulk.page.error')}</>
                       }
                     </Badge>
                   </div>
@@ -339,7 +341,7 @@ export default function BulkPage() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setResultsDialogOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setResultsDialogOpen(false)}>{t('bulk.page.close')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

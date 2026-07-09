@@ -4,6 +4,7 @@ import { getPlatformCapacityReport } from "@/lib/platform/capacity-service"
 import { CapacityMeter } from "@/components/platform/capacity-meter"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Building2, Users, Activity, CreditCard } from "lucide-react"
+import { getTranslator } from "@/lib/i18n/server"
 
 export const dynamic = "force-dynamic"
 
@@ -13,6 +14,7 @@ export const metadata = {
 }
 
 export default async function PlatformCapacityPage() {
+  const { t } = await getTranslator()
   // Hidden from everyone except the configured platform owner. Returning 404
   // (not 403) avoids revealing the route exists to tenant users.
   const isOwner = await isCurrentUserPlatformOwner()
@@ -30,21 +32,21 @@ export default async function PlatformCapacityPage() {
         <header className="mb-8">
           <div className="flex items-center gap-2 text-sm text-primary mb-2">
             <Activity className="h-4 w-4" />
-            <span className="font-medium">Founder Console</span>
+            <span className="font-medium">{t('platformCapacity.page.founderConsole')}</span>
           </div>
-          <h1 className="text-3xl font-bold text-balance">Platform Capacity</h1>
+          <h1 className="text-3xl font-bold text-balance">{t('platformCapacity.page.title')}</h1>
           <p className="mt-2 text-muted-foreground text-pretty">
-            Controlled growth-stage limits and current utilization across all companies.
+            {t('platformCapacity.page.subtitle')}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Updated {new Date(generatedAt).toLocaleString()}
+            {t('platformCapacity.page.updated', { date: new Date(generatedAt).toLocaleString() })}
           </p>
         </header>
 
         {/* Platform-wide capacity */}
         <section aria-labelledby="platform-heading" className="mb-10">
           <h2 id="platform-heading" className="mb-4 text-lg font-semibold">
-            Platform-wide
+            {t('platformCapacity.page.platformWide')}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <CapacityMeter metric={platform.tenants} />
@@ -55,19 +57,19 @@ export default async function PlatformCapacityPage() {
         {/* Snapshot totals */}
         <section aria-labelledby="totals-heading" className="mb-10">
           <h2 id="totals-heading" className="mb-4 text-lg font-semibold">
-            Snapshot
+            {t('platformCapacity.page.snapshot')}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard icon={Building2} label="Companies" value={platform.tenants.used} />
-            <StatCard icon={Users} label="Total Users" value={totals.totalUsers} />
+            <StatCard icon={Building2} label={t('platformCapacity.page.companies')} value={platform.tenants.used} />
+            <StatCard icon={Users} label={t('platformCapacity.page.totalUsers')} value={totals.totalUsers} />
             <StatCard
               icon={Activity}
-              label="Concurrent Users"
+              label={t('platformCapacity.page.concurrentUsers')}
               value={platform.concurrentUsers.used}
             />
             <StatCard
               icon={CreditCard}
-              label="Active Subscriptions"
+              label={t('platformCapacity.page.activeSubscriptions')}
               value={totals.totalActiveSubscriptions}
             />
           </div>
@@ -76,29 +78,27 @@ export default async function PlatformCapacityPage() {
         {/* Per-tenant configured limits */}
         <section aria-labelledby="limits-heading">
           <h2 id="limits-heading" className="mb-4 text-lg font-semibold">
-            Per-Company Limits (configured)
+            {t('platformCapacity.page.perCompanyLimits')}
           </h2>
           <Card className="bg-card/80 backdrop-blur-xl border-border/50">
             <CardContent className="grid gap-4 py-6 sm:grid-cols-2 lg:grid-cols-4">
-              <LimitRow label="Users / company" value={limits.maxUsersPerCompany.toLocaleString()} />
+              <LimitRow label={t('platformCapacity.page.usersPerCompany')} value={limits.maxUsersPerCompany.toLocaleString()} />
               <LimitRow
-                label="AI requests / month"
+                label={t('platformCapacity.page.aiRequestsPerMonth')}
                 value={limits.maxAiRequestsPerTenantMonthly.toLocaleString()}
               />
               <LimitRow
-                label="Workflow runs / month"
+                label={t('platformCapacity.page.workflowRunsPerMonth')}
                 value={limits.maxWorkflowExecutionsPerTenantMonthly.toLocaleString()}
               />
               <LimitRow
-                label="Document storage"
+                label={t('platformCapacity.page.documentStorage')}
                 value={`${(limits.maxDocumentStorageMbPerTenant / 1024).toFixed(0)} GB`}
               />
             </CardContent>
           </Card>
           <p className="mt-3 text-xs text-muted-foreground text-pretty">
-            All limits are configurable via environment variables (no redeploy of business logic
-            required). Existing companies continue functioning normally; new companies are blocked
-            only when the platform tenant cap is reached.
+            {t('platformCapacity.page.limitsNote')}
           </p>
         </section>
       </main>

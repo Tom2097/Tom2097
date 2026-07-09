@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { MetricCard, MetricGrid } from "@/components/digit/metric-card"
 import { toast } from "sonner"
 import { Check, Gift, Percent, Ticket, Sparkles, AlertTriangle, BarChart3, Timer } from "lucide-react"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 interface OrgTrial {
   orgId: string
@@ -34,11 +35,11 @@ interface TrialAnalytics {
   conversionRate: number
 }
 
-const REGULAR_PLANS = [
-  { name: 'Starter', price: 2999, features: ['Basic analytics', '10 documents/mo', 'Email support'] },
-  { name: 'Professional', price: 9999, features: ['Advanced analytics', 'Unlimited documents', 'AI-powered insights', 'Priority support', 'API access'] },
-  { name: 'Enterprise', price: 29999, features: ['Everything in Pro', 'Custom integrations', 'Dedicated manager', 'SLA guarantee', 'Advanced security', 'On-premise option'] },
-]
+interface PlanDef {
+  key: string
+  price: number
+  features: string[]
+}
 
 function formatPrice(paise: number): string {
   return `₹${(paise / 100).toLocaleString('en-IN')}`
@@ -49,6 +50,55 @@ function formatDate(iso: string): string {
 }
 
 export default function BillingPlansPage() {
+  const { t } = useI18n()
+
+  const REGULAR_PLANS: PlanDef[] = [
+    {
+      key: 'starter',
+      price: 2999,
+      features: [
+        'billingPlans.page.features.basicAnalytics',
+        'billingPlans.page.features.documents10',
+        'billingPlans.page.features.emailSupport',
+      ],
+    },
+    {
+      key: 'professional',
+      price: 9999,
+      features: [
+        'billingPlans.page.features.advancedAnalytics',
+        'billingPlans.page.features.unlimitedDocuments',
+        'billingPlans.page.features.aiInsights',
+        'billingPlans.page.features.prioritySupport',
+        'billingPlans.page.features.apiAccess',
+      ],
+    },
+    {
+      key: 'enterprise',
+      price: 29999,
+      features: [
+        'billingPlans.page.features.everythingInPro',
+        'billingPlans.page.features.customIntegrations',
+        'billingPlans.page.features.dedicatedManager',
+        'billingPlans.page.features.slaGuarantee',
+        'billingPlans.page.features.advancedSecurity',
+        'billingPlans.page.features.onPremise',
+      ],
+    },
+  ]
+
+  const PRO_TRIAL_FEATURES = [
+    'billingPlans.page.features.unlimitedDocuments',
+    'billingPlans.page.features.aiAnalysis',
+    'billingPlans.page.features.realTimeMonitoring',
+  ]
+
+  const ENTERPRISE_TRIAL_FEATURES = [
+    'billingPlans.page.features.everythingInPro',
+    'billingPlans.page.features.customIntegrations',
+    'billingPlans.page.features.dedicatedManager',
+  ]
+
   const [trial, setTrial] = useState<OrgTrial | null>(null)
   const [foundingPlans, setFoundingPlans] = useState<FoundingPlan[]>([])
   const [analytics, setAnalytics] = useState<TrialAnalytics | null>(null)
@@ -69,20 +119,20 @@ export default function BillingPlansPage() {
           fetch('/api/v1/billing/trials'),
           fetch('/api/v1/billing/discounts'),
         ]);
-        
+
         if (cancelled) return;
-        
+
         if (!trialRes.ok || !discountRes.ok) {
           const errorData1 = await trialRes.json();
           const errorData2 = await discountRes.json();
           throw new Error(
-            errorData1.error || errorData2.error || "Failed to load billing data"
+            errorData1.error || errorData2.error || t('billingPlans.page.errors.loadFailed')
           );
         }
-        
+
         const trialData = await trialRes.json();
         const discountData = await discountRes.json();
-        
+
         if (!cancelled) {
           setTrial(trialData.trial);
           setFoundingPlans(discountData.foundingPlans || []);
@@ -90,7 +140,7 @@ export default function BillingPlansPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          toast.error(error instanceof Error ? error.message : "Failed to load billing data");
+          toast.error(error instanceof Error ? error.message : t('billingPlans.page.errors.loadFailed'));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -98,7 +148,7 @@ export default function BillingPlansPage() {
     }
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [t]);
 
   async function handleStartTrial(planId: string) {
     setStartingTrial(true);
@@ -108,17 +158,17 @@ export default function BillingPlansPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId }),
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to start trial');
+        throw new Error(errorData.error || t('billingPlans.page.errors.startTrialFailed'));
       }
-      
+
       const data = await res.json();
       setTrial(data.trial);
-      toast.success('Trial started successfully!');
+      toast.success(t('billingPlans.page.success.trialStarted'));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to start trial');
+      toast.error(error instanceof Error ? error.message : t('billingPlans.page.errors.startTrialFailed'));
     } finally {
       setStartingTrial(false);
     }
@@ -126,39 +176,39 @@ export default function BillingPlansPage() {
 
   async function handleApplyDiscount() {
     if (!discountCode.trim()) {
-      toast.error("Please enter a discount code");
+      toast.error(t('billingPlans.page.errors.enterDiscountCode'));
       return;
     }
-    
+
     setApplyingDiscount(true);
     setDiscountValid(null);
     setDiscountValue(null);
     setDiscountReason('');
-    
+
     try {
       const res = await fetch('/api/v1/billing/discounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: discountCode.trim(), plan: trial?.planId || '' }),
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to validate discount code');
+        throw new Error(errorData.error || t('billingPlans.page.errors.applyDiscountFailed'));
       }
-      
+
       const data = await res.json();
       if (data.valid) {
         setDiscountValid(true);
         setDiscountValue(data.discount);
-        toast.success(`Discount applied! ${data.discount}% off`);
+        toast.success(t('billingPlans.page.success.discountApplied', { discount: data.discount }));
       } else {
         setDiscountValid(false);
-        setDiscountReason(data.reason || 'Invalid code');
-        toast.error(data.reason || 'Invalid discount code');
+        setDiscountReason(data.reason || t('billingPlans.page.errors.applyDiscountFailed'));
+        toast.error(data.reason || t('billingPlans.page.errors.applyDiscountFailed'));
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to validate code';
+      const errorMessage = error instanceof Error ? error.message : t('billingPlans.page.errors.applyDiscountFailed');
       setDiscountValid(false);
       setDiscountReason(errorMessage);
       toast.error(errorMessage);
@@ -174,11 +224,19 @@ export default function BillingPlansPage() {
     return price
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Sparkles className="h-6 w-6 animate-pulse text-muted-foreground" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Billing & Plans</h1>
-        <p className="text-muted-foreground">Manage your subscription, trials, and discounts</p>
+        <h1 className="text-2xl font-bold">{t('billingPlans.page.title')}</h1>
+        <p className="text-muted-foreground">{t('billingPlans.page.subtitle')}</p>
       </div>
 
       {trial && trial.status === 'active' && (
@@ -188,24 +246,26 @@ export default function BillingPlansPage() {
               <div className="flex items-center gap-3">
                 <Timer className="h-6 w-6 text-primary" />
                 <div>
-                  <CardTitle className="text-lg">Free Trial Active</CardTitle>
+                  <CardTitle className="text-lg">{t('billingPlans.page.freeTrialActive')}</CardTitle>
                   <CardDescription>
                     {trial.daysRemaining > 0
-                      ? `${trial.daysRemaining} day${trial.daysRemaining !== 1 ? 's' : ''} remaining`
-                      : 'Expiring today'}
+                      ? trial.daysRemaining === 1
+                        ? t('billingPlans.page.dayRemaining')
+                        : t('billingPlans.page.daysRemaining', { count: trial.daysRemaining })
+                      : t('billingPlans.page.expiringToday')}
                   </CardDescription>
                 </div>
               </div>
               <Button>
                 <Sparkles className="mr-2 h-4 w-4" />
-                Upgrade Now
+                {t('billingPlans.page.upgradeNow')}
               </Button>
             </div>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Check className="h-4 w-4 text-emerald-500" />
-              Started {formatDate(trial.startedAt)} &middot; Expires {formatDate(trial.expiresAt)}
+              {t('billingPlans.page.startedExpires', { started: formatDate(trial.startedAt), expires: formatDate(trial.expiresAt) })}
             </div>
           </CardContent>
         </Card>
@@ -232,14 +292,14 @@ export default function BillingPlansPage() {
                       <CardDescription>
                         <div className="flex items-center gap-1 mt-1">
                           <Gift className="h-3 w-3" />
-                          {expired ? 'Expired' : `Valid until ${formatDate(plan.validUntil)}`}
+                          {expired ? t('billingPlans.page.expired') : t('billingPlans.page.validUntil', { date: formatDate(plan.validUntil) })}
                         </div>
                       </CardDescription>
                     </div>
                     {!expired && (
                       <div className="text-right">
                         <div className="text-2xl font-bold text-primary">{plan.discountPercent}%</div>
-                        <div className="text-xs text-muted-foreground">discount</div>
+                        <div className="text-xs text-muted-foreground">{t('billingPlans.page.discount')}</div>
                       </div>
                     )}
                   </div>
@@ -254,9 +314,9 @@ export default function BillingPlansPage() {
                     ))}
                   </ul>
                   {!expired && (
-                    <Button className="w-full" onClick={() => toast.success('Founding plan claim initiated')}>
+                    <Button className="w-full" onClick={() => toast.success(t('billingPlans.page.claimInitiated'))}>
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Claim Founding Plan
+                      {t('billingPlans.page.claimFoundingPlan')}
                     </Button>
                   )}
                 </CardContent>
@@ -270,15 +330,15 @@ export default function BillingPlansPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Ticket className="h-5 w-5" />
-            Discount Code
+            {t('billingPlans.page.discountCode')}
           </CardTitle>
-          <CardDescription>Enter a promo or founder discount code</CardDescription>
+          <CardDescription>{t('billingPlans.page.discountCodeDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-3">
             <div className="relative flex-1">
               <Input
-                placeholder="Enter discount code"
+                placeholder={t('billingPlans.page.discountPlaceholder')}
                 value={discountCode}
                 onChange={(e) => { setDiscountCode(e.target.value); setDiscountValid(null); setDiscountValue(null); setDiscountReason('') }}
                 className={discountValid === true ? 'border-emerald-500' : discountValid === false ? 'border-red-500' : ''}
@@ -290,7 +350,7 @@ export default function BillingPlansPage() {
               )}
             </div>
             <Button onClick={handleApplyDiscount} disabled={applyingDiscount || !discountCode.trim()}>
-              {applyingDiscount ? 'Applying...' : 'Apply'}
+              {applyingDiscount ? t('billingPlans.page.applying') : t('billingPlans.page.apply')}
             </Button>
           </div>
           {discountValid === false && discountReason && (
@@ -302,7 +362,7 @@ export default function BillingPlansPage() {
           {discountValid === true && discountValue && (
             <p className="mt-2 text-sm text-emerald-500 flex items-center gap-1">
               <Check className="h-3 w-3" />
-              {discountValue}% discount applied to eligible plans
+              {t('billingPlans.page.discountAppliedEligible', { discount: discountValue })}
             </p>
           )}
         </CardContent>
@@ -310,23 +370,24 @@ export default function BillingPlansPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Pricing Comparison</CardTitle>
-          <CardDescription>Regular vs founding vs discounted pricing</CardDescription>
+          <CardTitle>{t('billingPlans.page.pricingComparison')}</CardTitle>
+          <CardDescription>{t('billingPlans.page.pricingComparisonDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Plan</TableHead>
-                <TableHead>Regular Price</TableHead>
-                <TableHead>Founding Price</TableHead>
-                <TableHead>Your Price</TableHead>
+                <TableHead>{t('billingPlans.page.plan')}</TableHead>
+                <TableHead>{t('billingPlans.page.regularPrice')}</TableHead>
+                <TableHead>{t('billingPlans.page.foundingPrice')}</TableHead>
+                <TableHead>{t('billingPlans.page.yourPrice')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {REGULAR_PLANS.map((plan) => {
                 const foundingPlan = foundingPlans.find(fp =>
-                  fp.name.toLowerCase().includes(plan.name.toLowerCase())
+                  t(`billingPlans.page.plans.${plan.key}`).toLowerCase().includes(fp.name.toLowerCase()) ||
+                  fp.name.toLowerCase().includes(t(`billingPlans.page.plans.${plan.key}`).toLowerCase())
                 )
                 const foundingPrice = foundingPlan
                   ? Math.round(plan.price * (1 - foundingPlan.discountPercent / 100))
@@ -334,30 +395,30 @@ export default function BillingPlansPage() {
                 const discountedPrice = discountAmount(plan.price)
                 const effectivePrice = discountValid ? discountedPrice : plan.price
                 return (
-                  <TableRow key={plan.name}>
-                    <TableCell className="font-medium">{plan.name}</TableCell>
-                    <TableCell>{formatPrice(plan.price)}<span className="text-xs text-muted-foreground">/mo</span></TableCell>
+                  <TableRow key={plan.key}>
+                    <TableCell className="font-medium">{t(`billingPlans.page.plans.${plan.key}`)}</TableCell>
+                    <TableCell>{formatPrice(plan.price)}<span className="text-xs text-muted-foreground">{t('billingPlans.page.perMonth')}</span></TableCell>
                     <TableCell>
                       {foundingPlan ? (
                         <span className="text-emerald-500 font-medium">
                           {formatPrice(foundingPrice)}
-                          <span className="text-xs text-muted-foreground">/mo</span>
+                          <span className="text-xs text-muted-foreground">{t('billingPlans.page.perMonth')}</span>
                           <Badge variant="outline" className="ml-2 text-[10px] bg-amber-500/10 text-amber-500 border-amber-500/30">
                             -{foundingPlan.discountPercent}%
                           </Badge>
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">--</span>
+                        <span className="text-muted-foreground">{t('billingPlans.page.na')}</span>
                       )}
                     </TableCell>
                     <TableCell>
                       {effectivePrice !== plan.price ? (
                         <span className="text-primary font-bold">
                           {formatPrice(effectivePrice)}
-                          <span className="text-xs text-muted-foreground">/mo</span>
+                          <span className="text-xs text-muted-foreground">{t('billingPlans.page.perMonth')}</span>
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">--</span>
+                        <span className="text-muted-foreground">{t('billingPlans.page.na')}</span>
                       )}
                     </TableCell>
                   </TableRow>
@@ -373,40 +434,40 @@ export default function BillingPlansPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5" />
-              Start Free Trial
+              {t('billingPlans.page.startFreeTrial')}
             </CardTitle>
-            <CardDescription>Try any plan free for 14 days</CardDescription>
+            <CardDescription>{t('billingPlans.page.tryAnyPlan')}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <Card className="border-dashed">
               <CardHeader>
-                <CardTitle className="text-base">Pro Trial</CardTitle>
-                <CardDescription>14 days free &middot; 10 users</CardDescription>
+                <CardTitle className="text-base">{t('billingPlans.page.proTrial')}</CardTitle>
+                <CardDescription>{t('billingPlans.page.proTrialDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-1 text-sm mb-4">
-                  <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-500" /> Unlimited documents</li>
-                  <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-500" /> AI-powered analysis</li>
-                  <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-500" /> Real-time monitoring</li>
+                  {PRO_TRIAL_FEATURES.map((key) => (
+                    <li key={key} className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-500" /> {t(key)}</li>
+                  ))}
                 </ul>
                 <Button className="w-full" onClick={() => handleStartTrial('pro-trial')} disabled={startingTrial}>
-                  {startingTrial ? 'Starting...' : 'Start Pro Trial'}
+                  {startingTrial ? t('billingPlans.page.starting') : t('billingPlans.page.startProTrial')}
                 </Button>
               </CardContent>
             </Card>
             <Card className="border-dashed">
               <CardHeader>
-                <CardTitle className="text-base">Enterprise Trial</CardTitle>
-                <CardDescription>30 days free &middot; 50 users</CardDescription>
+                <CardTitle className="text-base">{t('billingPlans.page.enterpriseTrial')}</CardTitle>
+                <CardDescription>{t('billingPlans.page.enterpriseTrialDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-1 text-sm mb-4">
-                  <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-500" /> Everything in Pro</li>
-                  <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-500" /> Custom integrations</li>
-                  <li className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-500" /> Dedicated account manager</li>
+                  {ENTERPRISE_TRIAL_FEATURES.map((key) => (
+                    <li key={key} className="flex items-center gap-2"><Check className="h-3 w-3 text-emerald-500" /> {t(key)}</li>
+                  ))}
                 </ul>
                 <Button className="w-full" onClick={() => handleStartTrial('enterprise-trial')} disabled={startingTrial}>
-                  {startingTrial ? 'Starting...' : 'Start Enterprise Trial'}
+                  {startingTrial ? t('billingPlans.page.starting') : t('billingPlans.page.startEnterpriseTrial')}
                 </Button>
               </CardContent>
             </Card>
@@ -419,14 +480,14 @@ export default function BillingPlansPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
               <BarChart3 className="h-4 w-4" />
-              Trial Analytics (Admin)
+              {t('billingPlans.page.trialAnalytics')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <MetricGrid columns={3}>
-              <MetricCard label="Active Trials" value={analytics.activeTrials} trend="up" change={12} />
-              <MetricCard label="Expiring Soon" value={analytics.expiringSoon} trend={analytics.expiringSoon > 3 ? 'down' : 'stable'} />
-              <MetricCard label="Conversion Rate" value={`${analytics.conversionRate}%`} trend={analytics.conversionRate > 50 ? 'up' : 'down'} change={5} />
+              <MetricCard label={t('billingPlans.page.metrics.activeTrials')} value={analytics.activeTrials} trend="up" change={12} />
+              <MetricCard label={t('billingPlans.page.metrics.expiringSoon')} value={analytics.expiringSoon} trend={analytics.expiringSoon > 3 ? 'down' : 'stable'} />
+              <MetricCard label={t('billingPlans.page.metrics.conversionRate')} value={`${analytics.conversionRate}%`} trend={analytics.conversionRate > 50 ? 'up' : 'down'} change={5} />
             </MetricGrid>
           </CardContent>
         </Card>

@@ -43,6 +43,7 @@ import {
   Eye,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/components/providers/i18n-provider'
 
 interface SignatureAuditEntry {
   timestamp: string
@@ -81,6 +82,7 @@ const ACTION_COLORS: Record<string, string> = {
 }
 
 export default function EsignPage() {
+  const { t } = useI18n()
   const [requests, setRequests] = useState<SignatureRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedRequest, setSelectedRequest] = useState<SignatureRequest | null>(null)
@@ -101,15 +103,15 @@ export default function EsignPage() {
     fetch('/api/v1/compliance/signatures')
       .then((r) => r.ok ? r.json() : Promise.reject())
       .then((data) => { if (!cancelled) setRequests(data.requests ?? []) })
-      .catch(() => { if (!cancelled) toast.error('Failed to load signature requests') })
+      .catch(() => { if (!cancelled) toast.error(t('esign.page.errors.loadFailed')) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
-  }, [])
+  }, [t])
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.documentId || !form.documentName || !form.signerEmail || !form.signerName) {
-      toast.error('Please fill in all fields')
+      toast.error(t('esign.page.errors.fillAllFields'))
       return
     }
     setSubmitting(true)
@@ -120,15 +122,15 @@ export default function EsignPage() {
         body: JSON.stringify(form),
       })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? 'Failed to create request'); return }
-      toast.success('Signature request created')
+      if (!res.ok) { toast.error(data.error ?? t('esign.page.errors.createFailed')); return }
+      toast.success(t('esign.page.success.created'))
       setNewDialogOpen(false)
       setForm({ documentId: '', documentName: '', signerEmail: '', signerName: '' })
       const refresh = await fetch('/api/v1/compliance/signatures')
       const refData = await refresh.json()
       if (refData.requests) setRequests(refData.requests)
     } catch {
-      toast.error('Failed to create signature request')
+      toast.error(t('esign.page.errors.createFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -143,7 +145,7 @@ export default function EsignPage() {
       const data = await res.json()
       if (data.request) setSelectedRequest(data.request)
     } catch {
-      toast.error('Failed to load request details')
+      toast.error(t('esign.page.errors.loadDetailsFailed'))
     }
   }
 
@@ -159,7 +161,7 @@ export default function EsignPage() {
       const data = await res.json()
       setVerifyResult(data.verified?.length > 0 ? data.verified[0].valid : false)
     } catch {
-      toast.error('Verification failed')
+      toast.error(t('esign.page.errors.verifyFailed'))
     } finally {
       setVerifying(false)
     }
@@ -175,14 +177,14 @@ export default function EsignPage() {
         body: JSON.stringify({ action: 'sign', userId: 'current', ipAddress: '127.0.0.1' }),
       })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? 'Failed to sign'); return }
-      toast.success('Document signed successfully')
+      if (!res.ok) { toast.error(data.error ?? t('esign.page.errors.signFailed')); return }
+      toast.success(t('esign.page.success.signed'))
       setDetailOpen(false)
       const refresh = await fetch('/api/v1/compliance/signatures')
       const refData = await refresh.json()
       if (refData.requests) setRequests(refData.requests)
     } catch {
-      toast.error('Failed to sign document')
+      toast.error(t('esign.page.errors.signFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -198,14 +200,14 @@ export default function EsignPage() {
         body: JSON.stringify({ action: 'decline', userId: 'current', reason: 'Declined by signer' }),
       })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error ?? 'Failed to decline'); return }
-      toast.success('Signature declined')
+      if (!res.ok) { toast.error(data.error ?? t('esign.page.errors.declineFailed')); return }
+      toast.success(t('esign.page.success.declined'))
       setDetailOpen(false)
       const refresh = await fetch('/api/v1/compliance/signatures')
       const refData = await refresh.json()
       if (refData.requests) setRequests(refData.requests)
     } catch {
-      toast.error('Failed to decline signature')
+      toast.error(t('esign.page.errors.declineFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -227,60 +229,60 @@ export default function EsignPage() {
             <Fingerprint className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">E-Signature &amp; Part 11 Compliance</h1>
-            <p className="text-sm text-muted-foreground">FDA 21 CFR Part 11 compliant digital signatures</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('esign.page.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('esign.page.subtitle')}</p>
           </div>
         </div>
         <Dialog open={newDialogOpen} onOpenChange={setNewDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              New Signature Request
+              {t('esign.page.newSignatureRequest')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>New Signature Request</DialogTitle>
+              <DialogTitle>{t('esign.page.dialogTitle')}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="flex flex-col gap-4 pt-2">
               <div className="flex flex-col gap-1.5">
-                <Label>Document ID</Label>
+                <Label>{t('esign.page.documentId')}</Label>
                 <Input
-                  placeholder="e.g. DOC-2026-0042"
+                  placeholder={t('esign.page.documentIdPlaceholder')}
                   value={form.documentId}
                   onChange={(e) => setForm((f) => ({ ...f, documentId: e.target.value }))}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label>Document Name</Label>
+                <Label>{t('esign.page.documentName')}</Label>
                 <Input
-                  placeholder="e.g. Quality Agreement v2.1"
+                  placeholder={t('esign.page.documentNamePlaceholder')}
                   value={form.documentName}
                   onChange={(e) => setForm((f) => ({ ...f, documentName: e.target.value }))}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label>Signer Email</Label>
+                <Label>{t('esign.page.signerEmail')}</Label>
                 <Input
                   type="email"
-                  placeholder="signer@company.com"
+                  placeholder={t('esign.page.signerEmailPlaceholder')}
                   value={form.signerEmail}
                   onChange={(e) => setForm((f) => ({ ...f, signerEmail: e.target.value }))}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label>Signer Name</Label>
+                <Label>{t('esign.page.signerName')}</Label>
                 <Input
-                  placeholder="e.g. John Smith"
+                  placeholder={t('esign.page.signerNamePlaceholder')}
                   value={form.signerName}
                   onChange={(e) => setForm((f) => ({ ...f, signerName: e.target.value }))}
                 />
               </div>
               <div className="flex justify-end gap-2 pt-1">
-                <Button type="button" variant="outline" onClick={() => setNewDialogOpen(false)}>Cancel</Button>
+                <Button type="button" variant="outline" onClick={() => setNewDialogOpen(false)}>{t('esign.page.cancel')}</Button>
                 <Button type="submit" disabled={submitting}>
                   {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Send Request
+                  {t('esign.page.sendRequest')}
                 </Button>
               </div>
             </form>
@@ -294,7 +296,7 @@ export default function EsignPage() {
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-blue-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Total Requests</p>
+                <p className="text-sm text-muted-foreground">{t('esign.page.totalRequests')}</p>
                 <p className="text-2xl font-bold text-foreground">{requests.length}</p>
               </div>
             </div>
@@ -305,7 +307,7 @@ export default function EsignPage() {
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-yellow-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Pending</p>
+                <p className="text-sm text-muted-foreground">{t('esign.page.pending')}</p>
                 <p className="text-2xl font-bold text-yellow-500">{requests.filter((r) => r.status === 'pending').length}</p>
               </div>
             </div>
@@ -316,7 +318,7 @@ export default function EsignPage() {
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-5 w-5 text-green-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Signed</p>
+                <p className="text-sm text-muted-foreground">{t('esign.page.signed')}</p>
                 <p className="text-2xl font-bold text-green-500">{requests.filter((r) => r.status === 'signed').length}</p>
               </div>
             </div>
@@ -327,8 +329,8 @@ export default function EsignPage() {
             <div className="flex items-center gap-3">
               <Shield className="h-5 w-5 text-teal-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Part 11 Compliant</p>
-                <p className="text-2xl font-bold text-teal-500">Yes</p>
+                <p className="text-sm text-muted-foreground">{t('esign.page.part11Compliant')}</p>
+                <p className="text-2xl font-bold text-teal-500">{t('esign.page.yes')}</p>
               </div>
             </div>
           </CardContent>
@@ -339,26 +341,26 @@ export default function EsignPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <ScrollText className="h-5 w-5 text-teal-500" />
-            Signature Requests
+            {t('esign.page.signatureRequests')}
           </CardTitle>
-          <CardDescription>Click a row to view details and audit trail</CardDescription>
+          <CardDescription>{t('esign.page.clickRow')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Document</TableHead>
-                <TableHead>Signer</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Sent</TableHead>
-                <TableHead>Signed At</TableHead>
+                <TableHead>{t('esign.page.document')}</TableHead>
+                <TableHead>{t('esign.page.signer')}</TableHead>
+                <TableHead>{t('esign.page.status')}</TableHead>
+                <TableHead>{t('esign.page.sent')}</TableHead>
+                <TableHead>{t('esign.page.signedAt')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {requests.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-8">
-                    No signature requests yet
+                    {t('esign.page.noRequests')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -405,19 +407,19 @@ export default function EsignPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Fingerprint className="h-5 w-5 text-teal-500" />
-              Signature Request Details
+              {t('esign.page.requestDetails')}
             </DialogTitle>
           </DialogHeader>
           {selectedRequest && (
             <div className="space-y-6 pt-2">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-muted-foreground text-xs">Document</Label>
+                  <Label className="text-muted-foreground text-xs">{t('esign.page.document')}</Label>
                   <p className="text-sm font-medium">{selectedRequest.documentName}</p>
                   <p className="text-xs text-muted-foreground">{selectedRequest.documentId}</p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground text-xs">Status</Label>
+                  <Label className="text-muted-foreground text-xs">{t('esign.page.status')}</Label>
                   <div className="mt-1">
                     <Badge variant="secondary" className={cn('text-xs capitalize', STATUS_COLORS[selectedRequest.status])}>
                       {selectedRequest.status}
@@ -425,7 +427,7 @@ export default function EsignPage() {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground text-xs">Signer</Label>
+                  <Label className="text-muted-foreground text-xs">{t('esign.page.signer')}</Label>
                   <div className="flex items-center gap-2 mt-1">
                     <User className="h-3.5 w-3.5 text-muted-foreground" />
                     <p className="text-sm">{selectedRequest.signerName}</p>
@@ -433,7 +435,7 @@ export default function EsignPage() {
                   <p className="text-xs text-muted-foreground">{selectedRequest.signerEmail}</p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground text-xs">Part 11 Compliance</Label>
+                  <Label className="text-muted-foreground text-xs">{t('esign.page.part11Status')}</Label>
                   <div className="mt-1 flex items-center gap-2">
                     <Badge
                       variant="secondary"
@@ -445,7 +447,7 @@ export default function EsignPage() {
                       )}
                     >
                       <Shield className="mr-1 h-3 w-3" />
-                      {selectedRequest.status === 'signed' ? 'Compliant' : 'N/A'}
+                      {selectedRequest.status === 'signed' ? t('esign.page.compliant') : t('esign.page.na')}
                     </Badge>
                   </div>
                 </div>
@@ -454,24 +456,24 @@ export default function EsignPage() {
               <div>
                 <Label className="text-muted-foreground text-xs flex items-center gap-1 mb-2">
                   <Eye className="h-3.5 w-3.5" />
-                  Verify Signature
+                  {t('esign.page.verifySignature')}
                 </Label>
                 <div className="flex items-center gap-3">
                   <Button variant="outline" size="sm" onClick={handleVerify} disabled={verifying}>
                     {verifying && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-                    Verify Integrity
+                    {t('esign.page.verifyIntegrity')}
                   </Button>
                   {verifyResult !== null && (
                     <div className="flex items-center gap-2">
                       {verifyResult ? (
                         <Badge variant="secondary" className="bg-green-500/10 text-green-500">
                           <CheckCircle2 className="mr-1 h-3 w-3" />
-                          Valid
+                          {t('esign.page.valid')}
                         </Badge>
                       ) : (
                         <Badge variant="secondary" className="bg-red-500/10 text-red-500">
                           <XCircle className="mr-1 h-3 w-3" />
-                          Invalid
+                          {t('esign.page.invalid')}
                         </Badge>
                       )}
                     </div>
@@ -482,11 +484,11 @@ export default function EsignPage() {
               <div>
                 <Label className="text-muted-foreground text-xs flex items-center gap-1 mb-2">
                   <ScrollText className="h-3.5 w-3.5" />
-                  Audit Trail
+                  {t('esign.page.auditTrail')}
                 </Label>
                 <div className="space-y-2">
                   {selectedRequest.auditTrail.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-2">No audit entries</p>
+                    <p className="text-sm text-muted-foreground py-2">{t('esign.page.noAuditEntries')}</p>
                   ) : (
                     selectedRequest.auditTrail.map((entry, i) => (
                       <div key={i} className="flex items-start gap-3 rounded-lg bg-secondary/20 p-3">
@@ -525,11 +527,11 @@ export default function EsignPage() {
                 <div className="flex justify-end gap-2 border-t pt-4">
                   <Button variant="outline" onClick={handleDecline} disabled={submitting}>
                     {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Decline
+                    {t('esign.page.decline')}
                   </Button>
                   <Button onClick={handleSign} disabled={submitting}>
                     {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Sign Document
+                    {t('esign.page.signDocument')}
                   </Button>
                 </div>
               )}

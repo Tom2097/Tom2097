@@ -49,6 +49,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/components/providers/i18n-provider'
 
 interface Skill {
   id: string
@@ -80,11 +81,11 @@ interface TeamMember {
   name: string
 }
 
-const CATEGORIES: { key: string; label: string; color: string }[] = [
-  { key: 'technical', label: 'Technical', color: 'text-blue-500' },
-  { key: 'domain', label: 'Domain', color: 'text-emerald-500' },
-  { key: 'soft', label: 'Soft Skills', color: 'text-purple-500' },
-  { key: 'compliance', label: 'Compliance', color: 'text-amber-500' },
+const CATEGORIES: { key: string; color: string }[] = [
+  { key: 'technical', color: 'text-blue-500' },
+  { key: 'domain', color: 'text-emerald-500' },
+  { key: 'soft', color: 'text-purple-500' },
+  { key: 'compliance', color: 'text-amber-500' },
 ]
 
 const GAP_COLORS: Record<string, string> = {
@@ -116,6 +117,7 @@ const LEVEL_ORDER: Record<string, number> = {
 }
 
 export default function SkillMatrixPage() {
+  const { t } = useI18n()
   const [catalog, setCatalog] = useState<Skill[]>([])
   const [assessments, setAssessments] = useState<SkillAssessment[]>([])
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
@@ -126,17 +128,18 @@ export default function SkillMatrixPage() {
   const [navigating, setNavigating] = useState(false)
   const [form, setForm] = useState({ userId: '', skillId: '', level: '' })
 
+  const levelOptions = ['beginner', 'intermediate', 'advanced', 'expert']
+
   const handleNavigateToTraining = async (skillName: string) => {
     setNavigating(true)
     try {
       const skill = catalog.find(s => s.name === skillName.split(" ")[1])
-      if (!skill) throw new Error("Skill not found")
-      // Simulate navigation to training module
+      if (!skill) throw new Error(t('skillMatrix.page.errors.skillNotFound'))
       await new Promise(resolve => setTimeout(resolve, 800))
-      toast.success(`Navigating to ${skillName} training...`)
+      toast.success(t('skillMatrix.page.success.navigating', { skillName }))
       window.open(`/training/${skill.id}`, "_blank")
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to navigate to training")
+      toast.error(error instanceof Error ? error.message : t('skillMatrix.page.errors.skillNotFound'))
     } finally {
       setNavigating(false)
     }
@@ -158,14 +161,14 @@ export default function SkillMatrixPage() {
           }
         }
       } catch {
-        if (!cancelled) toast.error('Failed to load skill data')
+        if (!cancelled) toast.error(t('skillMatrix.page.errors.loadFailed'))
       } finally {
         if (!cancelled) setLoading(false)
       }
     }
     load()
     return () => { cancelled = true }
-  }, [])
+  }, [t])
 
   const gaps = useMemo((): GapAnalysis[] => {
     if (catalog.length === 0 || assessments.length === 0) return []
@@ -195,19 +198,19 @@ export default function SkillMatrixPage() {
     const recs: string[] = []
     for (const g of gaps) {
       if (g.priority === 'critical' || g.priority === 'high') {
-        recs.push(`Advanced ${g.skillName} certification - gap: ${g.gap}`)
+        recs.push(t('skillMatrix.page.advancedCertification', { skillName: g.skillName, gap: g.gap }))
       } else if (g.priority === 'medium') {
-        recs.push(`Intermediate ${g.skillName} workshop - gap: ${g.gap}`)
+        recs.push(t('skillMatrix.page.intermediateWorkshop', { skillName: g.skillName, gap: g.gap }))
       }
     }
-    if (recs.length === 0) recs.push('No critical training gaps identified')
+    if (recs.length === 0) recs.push(t('skillMatrix.page.noCriticalGaps'))
     return recs
-  }, [gaps])
+  }, [gaps, t])
 
   const handleAssess = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.userId || !form.skillId || !form.level) {
-      toast.error('Please fill in all fields')
+      toast.error(t('skillMatrix.page.errors.fillAllFields'))
       return
     }
     setSubmitting(true)
@@ -219,17 +222,17 @@ export default function SkillMatrixPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error ?? 'Failed to assess skill')
+        toast.error(data.error ?? t('skillMatrix.page.errors.assessFailed'))
         return
       }
-      toast.success('Skill assessed successfully')
+      toast.success(t('skillMatrix.page.success.assessed'))
       setAssessDialogOpen(false)
       setForm({ userId: '', skillId: '', level: '' })
       const assessRes = await fetch('/api/v1/hr/skills?include=assessments')
       const assessData = await assessRes.json()
       if (assessData.assessments) setAssessments(assessData.assessments)
     } catch {
-      toast.error('Failed to assess skill')
+      toast.error(t('skillMatrix.page.errors.assessFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -245,7 +248,7 @@ export default function SkillMatrixPage() {
     }
     return (
       <Badge variant="secondary" className={cn('text-xs capitalize', colors[level] ?? '')}>
-        {level}
+        {t(`skillMatrix.page.levels.${level}`)}
       </Badge>
     )
   }
@@ -260,6 +263,7 @@ export default function SkillMatrixPage() {
 
   const catalogByCategory = CATEGORIES.map((cat) => ({
     ...cat,
+    label: t(`skillMatrix.page.categories.${cat.key}`),
     skills: catalog.filter((s) => s.category === cat.key),
   }))
 
@@ -274,26 +278,26 @@ export default function SkillMatrixPage() {
             <GraduationCap className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Skill Matrix &amp; Gap Analysis</h1>
-            <p className="text-sm text-muted-foreground">Track team competencies and identify training needs</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('skillMatrix.page.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('skillMatrix.page.subtitle')}</p>
           </div>
         </div>
         <Dialog open={assessDialogOpen} onOpenChange={setAssessDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              Assess Skill
+              {t('skillMatrix.page.assessSkill')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Assess Skill</DialogTitle>
+              <DialogTitle>{t('skillMatrix.page.dialogTitle')}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAssess} className="flex flex-col gap-4 pt-2">
               <div className="flex flex-col gap-1.5">
-                <Label>Team Member</Label>
+                <Label>{t('skillMatrix.page.teamMember')}</Label>
                 <Select value={form.userId} onValueChange={(v) => setForm((f) => ({ ...f, userId: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select member" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('skillMatrix.page.selectMember')} /></SelectTrigger>
                   <SelectContent>
                     {teamMembers.map((m) => (
                       <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
@@ -302,9 +306,9 @@ export default function SkillMatrixPage() {
                 </Select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label>Skill</Label>
+                <Label>{t('skillMatrix.page.skill')}</Label>
                 <Select value={form.skillId} onValueChange={(v) => setForm((f) => ({ ...f, skillId: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select skill" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('skillMatrix.page.selectSkill')} /></SelectTrigger>
                   <SelectContent>
                     {catalog.map((s) => (
                       <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
@@ -313,21 +317,21 @@ export default function SkillMatrixPage() {
                 </Select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label>Level</Label>
+                <Label>{t('skillMatrix.page.level')}</Label>
                 <Select value={form.level} onValueChange={(v) => setForm((f) => ({ ...f, level: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('skillMatrix.page.selectLevel')} /></SelectTrigger>
                   <SelectContent>
-                    {['beginner', 'intermediate', 'advanced', 'expert'].map((l) => (
-                      <SelectItem key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1)}</SelectItem>
+                    {levelOptions.map((l) => (
+                      <SelectItem key={l} value={l}>{t(`skillMatrix.page.levels.${l}`)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex justify-end gap-2 pt-1">
-                <Button type="button" variant="outline" onClick={() => setAssessDialogOpen(false)}>Cancel</Button>
+                <Button type="button" variant="outline" onClick={() => setAssessDialogOpen(false)}>{t('skillMatrix.page.cancel')}</Button>
                 <Button type="submit" disabled={submitting}>
                   {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Submit
+                  {t('skillMatrix.page.submit')}
                 </Button>
               </div>
             </form>
@@ -341,7 +345,7 @@ export default function SkillMatrixPage() {
             <div className="flex items-center gap-3">
               <GraduationCap className="h-5 w-5 text-indigo-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Skills Tracked</p>
+                <p className="text-sm text-muted-foreground">{t('skillMatrix.page.skillsTracked')}</p>
                 <p className="text-2xl font-bold text-foreground">{catalog.length}</p>
               </div>
             </div>
@@ -352,7 +356,7 @@ export default function SkillMatrixPage() {
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-blue-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Assessments</p>
+                <p className="text-sm text-muted-foreground">{t('skillMatrix.page.assessments')}</p>
                 <p className="text-2xl font-bold text-foreground">{assessments.length}</p>
               </div>
             </div>
@@ -363,7 +367,7 @@ export default function SkillMatrixPage() {
             <div className="flex items-center gap-3">
               <AlertTriangle className="h-5 w-5 text-red-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Critical Gaps</p>
+                <p className="text-sm text-muted-foreground">{t('skillMatrix.page.criticalGaps')}</p>
                 <p className="text-2xl font-bold text-red-500">{criticalCount}</p>
               </div>
             </div>
@@ -374,7 +378,7 @@ export default function SkillMatrixPage() {
             <div className="flex items-center gap-3">
               <Target className="h-5 w-5 text-amber-500" />
               <div>
-                <p className="text-sm text-muted-foreground">High Priority</p>
+                <p className="text-sm text-muted-foreground">{t('skillMatrix.page.highPriority')}</p>
                 <p className="text-2xl font-bold text-amber-500">{highCount}</p>
               </div>
             </div>
@@ -387,9 +391,9 @@ export default function SkillMatrixPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <BookOpen className="h-5 w-5 text-indigo-500" />
-              Skill Catalog
+              {t('skillMatrix.page.skillCatalog')}
             </CardTitle>
-            <CardDescription>Expected proficiency levels by category</CardDescription>
+            <CardDescription>{t('skillMatrix.page.skillCatalogDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -410,7 +414,7 @@ export default function SkillMatrixPage() {
                       {cat.skills.map((skill) => (
                         <div key={skill.id} className="flex items-center justify-between rounded-md px-3 py-1.5 text-sm hover:bg-secondary/20">
                           <span>{skill.name}</span>
-                          <Badge variant="outline" className="text-xs capitalize">{skill.expectedLevel}</Badge>
+                          <Badge variant="outline" className="text-xs capitalize">{t(`skillMatrix.page.levels.${skill.expectedLevel}`)}</Badge>
                         </div>
                       ))}
                     </div>
@@ -425,24 +429,24 @@ export default function SkillMatrixPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <GraduationCap className="h-5 w-5 text-indigo-500" />
-              Team Assessment Grid
+              {t('skillMatrix.page.teamAssessmentGrid')}
             </CardTitle>
-            <CardDescription>Member skill levels</CardDescription>
+            <CardDescription>{t('skillMatrix.page.teamAssessmentDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="max-h-[400px] overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Skill</TableHead>
-                  <TableHead>Level</TableHead>
+                  <TableHead>{t('skillMatrix.page.member')}</TableHead>
+                  <TableHead>{t('skillMatrix.page.skill')}</TableHead>
+                  <TableHead>{t('skillMatrix.page.level')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {assessments.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={3} className="text-center text-sm text-muted-foreground py-8">
-                      No assessments yet
+                      {t('skillMatrix.page.noAssessments')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -468,36 +472,36 @@ export default function SkillMatrixPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <BarChart3 className="h-5 w-5 text-indigo-500" />
-            Gap Analysis
+            {t('skillMatrix.page.gapAnalysis')}
           </CardTitle>
-          <CardDescription>Expected vs actual skill levels sorted by priority</CardDescription>
+          <CardDescription>{t('skillMatrix.page.gapAnalysisDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Skill</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Expected</TableHead>
-                <TableHead>Actual</TableHead>
-                <TableHead>Gap</TableHead>
-                <TableHead>Priority</TableHead>
+                <TableHead>{t('skillMatrix.page.skill')}</TableHead>
+                <TableHead>{t('skillMatrix.page.gap')}</TableHead>
+                <TableHead>{t('skillMatrix.page.expected')}</TableHead>
+                <TableHead>{t('skillMatrix.page.actual')}</TableHead>
+                <TableHead>{t('skillMatrix.page.gap')}</TableHead>
+                <TableHead>{t('skillMatrix.page.priority')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {gaps.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center text-sm text-muted-foreground py-8">
-                    No gap data available
+                    {t('skillMatrix.page.noGapData')}
                   </TableCell>
                 </TableRow>
               ) : (
                 gaps.map((g) => (
                   <TableRow key={g.skillId}>
                     <TableCell className="font-medium">{g.skillName}</TableCell>
-                    <TableCell className="capitalize">{g.category}</TableCell>
-                    <TableCell className="capitalize">{g.expectedLevel}</TableCell>
-                    <TableCell className="capitalize">{g.actualLevel}</TableCell>
+                    <TableCell className="capitalize">{t(`skillMatrix.page.categories.${g.category}`)}</TableCell>
+                    <TableCell className="capitalize">{t(`skillMatrix.page.levels.${g.expectedLevel}`)}</TableCell>
+                    <TableCell className="capitalize">{t(`skillMatrix.page.levels.${g.actualLevel}`)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className={cn('h-2.5 w-2.5 rounded-full', GAP_BG[g.gap])} />
@@ -521,13 +525,13 @@ export default function SkillMatrixPage() {
          <CardHeader>
            <CardTitle className="flex items-center gap-2 text-lg">
              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-             Recommended Training
+             {t('skillMatrix.page.recommendedTraining')}
            </CardTitle>
-           <CardDescription>Suggested courses and certifications based on gap analysis</CardDescription>
+           <CardDescription>{t('skillMatrix.page.recommendedTrainingDesc')}</CardDescription>
          </CardHeader>
          <CardContent>
            {recommendations.length === 0 ? (
-             <p className="text-sm text-muted-foreground py-4">No recommendations available</p>
+             <p className="text-sm text-muted-foreground py-4">{t('skillMatrix.page.noRecommendations')}</p>
            ) : (
              <div className="space-y-2">
                {recommendations.map((rec, i) => (

@@ -6,9 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Settings, Plus, LayoutDashboard, Shield, Boxes, Activity, Wifi, CheckCircle2, ArrowRight } from "lucide-react"
+import { Settings, Plus, LayoutDashboard, Shield, Boxes, Activity, Wifi } from "lucide-react"
 import Link from "next/link"
 import { RoutingRules } from "@/components/digit/routing-rules"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 const existingWorkspaces = [
   { id: "ops", name: "Operations Workspace", vertical: "operational", href: "/operations", color: "text-indigo-500", bg: "bg-indigo-500/10" },
@@ -25,6 +26,7 @@ const verticalIcons: Record<string, React.ReactNode> = {
 }
 
 export default function ConfigurePage() {
+  const { t } = useI18n()
   const [showWizard, setShowWizard] = useState(false)
 
   if (showWizard) {
@@ -39,19 +41,19 @@ export default function ConfigurePage() {
             <Settings className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Configure Workspace</h1>
-            <p className="text-sm text-muted-foreground">Set up and customize your workspaces for each vertical</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('configure.page.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('configure.page.subtitle')}</p>
           </div>
         </div>
         <Button onClick={() => setShowWizard(true)}>
-          <Plus className="h-4 w-4 mr-2" />New Workspace
+          <Plus className="h-4 w-4 mr-2" />{t('configure.page.newWorkspace')}
         </Button>
       </div>
 
       <Tabs defaultValue="workspaces" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
-          <TabsTrigger value="workspaces">Workspaces</TabsTrigger>
-          <TabsTrigger value="routing">Auto-Routing</TabsTrigger>
+          <TabsTrigger value="workspaces">{t('configure.page.tabs.workspaces')}</TabsTrigger>
+          <TabsTrigger value="routing">{t('configure.page.tabs.autoRouting')}</TabsTrigger>
         </TabsList>
         
         {/* Workspaces Tab */}
@@ -68,17 +70,17 @@ export default function ConfigurePage() {
                   </div>
                   <CardTitle className="text-base mt-3">{ws.name}</CardTitle>
                   <CardDescription className="text-xs">
-                    Configure frameworks, data sources, and automation rules
+                    {t('configure.page.workspaceDesc')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-5 pt-0 flex items-center gap-2">
                   <Button size="sm" variant="outline" className="text-xs" asChild>
                     <Link href={ws.href}>
-                      <LayoutDashboard className="h-3 w-3 mr-1" />Open
+                      <LayoutDashboard className="h-3 w-3 mr-1" />{t('configure.page.open')}
                     </Link>
                   </Button>
                   <Button size="sm" variant="ghost" className="text-xs" onClick={() => setShowWizard(true)}>
-                    <Settings className="h-3 w-3 mr-1" />Reconfigure
+                    <Settings className="h-3 w-3 mr-1" />{t('configure.page.reconfigure')}
                   </Button>
                 </CardContent>
               </Card>
@@ -89,8 +91,8 @@ export default function ConfigurePage() {
                 <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3 group-hover:bg-primary/10 transition-colors">
                   <Plus className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
-                <p className="text-sm font-medium">Create New Workspace</p>
-                <p className="text-xs text-muted-foreground mt-1">Set up a workspace for a new vertical</p>
+                <p className="text-sm font-medium">{t('configure.page.createNewWorkspace')}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('configure.page.createWorkspaceDesc')}</p>
               </CardContent>
             </Card>
           </div>

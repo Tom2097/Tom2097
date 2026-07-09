@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
+import { useI18n } from "@/components/providers/i18n-provider"
 import {
   uploadRecording,
   processTranscription,
@@ -48,6 +49,7 @@ function formatSize(bytes: number): string {
 }
 
 export default function RecordingsPage() {
+  const { t } = useI18n()
   const [recordings, setRecordings] = useState<RecordingUpload[]>(() => listRecordings('default'))
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
@@ -67,7 +69,7 @@ export default function RecordingsPage() {
 
   const handleUpload = () => {
     if (!uploadName.trim() || !uploadSize.trim()) {
-      toast.error("Name and size are required")
+      toast.error(t('recordings.page.errors.nameSizeRequired'))
       return
     }
     const recording = uploadRecording('default', { name: uploadName.trim(), size: Number(uploadSize), type: uploadType })
@@ -75,7 +77,7 @@ export default function RecordingsPage() {
     setUploadDialogOpen(false)
     setUploadName("")
     setUploadSize("")
-    toast.success("Recording uploaded")
+    toast.success(t('recordings.page.success.uploaded'))
 
     setTimeout(refreshRecordings, 600)
   }
@@ -100,7 +102,7 @@ export default function RecordingsPage() {
          refreshRecordings()
        } catch (error) {
          setProcessing(false)
-         toast.error(error instanceof Error ? error.message : "Failed to process transcription")
+         toast.error(error instanceof Error ? error.message : t('recordings.page.errors.processFailed'))
        }
     }, 800)
   }
@@ -109,7 +111,7 @@ export default function RecordingsPage() {
     const next: ActionItem['status'] = current === 'completed' ? 'open' : 'completed'
     updateActionItemStatus(itemId, next)
     setActionItems(prev => prev.map(i => i.id === itemId ? { ...i, status: next } : i))
-    toast.success(`Action item ${next === 'completed' ? 'completed' : 'reopened'}`)
+    toast.success(next === 'completed' ? t('recordings.page.success.actionItemCompleted') : t('recordings.page.success.actionItemReopened'))
   }
 
   const handleAssigneeChange = (itemId: string, assignee: string) => {
@@ -125,39 +127,39 @@ export default function RecordingsPage() {
             <Mic className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Audio Recordings</h1>
-            <p className="text-sm text-muted-foreground">Upload, transcribe, and extract action items from recordings</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('recordings.page.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('recordings.page.subtitle')}</p>
           </div>
         </div>
         <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Upload className="h-4 w-4 mr-2" />
-              Upload Recording
+              {t('recordings.page.uploadRecording')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Upload Recording</DialogTitle>
-              <DialogDescription>Provide file metadata for processing</DialogDescription>
+              <DialogTitle>{t('recordings.page.dialogTitle')}</DialogTitle>
+              <DialogDescription>{t('recordings.page.dialogDescription')}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>File Name</Label>
-                <Input placeholder="meeting-recording.mp3" value={uploadName} onChange={e => setUploadName(e.target.value)} />
+                <Label>{t('recordings.page.fileName')}</Label>
+                <Input placeholder={t('recordings.page.fileNamePlaceholder')} value={uploadName} onChange={e => setUploadName(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Size (bytes)</Label>
-                <Input type="number" placeholder="5242880" value={uploadSize} onChange={e => setUploadSize(e.target.value)} />
+                <Label>{t('recordings.page.sizeBytes')}</Label>
+                <Input type="number" placeholder={t('recordings.page.sizePlaceholder')} value={uploadSize} onChange={e => setUploadSize(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>File Type</Label>
+                <Label>{t('recordings.page.fileType')}</Label>
                 <Input value={uploadType} onChange={e => setUploadType(e.target.value)} />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleUpload}>Upload</Button>
+              <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>{t('recordings.page.cancel')}</Button>
+              <Button onClick={handleUpload}>{t('recordings.page.upload')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -165,26 +167,26 @@ export default function RecordingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Recordings</CardTitle>
-          <CardDescription>{recordings.length} recording(s) in your library</CardDescription>
+          <CardTitle>{t('recordings.page.allRecordings')}</CardTitle>
+          <CardDescription>{t('recordings.page.recordingCount', { count: recordings.length })}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           {recordings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-6">
               <FileAudio className="h-12 w-12 text-muted-foreground/40 mb-4" />
-              <p className="text-sm text-muted-foreground">No recordings yet.</p>
-              <p className="text-xs text-muted-foreground mt-1">Upload your first recording to get started.</p>
+              <p className="text-sm text-muted-foreground">{t('recordings.page.noRecordings')}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('recordings.page.uploadFirst')}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Size</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t('recordings.page.name')}</TableHead>
+                  <TableHead>{t('recordings.page.duration')}</TableHead>
+                  <TableHead>{t('recordings.page.size')}</TableHead>
+                  <TableHead>{t('recordings.page.status')}</TableHead>
+                  <TableHead>{t('recordings.page.date')}</TableHead>
+                  <TableHead className="text-right">{t('recordings.page.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -206,7 +208,7 @@ export default function RecordingsPage() {
                     <TableCell className="text-sm">{new Date(rec.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => handleViewDetails(rec)}>
-                        <Play className="h-3 w-3 mr-1" /> View
+                        <Play className="h-3 w-3 mr-1" /> {t('recordings.page.view')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -220,16 +222,16 @@ export default function RecordingsPage() {
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
         <DialogContent className="sm:max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{selectedRecording?.name || 'Recording Details'}</DialogTitle>
+            <DialogTitle>{selectedRecording?.name || t('recordings.page.recordingDetails')}</DialogTitle>
             <DialogDescription>
-              {selectedRecording?.duration ? `Duration: ${formatDuration(selectedRecording.duration)}` : 'Processing...'}
+              {selectedRecording?.duration ? t('recordings.page.durationLabel', { duration: formatDuration(selectedRecording.duration) }) : t('recordings.page.processing')}
             </DialogDescription>
           </DialogHeader>
 
           {processing ? (
             <div className="flex flex-col items-center justify-center py-8 space-y-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Processing transcription...</p>
+              <p className="text-sm text-muted-foreground">{t('recordings.page.processingTranscription')}</p>
               <Progress value={65} className="w-64" />
             </div>
           ) : (
@@ -238,8 +240,8 @@ export default function RecordingsPage() {
                 <div>
                   <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    Segments Timeline
-                    <Badge variant="outline" className="ml-auto text-xs">{transcription.confidence}% confidence</Badge>
+                    {t('recordings.page.segmentsTimeline')}
+                    <Badge variant="outline" className="ml-auto text-xs">{t('recordings.page.confidence', { confidence: transcription.confidence })}</Badge>
                   </h3>
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {transcription.segments.map((seg, i) => (
@@ -259,7 +261,7 @@ export default function RecordingsPage() {
                 <div>
                   <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
                     <FileAudio className="h-4 w-4 text-muted-foreground" />
-                    Full Transcription
+                    {t('recordings.page.fullTranscription')}
                   </h3>
                   <div className="rounded bg-muted/30 p-4 text-sm whitespace-pre-wrap max-h-48 overflow-y-auto font-mono text-xs">
                     {transcription.text}
@@ -272,10 +274,10 @@ export default function RecordingsPage() {
               <div>
                 <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
                   <ListChecks className="h-4 w-4 text-muted-foreground" />
-                  Action Items
+                  {t('recordings.page.actionItems')}
                 </h3>
                 {actionItems.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No action items extracted.</p>
+                  <p className="text-sm text-muted-foreground">{t('recordings.page.noActionItems')}</p>
                 ) : (
                   <div className="space-y-2">
                     {actionItems.map(item => (
@@ -300,7 +302,7 @@ export default function RecordingsPage() {
                               <User className="h-3 w-3" />
                               <input
                                 className="bg-transparent border-b border-dashed border-muted-foreground/30 outline-none focus:border-primary w-28"
-                                placeholder="Assign to..."
+                                placeholder={t('recordings.page.assignTo')}
                                 value={item.assignee || ''}
                                 onChange={e => handleAssigneeChange(item.id, e.target.value)}
                               />
@@ -321,7 +323,7 @@ export default function RecordingsPage() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDetailDialogOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setDetailDialogOpen(false)}>{t('recordings.page.close')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

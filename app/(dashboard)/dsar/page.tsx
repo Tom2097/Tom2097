@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { Download, Trash2, FileText, ShieldCheck, AlertTriangle, CheckCircle2, Clock } from "lucide-react"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 interface DsarRequest {
   id: string
@@ -29,6 +30,7 @@ interface ConsentRecord {
 }
 
 export default function DsarPage() {
+  const { t } = useI18n()
   const [requests, setRequests] = useState<DsarRequest[]>([])
   const [consentRecords, setConsentRecords] = useState<ConsentRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,7 +52,7 @@ export default function DsarPage() {
         const errorData1 = await requestsRes.json();
         const errorData2 = await consentRes.json();
         throw new Error(
-          errorData1.error || errorData2.error || "Failed to load DSAR data"
+          errorData1.error || errorData2.error || t('dsar.page.errors.loadFailed')
         );
       }
       
@@ -63,14 +65,14 @@ export default function DsarPage() {
       }
     } catch (error) {
       if (!cancelled?.current) {
-        toast.error(error instanceof Error ? error.message : "Failed to load DSAR data");
+        toast.error(error instanceof Error ? error.message : t('dsar.page.errors.loadFailed'));
       }
     } finally {
       if (!cancelled?.current) {
         setLoading(false);
       }
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const cancelled = { current: false };
@@ -93,14 +95,14 @@ export default function DsarPage() {
       
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to export data");
+        throw new Error(errorData.error || t('dsar.page.errors.exportFailed'));
       }
       
       const data = await res.json();
       setExportData(data.data);
       setExportDialogOpen(true);
     } catch (error) {
-       toast.error(error instanceof Error ? error.message : "Failed to export data");
+       toast.error(error instanceof Error ? error.message : t('dsar.page.errors.exportFailed'));
     } finally {
       setLoading(false);
     }
@@ -117,14 +119,14 @@ export default function DsarPage() {
       
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to process deletion request");
+        throw new Error(errorData.error || t('dsar.page.errors.deleteFailed'));
       }
       
-      toast.success("Your data has been scheduled for deletion");
+      toast.success(t('dsar.page.success.exportScheduled'));
       setDeleteDialogOpen(false);
       fetchData();
     } catch (error) {
-       toast.error(error instanceof Error ? error.message : "Failed to process deletion request");
+       toast.error(error instanceof Error ? error.message : t('dsar.page.errors.deleteFailed'));
     } finally {
       setLoading(false);
     }
@@ -141,13 +143,13 @@ export default function DsarPage() {
       
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to create request");
+        throw new Error(errorData.error || t('dsar.page.errors.createFailed'));
       }
       
-      toast.success(`${type} request submitted`);
+      toast.success(t('dsar.page.success.requestSubmitted', { type }));
       fetchData();
     } catch (error) {
-       toast.error(error instanceof Error ? error.message : "Failed to create request");
+       toast.error(error instanceof Error ? error.message : t('dsar.page.errors.createFailed'));
     } finally {
       setLoading(false);
     }
@@ -177,51 +179,51 @@ export default function DsarPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Data Subject Access Requests</h1>
-          <p className="text-muted-foreground">Manage your data privacy rights under GDPR/DPDP</p>
+          <h1 className="text-2xl font-bold">{t('dsar.page.title')}</h1>
+          <p className="text-muted-foreground">{t('dsar.page.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
-            Export My Data
+            {t('dsar.page.exportMyData')}
           </Button>
           <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
             <Trash2 className="mr-2 h-4 w-4" />
-            Request Deletion
+            {t('dsar.page.requestDeletion')}
           </Button>
         </div>
       </div>
 
       <Tabs defaultValue="requests">
         <TabsList>
-          <TabsTrigger value="requests">My Requests</TabsTrigger>
-          <TabsTrigger value="consent">Consent Records</TabsTrigger>
-          <TabsTrigger value="actions">Quick Actions</TabsTrigger>
+          <TabsTrigger value="requests">{t('dsar.page.tabs.requests')}</TabsTrigger>
+          <TabsTrigger value="consent">{t('dsar.page.tabs.consent')}</TabsTrigger>
+          <TabsTrigger value="actions">{t('dsar.page.tabs.quickActions')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="requests" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Your DSAR Requests</CardTitle>
-              <CardDescription>Track the status of your data subject access requests</CardDescription>
+              <CardTitle>{t('dsar.page.yourRequests')}</CardTitle>
+              <CardDescription>{t('dsar.page.trackRequests')}</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                <div className="text-center py-8 text-muted-foreground">{t('common.loading')}</div>
               ) : requests.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <ShieldCheck className="mx-auto h-12 w-12 mb-3 opacity-50" />
-                  <p>No DSAR requests yet</p>
-                  <p className="text-sm">Use the buttons above to create a request</p>
+                  <p>{t('dsar.page.noDsar')}</p>
+                  <p className="text-sm">{t('dsar.page.createRequestHint')}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Requested</TableHead>
-                      <TableHead>Completed</TableHead>
+                      <TableHead>{t('dsar.page.type')}</TableHead>
+                      <TableHead>{t('dsar.page.status')}</TableHead>
+                      <TableHead>{t('dsar.page.requested')}</TableHead>
+                      <TableHead>{t('dsar.page.completed')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -248,22 +250,22 @@ export default function DsarPage() {
         <TabsContent value="consent" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Consent Management</CardTitle>
-              <CardDescription>Review and manage your data processing consents</CardDescription>
+              <CardTitle>{t('dsar.page.consentManagement')}</CardTitle>
+              <CardDescription>{t('dsar.page.reviewConsents')}</CardDescription>
             </CardHeader>
             <CardContent>
               {consentRecords.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>No consent records found</p>
+                  <p>{t('dsar.page.noConsent')}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Purpose</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Granted At</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t('dsar.page.purpose')}</TableHead>
+                      <TableHead>{t('dsar.page.status')}</TableHead>
+                      <TableHead>{t('dsar.page.grantedAt')}</TableHead>
+                      <TableHead>{t('dsar.page.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -273,11 +275,11 @@ export default function DsarPage() {
                         <TableCell>
                           {record.granted ? (
                             <Badge variant="outline" className="text-green-500">
-                              <CheckCircle2 className="mr-1 h-3 w-3" /> Granted
+                              <CheckCircle2 className="mr-1 h-3 w-3" /> {t('dsar.page.granted')}
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="text-red-500">
-                              <AlertTriangle className="mr-1 h-3 w-3" /> Revoked
+                              <AlertTriangle className="mr-1 h-3 w-3" /> {t('dsar.page.revoked')}
                             </Badge>
                           )}
                         </TableCell>
@@ -298,15 +300,15 @@ export default function DsarPage() {
                                   }),
                                 })
                                 if (res.ok) {
-                                  toast.success(`Consent ${record.granted ? "revoked" : "granted"}`)
+                                  toast.success(t('dsar.page.success.consentUpdated', { action: record.granted ? t('dsar.page.revoked') : t('dsar.page.granted') }))
                                   fetchData()
                                 }
                               } catch (error) {
-                                 toast.error(error instanceof Error ? error.message : "Failed to update consent")
+                                 toast.error(error instanceof Error ? error.message : t('dsar.page.errors.updateConsentFailed'))
                               }
                             }}
                           >
-                            {record.granted ? "Revoke" : "Grant"}
+                            {record.granted ? t('dsar.page.revoke') : t('dsar.page.grant')}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -324,16 +326,16 @@ export default function DsarPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Download className="h-5 w-5" />
-                  Export My Data
+                  {t('dsar.page.exportData')}
                 </CardTitle>
                 <CardDescription>
-                  Download all personal data we hold about you in a portable format
+                  {t('dsar.page.exportDataDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button onClick={handleExport} className="w-full">
                   <Download className="mr-2 h-4 w-4" />
-                  Request Data Export
+                  {t('dsar.page.requestDataExport')}
                 </Button>
               </CardContent>
             </Card>
@@ -342,15 +344,15 @@ export default function DsarPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
-                  Rectify Data
+                  {t('dsar.page.rectifyData')}
                 </CardTitle>
                 <CardDescription>
-                  Request correction of inaccurate or incomplete personal data
+                  {t('dsar.page.rectifyDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="secondary" onClick={() => createRequest("rectify")} className="w-full">
-                  Request Rectification
+                  {t('dsar.page.requestRectification')}
                 </Button>
               </CardContent>
             </Card>
@@ -359,15 +361,15 @@ export default function DsarPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ShieldCheck className="h-5 w-5" />
-                  Restrict Processing
+                  {t('dsar.page.restrictProcessing')}
                 </CardTitle>
                 <CardDescription>
-                  Limit how we process your personal data under certain circumstances
+                  {t('dsar.page.restrictDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="secondary" onClick={() => createRequest("restrict")} className="w-full">
-                  Request Restriction
+                  {t('dsar.page.requestRestriction')}
                 </Button>
               </CardContent>
             </Card>
@@ -376,15 +378,15 @@ export default function DsarPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Trash2 className="h-5 w-5" />
-                  Right to Erasure
+                  {t('dsar.page.rightToErasure')}
                 </CardTitle>
                 <CardDescription>
-                  Request deletion of your personal data (&ldquo;right to be forgotten&rdquo;)
+                  {t('dsar.page.erasureDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)} className="w-full">
-                  Request Deletion
+                  {t('dsar.page.requestDeletionBtn')}
                 </Button>
               </CardContent>
             </Card>
@@ -395,16 +397,16 @@ export default function DsarPage() {
       <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Your Exported Data</DialogTitle>
+            <DialogTitle>{t('dsar.page.yourExportedData')}</DialogTitle>
             <DialogDescription>
-              This is the personal data we hold about you. Download it for your records.
+              {t('dsar.page.exportDescription')}
             </DialogDescription>
           </DialogHeader>
           <pre className="bg-muted p-4 rounded-lg text-xs overflow-x-auto">
             {JSON.stringify(exportData, null, 2)}
           </pre>
           <DialogFooter>
-            <Button onClick={() => setExportDialogOpen(false)}>Close</Button>
+            <Button onClick={() => setExportDialogOpen(false)}>{t('dsar.page.cancel')}</Button>
             <Button
               variant="outline"
               onClick={() => {
@@ -418,7 +420,7 @@ export default function DsarPage() {
               }}
             >
               <Download className="mr-2 h-4 w-4" />
-              Download JSON
+              {t('dsar.page.downloadJson')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -427,24 +429,23 @@ export default function DsarPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Request Account Deletion</DialogTitle>
+            <DialogTitle>{t('dsar.page.requestAccountDeletion')}</DialogTitle>
             <DialogDescription>
-              This will initiate the data erasure process. Your account and personal data will be permanently deleted.
-              This action cannot be undone.
+              {t('dsar.page.deletionWarning')}
             </DialogDescription>
           </DialogHeader>
           <div className="bg-destructive/10 p-4 rounded-lg text-sm space-y-2">
-            <p className="font-medium text-destructive">What will be deleted:</p>
+            <p className="font-medium text-destructive">{t('dsar.page.whatWillBeDeleted')}</p>
             <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
-              <li>Your profile and account information</li>
-              <li>Personal data and activity logs</li>
-              <li>Consent records and preferences</li>
-              <li>OAuth account connections</li>
+              <li>{t('dsar.page.profileInfo')}</li>
+              <li>{t('dsar.page.personalData')}</li>
+              <li>{t('dsar.page.consentRecords')}</li>
+              <li>{t('dsar.page.oauthConnections')}</li>
             </ul>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>Request Deletion</Button>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>{t('dsar.page.cancel')}</Button>
+            <Button variant="destructive" onClick={handleDelete}>{t('dsar.page.requestDeletionBtn')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

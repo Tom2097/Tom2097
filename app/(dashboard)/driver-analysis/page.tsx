@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { analyzeDriverDecomposition, getCrossWorkspaceImpact } from '@/lib/analytics/driver-decomposition'
 import { ConfidenceIndicator } from '@/components/digit/confidence-indicator'
+import { getTranslator } from '@/lib/i18n/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,6 +45,7 @@ function ImpactBadge({ impact }: { impact: number }) {
 }
 
 export default async function DriverAnalysisPage() {
+  const { t } = await getTranslator()
   const ctx = await extractTenantContext()
   if (!ctx) redirect('/auth/login')
 
@@ -62,9 +64,9 @@ export default async function DriverAnalysisPage() {
             <GitBranch className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Driver Decomposition</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t('driverAnalysis.page.title')}</h1>
             <p className="text-sm text-muted-foreground">
-              Cross-workspace root-cause analysis and impact assessment
+              {t('driverAnalysis.page.subtitle')}
             </p>
           </div>
         </div>
@@ -80,7 +82,7 @@ export default async function DriverAnalysisPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <BarChart3 className="h-12 w-12 text-muted-foreground/40 mb-4" />
-            <p className="text-sm text-muted-foreground">Insufficient data for driver decomposition. At least 2 data points required.</p>
+            <p className="text-sm text-muted-foreground">{t('driverAnalysis.page.insufficientData')}</p>
           </CardContent>
         </Card>
       ) : (
@@ -88,25 +90,25 @@ export default async function DriverAnalysisPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Baseline</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t('driverAnalysis.page.baseline')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-foreground">{decomposition.baseline}</p>
-                <p className="text-xs text-muted-foreground mt-1">Period start score</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('driverAnalysis.page.periodStart')}</p>
               </CardContent>
             </Card>
             <Card className="border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Current</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t('driverAnalysis.page.current')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-foreground">{decomposition.current}</p>
-                <p className="text-xs text-muted-foreground mt-1">Current score</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('driverAnalysis.page.currentScore')}</p>
               </CardContent>
             </Card>
             <Card className={`border-border/50 ${decomposition.change >= 0 ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-red-500/20 bg-red-500/5'}`}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Change</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t('driverAnalysis.page.totalChange')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
@@ -122,11 +124,11 @@ export default async function DriverAnalysisPage() {
             </Card>
             <Card className="border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Confidence</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t('driverAnalysis.page.confidence')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ConfidenceIndicator confidence={decomposition.confidence} showLabel />
-                <p className="text-xs text-muted-foreground mt-2">Based on data point count</p>
+                <p className="text-xs text-muted-foreground mt-2">{t('driverAnalysis.page.basedOnData')}</p>
               </CardContent>
             </Card>
           </div>
@@ -139,8 +141,8 @@ export default async function DriverAnalysisPage() {
                     <Crosshair className="h-4 w-4 text-rose-500" />
                   </div>
                   <div>
-                    <CardTitle className="text-base">Driver Contributions</CardTitle>
-                    <CardDescription>Percentage contribution of each workspace to total change</CardDescription>
+                    <CardTitle className="text-base">{t('driverAnalysis.page.driverContributions')}</CardTitle>
+                    <CardDescription>{t('driverAnalysis.page.driverContributionsDesc')}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -184,7 +186,7 @@ export default async function DriverAnalysisPage() {
 
                 {decomposition.drivers.length === 0 && (
                   <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-                    No driver data available
+                    {t('driverAnalysis.page.noDriverData')}
                   </div>
                 )}
               </CardContent>
@@ -197,8 +199,8 @@ export default async function DriverAnalysisPage() {
                     <Network className="h-4 w-4 text-blue-500" />
                   </div>
                   <div>
-                    <CardTitle className="text-base">Cross-Workspace Impact</CardTitle>
-                    <CardDescription>Detected impact flows between workspaces over the last 7 days</CardDescription>
+                    <CardTitle className="text-base">{t('driverAnalysis.page.crossWorkspaceImpact')}</CardTitle>
+                    <CardDescription>{t('driverAnalysis.page.crossWorkspaceImpactDesc')}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -206,8 +208,8 @@ export default async function DriverAnalysisPage() {
                 {impacts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-sm text-muted-foreground">
                     <Network className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                    <p>No cross-workspace impacts detected in the last 7 days.</p>
-                    <p className="text-xs mt-1">Impact signals are derived from audit log event patterns.</p>
+                    <p>{t('driverAnalysis.page.noCrossWorkspace')}</p>
+                    <p className="text-xs mt-1">{t('driverAnalysis.page.impactSignals')}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -228,17 +230,17 @@ export default async function DriverAnalysisPage() {
                         <p className="text-sm text-muted-foreground">{impact.description}</p>
                         <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                           <AlertTriangle className="h-3 w-3" />
-                          <span>Impact score reflects magnitude of detected cross-workspace activity</span>
+                          <span>{t('driverAnalysis.page.impactScoreReflects')}</span>
                         </div>
                       </div>
                     ))}
 
                     <div className="rounded-xl border border-border/50 bg-secondary/10 p-3">
-                      <h4 className="text-xs font-medium text-muted-foreground mb-2">Impact Matrix</h4>
+                      <h4 className="text-xs font-medium text-muted-foreground mb-2">{t('driverAnalysis.page.impactMatrix')}</h4>
                       <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                        <div className="text-muted-foreground font-medium">Source \ Target</div>
-                        <div className="text-muted-foreground font-medium">Resources</div>
-                        <div className="text-muted-foreground font-medium">Performance</div>
+                        <div className="text-muted-foreground font-medium">{t('driverAnalysis.page.sourceTarget')}</div>
+                        <div className="text-muted-foreground font-medium">{t('driverAnalysis.page.resources')}</div>
+                        <div className="text-muted-foreground font-medium">{t('driverAnalysis.page.performance')}</div>
                         {['Compliance', 'Resources', 'CRM'].map(source => (
                           <>
                             <div key={source} className="font-medium text-foreground text-left">{source}</div>
