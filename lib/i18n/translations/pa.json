@@ -1,0 +1,42 @@
+{
+  "languageBanner": {
+    "title": "DigiT {language} ਵਿੱਚ ਉਪਲਬਧ ਹੈ",
+    "description": "ਅੰਗਰੇਜ਼ੀ ਤੋਂ ਬਦਲੋ?",
+    "switch": "ਬਦਲੋ",
+    "dismiss": "ਨਹੀਂ, ਧੰਨਵਾਦ",
+    "detected": "ਸਾਡੇ ਨੂੰ ਤੁਹਾਡੀ ਬ੍ਰਾਉਜ਼ਰ ਭਾਸ਼ਾ {language} ਮਿਲੀ।"
+  },
+  "languageSwitcher": {
+    "label": "ਭਾਸ਼ਾ",
+    "current": "ਮੌਜੂਦਾ ਭਾਸ਼ਾ"
+  },
+  "common": {
+    "dashboard": "ਡੈਸ਼ਬੋਰਡ",
+    "analytics": "ਐਨਾਲਿਟਿਕਸ",
+    "crm": "ਸੀਆਰਐਮ",
+    "operations": "ਓਪਰੇਸ਼ਨਜ਼",
+    "settings": "ਸੈਟਿੰਗਜ਼",
+    "login": "ਲੌਗ ਇਨ",
+    "signUp": "ਸਾਈਨ ਅਪ",
+    "signOut": "ਸਾਈਨ ਆਉਟ",
+    "search": "ਖੋਜ",
+    "notifications": "ਸੂਚਨਾਵਾਂ",
+    "save": "ਸਹੇਜੋ",
+    "cancel": "ਰੱਦ ਕਰੋ",
+    "submit": "ਜਮ੍ਹਾਂ ਕਰੋ",
+    "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ",
+    "error": "ਕੁਝ ਗਲਤ ਹੋ ਗਿਆ",
+    "tryAgain": "ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ"
+  },
+  "navigation": {
+    "home": "ਹੋਮ",
+    "pricing": "ਕੀਮਤ",
+    "features": "ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ",
+    "contact": "ਸੰਪਰਕ"
+  },
+  "region": {
+    "country": "ਦੇਸ਼",
+    "currency": "ਮੁਦਰਾ",
+    "timezone": "ਸਮਾਂ ਖੇਤਰ"
+  }
+}

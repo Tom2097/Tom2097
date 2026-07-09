@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { pricingTiers, addOns, platformModules, currencies, inrPrices, type PricingTier } from "@/lib/subscription-data"
 import { Checkout } from "@/components/checkout"
 import { createClient } from "@/lib/supabase/client"
+import { getCookie } from "@/lib/i18n/cookies"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
@@ -177,6 +178,12 @@ function PricingContent() {
       setUser(user)
       setLoadingUser(false)
     })
+
+    // Region-based currency default: India → INR, otherwise USD.
+    const region = getCookie('NEXT_REGION')
+    if (region === 'IN') {
+      setCurrency('INR')
+    }
   }, [])
 
   const handleSelectPlan = (tierId: string) => {

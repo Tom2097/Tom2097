@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { MicrophoneButton } from '@/components/ui/microphone-button'
 import { FeedbackWidget } from '@/components/feedback-widget'
+import { LanguageSwitcher } from '@/components/language-switcher'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logger } from "@/lib/logging-client"
@@ -42,6 +43,7 @@ export function Navbar({ userId }: NavbarProps) {
         <div className="flex items-center gap-2">
            <MicrophoneButton onTranscript={(transcript) => logger.logDebug('Transcript:', { transcript })} />
           <FeedbackWidget userId={userId} />
+          <LanguageSwitcher />
           <Button variant="outline" size="sm" asChild>
             <Link href="/login">Login</Link>
           </Button>

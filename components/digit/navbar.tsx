@@ -28,6 +28,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { LanguageSwitcher } from '@/components/language-switcher'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -333,6 +334,8 @@ export function Navbar({ onOpenAI }: NavbarProps) {
 
       {/* Right side actions */}
       <div className="flex items-center gap-2">
+        <LanguageSwitcher />
+
         {/* AI Assistant Button */}
         <Button 
           variant="outline" 

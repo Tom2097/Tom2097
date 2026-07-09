@@ -1,0 +1,42 @@
+{
+  "languageBanner": {
+    "title": "DigiT {language} में उपलब्ध है",
+    "description": "अंग्रेज़ी से बदलें?",
+    "switch": "बदलें",
+    "dismiss": "नहीं, धन्यवाद",
+    "detected": "हमने आपकी ब्राउज़र भाषा {language} पाई।"
+  },
+  "languageSwitcher": {
+    "label": "भाषा",
+    "current": "वर्तमान भाषा"
+  },
+  "common": {
+    "dashboard": "डैशबोर्ड",
+    "analytics": "एनालिटिक्स",
+    "crm": "सीआरएम",
+    "operations": "ऑपरेशंस",
+    "settings": "सेटिंग्स",
+    "login": "लॉग इन",
+    "signUp": "साइन अप",
+    "signOut": "साइन आउट",
+    "search": "खोजें",
+    "notifications": "सूचनाएं",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "submit": "जमा करें",
+    "loading": "लोड हो रहा है",
+    "error": "कुछ गड़बड़ हो गई",
+    "tryAgain": "फिर से कोशिश करें"
+  },
+  "navigation": {
+    "home": "होम",
+    "pricing": "मूल्य निर्धारण",
+    "features": "विशेषताएं",
+    "contact": "संपर्क"
+  },
+  "region": {
+    "country": "देश",
+    "currency": "मुद्रा",
+    "timezone": "समय क्षेत्र"
+  }
+}

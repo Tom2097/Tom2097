@@ -1,0 +1,42 @@
+{
+  "languageBanner": {
+    "title": "DigiT is available in {language}",
+    "description": "Switch from English?",
+    "switch": "Switch",
+    "dismiss": "No thanks",
+    "detected": "We detected your browser language is {language}."
+  },
+  "languageSwitcher": {
+    "label": "Language",
+    "current": "Current language"
+  },
+  "common": {
+    "dashboard": "Dashboard",
+    "analytics": "Analytics",
+    "crm": "CRM",
+    "operations": "Operations",
+    "settings": "Settings",
+    "login": "Login",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "search": "Search",
+    "notifications": "Notifications",
+    "save": "Save",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "loading": "Loading",
+    "error": "Something went wrong",
+    "tryAgain": "Try Again"
+  },
+  "navigation": {
+    "home": "Home",
+    "pricing": "Pricing",
+    "features": "Features",
+    "contact": "Contact"
+  },
+  "region": {
+    "country": "Country",
+    "currency": "Currency",
+    "timezone": "Timezone"
+  }
+}

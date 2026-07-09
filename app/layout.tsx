@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
+import { I18nProvider } from '@/components/providers/i18n-provider'
+import { LanguageDetectionBanner } from '@/components/language-detection-banner'
+import { cookies } from 'next/headers'
+import { resolveLocale } from '@/lib/i18n/config'
 // import { QueryProvider } from '@/components/providers/query-provider'
 
 const geistSans = Geist({
@@ -26,19 +30,23 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = await cookies()
+  const initialLocale = resolveLocale(cookieStore.get('NEXT_LOCALE')?.value)
+
   return (
-    <html lang="en" className="dark bg-background">
+    <html lang={initialLocale} className="dark bg-background">
        <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-         <ErrorBoundary>
-     
+         <I18nProvider initialLocale={initialLocale}>
+           <ErrorBoundary>
+             <LanguageDetectionBanner />
              {children}
-   
-         </ErrorBoundary>
+           </ErrorBoundary>
+         </I18nProvider>
          {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

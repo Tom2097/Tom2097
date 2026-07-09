@@ -1,0 +1,91 @@
+DigiT — Region & Language Detection
+Knowing where a user is, and prompting them to switch language by region · v1.0
+How does DigiT know a user is from a different part of the world, and offer to switch language? The key insight is
+that these are two different questions — where is the user (region) and what language do they want — and
+each is answered by a different signal. Conflating them is the classic mistake (a Punjabi speaker in Germany; an
+American travelling in India).
+
+The rule that makes it work: use browser language to decide which language to suggest, and IP
+geolocation to decide region, currency and legal — and never auto-switch silently. Detect, then
+ask, then remember.
+
+1 Two questions, two signals
+
+Figure 1 — Region and language are read from different signals and drive different things.
+
+Every signal below is readable with no permission prompt:
+
+• Browser language — the Accept-Language header / navigator.languages — what the user set as their
+preference (e.g. hi-IN, pa-IN, en-GB). The best signal for language, because it is a stated preference, not a
+guess.
+
+• IP geolocation — maps their IP to a country / region — the best signal for region (currency, legal, residency), not
+language. On Vercel it is free: edge middleware exposes request.geo and an x-vercel-ip-country header,
+with zero setup.
+
+• Timezone — from Intl.DateTimeFormat().resolvedOptions().timeZone (e.g. Asia/Kolkata) — a
+secondary hint that corroborates region.
+
+• The company's country — already captured during onboarding verification, so a tenant has a sensible default
+locale before the user even picks.
+
+• The user's saved choice — once they decide, it overrides everything on every future visit.
+(Precise GPS via the Geolocation API exists too, but it needs explicit consent and is overkill here — do not use it for
+language.)
+
+2 The decision — detect, ask, remember
+
+DigiT — Region & Language Detection · v1.0
+
+Page 1
+
+Figure 2 — The language decision. GeoIP is deliberately absent from it — location sets region and currency, never the language.
+
+• Priority order for language — the user's saved choice wins; otherwise the browser language is used to
+suggest; otherwise the default (English).
+
+• Detect, don't impose — on first visit DigiT compares the detected language to the current UI; if they differ and the
+language is supported, it offers to switch — it does not switch on its own.
+
+• Remember — the choice is stored so the prompt never appears again.
+
+DigiT — Region & Language Detection · v1.0
+
+Page 2
+
+3 The prompt — how it behaves
+
+Figure 3 — A one-time, non-intrusive banner — not a blocking pop-up — with a manual switcher always available in the footer.
+
+• A banner, not a modal — on first visit, if the detected language differs and is supported, DigiT shows a dismissible
+banner (“DigiT is available in Hindi — switch from English?”) — never a blocking pop-up.
+
+• It remembers — the decision is saved to a NEXT_LOCALE cookie and the user's Supabase profile (so it syncs
+across their devices), and the prompt never appears again.
+
+• A manual switcher always stays — in the footer or header, regardless — the prompt is a convenience, not the
+only path.
+
+• Graceful fallback — if the detected language is not one DigiT supports yet, it stays on English and simply does not
+prompt.
+
+4 For DigiT specifically
+• Next.js i18n routing — Next.js has built-in internationalised routing — locale sub-paths like /hi or /pa, or a
+cookie-based approach.
+
+• Vercel geo at the edge — the geo headers give you region before the page even renders.
+• Store the choice in the profile — so it follows the user across devices and sessions.
+• A sensible starting set — English (default), Hindi and Punjabi — expandable later as you grow.
+• Region does double duty — the same region signal should also drive INR-vs-USD pricing (Razorpay vs Stripe)
+and DPDP data residency — both already in your specs.
+
+5 One honest caution
+Do not let GeoIP override a stated language preference. If someone's browser is set to English but they are
+connecting from India, suggest — do not force — Hindi. The browser setting wins for language; the location wins
+for currency and legal. Getting this backwards is exactly the mistake that annoys travelling and diaspora users.
+
+DigiT — Region & Language Detection · v1.0
+
+Page 3
+
+
