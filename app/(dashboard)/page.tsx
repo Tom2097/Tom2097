@@ -18,7 +18,7 @@ import { getDashboardStats, getRevenueMetrics, getOperationalMetrics, getRiskMet
 import { listMonitors } from '@/lib/monitoring/engine'
 import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
 import { forecastMetric } from '@/lib/analytics/forecasting'
-import { useI18n } from '@/lib/i18n/client'
+import { useI18n } from '@/components/providers/i18n-provider'
 
 // Tenant-scoped, always rendered with fresh data.
 
