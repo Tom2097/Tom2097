@@ -49,7 +49,7 @@ import { UsageMonitor } from "@/components/digit/usage-monitor"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { useI18n } from "@/lib/i18n/client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 interface Profile {
   id: string
