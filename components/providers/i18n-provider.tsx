@@ -69,22 +69,25 @@ export function I18nProvider({
     detectedLocale !== locale
 
   const setLocale = useCallback(
-    async (newLocale: Locale, options?: { save?: boolean }) => {
-      if (!isSupportedLocale(newLocale)) return
+    (newLocale: Locale, options?: { save?: boolean }) => {
+      if (!isSupportedLocale(newLocale)) {
+        console.warn('[I18n] Unsupported locale:', newLocale)
+        return
+      }
 
+      console.log('[I18n] Switching locale to:', newLocale)
       setCookie(LOCALE_COOKIE, newLocale)
 
+      // Fire-and-forget profile sync; cookie is the source of truth.
       if (options?.save !== false) {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-        try {
-          await fetch('/api/v1/me/locale', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ locale: newLocale, timezone }),
-          })
-        } catch {
-          // Silent fail; cookie is the source of truth.
-        }
+        fetch('/api/v1/me/locale', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ locale: newLocale, timezone }),
+        }).catch((err) => {
+          console.warn('[I18n] Profile sync failed:', err)
+        })
       }
 
       window.location.reload()
