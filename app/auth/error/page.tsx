@@ -1,16 +1,18 @@
+"use client"
+
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, Clock } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 import { CAPACITY_MESSAGES } from "@/lib/platform/capacity"
+import { useI18n } from "@/components/providers/i18n-provider"
 
-export default async function AuthErrorPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ reason?: string }>
-}) {
-  const { reason } = await searchParams
+export default function AuthErrorPage() {
+  const { t } = useI18n()
+  const searchParams = useSearchParams()
+  const reason = searchParams?.get("reason")
   const atCapacity = reason === "platform_at_capacity"
 
   if (atCapacity) {
@@ -46,7 +48,6 @@ export default async function AuthErrorPage({
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(0,212,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
