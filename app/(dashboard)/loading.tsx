@@ -1,3 +1,5 @@
+"use client"
+
 import { useI18n } from "@/components/providers/i18n-provider"
 export default function DashboardLoading() {
   const { t } = useI18n()
