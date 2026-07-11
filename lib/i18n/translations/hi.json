@@ -907,6 +907,14 @@
       "unexpected": "कुछ गलत हो गया। कृपया फिर से प्रयास करें।",
       "tryAgain": "फिर से प्रयास करें"
     },
+    "page": {
+      "authError": "प्रमाणीकरण त्रुटि: {msg}",
+      "detail": "विवरण: {detail}",
+      "user": "उपयोगकर्ता ID: {uid}",
+      "org": "संगठन ID: {oid}",
+      "goToLoginCheck": "लॉगिन जांच पर जाएं",
+      "backToLogin": "लॉगिन पर वापस जाएं"
+    },
     "subscription": {
       "trial": {
         "title": "आप 7-दिन के मुफ्त परीक्षण पर हैं",

@@ -907,6 +907,14 @@
       "unexpected": "ਕੁਝ ਗਲਤ ਹੋ ਗਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
       "tryAgain": "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ"
     },
+    "page": {
+      "authError": "ਪ੍ਰਮਾਣਿਕਤਾ ਗਲਤੀ: {msg}",
+      "detail": "ਵੇਰਵਾ: {detail}",
+      "user": "ਉਪਭੋਗਤਾ ID: {uid}",
+      "org": "ਸੰਗਠਨ ID: {oid}",
+      "goToLoginCheck": "ਲॉਗिन ਜਾਂਚ 'ਤੇ ਜਾਓ",
+      "backToLogin": "ਲॉਗਿਨ 'ਤੇ ਵਾਪਸ ਜਾਓ"
+    },
     "subscription": {
       "trial": {
         "title": "ਤੁਸੀਂ 7-ਦਿਨਾਂ ਦੀ ਮੁਫ਼ਤ ਅਜ਼ਮਾਇਸ਼ 'ਤੇ ਹੋ",

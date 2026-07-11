@@ -907,6 +907,14 @@
       "unexpected": "Something went wrong. Please try again.",
       "tryAgain": "Try again"
     },
+    "page": {
+      "authError": "Authentication error: {msg}",
+      "detail": "Detail: {detail}",
+      "user": "User ID: {uid}",
+      "org": "Organization ID: {oid}",
+      "goToLoginCheck": "Go to login check",
+      "backToLogin": "Back to login"
+    },
     "subscription": {
       "trial": {
         "title": "You're on a 7-day free trial",
