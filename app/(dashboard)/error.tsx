@@ -29,7 +29,7 @@ export default function DashboardError({
           {error instanceof Error ? error.message : t("dashboard.error.unexpected")}
         </p>
         <Button onClick={reset} variant="outline">
-          Try again
+          {t("dashboard.error.tryAgain")}
         </Button>
       </div>
     </div>

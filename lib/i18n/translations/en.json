@@ -902,6 +902,11 @@
     }
   },
   "dashboard": {
+    "error": {
+      "title": "An error occurred",
+      "unexpected": "Something went wrong. Please try again.",
+      "tryAgain": "Try again"
+    },
     "subscription": {
       "trial": {
         "title": "You're on a 7-day free trial",
