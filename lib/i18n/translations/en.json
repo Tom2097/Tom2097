@@ -1,4 +1,11 @@
 {
+  "root": {
+    "metadata": {
+      "title": "DigiT - AI-Powered Enterprise Operations",
+      "description": "DigiT is an intelligent enterprise operations platform that learns from your business, automates workflows, and enables better decision-making.",
+      "keywords": "AI, enterprise, operations, automation, workflow, analytics, CRM, compliance"
+    }
+  },
   "languageBanner": {
     "title": "DigiT is available in {language}",
     "description": "Switch from English?",
