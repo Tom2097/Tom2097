@@ -1,3 +1,4 @@
+import { getTranslator } from "@/lib/i18n/server"
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
@@ -19,15 +20,18 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono"
 })
 
-export const metadata: Metadata = {
-  title: 'DigiT | Enterprise Intelligence Platform',
-  description: 'AI-powered operational intelligence platform for enterprises. Configurable analytics, CRM, and operational workspaces for any team or business function.',
-  generator: 'v0.app',
-  keywords: ['enterprise', 'AI', 'analytics', 'business intelligence', 'operational intelligence'],
-  icons: {
-    icon: '/icon.svg',
-    apple: '/icon.svg',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getTranslator()
+  return {
+    title: t("root.metadata.title"),
+    description: t("root.metadata.description"),
+    generator: 'v0.app',
+    keywords: t("root.metadata.keywords").split(',').map((k) => k.trim()),
+    icons: {
+      icon: '/icon.svg',
+      apple: '/icon.svg',
+    },
+  }
 }
 
 export default async function RootLayout({

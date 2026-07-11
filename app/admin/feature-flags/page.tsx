@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,6 +32,7 @@ interface FeatureFlagState {
 }
 
 export default function FeatureFlagsPage() {
+  const { t } = useI18n()
   const [flags, setFlags] = useState<FeatureFlagState[]>([])
   const [loading, setLoading] = useState(true)
   const [killDialogOpen, setKillDialogOpen] = useState(false)
@@ -67,7 +69,7 @@ export default function FeatureFlagsPage() {
         merged.forEach((f: FeatureFlagState) => { vals[f.id] = f.canaryPercent })
         if (!cancelled) setCanaryValues(vals)
       } catch {
-        if (!cancelled) toast.error("Failed to load feature flags")
+        if (!cancelled) toast.error(t("admin.featureFlags.loadFailed"))
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -87,10 +89,10 @@ export default function FeatureFlagsPage() {
         setFlags(prev => prev.map(f => f.id === flagId ? { ...f, enabled: value } : f))
         toast.success(`Feature "${flagId}" ${value ? "enabled" : "disabled"}`)
       } else {
-        toast.error("Failed to update feature flag")
+        toast.error(t("admin.featureFlags.updateFailed"))
       }
     } catch {
-      toast.error("Failed to update feature flag")
+      toast.error(t("admin.featureFlags.updateFailed"))
     }
   }
 
@@ -107,10 +109,10 @@ export default function FeatureFlagsPage() {
         setKillDialogOpen(false)
         setSelectedFlag(null)
       } else {
-        toast.error("Failed to set kill switch")
+        toast.error(t("admin.featureFlags.killFailed"))
       }
     } catch {
-      toast.error("Failed to set kill switch")
+      toast.error(t("admin.featureFlags.killFailed"))
     }
   }
 
@@ -122,17 +124,17 @@ export default function FeatureFlagsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ flag: flagId, percent }),
       })
-      if (!res.ok) toast.error("Failed to update canary percentage")
+      if (!res.ok) toast.error(t("admin.featureFlags.canaryFailed"))
       else toast.success(`Canary set to ${percent}% for "${flagId}"`)
     } catch {
-      toast.error("Failed to update canary percentage")
+      toast.error(t("admin.featureFlags.canaryFailed"))
     }
   }
 
   const getStatusBadge = (enabled: boolean, killed: boolean) => {
-    if (killed) return <Badge variant="destructive"><Skull className="mr-1 h-3 w-3" />Killed</Badge>
-    if (enabled) return <Badge variant="default" className="bg-emerald-500/10 text-emerald-500"><Activity className="mr-1 h-3 w-3" />Active</Badge>
-    return <Badge variant="secondary"><Flag className="mr-1 h-3 w-3" />Disabled</Badge>
+    if (killed) return <Badge variant="destructive"><Skull className="mr-1 h-3 w-3" />{t("admin.featureFlags.killed")}</Badge>
+    if (enabled) return <Badge variant="default" className="bg-emerald-500/10 text-emerald-500"><Activity className="mr-1 h-3 w-3" />{t("admin.featureFlags.active")}</Badge>
+    return <Badge variant="secondary"><Flag className="mr-1 h-3 w-3" />{t("admin.featureFlags.disabled")}</Badge>
   }
 
   if (loading) {
@@ -140,12 +142,12 @@ export default function FeatureFlagsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Feature Flags</h1>
-            <p className="text-muted-foreground">Platform-wide feature flag management</p>
+            <h1 className="text-2xl font-bold">{t("admin.featureFlags.title")}</h1>
+            <p className="text-muted-foreground">{t("admin.featureFlags.platformwide_feature_flag_management")}</p>
           </div>
         </div>
         <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">Loading feature flags...</CardContent>
+          <CardContent className="py-8 text-center text-muted-foreground">{t("admin.featureFlags.loading")}</CardContent>
         </Card>
       </div>
     )
@@ -155,8 +157,8 @@ export default function FeatureFlagsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Feature Flags</h1>
-          <p className="text-muted-foreground">Platform-wide feature flag management with kill switches and canary deployments</p>
+          <h1 className="text-2xl font-bold">{t("admin.featureFlags.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.featureFlags.subtitle")}</p>
         </div>
       </div>
 
@@ -174,18 +176,18 @@ export default function FeatureFlagsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Feature</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Global Override</TableHead>
-                <TableHead>Kill Switch</TableHead>
-                <TableHead>Canary %</TableHead>
+                <TableHead>{t("admin.featureFlags.feature")}</TableHead>
+                <TableHead>{t("admin.featureFlags.category")}</TableHead>
+                <TableHead>{t("admin.featureFlags.status")}</TableHead>
+                <TableHead>{t("admin.featureFlags.globalOverride")}</TableHead>
+                <TableHead>{t("admin.featureFlags.killSwitch")}</TableHead>
+                <TableHead>{t("admin.featureFlags.canary")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {flags.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">No feature flags found</TableCell>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">{t("admin.featureFlags.noFlags")}</TableCell>
                 </TableRow>
               ) : (
                 flags.map((flag) => {
@@ -221,14 +223,14 @@ export default function FeatureFlagsPage() {
                               onClick={() => setSelectedFlag(flag.id)}
                             >
                               <Skull className="mr-1 h-3 w-3" />
-                              {flag.killed ? "Reactivate" : "Kill"}
+                              {flag.killed ? t("admin.featureFlags.reactivate") : t("admin.featureFlags.kill")}
                             </Button>
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
                               <DialogTitle className="flex items-center gap-2">
                                 <AlertTriangle className="h-5 w-5 text-destructive" />
-                                {flag.killed ? "Reactivate Feature" : "Activate Kill Switch"}
+                                {flag.killed ? t("admin.featureFlags.reactivateFeature") : t("admin.featureFlags.activateKillSwitch")}
                               </DialogTitle>
                               <DialogDescription>
                                 {flag.killed
@@ -245,7 +247,7 @@ export default function FeatureFlagsPage() {
                                 variant={flag.killed ? "default" : "destructive"}
                                 onClick={() => handleKillSwitch(flag.id, flag.killed)}
                               >
-                                {flag.killed ? "Reactivate Feature" : "Confirm Kill"}
+                                {flag.killed ? t("admin.featureFlags.reactivateFeature") : t("admin.featureFlags.confirmKill")}
                               </Button>
                             </DialogFooter>
                           </DialogContent>

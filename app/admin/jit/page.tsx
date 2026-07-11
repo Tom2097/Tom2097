@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,6 +29,7 @@ interface ElevationRequest {
 }
 
 export default function JitAccessPage() {
+  const { t } = useI18n()
   const [requests, setRequests] = useState<ElevationRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [role, setRole] = useState("super_admin")
@@ -50,7 +52,7 @@ export default function JitAccessPage() {
         setActiveElevation(statusData.active ? { role: statusData.role, expiresAt: statusData.expiresAt } : null)
       }
     } catch {
-      if (!cancelled || !cancelled.current) toast.error("Failed to load JIT access data")
+      if (!cancelled || !cancelled.current) toast.error(t("admin.jit.loadFailed"))
     }
   }, [])
 
@@ -69,7 +71,7 @@ export default function JitAccessPage() {
 
   const handleRequest = async () => {
     if (!reason) {
-      toast.error("Please provide a reason for elevation")
+      toast.error(t("admin.jit.reasonRequired"))
       return
     }
     setSubmitting(true)
@@ -81,15 +83,15 @@ export default function JitAccessPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        toast.success("Elevation request submitted")
+        toast.success(t("admin.jit.requestSubmitted"))
         setRequestDialogOpen(false)
         setReason("")
         fetchData()
       } else {
-        toast.error(data.error || "Failed to submit request")
+        toast.error(data.error || t("admin.jit.requestFailed"))
       }
     } catch {
-      toast.error("Failed to submit request")
+      toast.error(t("admin.jit.requestFailed"))
     } finally {
       setSubmitting(false)
     }
@@ -126,8 +128,8 @@ export default function JitAccessPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">JIT Access Elevation</h1>
-          <p className="text-muted-foreground">Request temporary elevated privileges for administrative tasks</p>
+          <h1 className="text-2xl font-bold">{t("admin.jit.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.jit.subtitle")}</p>
         </div>
         <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
           <DialogTrigger asChild>
@@ -138,39 +140,39 @@ export default function JitAccessPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Request Privilege Elevation</DialogTitle>
+              <DialogTitle>{t("admin.jit.requestTitle")}</DialogTitle>
               <DialogDescription>
                 Your request will be logged and requires approval. Elevated access auto-expires.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Requested Role</Label>
+                <Label>{t("admin.jit.roleLabel")}</Label>
                 <Select value={role} onValueChange={setRole}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="super_admin">Super Admin</SelectItem>
-                    <SelectItem value="security_admin">Security Admin</SelectItem>
-                    <SelectItem value="billing_admin">Billing Admin</SelectItem>
+                    <SelectItem value="super_admin">{t("admin.jit.superAdmin")}</SelectItem>
+                    <SelectItem value="security_admin">{t("admin.jit.securityAdmin")}</SelectItem>
+                    <SelectItem value="billing_admin">{t("admin.jit.billingAdmin")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Duration (minutes)</Label>
+                <Label>{t("admin.jit.durationLabel")}</Label>
                 <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} min={5} max={120} />
-                <p className="text-xs text-muted-foreground">Max 120 minutes. Auto-expires after this period.</p>
+                <p className="text-xs text-muted-foreground">{t("admin.jit.durationHint")}</p>
               </div>
               <div className="space-y-2">
-                <Label>Reason</Label>
-                <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Why do you need elevated access?" />
+                <Label>{t("admin.jit.reasonLabel")}</Label>
+                <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("admin.jit.reasonPlaceholder")} />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setRequestDialogOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setRequestDialogOpen(false)}>{t("admin.jit.cancel")}</Button>
               <Button onClick={handleRequest} disabled={submitting}>
-                {submitting ? "Submitting..." : "Submit Request"}
+                {submitting ? t("admin.jit.submitting") : t("admin.jit.submitRequest")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -196,7 +198,7 @@ export default function JitAccessPage() {
                 body: JSON.stringify({ action: "revoke" }),
               })
               fetchData()
-              toast.success("Elevation revoked")
+              toast.success(t("admin.jit.revokedSuccess"))
             }}>
               Revoke Now
             </Button>
@@ -206,28 +208,28 @@ export default function JitAccessPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Elevation Requests</CardTitle>
-          <CardDescription>Manage privilege elevation requests with time-boxed access</CardDescription>
+          <CardTitle>{t("admin.jit.requestsTitle")}</CardTitle>
+          <CardDescription>{t("admin.jit.requestsDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <div className="text-center py-8 text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Reason</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Expires</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("admin.jit.role")}</TableHead>
+                  <TableHead>{t("admin.jit.reasonLabel")}</TableHead>
+                  <TableHead>{t("admin.jit.duration")}</TableHead>
+                  <TableHead>{t("admin.jit.status")}</TableHead>
+                  <TableHead>{t("admin.jit.expires")}</TableHead>
+                  <TableHead>{t("admin.jit.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {requests.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground">No elevation requests</TableCell>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground">{t("admin.jit.noRequests")}</TableCell>
                   </TableRow>
                 ) : (
                   requests.map((req) => (
@@ -260,7 +262,7 @@ export default function JitAccessPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Security Policies</CardTitle>
+          <CardTitle>{t("admin.jit.securityPolicies")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>{"\u2022"} All elevation requests require <strong>platform owner approval</strong></p>

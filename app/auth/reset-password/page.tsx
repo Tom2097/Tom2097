@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
@@ -13,6 +14,7 @@ import { Logo } from "@/components/digit/logo"
 const PRODUCTION_URL = process.env.NEXT_PUBLIC_APP_URL || "https://v0-digit-git-main-offtrackdanny01-4714s-projects.vercel.app"
 
 function ResetPasswordForm() {
+  const { t } = useI18n()
   const searchParams = useSearchParams()
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -34,12 +36,12 @@ function ResetPasswordForm() {
     setError(null)
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match")
+      setError(t("auth.resetPassword.passwordsDoNotMatch"))
       return
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters")
+      setError(t("auth.resetPassword.minLength"))
       return
     }
 
@@ -65,8 +67,8 @@ function ResetPasswordForm() {
             <div className="flex items-center justify-center gap-2 mb-4">
               <Logo size="lg" />
             </div>
-            <CardTitle className="text-2xl">Password Updated</CardTitle>
-            <CardDescription>Your password has been reset successfully.</CardDescription>
+            <CardTitle className="text-2xl">{t("auth.resetPassword.successTitle")}</CardTitle>
+            <CardDescription>{t("auth.resetPassword.successDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <div className="flex justify-center mb-4">
@@ -75,7 +77,7 @@ function ResetPasswordForm() {
               </div>
             </div>
             <Button onClick={() => window.location.href = "/auth/login"} className="w-full">
-              Sign in
+              {t("auth.resetPassword.signIn")}
             </Button>
           </CardContent>
         </Card>
@@ -90,8 +92,8 @@ function ResetPasswordForm() {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Logo size="lg" />
           </div>
-          <CardTitle className="text-2xl">Reset your password</CardTitle>
-          <CardDescription>Enter your new password below.</CardDescription>
+          <CardTitle className="text-2xl">{t("auth.resetPassword.title")}</CardTitle>
+          <CardDescription>{t("auth.resetPassword.description")}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -102,11 +104,11 @@ function ResetPasswordForm() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
+              <Label htmlFor="password">{t("auth.resetPassword.newPasswordLabel")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter new password"
+                placeholder={t("auth.resetPassword.newPasswordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -114,11 +116,11 @@ function ResetPasswordForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">{t("auth.resetPassword.confirmPasswordLabel")}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="Confirm new password"
+                placeholder={t("auth.resetPassword.confirmPasswordPlaceholder")}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -128,10 +130,10 @@ function ResetPasswordForm() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Updating...
+                  {t("auth.resetPassword.updating")}
                 </>
               ) : (
-                "Reset password"
+                t("auth.resetPassword.resetPassword")
               )}
             </Button>
           </CardContent>
@@ -142,13 +144,14 @@ function ResetPasswordForm() {
 }
 
 export default function ResetPasswordPage() {
+  const { t } = useI18n()
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="py-12 text-center">
             <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-            <p className="mt-4 text-muted-foreground">Loading...</p>
+            <p className="mt-4 text-muted-foreground">{t("auth.resetPassword.loading")}</p>
           </CardContent>
         </Card>
       </div>

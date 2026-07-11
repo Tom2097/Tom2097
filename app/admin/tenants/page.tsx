@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
@@ -82,6 +83,7 @@ interface TenantDetail {
 }
 
 export default function TenantsPage() {
+  const { t } = useI18n()
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -104,7 +106,7 @@ export default function TenantsPage() {
         if (!cancelled || !cancelled.current) setTenants(data.tenants || [])
       }
     } catch {
-      if (!cancelled || !cancelled.current) toast.error("Failed to load tenants")
+      if (!cancelled || !cancelled.current) toast.error(t("admin.tenants.loadFailed"))
     }
   }, [])
 
@@ -151,7 +153,7 @@ export default function TenantsPage() {
         body: JSON.stringify({ action: "suspend", tenantId: suspendTenantId, reason: suspendReason }),
       })
       if (res.ok) {
-        toast.success("Tenant suspended")
+        toast.success(t("admin.tenants.suspendedSuccess"))
         setSuspendDialogOpen(false)
         setSuspendReason("")
         setSuspendTenantId(null)
@@ -173,7 +175,7 @@ export default function TenantsPage() {
         body: JSON.stringify({ action: "activate", tenantId }),
       })
       if (res.ok) {
-        toast.success("Tenant activated")
+        toast.success(t("admin.tenants.activatedSuccess"))
         fetchTenants()
       }
     } catch {
@@ -190,7 +192,7 @@ export default function TenantsPage() {
         body: JSON.stringify({ action: "deprovision", tenantId: deprovisionTenantId }),
       })
       if (res.ok) {
-        toast.success("Tenant deprovisioned")
+        toast.success(t("admin.tenants.deprovisionedSuccess"))
         setDeprovisionDialogOpen(false)
         setDeprovisionTenantId(null)
         fetchTenants()
@@ -209,12 +211,12 @@ export default function TenantsPage() {
         setDetailOpen(true)
       }
     } catch {
-      toast.error("Failed to load tenant details")
+      toast.error(t("admin.tenants.detailFailed"))
     }
   }
 
   const exportCsv = () => {
-    const header = "Organization Name,Plan,Status,User Count,Created Date"
+    const header = t("admin.tenants.csvHeader")
     const rows = filteredTenants.map((t) =>
       `"${t.name}","${t.plan}","${t.status}",${t.userCount},"${new Date(t.createdAt).toISOString()}"`
     )
@@ -223,10 +225,10 @@ export default function TenantsPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = "tenants.csv"
+    a.download = t("admin.tenants.csvFilename")
     a.click()
     URL.revokeObjectURL(url)
-    toast.success("CSV exported")
+    toast.success(t("admin.tenants.exportSuccess"))
   }
 
   const bulkSuspend = async () => {
@@ -256,8 +258,8 @@ export default function TenantsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Tenants</h1>
-          <p className="text-muted-foreground">Manage tenant lifecycle across the platform</p>
+          <h1 className="text-2xl font-bold">{t("admin.tenants.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.tenants.subtitle")}</p>
         </div>
         <div className="flex gap-2">
           {selected.size > 0 && (
@@ -281,7 +283,7 @@ export default function TenantsPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by organization name or email..."
+                placeholder={t("admin.tenants.searchPlaceholder")}
                 className="pl-10"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -291,12 +293,12 @@ export default function TenantsPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="py-8 text-center text-muted-foreground">Loading...</div>
+            <div className="py-8 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
           ) : filteredTenants.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground">
               <Building2 className="mx-auto h-12 w-12 text-muted-foreground/30" />
-              <p className="mt-4 font-medium">No tenants found</p>
-              <p className="text-sm">{search ? "Try a different search term" : "No tenants registered yet"}</p>
+              <p className="mt-4 font-medium">{t("admin.tenants.noTenants")}</p>
+              <p className="text-sm">{search ? t("admin.tenants.trySearch") : t("admin.tenants.noTenantsRegistered")}</p>
             </div>
           ) : (
             <Table>
@@ -308,12 +310,12 @@ export default function TenantsPage() {
                       onCheckedChange={toggleAll}
                     />
                   </TableHead>
-                  <TableHead>Organization Name</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>User Count</TableHead>
-                  <TableHead>Created Date</TableHead>
-                  <TableHead className="w-24">Actions</TableHead>
+                  <TableHead>{t("admin.tenants.organizationName")}</TableHead>
+                  <TableHead>{t("admin.tenants.plan")}</TableHead>
+                  <TableHead>{t("admin.tenants.status")}</TableHead>
+                  <TableHead>{t("admin.tenants.userCount")}</TableHead>
+                  <TableHead>{t("admin.tenants.createdDate")}</TableHead>
+                  <TableHead className="w-24">{t("admin.tenants.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -334,7 +336,7 @@ export default function TenantsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon-sm" onClick={() => viewDetail(tenant.id)} title="View Details">
+                        <Button variant="ghost" size="icon-sm" onClick={() => viewDetail(tenant.id)} title={t("admin.tenants.viewDetails")}>
                           <Eye className="h-4 w-4" />
                         </Button>
                         {tenant.status === "active" || tenant.status === "trialing" ? (
@@ -346,7 +348,7 @@ export default function TenantsPage() {
                               setSuspendReason("")
                               setSuspendDialogOpen(true)
                             }}
-                            title="Suspend"
+                            title={t("admin.tenants.suspend")}
                           >
                             <PauseCircle className="h-4 w-4 text-amber-500" />
                           </Button>
@@ -355,7 +357,7 @@ export default function TenantsPage() {
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => handleActivate(tenant.id)}
-                            title="Activate"
+                            title={t("admin.tenants.activate")}
                           >
                             <PlayCircle className="h-4 w-4 text-emerald-500" />
                           </Button>
@@ -368,7 +370,7 @@ export default function TenantsPage() {
                               setDeprovisionTenantId(tenant.id)
                               setDeprovisionDialogOpen(true)
                             }}
-                            title="Deprovision"
+                            title={t("admin.tenants.deprovision")}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
@@ -387,12 +389,12 @@ export default function TenantsPage() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{detailTenant?.name || "Tenant Details"}</DialogTitle>
-            <DialogDescription>Detailed information about this tenant</DialogDescription>
+            <DialogDescription>{t("admin.tenants.tenantDetailsDesc")}</DialogDescription>
           </DialogHeader>
           {detailTenant && (
             <Tabs defaultValue="subscription">
               <TabsList>
-                <TabsTrigger value="subscription">Subscription</TabsTrigger>
+                <TabsTrigger value="subscription">{t("admin.tenants.subscription")}</TabsTrigger>
                 <TabsTrigger value="users">Users ({detailTenant.profiles?.length || 0})</TabsTrigger>
               </TabsList>
               <TabsContent value="subscription" className="space-y-4">
@@ -400,29 +402,29 @@ export default function TenantsPage() {
                   detailTenant.subscriptions.map((sub, i) => (
                     <div key={i} className="rounded-lg border p-4 space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Plan</span>
+                        <span className="text-muted-foreground">{t("admin.tenants.plan")}</span>
                         <span className="font-medium">{sub.plan_id}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status</span>
+                        <span className="text-muted-foreground">{t("admin.tenants.status")}</span>
                         <Badge variant="outline">{sub.status}</Badge>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Billing Period</span>
+                        <span className="text-muted-foreground">{t("admin.tenants.billingPeriod")}</span>
                         <span>
                           {sub.billing_period_start
                             ? `${new Date(sub.billing_period_start).toLocaleDateString()} - ${new Date(sub.billing_period_end || "").toLocaleDateString()}`
-                            : "N/A"}
+                            : t("admin.tenants.na")}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Payment Provider</span>
-                        <span>{sub.payment_provider || "N/A"}</span>
+                        <span className="text-muted-foreground">{t("admin.tenants.paymentProvider")}</span>
+                        <span>{sub.payment_provider || t("admin.tenants.na")}</span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">No subscription data</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.tenants.noSubscriptionData")}</p>
                 )}
               </TabsContent>
               <TabsContent value="users">
@@ -431,9 +433,9 @@ export default function TenantsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Role</TableHead>
+                          <TableHead>{t("resources.page.name")}</TableHead>
+                          <TableHead>{t("crm.communicationHub.channels.email")}</TableHead>
+                          <TableHead>{t("settings.team.inviteDialog.roleLabel")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -448,7 +450,7 @@ export default function TenantsPage() {
                     </Table>
                   </ScrollArea>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No users in this tenant</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.tenants.no_users_in_this_tenant")}</p>
                 )}
               </TabsContent>
             </Tabs>
@@ -459,18 +461,18 @@ export default function TenantsPage() {
       <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Suspend Tenant</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.tenants.suspend_tenant")}</AlertDialogTitle>
             <AlertDialogDescription>
               This will suspend the tenant and mark their subscription as past due. Users will lose access.
               Provide a reason for this action.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2">
-            <Label>Reason for Suspension</Label>
+            <Label>{t("admin.tenants.reasonLabel")}</Label>
             <Textarea
               value={suspendReason}
               onChange={(e) => setSuspendReason(e.target.value)}
-              placeholder="e.g., Payment failure, Terms of Service violation"
+              placeholder={t("admin.tenants.reasonPlaceholder")}
               rows={3}
             />
           </div>
@@ -486,7 +488,7 @@ export default function TenantsPage() {
       <AlertDialog open={deprovisionDialogOpen} onOpenChange={setDeprovisionDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Deprovision Tenant</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.tenants.deprovisionTenant")}</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently deprovision the tenant and cancel their subscription.
               This action cannot be undone. All data will be scheduled for deletion.

@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect, use } from "react"
 import Link from "next/link"
@@ -79,6 +80,7 @@ const activityTimeline = [
 ]
 
 export default function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { t } = useI18n()
   const { id } = use(params)
   const [tenant, setTenant] = useState<TenantDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -165,16 +167,16 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
   const formatDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString() : "N/A")
 
   if (loading) {
-    return <div className="py-12 text-center text-muted-foreground">Loading tenant details...</div>
+    return <div className="py-12 text-center text-muted-foreground">{t("admin.tenantDetail.loading_tenant_details")}</div>
   }
 
   if (!tenant) {
     return (
       <div className="py-12 text-center text-muted-foreground">
         <Building2 className="mx-auto h-12 w-12 text-muted-foreground/30" />
-        <p className="mt-4 font-medium">Tenant not found</p>
+        <p className="mt-4 font-medium">{t("admin.tenantDetail.tenant_not_found")}</p>
         <Button variant="outline" className="mt-4" asChild>
-          <Link href="/admin/tenants">Back to Tenants</Link>
+          <Link href="/admin/tenants">{t("admin.tenantDetail.back_to_tenants")}</Link>
         </Button>
       </div>
     )
@@ -228,25 +230,25 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
               tenant.subscriptions.map((sub, i) => (
                 <div key={i} className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Plan</span>
+                    <span className="text-muted-foreground">{t("dashboard.subscription.active.planSuffix")}</span>
                     <span className="font-medium capitalize">{sub.plan_id}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Status</span>
+                    <span className="text-muted-foreground">{t("resources.page.status")}</span>
                     {getStatusBadge(sub.status)}
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Billing Period</span>
+                    <span className="text-muted-foreground">{t("admin.tenantDetail.billing_period")}</span>
                     <span>{sub.billing_period_start ? `${formatDate(sub.billing_period_start)} - ${formatDate(sub.billing_period_end)}` : "N/A"}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Payment Provider</span>
+                    <span className="text-muted-foreground">{t("admin.tenantDetail.payment_provider")}</span>
                     <span>{sub.payment_provider || "N/A"}</span>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground">No subscription data</p>
+              <p className="text-muted-foreground">{t("admin.tenantDetail.no_subscription_data")}</p>
             )}
           </CardContent>
         </Card>
@@ -275,7 +277,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground">No team members</p>
+              <p className="text-sm text-muted-foreground">{t("admin.tenantDetail.no_team_members")}</p>
             )}
           </CardContent>
         </Card>
@@ -296,7 +298,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground">No workspace configuration</p>
+              <p className="text-muted-foreground">{t("admin.tenantDetail.no_workspace_configuration")}</p>
             )}
           </CardContent>
         </Card>
@@ -320,7 +322,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                   <p className="text-sm font-medium">{event.action}</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{event.user}</span>
-                    <span>&middot;</span>
+                    <span>{t("admin.tenantDetail.middot")}</span>
                     <span>{new Date(event.date).toLocaleString()}</span>
                   </div>
                 </div>
@@ -339,7 +341,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2">
-            <Label>Reason</Label>
+            <Label>{t("admin.tenantDetail.reason")}</Label>
             <Textarea
               value={suspendReason}
               onChange={(e) => setSuspendReason(e.target.value)}
@@ -360,11 +362,11 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Send Notification to {tenant.name}</DialogTitle>
-            <DialogDescription>Send an email notification to all tenant admins.</DialogDescription>
+            <DialogDescription>{t("admin.tenantDetail.send_an_email_notification_to_all_tenant_admins")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Subject</Label>
+              <Label>{t("crm.communicationHub.subjectPlaceholder")}</Label>
               <Input
                 value={notifySubject}
                 onChange={(e) => setNotifySubject(e.target.value)}
@@ -372,7 +374,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
               />
             </div>
             <div className="space-y-2">
-              <Label>Message</Label>
+              <Label>{t("admin.tenantDetail.message")}</Label>
               <Textarea
                 value={notifyMessage}
                 onChange={(e) => setNotifyMessage(e.target.value)}

@@ -1,72 +1,49 @@
+import { getTranslator } from "@/lib/i18n/server"
 import type { Metadata } from "next"
 import { LegalPageShell, LegalSection } from "@/components/legal/legal-page-shell"
 
-export const metadata: Metadata = {
-  title: "Privacy Policy | DigiT",
-  description:
-    "How DigiT collects, uses, protects, and shares your information across our enterprise intelligence platform.",
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getTranslator()
+  return {
+    title: t("legal.privacy.metadata.title"),
+    description: t("legal.privacy.metadata.description"),
+  }
 }
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const { t } = await getTranslator()
   return (
     <LegalPageShell
-      title="Privacy Policy"
-      description="Your privacy matters. This policy explains what data we collect, why we collect it, and how we keep it safe."
-      lastUpdated="June 17, 2026"
+      title={t("legal.privacy.title")}
+      description={t("legal.privacy.description")}
+      lastUpdated={t("legal.privacy.lastUpdated")}
     >
-      <LegalSection heading="1. Information We Collect">
-        <p>
-          We collect information you provide directly, such as your name, email address, company details, and billing
-          information when you create an account or subscribe to a plan. We also collect usage data, device
-          information, and log data automatically as you interact with the platform.
-        </p>
+      <LegalSection heading={t("legal.privacy.section1.heading")}>
+        <p>{t("legal.privacy.section1.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="2. How We Use Your Information">
-        <p>
-          We use your information to provide and improve our services, process payments, send transactional and
-          service-related communications, provide customer support, and ensure the security and integrity of our
-          platform. We never sell your personal data.
-        </p>
+      <LegalSection heading={t("legal.privacy.section2.heading")}>
+        <p>{t("legal.privacy.section2.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="3. Data Storage and Security">
-        <p>
-          Your data is stored on secure, access-controlled infrastructure with encryption in transit and at rest. Each
-          organization&apos;s data is logically isolated using row-level security, ensuring tenants can only access
-          their own records.
-        </p>
+      <LegalSection heading={t("legal.privacy.section3.heading")}>
+        <p>{t("legal.privacy.section3.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="4. Data Sharing">
-        <p>
-          We share data only with trusted sub-processors required to operate the service (for example, payment
-          processing and cloud hosting), and only to the extent necessary. All sub-processors are bound by
-          confidentiality and data-protection obligations.
-        </p>
+      <LegalSection heading={t("legal.privacy.section4.heading")}>
+        <p>{t("legal.privacy.section4.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="5. Your Rights">
-        <p>
-          Depending on your jurisdiction, you may have the right to access, correct, export, or delete your personal
-          data. You can exercise these rights, including GDPR data-subject access requests, by contacting us. We
-          respond to verified requests within 30 days.
-        </p>
+      <LegalSection heading={t("legal.privacy.section5.heading")}>
+        <p>{t("legal.privacy.section5.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="6. Data Retention">
-        <p>
-          We retain personal data only as long as necessary to provide the service and meet legal obligations.
-          Organizations can configure custom retention policies for their data within the platform. When data is no
-          longer needed, it is securely purged.
-        </p>
+      <LegalSection heading={t("legal.privacy.section6.heading")}>
+        <p>{t("legal.privacy.section6.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="7. Changes to This Policy">
-        <p>
-          We may update this Privacy Policy from time to time. Material changes will be communicated through the
-          platform or via email. Continued use of the service after changes take effect constitutes acceptance.
-        </p>
+      <LegalSection heading={t("legal.privacy.section7.heading")}>
+        <p>{t("legal.privacy.section7.content")}</p>
       </LegalSection>
     </LegalPageShell>
   )

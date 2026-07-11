@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -77,6 +78,7 @@ function getTrendIcon(change: number) {
 }
 
 export default function RevenuePage() {
+  const { t } = useI18n()
   const [metrics, setMetrics] = useState<RevenueMetrics | null>(null)
   const [churn, setChurn] = useState<ChurnAnalysis | null>(null)
   const [forecast, setForecast] = useState<RevenueForecast | null>(null)
@@ -110,35 +112,35 @@ export default function RevenuePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Revenue Analytics</h1>
-        <p className="text-muted-foreground">MRR, ARR, churn, and revenue breakdown</p>
+        <h1 className="text-2xl font-bold">{t("admin.revenue.title")}</h1>
+        <p className="text-muted-foreground">{t("admin.revenue.subtitle")}</p>
       </div>
 
       <MetricGrid columns={3}>
         <MetricCard
-          label="Monthly Recurring Revenue"
+          label={t("admin.revenue.mrr")}
           value={metrics ? formatInr(metrics.mrr) : '...'}
           trend={metrics && metrics.mrrChange > 0 ? 'up' : 'down'}
           change={metrics?.mrrChange}
-          subtitle="vs previous month"
+          subtitle={t("admin.revenue.vsPreviousMonth")}
         />
         <MetricCard
-          label="Annual Run Rate"
+          label={t("admin.revenue.arr")}
           value={metrics ? formatInr(metrics.arr) : '...'}
           trend={metrics && metrics.arrChange > 0 ? 'up' : 'down'}
           change={metrics?.arrChange}
-          subtitle="projected"
+          subtitle={t("admin.revenue.projected")}
         />
-        <MetricCard label="Active Subscriptions" value={metrics?.activeSubscriptions ?? '...'} trend="up" change={5} />
+        <MetricCard label={t("admin.revenue.activeSubscriptions")} value={metrics?.activeSubscriptions ?? '...'} trend="up" change={5} />
         <MetricCard
-          label="Churn Rate"
+          label={t("admin.revenue.churnRate")}
           value={metrics ? `${metrics.churnRate}%` : '...'}
           trend={metrics && metrics.churnChange > 0 ? 'up' : 'down'}
           change={metrics?.churnChange}
-          subtitle="improvement vs last month"
+          subtitle={t("admin.revenue.improvement")}
         />
-        <MetricCard label="Avg Revenue / User" value={metrics ? formatInr(metrics.averageRevenuePerUser) : '...'} trend="up" change={3} />
-        <MetricCard label="Lifetime Value" value={metrics ? formatInr(metrics.lifetimeValue) : '...'} trend="up" change={8} />
+        <MetricCard label={t("admin.revenue.arpu")} value={metrics ? formatInr(metrics.averageRevenuePerUser) : '...'} trend="up" change={3} />
+        <MetricCard label={t("admin.revenue.ltv")} value={metrics ? formatInr(metrics.lifetimeValue) : '...'} trend="up" change={8} />
       </MetricGrid>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -151,17 +153,17 @@ export default function RevenuePage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="py-8 text-center text-muted-foreground">Loading...</div>
+              <div className="py-8 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
             ) : !metrics || metrics.revenueByPlan.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground">No data</div>
+              <div className="py-8 text-center text-muted-foreground">{t("admin.revenue.noData")}</div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Subscribers</TableHead>
-                    <TableHead>Share</TableHead>
+                    <TableHead>{t("admin.revenue.plan")}</TableHead>
+                    <TableHead>{t("admin.revenue.amount")}</TableHead>
+                    <TableHead>{t("admin.revenue.subscribers")}</TableHead>
+                    <TableHead>{t("admin.revenue.share")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -198,9 +200,9 @@ export default function RevenuePage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="py-8 text-center text-muted-foreground">Loading...</div>
+              <div className="py-8 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
             ) : !metrics || metrics.revenueByRegion.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground">No data</div>
+              <div className="py-8 text-center text-muted-foreground">{t("admin.revenue.noData")}</div>
             ) : (
               <div className="space-y-6">
                 <div className="flex items-center justify-center gap-1">
@@ -242,13 +244,13 @@ export default function RevenuePage() {
             <LineChart className="h-4 w-4" />
             Monthly Trend (MRR & Churn)
           </CardTitle>
-          <CardDescription>Last 6 months of revenue and churn data</CardDescription>
+          <CardDescription>{t("admin.revenue.monthlyTrendDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="py-8 text-center text-muted-foreground">Loading...</div>
+            <div className="py-8 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
           ) : !metrics || metrics.monthlyTrend.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">No trend data</div>
+            <div className="py-8 text-center text-muted-foreground">{t("admin.revenue.noTrendData")}</div>
           ) : (
             <div className="space-y-2">
               <div className="flex items-end gap-[3px] h-48 w-full">
@@ -279,11 +281,11 @@ export default function RevenuePage() {
               <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2">
                 <div className="flex items-center gap-1">
                   <div className="h-3 w-3 rounded bg-emerald-500/60" />
-                  <span>MRR</span>
+                  <span>{t("admin.revenue.mrrLabel")}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="h-3 w-3 rounded bg-red-500/40" />
-                  <span>Churn %</span>
+                  <span>{t("admin.revenue.churnPercent")}</span>
                 </div>
               </div>
             </div>
@@ -298,13 +300,13 @@ export default function RevenuePage() {
               <LogOut className="h-4 w-4" />
               Churn Analysis
             </CardTitle>
-            <CardDescription>Voluntary vs involuntary breakdown</CardDescription>
+            <CardDescription>{t("admin.revenue.churnAnalysisDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {loading ? (
-              <div className="py-4 text-center text-muted-foreground">Loading...</div>
+              <div className="py-4 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
             ) : !churn ? (
-              <div className="py-4 text-center text-muted-foreground">No data</div>
+              <div className="py-4 text-center text-muted-foreground">{t("admin.revenue.noData")}</div>
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-4">
@@ -312,14 +314,14 @@ export default function RevenuePage() {
                     <CardContent className="pt-6 text-center">
                       <LogOut className="mx-auto h-6 w-6 text-amber-500 mb-2" />
                       <div className="text-2xl font-bold">{churn.voluntaryChurn}</div>
-                      <p className="text-xs text-muted-foreground">Voluntary Churn</p>
+                      <p className="text-xs text-muted-foreground">{t("admin.revenue.voluntaryChurn")}</p>
                     </CardContent>
                   </Card>
                   <Card className="border-red-500/20 bg-red-500/5">
                     <CardContent className="pt-6 text-center">
                       <AlertTriangle className="mx-auto h-6 w-6 text-red-500 mb-2" />
                       <div className="text-2xl font-bold">{churn.involuntaryChurn}</div>
-                      <p className="text-xs text-muted-foreground">Involuntary Churn</p>
+                      <p className="text-xs text-muted-foreground">{t("admin.revenue.involuntaryChurn")}</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -334,20 +336,20 @@ export default function RevenuePage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Churn by Reason</CardTitle>
+              <CardTitle className="text-sm">{t("admin.revenue.churnByReason")}</CardTitle>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="py-4 text-center text-muted-foreground">Loading...</div>
+                <div className="py-4 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
               ) : !churn || churn.churnByReason.length === 0 ? (
-                <div className="py-4 text-center text-muted-foreground">No data</div>
+                <div className="py-4 text-center text-muted-foreground">{t("admin.revenue.noData")}</div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Reason</TableHead>
-                      <TableHead>Count</TableHead>
-                      <TableHead>Share</TableHead>
+                      <TableHead>{t("admin.revenue.reason")}</TableHead>
+                      <TableHead>{t("admin.revenue.count")}</TableHead>
+                      <TableHead>{t("admin.revenue.share")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -370,19 +372,19 @@ export default function RevenuePage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Churn by Plan</CardTitle>
+              <CardTitle className="text-sm">{t("admin.revenue.churnByPlan")}</CardTitle>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="py-4 text-center text-muted-foreground">Loading...</div>
+                <div className="py-4 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
               ) : !churn || churn.churnByPlan.length === 0 ? (
-                <div className="py-4 text-center text-muted-foreground">No data</div>
+                <div className="py-4 text-center text-muted-foreground">{t("admin.revenue.noData")}</div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Plan</TableHead>
-                      <TableHead>Churned</TableHead>
+                      <TableHead>{t("admin.revenue.plan")}</TableHead>
+                      <TableHead>{t("admin.revenue.churned")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -406,21 +408,21 @@ export default function RevenuePage() {
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             At-Risk Accounts
           </CardTitle>
-          <CardDescription>Accounts showing churn signals</CardDescription>
+          <CardDescription>{t("admin.revenue.atRiskDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="py-4 text-center text-muted-foreground">Loading...</div>
+            <div className="py-4 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
           ) : !churn || churn.atRiskAccounts.length === 0 ? (
-            <div className="py-4 text-center text-muted-foreground">No accounts at risk</div>
+            <div className="py-4 text-center text-muted-foreground">{t("admin.revenue.noAccountsAtRisk")}</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Account</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Risk Level</TableHead>
+                  <TableHead>{t("admin.revenue.account")}</TableHead>
+                  <TableHead>{t("admin.revenue.email")}</TableHead>
+                  <TableHead>{t("admin.revenue.plan")}</TableHead>
+                  <TableHead>{t("admin.revenue.riskLevel")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -449,24 +451,24 @@ export default function RevenuePage() {
             <Target className="h-4 w-4" />
             Revenue Forecast
           </CardTitle>
-          <CardDescription>Projected revenue based on current growth rate</CardDescription>
+          <CardDescription>{t("admin.revenue.forecastDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="py-4 text-center text-muted-foreground">Loading...</div>
+            <div className="py-4 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
           ) : !forecast ? (
-            <div className="py-4 text-center text-muted-foreground">No forecast data</div>
+            <div className="py-4 text-center text-muted-foreground">{t("admin.revenue.noForecastData")}</div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardContent className="pt-6">
-                  <p className="text-sm text-muted-foreground mb-1">Current MRR</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("admin.revenue.current_mrr")}</p>
                   <p className="text-2xl font-bold">{formatInr(forecast.currentMrr)}</p>
                 </CardContent>
               </Card>
               <Card className="border-primary/30">
                 <CardContent className="pt-6">
-                  <p className="text-sm text-muted-foreground mb-1">Next Month</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("admin.revenue.nextMonth")}</p>
                   <p className="text-2xl font-bold text-primary">{formatInr(forecast.forecastNextMonth)}</p>
                   <div className="flex items-center gap-1 mt-1">
                     <TrendingUp className="h-3 w-3 text-emerald-500" />
@@ -476,13 +478,13 @@ export default function RevenuePage() {
               </Card>
               <Card className="border-primary/30">
                 <CardContent className="pt-6">
-                  <p className="text-sm text-muted-foreground mb-1">Next Quarter</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("admin.revenue.nextQuarter")}</p>
                   <p className="text-2xl font-bold text-primary">{formatInr(forecast.forecastNextQuarter)}</p>
                 </CardContent>
               </Card>
               <Card className="border-primary/30">
                 <CardContent className="pt-6">
-                  <p className="text-sm text-muted-foreground mb-1">Next Year</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("admin.revenue.nextYear")}</p>
                   <p className="text-2xl font-bold text-primary">{formatInr(forecast.forecastNextYear)}</p>
                   <Badge variant="outline" className="mt-2 text-[10px] capitalize">
                     {forecast.confidence} confidence

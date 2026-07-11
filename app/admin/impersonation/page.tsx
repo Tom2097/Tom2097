@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,6 +27,7 @@ interface ImpersonationSession {
 }
 
 export default function ImpersonationPage() {
+  const { t } = useI18n()
   const [sessions, setSessions] = useState<ImpersonationSession[]>([])
   const [loading, setLoading] = useState(true)
   const [targetEmail, setTargetEmail] = useState("")
@@ -42,7 +44,7 @@ export default function ImpersonationPage() {
         setSessions(data.sessions || [])
       }
     } catch {
-      if (!cancelled || !cancelled.current) toast.error("Failed to load impersonation sessions")
+      if (!cancelled || !cancelled.current) toast.error(t("admin.impersonation.loadFailed"))
     }
   }, [])
 
@@ -67,11 +69,11 @@ export default function ImpersonationPage() {
       if (res.ok && data.user) {
         setSearchResult(data.user)
       } else {
-        toast.error("User not found")
+        toast.error(t("admin.impersonation.userNotFound"))
         setSearchResult(null)
       }
     } catch {
-      toast.error("Failed to search user")
+      toast.error(t("admin.impersonation.searchFailed"))
     }
   }
 
@@ -93,10 +95,10 @@ export default function ImpersonationPage() {
         setSearchResult(null)
         fetchSessions()
       } else {
-        toast.error(data.error || "Failed to start impersonation")
+        toast.error(data.error || t("admin.impersonation.startFailed"))
       }
     } catch {
-      toast.error("Failed to start impersonation")
+      toast.error(t("admin.impersonation.startFailed"))
     } finally {
       setStarting(false)
     }
@@ -110,11 +112,11 @@ export default function ImpersonationPage() {
         body: JSON.stringify({ action: "end", sessionId }),
       })
       if (res.ok) {
-        toast.success("Impersonation session ended")
+        toast.success(t("admin.impersonation.endedSuccess"))
         fetchSessions()
       }
     } catch {
-      toast.error("Failed to end impersonation")
+      toast.error(t("admin.impersonation.endFailed"))
     }
   }
 
@@ -140,8 +142,8 @@ export default function ImpersonationPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Impersonation</h1>
-          <p className="text-muted-foreground">Sign in as users for support and troubleshooting</p>
+          <h1 className="text-2xl font-bold">{t("admin.impersonation.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.impersonation.subtitle")}</p>
         </div>
         <Dialog open={isStartDialogOpen} onOpenChange={setIsStartDialogOpen}>
           <DialogTrigger asChild>
@@ -152,19 +154,19 @@ export default function ImpersonationPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Start Impersonation Session</DialogTitle>
+              <DialogTitle>{t("admin.impersonation.startSessionTitle")}</DialogTitle>
               <DialogDescription>
                 You will be able to view the platform as this user. All actions are audited and time-boxed to 60 minutes.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Target User Email</Label>
+                <Label>{t("admin.impersonation.targetEmailLabel")}</Label>
                 <div className="flex gap-2">
                   <Input
                     value={targetEmail}
                     onChange={(e) => setTargetEmail(e.target.value)}
-                    placeholder="user@company.com"
+                    placeholder={t("admin.impersonation.targetEmailPlaceholder")}
                     onKeyDown={(e) => e.key === "Enter" && searchUser()}
                   />
                   <Button variant="outline" onClick={searchUser} type="button">
@@ -176,27 +178,27 @@ export default function ImpersonationPage() {
                 <Card>
                   <CardContent className="p-3">
                     <div className="text-sm">
-                      <p><strong>Name:</strong> {searchResult.name}</p>
-                      <p><strong>Email:</strong> {searchResult.email}</p>
-                      <p><strong>Organization:</strong> {searchResult.orgName}</p>
+                      <p><strong>{t("admin.impersonation.name")}</strong> {searchResult.name}</p>
+                      <p><strong>{t("admin.impersonation.email")}</strong> {searchResult.email}</p>
+                      <p><strong>{t("admin.impersonation.organization")}</strong> {searchResult.orgName}</p>
                     </div>
                   </CardContent>
                 </Card>
               )}
               <div className="space-y-2">
-                <Label>Reason for Impersonation</Label>
+                <Label>{t("admin.impersonation.reasonLabel")}</Label>
                 <Textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="e.g., Investigating a support ticket, troubleshooting access issue"
+                  placeholder={t("admin.impersonation.reasonPlaceholder")}
                   rows={3}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsStartDialogOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setIsStartDialogOpen(false)}>{t("admin.impersonation.cancel")}</Button>
               <Button onClick={startImpersonation} disabled={!searchResult || starting}>
-                {starting ? "Starting..." : "Start Session"}
+                {starting ? t("admin.impersonation.starting") : t("admin.impersonation.startSession")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -205,27 +207,27 @@ export default function ImpersonationPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Active Impersonation Sessions</CardTitle>
+          <CardTitle>{t("admin.impersonation.activeSessions")}</CardTitle>
           <CardDescription>
             All impersonation sessions are audited and automatically expire after 60 minutes
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <div className="text-center py-8 text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
           ) : sessions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No active impersonation sessions</div>
+            <div className="text-center py-8 text-muted-foreground">{t("admin.impersonation.noSessions")}</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Target User</TableHead>
-                  <TableHead>Organization</TableHead>
-                  <TableHead>Reason</TableHead>
-                  <TableHead>Started</TableHead>
-                  <TableHead>Expires</TableHead>
-                  <TableHead>Consent</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("admin.impersonation.targetUser")}</TableHead>
+                  <TableHead>{t("admin.impersonation.organizationId")}</TableHead>
+                  <TableHead>{t("admin.impersonation.reason")}</TableHead>
+                  <TableHead>{t("admin.impersonation.started")}</TableHead>
+                  <TableHead>{t("admin.impersonation.expires")}</TableHead>
+                  <TableHead>{t("admin.impersonation.consent")}</TableHead>
+                  <TableHead>{t("admin.impersonation.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -243,9 +245,9 @@ export default function ImpersonationPage() {
                     </TableCell>
                     <TableCell>
                       {session.consentGranted ? (
-                        <Badge variant="outline" className="text-green-500">Granted</Badge>
+                        <Badge variant="outline" className="text-green-500">{t("admin.impersonation.granted")}</Badge>
                       ) : (
-                        <Badge variant="outline" className="text-yellow-500">Pending</Badge>
+                        <Badge variant="outline" className="text-yellow-500">{t("admin.impersonation.pending")}</Badge>
                       )}
                     </TableCell>
                     <TableCell>
@@ -264,7 +266,7 @@ export default function ImpersonationPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Security Guidelines</CardTitle>
+          <CardTitle>{t("admin.impersonation.securityGuidelines")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>{"\u2022"} Impersonation sessions are limited to <strong>60 minutes</strong> maximum</p>

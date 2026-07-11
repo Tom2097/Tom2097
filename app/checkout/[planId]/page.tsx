@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -78,6 +79,7 @@ function CheckoutForm({
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "error">("idle")
   const [promoCode, setPromoCode] = useState("")
   const [promoApplied, setPromoApplied] = useState(false)
+  const { t } = useI18n()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -107,7 +109,7 @@ function CheckoutForm({
 
         if (error) {
           setPaymentStatus("error")
-          onError(error instanceof Error ? error.message : "Card setup failed. Please try again.")
+          onError(error instanceof Error ? error.message : t("checkout.page.cardSetupFailed"))
           setIsProcessing(false)
         } else if (setupIntent && setupIntent.status === "succeeded") {
           try {
@@ -116,7 +118,7 @@ function CheckoutForm({
             setTimeout(() => onSuccess(), 2000)
           } catch (subError) {
             setPaymentStatus("error")
-            onError("Trial setup succeeded but subscription creation failed. Please contact support.")
+            onError(t("checkout.page.trialSetupFailed"))
             setIsProcessing(false)
           }
         }
@@ -137,7 +139,7 @@ function CheckoutForm({
 
         if (error) {
           setPaymentStatus("error")
-          onError(error instanceof Error ? error.message : "Payment failed. Please try again.")
+          onError(error instanceof Error ? error.message : t("checkout.page.paymentFailed"))
           setIsProcessing(false)
         } else if (paymentIntent && paymentIntent.status === "succeeded") {
           try {
@@ -146,14 +148,14 @@ function CheckoutForm({
             setTimeout(() => onSuccess(), 2000)
           } catch (subError) {
             setPaymentStatus("error")
-            onError("Payment succeeded but subscription setup failed. Please contact support.")
+            onError(t("checkout.page.subscriptionSetupFailed"))
             setIsProcessing(false)
           }
         }
       }
     } catch (err) {
       setPaymentStatus("error")
-      onError("An unexpected error occurred. Please try again.")
+      onError(t("checkout.page.unexpectedError"))
       setIsProcessing(false)
     }
   }
@@ -189,11 +191,11 @@ function CheckoutForm({
                 />
                 <CreditCard className="absolute inset-0 m-auto w-8 h-8 text-primary" />
               </div>
-              <p className="mt-6 text-lg font-semibold text-foreground">Processing your payment...</p>
-              <p className="text-sm text-muted-foreground mt-2">This may take a few seconds</p>
+              <p className="mt-6 text-lg font-semibold text-foreground">{t("checkout.page.processingOverlay")}</p>
+              <p className="text-sm text-muted-foreground mt-2">{t("checkout.page.processingDesc")}</p>
               <div className="flex items-center justify-center gap-2 mt-4 text-xs text-muted-foreground">
                 <Lock className="w-3 h-3" />
-                <span>Secured by Stripe</span>
+                <span>{t("checkout.page.securedByStripe")}</span>
               </div>
             </div>
           </motion.div>
@@ -225,7 +227,7 @@ function CheckoutForm({
                   <Sparkles className="w-6 h-6 text-amber-500" />
                 </motion.div>
               </motion.div>
-              <p className="mt-6 text-lg font-semibold text-foreground">Payment Successful!</p>
+              <p className="mt-6 text-lg font-semibold text-foreground">{t("checkout.page.paymentSuccessful")}</p>
               <p className="text-sm text-muted-foreground mt-2">
                 Welcome to DigiT {plan.name}. Redirecting...
               </p>
@@ -240,15 +242,15 @@ function CheckoutForm({
           <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
             1
           </div>
-          <h3 className="font-semibold text-foreground">Billing Information</h3>
+          <h3 className="font-semibold text-foreground">{t("checkout.page.billingInformation")}</h3>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="billingName">Full Name</Label>
+            <Label htmlFor="billingName">{t("checkout.page.fullNameLabel")}</Label>
             <Input
               id="billingName"
-              placeholder="John Doe"
+              placeholder={t("checkout.page.fullNamePlaceholder")}
               value={billingName}
               onChange={(e) => setBillingName(e.target.value)}
               required
@@ -256,11 +258,11 @@ function CheckoutForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="billingEmail">Email Address</Label>
+            <Label htmlFor="billingEmail">{t("checkout.page.emailLabel")}</Label>
             <Input
               id="billingEmail"
               type="email"
-              placeholder="john@company.com"
+              placeholder={t("checkout.page.emailPlaceholder")}
               value={billingEmail}
               onChange={(e) => setBillingEmail(e.target.value)}
               required
@@ -278,7 +280,7 @@ function CheckoutForm({
           <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
             2
           </div>
-          <h3 className="font-semibold text-foreground">Payment Method</h3>
+          <h3 className="font-semibold text-foreground">{t("checkout.page.paymentMethod")}</h3>
         </div>
         
         <div className="p-4 rounded-xl border border-border bg-muted/20">
@@ -304,15 +306,15 @@ function CheckoutForm({
           <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
             3
           </div>
-          <h3 className="font-semibold text-foreground">Promo Code</h3>
-          <span className="text-xs text-muted-foreground">(Optional)</span>
+          <h3 className="font-semibold text-foreground">{t("checkout.page.promoCode")}</h3>
+          <span className="text-xs text-muted-foreground">{t("checkout.page.optional")}</span>
         </div>
         
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Enter promo code"
+              placeholder={t("checkout.page.promoPlaceholder")}
               value={promoCode}
               onChange={(e) => setPromoCode(e.target.value)}
               disabled={promoApplied}
@@ -332,7 +334,7 @@ function CheckoutForm({
                 Applied
               </>
             ) : (
-              "Apply"
+              t("checkout.page.apply")
             )}
           </Button>
         </div>
@@ -373,7 +375,7 @@ function CheckoutForm({
         {isProcessing ? (
           <>
             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            {isTrial ? "Setting up trial..." : "Processing Payment..."}
+            {isTrial ? t("checkout.page.setupTrial") : t("checkout.page.processingPayment")}
           </>
         ) : isTrial ? (
           <>
@@ -393,15 +395,16 @@ function CheckoutForm({
       {/* Terms */}
       <p className="text-xs text-center text-muted-foreground">
         By completing this purchase, you agree to our{" "}
-        <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
+        <Link href="/terms" className="text-primary hover:underline">{t("checkout.page.termsOfService")}</Link>
         {" "}and{" "}
-        <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+        <Link href="/privacy" className="text-primary hover:underline">{t("checkout.page.privacyPolicy")}</Link>.
       </p>
     </form>
   )
 }
 
 export default function CheckoutPage() {
+  const { t } = useI18n()
   const params = useParams()
   const router = useRouter()
   const planId = (params?.planId as string) || "" 
@@ -491,12 +494,12 @@ export default function CheckoutPage() {
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <Card className="max-w-md w-full p-8 text-center">
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-destructive" />
-          <h1 className="text-xl font-bold mb-2">Plan Not Found</h1>
+          <h1 className="text-xl font-bold mb-2">{t("checkout.page.planNotFoundTitle")}</h1>
           <p className="text-muted-foreground mb-6">
             The selected plan does not exist or is no longer available.
           </p>
           <Button asChild>
-            <Link href="/pricing">View Available Plans</Link>
+            <Link href="/pricing">{t("checkout.page.viewPlans")}</Link>
           </Button>
         </Card>
       </div>
@@ -508,7 +511,7 @@ export default function CheckoutPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-muted-foreground">Preparing checkout...</p>
+          <p className="mt-4 text-muted-foreground">{t("checkout.page.preparingCheckout")}</p>
         </div>
       </div>
     )
@@ -535,17 +538,17 @@ export default function CheckoutPage() {
             </Button>
             <div className="flex items-center gap-3">
               <Logo size="md" />
-              <p className="text-xs text-muted-foreground ml-2 hidden sm:block">Secure Checkout</p>
+              <p className="text-xs text-muted-foreground ml-2 hidden sm:block">{t("checkout.page.secureCheckout")}</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
               <Shield className="w-4 h-4 text-emerald-500" />
-              <span>SSL Encrypted</span>
+              <span>{t("checkout.page.sslEncrypted")}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Lock className="w-4 h-4" />
-              <span>Powered by Stripe</span>
+              <span>{t("checkout.page.poweredByStripe")}</span>
             </div>
           </div>
         </div>
@@ -556,9 +559,9 @@ export default function CheckoutPage() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-center gap-2 sm:gap-4">
             {[
-              { num: 1, label: "Review" },
-              { num: 2, label: "Payment" },
-              { num: 3, label: "Complete" }
+              { num: 1, label: t("checkout.page.review") },
+              { num: 2, label: t("checkout.page.payment") },
+              { num: 3, label: t("checkout.page.complete") }
             ].map((s, i) => (
               <div key={s.num} className="flex items-center">
                 <div className="flex items-center gap-2">
@@ -634,7 +637,7 @@ export default function CheckoutPage() {
                   className="space-y-6"
                 >
                   <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2">Review Your Order</h2>
+                    <h2 className="text-2xl font-bold text-foreground mb-2">{t("checkout.page.reviewOrder")}</h2>
                     <p className="text-muted-foreground">
                       You&apos;re about to subscribe to {plan.name}. Review the details below.
                     </p>
@@ -649,14 +652,14 @@ export default function CheckoutPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="text-xl font-semibold text-foreground">{plan.name} Plan</h3>
-                          {plan.popular && <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/30">Most Popular</Badge>}
+                          {plan.popular && <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/30">{t("checkout.page.mostPopular")}</Badge>}
                         </div>
                         <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
                         <div className="flex items-baseline gap-1">
                           <span className="text-3xl font-bold text-foreground">
                             {formatPrice(plan.priceInCents)}
                           </span>
-                          <span className="text-muted-foreground">/month</span>
+                          <span className="text-muted-foreground">{t("checkout.page.perMonth")}</span>
                         </div>
                       </div>
                     </div>
@@ -686,10 +689,10 @@ export default function CheckoutPage() {
                     </h4>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {[
-                        { label: "Team Members", value: plan.limits.users === -1 ? "Unlimited" : plan.limits.users },
-                        { label: "AI Modules", value: plan.limits.modules },
-                        { label: "Data Points", value: plan.limits.dataPoints === -1 ? "Unlimited" : `${(plan.limits.dataPoints / 1000000).toFixed(0)}M` },
-                        { label: "API Calls/mo", value: plan.limits.apiCalls === -1 ? "Unlimited" : `${(plan.limits.apiCalls / 1000).toFixed(0)}K` },
+                        { label: t("checkout.page.teamMembers"), value: plan.limits.users === -1 ? t("checkout.page.unlimited") : plan.limits.users },
+                        { label: t("checkout.page.aiModules"), value: plan.limits.modules },
+                        { label: t("checkout.page.dataPoints"), value: plan.limits.dataPoints === -1 ? t("checkout.page.unlimited") : `${(plan.limits.dataPoints / 1000000).toFixed(0)}M` },
+                        { label: t("checkout.page.apiCalls"), value: plan.limits.apiCalls === -1 ? t("checkout.page.unlimited") : `${(plan.limits.apiCalls / 1000).toFixed(0)}K` },
                       ].map((item, i) => (
                         <div key={i} className="text-center p-4 rounded-xl bg-muted/30">
                           <p className="text-2xl font-bold text-foreground">{item.value}</p>
@@ -713,9 +716,9 @@ export default function CheckoutPage() {
                   {/* Trust Badges */}
                   <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-4">
                     {[
-                      { icon: Shield, label: "SOC 2 Compliant" },
-                      { icon: Lock, label: "PCI DSS Certified" },
-                      { icon: BadgeCheck, label: "GDPR Ready" },
+                      { icon: Shield, label: t("checkout.page.soc2") },
+                      { icon: Lock, label: t("checkout.page.pciDss") },
+                      { icon: BadgeCheck, label: t("checkout.page.gdprReady") },
                     ].map((badge, i) => (
                       <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
                         <badge.icon className="w-4 h-4" />
@@ -734,7 +737,7 @@ export default function CheckoutPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-foreground mb-2">Complete Payment</h2>
+                      <h2 className="text-2xl font-bold text-foreground mb-2">{t("checkout.page.completePayment")}</h2>
                       <p className="text-muted-foreground">
                         Enter your payment details to complete your subscription.
                       </p>
@@ -799,7 +802,7 @@ export default function CheckoutPage() {
                       <div className="py-12 flex items-center justify-center">
                         <div className="text-center">
                           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-                          <p className="text-muted-foreground">Initializing secure payment...</p>
+                          <p className="text-muted-foreground">{t("checkout.page.initializingPayment")}</p>
                         </div>
                       </div>
                     )}
@@ -813,38 +816,38 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2 order-1 lg:order-2">
             <div className="lg:sticky lg:top-32">
               <Card className="p-6 border-border/50">
-                <h3 className="text-lg font-semibold text-foreground mb-6">Order Summary</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-6">{t("checkout.page.orderSummary")}</h3>
                 
                   <div className="space-y-4 pb-4 border-b border-border">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Plan</span>
+                      <span className="text-muted-foreground">{t("checkout.page.planSuffix")}</span>
                       <span className="font-medium text-foreground">{plan.name}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Billing Cycle</span>
-                      <span className="font-medium text-foreground">{isTrial ? "Monthly (Trial)" : "Annual"}</span>
+                      <span className="text-muted-foreground">{t("checkout.page.billingCycle")}</span>
+                      <span className="font-medium text-foreground">{isTrial ? t("checkout.page.monthlyTrial") : t("checkout.page.annual")}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{isTrial ? "Trial Period" : "Subtotal"}</span>
-                      <span className="font-medium text-foreground">{isTrial ? "Free for 7 days" : formatPrice(plan.priceInCents)}</span>
+                      <span className="text-muted-foreground">{isTrial ? t("checkout.page.trialPeriod") : t("checkout.page.subtotal")}</span>
+                      <span className="font-medium text-foreground">{isTrial ? t("checkout.page.freeFor7Days") : formatPrice(plan.priceInCents)}</span>
                     </div>
                   </div>
 
                 <div className="py-4 border-b border-border">
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Tax</span>
-                    <span className="text-sm text-muted-foreground">Calculated at checkout</span>
+                    <span className="text-muted-foreground">{t("checkout.page.tax")}</span>
+                    <span className="text-sm text-muted-foreground">{t("checkout.page.calculatedAtCheckout")}</span>
                   </div>
                 </div>
 
                 <div className="pt-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-semibold text-foreground">Total</span>
+                    <span className="text-lg font-semibold text-foreground">{t("checkout.page.total")}</span>
                     <div className="text-right">
                       <span className="text-2xl font-bold text-foreground">
                         {formatPrice(plan.priceInCents)}
                       </span>
-                      <p className="text-xs text-muted-foreground">/month</p>
+                      <p className="text-xs text-muted-foreground">{t("checkout.page.perMonth")}</p>
                     </div>
                   </div>
                 </div>
@@ -857,7 +860,7 @@ export default function CheckoutPage() {
                         <Clock className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">7-Day Free Trial</p>
+                        <p className="font-medium text-foreground">{t("checkout.page.trialTitle")}</p>
                         <p className="text-sm text-muted-foreground mt-1">
                           Start with full access today. You won&apos;t be charged until day 8.
                         </p>
@@ -872,7 +875,7 @@ export default function CheckoutPage() {
                     <div className="flex items-start gap-3">
                       <Shield className="w-5 h-5 text-primary mt-0.5" />
                       <div>
-                        <p className="font-medium text-foreground text-sm">30-Day Money Back</p>
+                        <p className="font-medium text-foreground text-sm">{t("checkout.page.guaranteeTitle")}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           Not satisfied? Get a full refund within 30 days.
                         </p>
@@ -887,7 +890,7 @@ export default function CheckoutPage() {
                     <div className="flex items-start gap-3">
                       <Shield className="w-5 h-5 text-primary mt-0.5" />
                       <div>
-                        <p className="font-medium text-foreground text-sm">Annual Plan</p>
+                        <p className="font-medium text-foreground text-sm">{t("checkout.page.annualPlanTitle")}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           3-month minimum commitment. No refunds after purchase.
                         </p>
@@ -897,7 +900,7 @@ export default function CheckoutPage() {
                 )}
 
                 <p className="text-center text-xs text-muted-foreground mt-6">
-                  {isTrial ? "Cancel anytime during trial. No questions asked." : "Cancel anytime. No refunds after 30 days."}
+                  {isTrial ? t("checkout.page.cancelAnytimeTrial") : t("checkout.page.cancelAnytimeAnnual")}
                 </p>
               </Card>
 

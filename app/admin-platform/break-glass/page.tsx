@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -15,6 +16,7 @@ import { requestBreakGlassAccess, getActiveBreakGlassSession } from "@/lib/auth/
 const MAX_BREAK_GLASS_MINUTES = 30 // Auto-expire after 30 minutes
 
 export default function BreakGlassPage() {
+  const { t } = useI18n()
   const router = useRouter()
   const [reason, setReason] = useState("")
   const [duration, setDuration] = useState(MAX_BREAK_GLASS_MINUTES)
@@ -45,7 +47,7 @@ export default function BreakGlassPage() {
 
   const handleRequestAccess = async () => {
     if (!reason.trim()) {
-      toast.error("Please provide a reason for break-glass access")
+      toast.error(t("adminPlatform.breakGlass.provideReason"))
       return
     }
 
@@ -58,10 +60,10 @@ export default function BreakGlassPage() {
     try {
       const result = await requestBreakGlassAccess(reason, duration)
       if (result.success) {
-        toast.success("Break-glass access granted")
+        toast.success(t("adminPlatform.breakGlass.accessGranted"))
         router.refresh()
       } else {
-        toast.error(result.error || "Failed to request break-glass access")
+        toast.error(result.error || t("adminPlatform.breakGlass.requestFailed"))
       }
     } finally {
       setIsLoading(false)
@@ -76,10 +78,10 @@ export default function BreakGlassPage() {
       })
       const data = await result.json()
       if (data.success) {
-        toast.success("Break-glass session ended")
+        toast.success(t("adminPlatform.breakGlass.sessionEnded"))
         setActiveSession(null)
       } else {
-        toast.error(data.error || "Failed to end session")
+        toast.error(data.error || t("adminPlatform.breakGlass.endFailed"))
       }
     } finally {
       setIsLoading(false)
@@ -101,25 +103,25 @@ export default function BreakGlassPage() {
         <CardContent className="space-y-4">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Warning</AlertTitle>
+            <AlertTitle>{t("adminPlatform.breakGlass.warning")}</AlertTitle>
             <AlertDescription>
               All actions are being logged and monitored. Misuse will result in immediate revocation.
             </AlertDescription>
           </Alert>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="font-medium">Expires At:</span>
+              <span className="font-medium">{t("adminPlatform.breakGlass.expiresAt")}</span>
               <span>{new Date(activeSession.expiresAt).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="font-medium">Time Remaining:</span>
+              <span className="font-medium">{t("adminPlatform.breakGlass.timeRemaining")}</span>
               <span>{remainingMinutes} minutes</span>
             </div>
           </div>
         </CardContent>
         <CardFooter>
           <Button variant="destructive" onClick={handleEndSession} disabled={isLoading}>
-            {isLoading ? "Ending..." : "End Session Immediately"}
+            {isLoading ? t("adminPlatform.breakGlass.ending") : t("adminPlatform.breakGlass.endSession")}
           </Button>
         </CardFooter>
       </Card>
@@ -140,25 +142,25 @@ export default function BreakGlassPage() {
       <CardContent className="space-y-6">
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Warning</AlertTitle>
+          <AlertTitle>{t("adminPlatform.breakGlass.warning")}</AlertTitle>
           <AlertDescription>
             Break-glass access is for emergencies only. Unauthorized use is strictly prohibited.
           </AlertDescription>
         </Alert>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="reason">Reason for Emergency Access</Label>
+            <Label htmlFor="reason">{t("adminPlatform.breakGlass.reasonLabel")}</Label>
             <Textarea
               id="reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Describe the emergency situation..."
+              placeholder={t("adminPlatform.breakGlass.reasonPlaceholder")}
               rows={4}
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="duration">Duration (minutes)</Label>
+            <Label htmlFor="duration">{t("adminPlatform.breakGlass.durationLabel")}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="duration"
@@ -179,7 +181,7 @@ export default function BreakGlassPage() {
       </CardContent>
       <CardFooter>
         <Button onClick={handleRequestAccess} disabled={isLoading}>
-          {isLoading ? "Requesting..." : "Request Emergency Access"}
+          {isLoading ? t("adminPlatform.breakGlass.requesting") : t("adminPlatform.breakGlass.requestAccess")}
         </Button>
       </CardFooter>
     </Card>

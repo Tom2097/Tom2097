@@ -1,7 +1,9 @@
+import { getTranslator } from "@/lib/i18n/server"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
 
 export default async function LoginCheckPage() {
+  const { t } = await getTranslator()
   const results: string[] = []
 
   try {
@@ -51,7 +53,7 @@ export default async function LoginCheckPage() {
         <div key={i} style={{ marginBottom: 8, fontSize: 16 }}>• {r}</div>
       ))}
       <div style={{marginTop:20}}>
-        <a href="/" style={{color:"#0ff",fontSize:18}}>Go to Dashboard →</a>
+        <a href="/" style={{color:"#0ff",fontSize:18}}>{t("loginCheck.page.goToDashboard")}</a>
       </div>
     </div>
   )

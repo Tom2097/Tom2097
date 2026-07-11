@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -38,6 +39,7 @@ interface SystemHealth {
 }
 
 export default function AdminDashboardPage() {
+  const { t } = useI18n()
   const [stats, setStats] = useState({ tenants: 0, users: 0, pendingInvitations: 0, revenue: 0 })
   const [recentTenants, setRecentTenants] = useState<TenantReg[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,8 +82,8 @@ export default function AdminDashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Platform-wide overview and management</p>
+          <h1 className="text-2xl font-bold">{t("admin.page.admin_dashboard")}</h1>
+          <p className="text-muted-foreground">{t("admin.page.platformwide_overview_and_management")}</p>
         </div>
       </div>
 
@@ -95,23 +97,23 @@ export default function AdminDashboardPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Recent Tenant Registrations</CardTitle>
-            <CardDescription>Latest organizations to join the platform</CardDescription>
+            <CardTitle>{t("admin.page.recent_tenant_registrations")}</CardTitle>
+            <CardDescription>{t("admin.page.latest_organizations_to_join_the_platform")}</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="py-8 text-center text-muted-foreground">Loading...</div>
+              <div className="py-8 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
             ) : recentTenants.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground">No tenants registered yet</div>
+              <div className="py-8 text-center text-muted-foreground">{t("admin.page.no_tenants_registered_yet")}</div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Organization</TableHead>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Users</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead>{t("admin.page.organization")}</TableHead>
+                    <TableHead>{t("dashboard.subscription.active.planSuffix")}</TableHead>
+                    <TableHead>{t("resources.page.status")}</TableHead>
+                    <TableHead>{t("admin.page.users")}</TableHead>
+                    <TableHead>{t("bulk.page.created")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -164,11 +166,11 @@ export default function AdminDashboardPage() {
               </div>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Active Nodes</span>
+                  <span className="text-muted-foreground">{t("admin.page.active_nodes")}</span>
                   <span className="font-medium">{health.activeNodes}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Last Incident</span>
+                  <span className="text-muted-foreground">{t("admin.page.last_incident")}</span>
                   <span className="font-medium">{health.lastIncident || "None"}</span>
                 </div>
               </div>
@@ -177,7 +179,7 @@ export default function AdminDashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle>{t("dsar.page.tabs.quickActions")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button className="w-full justify-start" variant="outline" asChild>

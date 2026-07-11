@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { motion } from "framer-motion"
 import { Check, Clock, Shield, AlertCircle } from "lucide-react"
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
 export default function RefundPolicyPage() {
+  const { t } = useI18n()
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}

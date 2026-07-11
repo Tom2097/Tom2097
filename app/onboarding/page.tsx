@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -75,6 +76,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 }
 
 export default function OnboardingPage() {
+  const { t } = useI18n()
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [data, setData] = useState<QuestionnaireData>(DEFAULT_QUESTIONNAIRE_DATA)
@@ -276,9 +278,9 @@ export default function OnboardingPage() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
                       {[
-                        { icon: MessageSquare, title: "Quick Questions", desc: "Just 3 minutes" },
-                        { icon: Brain, title: "AI Analysis", desc: "Smart recommendations" },
-                        { icon: Sparkles, title: "Custom Solutions", desc: "Tailored for you" }
+                        { icon: MessageSquare, title: t("onboarding.page.quickQuestions"), desc: t("onboarding.page.quickQuestionsDesc") },
+                        { icon: Brain, title: t("onboarding.page.analysisTitle"), desc: t("onboarding.page.aiAnalysisCardDesc") },
+                        { icon: Sparkles, title: t("onboarding.page.customSolutions"), desc: t("onboarding.page.customSolutionsDesc") }
                       ].map((item, i) => (
                         <motion.div
                           key={i}
@@ -301,7 +303,7 @@ export default function OnboardingPage() {
                       </Label>
                       <p className="text-lg font-medium mb-4">{warmupQuestion}</p>
                       <Textarea
-                        placeholder="Share your thoughts... (optional)"
+                        placeholder={t("onboarding.page.warmUpPlaceholder")}
                         value={data.warmupResponse || ""}
                         onChange={(e) => updateData("warmupResponse", e.target.value)}
                         className="bg-background/50"
@@ -316,7 +318,7 @@ export default function OnboardingPage() {
                   <div className="space-y-8">
                     {/* Industry selection */}
                     <div>
-                      <Label className="text-sm font-medium mb-3 block">What industry are you in?</Label>
+                      <Label className="text-sm font-medium mb-3 block">{t("onboarding.page.industryLabel")}</Label>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         {INDUSTRIES.map((industry) => {
                           const Icon = iconMap[industry.icon] || Building2
@@ -348,9 +350,9 @@ export default function OnboardingPage() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                       >
-                        <Label className="text-sm font-medium mb-2 block">Specific focus area (optional)</Label>
+                        <Label className="text-sm font-medium mb-2 block">{t("onboarding.page.subIndustryLabel")}</Label>
                         <Input
-                          placeholder="e.g., B2B SaaS, Organic Farming, Investment Banking..."
+                          placeholder={t("onboarding.page.subIndustryPlaceholder")}
                           value={data.subIndustry || ""}
                           onChange={(e) => updateData("subIndustry", e.target.value)}
                           className="bg-background/50"
@@ -360,7 +362,7 @@ export default function OnboardingPage() {
 
                     {/* Company size */}
                     <div>
-                      <Label className="text-sm font-medium mb-3 block">Company size</Label>
+                      <Label className="text-sm font-medium mb-3 block">{t("onboarding.page.companySizeLabel")}</Label>
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                         {COMPANY_SIZES.map((size) => (
                           <button
@@ -383,7 +385,7 @@ export default function OnboardingPage() {
                     {/* Employee count & Revenue */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <Label className="text-sm font-medium mb-2 block">Employee count</Label>
+                        <Label className="text-sm font-medium mb-2 block">{t("onboarding.page.employeeCountLabel")}</Label>
                         <div className="flex flex-wrap gap-2">
                           {EMPLOYEE_RANGES.map((range) => (
                             <button
@@ -402,7 +404,7 @@ export default function OnboardingPage() {
                         </div>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium mb-2 block">Annual revenue</Label>
+                        <Label className="text-sm font-medium mb-2 block">{t("onboarding.page.annualRevenueLabel")}</Label>
                         <div className="flex flex-wrap gap-2">
                           {REVENUE_RANGES.map((range) => (
                             <button
@@ -425,7 +427,7 @@ export default function OnboardingPage() {
                     {/* Business stage & Geographic scope */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <Label className="text-sm font-medium mb-3 block">Business stage</Label>
+                        <Label className="text-sm font-medium mb-3 block">{t("onboarding.page.businessStageLabel")}</Label>
                         <div className="space-y-2">
                           {BUSINESS_STAGES.map((stage) => (
                             <button
@@ -445,7 +447,7 @@ export default function OnboardingPage() {
                         </div>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium mb-3 block">Geographic scope</Label>
+                        <Label className="text-sm font-medium mb-3 block">{t("onboarding.page.geographicScopeLabel")}</Label>
                         <div className="space-y-2">
                           {GEOGRAPHIC_SCOPE.map((scope) => (
                             <button
@@ -473,8 +475,8 @@ export default function OnboardingPage() {
                   <div className="space-y-8">
                     {/* Primary goals */}
                     <div>
-                      <Label className="text-sm font-medium mb-1 block">What are your primary goals?</Label>
-                      <p className="text-xs text-muted-foreground mb-3">Select all that apply</p>
+                      <Label className="text-sm font-medium mb-1 block">{t("onboarding.page.primaryGoalsLabel")}</Label>
+                      <p className="text-xs text-muted-foreground mb-3">{t("onboarding.page.selectAllThatApply")}</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {PRIMARY_GOALS.map((goal) => (
                           <button
@@ -508,8 +510,8 @@ export default function OnboardingPage() {
 
                     {/* Current challenges */}
                     <div>
-                      <Label className="text-sm font-medium mb-1 block">What challenges are you facing?</Label>
-                      <p className="text-xs text-muted-foreground mb-3">Select all that apply</p>
+                      <Label className="text-sm font-medium mb-1 block">{t("onboarding.page.challengesLabel")}</Label>
+                      <p className="text-xs text-muted-foreground mb-3">{t("onboarding.page.selectAllThatApply")}</p>
                       <div className="flex flex-wrap gap-2">
                         {CHALLENGES.map((challenge) => (
                           <button
@@ -550,7 +552,7 @@ export default function OnboardingPage() {
                   <div className="space-y-8">
                     {/* Technical maturity */}
                     <div>
-                      <Label className="text-sm font-medium mb-3 block">Technical maturity level</Label>
+                      <Label className="text-sm font-medium mb-3 block">{t("onboarding.page.technicalMaturityLabel")}</Label>
                       <div className="space-y-2">
                         {TECHNICAL_MATURITY.map((level) => (
                           <button
@@ -572,8 +574,8 @@ export default function OnboardingPage() {
 
                     {/* Existing tools */}
                     <div>
-                      <Label className="text-sm font-medium mb-1 block">What tools are you currently using?</Label>
-                      <p className="text-xs text-muted-foreground mb-3">Select all that apply</p>
+                      <Label className="text-sm font-medium mb-1 block">{t("onboarding.page.existingToolsLabel")}</Label>
+                      <p className="text-xs text-muted-foreground mb-3">{t("onboarding.page.selectAllThatApply")}</p>
                       <div className="flex flex-wrap gap-2">
                         {EXISTING_TOOLS.map((tool) => (
                           <button
@@ -595,7 +597,7 @@ export default function OnboardingPage() {
                     {/* Budget & Timeline */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <Label className="text-sm font-medium mb-3 block">Budget range</Label>
+                        <Label className="text-sm font-medium mb-3 block">{t("onboarding.page.budgetRangeLabel")}</Label>
                         <div className="space-y-2">
                           {BUDGET_RANGES.map((range) => (
                             <button
@@ -614,7 +616,7 @@ export default function OnboardingPage() {
                         </div>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium mb-3 block">Implementation timeline</Label>
+                        <Label className="text-sm font-medium mb-3 block">{t("onboarding.page.implementationTimelineLabel")}</Label>
                         <div className="space-y-2">
                           {TIMELINE_URGENCY.map((timeline) => (
                             <button
@@ -637,8 +639,8 @@ export default function OnboardingPage() {
 
                     {/* Compliance requirements */}
                     <div>
-                      <Label className="text-sm font-medium mb-1 block">Compliance requirements</Label>
-                      <p className="text-xs text-muted-foreground mb-3">Select any that apply to your business</p>
+                      <Label className="text-sm font-medium mb-1 block">{t("onboarding.page.complianceLabel")}</Label>
+                      <p className="text-xs text-muted-foreground mb-3">{t("onboarding.page.complianceHint")}</p>
                       <div className="flex flex-wrap gap-2">
                         {COMPLIANCE_REQUIREMENTS.map((req) => (
                           <button
@@ -665,27 +667,27 @@ export default function OnboardingPage() {
                   <div className="space-y-8">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label>Full Legal Name</Label>
-                        <Input value={data.fullLegalName} onChange={(e) => updateData("fullLegalName", e.target.value)} placeholder="As shown on government ID" className="bg-background/50" />
+                        <Label>{t("onboarding.page.fullLegalNameLabel")}</Label>
+                        <Input value={data.fullLegalName} onChange={(e) => updateData("fullLegalName", e.target.value)} placeholder={t("onboarding.page.fullLegalNamePlaceholder")} className="bg-background/50" />
                       </div>
                       <div className="space-y-2">
-                        <Label>Government ID Type</Label>
+                        <Label>{t("onboarding.page.idTypeLabel")}</Label>
                         <select value={data.governmentIdType} onChange={(e) => updateData("governmentIdType", e.target.value)} className="w-full h-10 px-3 rounded-lg border border-border/50 bg-background/50 text-sm">
-                          <option value="">Select...</option>
-                          <option value="passport">Passport</option>
+                          <option value="">{t("onboarding.page.idTypePlaceholder")}</option>
+                          <option value="passport">{t("onboarding.page.idTypePassport")}</option>
                           <option value="drivers_license">Driver&apos;s License</option>
-                          <option value="national_id">National ID</option>
+                          <option value="national_id">{t("onboarding.page.idTypeNational")}</option>
                         </select>
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label>Company Registration Number</Label>
-                      <Input value={data.companyRegistrationNumber} onChange={(e) => updateData("companyRegistrationNumber", e.target.value)} placeholder="CIN, GST, or EIN number" className="bg-background/50" />
+                      <Label>{t("onboarding.page.registrationNumberLabel")}</Label>
+                      <Input value={data.companyRegistrationNumber} onChange={(e) => updateData("companyRegistrationNumber", e.target.value)} placeholder={t("onboarding.page.registrationNumberPlaceholder")} className="bg-background/50" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Verified Domain</Label>
+                      <Label>{t("onboarding.page.verifiedDomainLabel")}</Label>
                       <div className="flex gap-2">
-                        <Input value={data.verifiedDomain} onChange={(e) => updateData("verifiedDomain", e.target.value)} placeholder="yourcompany.com" className="bg-background/50" />
+                        <Input value={data.verifiedDomain} onChange={(e) => updateData("verifiedDomain", e.target.value)} placeholder={t("onboarding.page.verifiedDomainPlaceholder")} className="bg-background/50" />
                         <Button type="button" variant="outline" onClick={async () => {
                           if (!data.verifiedDomain) return
                           const res = await fetch("/api/v1/enterprise/verify-domain", {
@@ -694,12 +696,12 @@ export default function OnboardingPage() {
                           })
                           const result = await res.json()
                           if (result.verified) updateData("verifiedDomain", data.verifiedDomain)
-                        }}>Verify</Button>
+                        }}>{t("onboarding.page.verify")}</Button>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <input type="checkbox" id="acceptedTerms" checked={data.acceptedTerms} onChange={(e) => updateData("acceptedTerms", e.target.checked)} className="rounded" />
-                      <Label htmlFor="acceptedTerms" className="text-sm">I confirm that the information provided is accurate and I have the authority to represent this company</Label>
+                      <Label htmlFor="acceptedTerms" className="text-sm">{t("onboarding.page.acceptedTerms")}</Label>
                     </div>
                   </div>
                 )}
@@ -716,7 +718,7 @@ export default function OnboardingPage() {
                         >
                           <Brain className="w-full h-full text-primary" />
                         </motion.div>
-                        <h3 className="text-xl font-semibold mb-2">Analyzing your business...</h3>
+                        <h3 className="text-xl font-semibold mb-2">{t("onboarding.page.analyzing")}</h3>
                         <p className="text-muted-foreground mb-6">
                           Our AI is finding the perfect solutions for you
                         </p>
@@ -729,10 +731,10 @@ export default function OnboardingPage() {
                             />
                           </div>
                           <p className="text-sm text-muted-foreground mt-2">
-                            {analysisProgress < 30 && "Analyzing industry data..."}
-                            {analysisProgress >= 30 && analysisProgress < 60 && "Matching solutions to your needs..."}
-                            {analysisProgress >= 60 && analysisProgress < 90 && "Generating recommendations..."}
-                            {analysisProgress >= 90 && "Almost done..."}
+                            {analysisProgress < 30 && t("onboarding.page.analyzingStep1")}
+                            {analysisProgress >= 30 && analysisProgress < 60 && t("onboarding.page.analyzingStep2")}
+                            {analysisProgress >= 60 && analysisProgress < 90 && t("onboarding.page.analyzingStep3")}
+                            {analysisProgress >= 90 && t("onboarding.page.analyzingStep4")}
                           </p>
                         </div>
                       </div>
@@ -742,7 +744,7 @@ export default function OnboardingPage() {
                           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 mb-4">
                             <Check className="w-8 h-8 text-green-500" />
                           </div>
-                          <h3 className="text-xl font-semibold mb-2">Analysis Complete!</h3>
+                          <h3 className="text-xl font-semibold mb-2">{t("onboarding.page.analysisComplete")}</h3>
                           <p className="text-muted-foreground">
                             We found {analysisResult.recommendations.length} solutions tailored for your business
                           </p>
@@ -750,7 +752,7 @@ export default function OnboardingPage() {
 
                         {/* Confidence score */}
                         <div className="flex items-center justify-center gap-2">
-                          <span className="text-sm text-muted-foreground">AI Confidence:</span>
+                          <span className="text-sm text-muted-foreground">{t("onboarding.page.aiConfidence")}</span>
                           <Badge variant={analysisResult.confidenceScore > 0.8 ? "default" : "secondary"}>
                             {Math.round(analysisResult.confidenceScore * 100)}%
                           </Badge>
@@ -758,7 +760,7 @@ export default function OnboardingPage() {
 
                         {/* Quick preview */}
                         <div className="bg-secondary/50 rounded-xl p-6">
-                          <h4 className="font-medium mb-3">Quick Preview</h4>
+                          <h4 className="font-medium mb-3">{t("onboarding.page.quickPreview")}</h4>
                           <p className="text-sm text-muted-foreground mb-4">
                             {analysisResult.overallAnalysis.slice(0, 200)}...
                           </p>
@@ -787,7 +789,7 @@ export default function OnboardingPage() {
                     ) : (
                       <div className="text-center py-12">
                         <Loader2 className="w-12 h-12 text-primary mx-auto mb-4 animate-spin" />
-                        <p className="text-muted-foreground">Preparing analysis...</p>
+                        <p className="text-muted-foreground">{t("onboarding.page.preparingAnalysis")}</p>
                       </div>
                     )}
                   </div>
@@ -809,7 +811,7 @@ export default function OnboardingPage() {
                     disabled={!canProceed()}
                     className="gap-2 bg-gradient-to-r from-primary to-cyan-600 hover:from-primary/90 hover:to-cyan-600/90"
                   >
-                    {currentStep === 6 ? "View Recommendations" : "Continue"}
+                    {currentStep === 6 ? t("onboarding.page.viewRecommendations") : t("onboarding.page.continue")}
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </div>

@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -29,6 +30,7 @@ interface Permission {
 }
 
 export default function RolesPage() {
+  const { t } = useI18n()
   const [roles, setRoles] = useState<Role[]>([])
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [loading, setLoading] = useState(true)
@@ -58,7 +60,7 @@ export default function RolesPage() {
         setRoles(rolesData.roles)
         setPermissions(permissionsData.permissions)
       } else {
-        toast.error(rolesData.error || permissionsData.error || 'Failed to load roles and permissions')
+        toast.error(rolesData.error || permissionsData.error || t("platformAdmin.roles.loadFailed"))
       }
     } catch (error) {
       toast.error('Error loading roles and permissions')
@@ -70,7 +72,7 @@ export default function RolesPage() {
 
   const handleCreateRole = async () => {
     if (!newRole.name.trim()) {
-      toast.error('Role name is required')
+      toast.error(t("platformAdmin.roles.roleNameRequired"))
       return
     }
     
@@ -85,11 +87,11 @@ export default function RolesPage() {
       const result = await response.json()
       
       if (response.ok) {
-        toast.success('Role created successfully')
+        toast.success(t("platformAdmin.roles.createSuccess"))
         setNewRole({ name: '', description: '', permissions: [] })
         fetchRolesAndPermissions()
       } else {
-        toast.error(result.error || 'Failed to create role')
+        toast.error(result.error || t("platformAdmin.roles.createFailed"))
       }
     } catch (error) {
       toast.error('Error creating role')
@@ -120,11 +122,11 @@ export default function RolesPage() {
       const result = await response.json()
       
       if (response.ok) {
-        toast.success('Role updated successfully')
+        toast.success(t("platformAdmin.roles.updateSuccess"))
         setCurrentRole(null)
         fetchRolesAndPermissions()
       } else {
-        toast.error(result.error || 'Failed to update role')
+        toast.error(result.error || t("platformAdmin.roles.updateFailed"))
       }
     } catch (error) {
       toast.error('Error updating role')
@@ -135,7 +137,7 @@ export default function RolesPage() {
   }
 
   const handleDeleteRole = async (roleId: string) => {
-    if (!confirm('Are you sure you want to delete this role?')) return
+    if (!confirm(t("platformAdmin.roles.deleteConfirm"))) return
     
     try {
       const response = await fetch(`/api/v1/auth/roles/${roleId}`, {
@@ -145,10 +147,10 @@ export default function RolesPage() {
       const result = await response.json()
       
       if (response.ok) {
-        toast.success('Role deleted successfully')
+        toast.success(t("platformAdmin.roles.deleteSuccess"))
         fetchRolesAndPermissions()
       } else {
-        toast.error(result.error || 'Failed to delete role')
+        toast.error(result.error || t("platformAdmin.roles.deleteFailed"))
       }
     } catch (error) {
       toast.error('Error deleting role')
@@ -191,8 +193,8 @@ export default function RolesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Role Management</h1>
-          <p className="text-sm text-muted-foreground">Create and manage custom roles with specific permissions</p>
+          <h1 className="text-2xl font-bold text-foreground">{t("platformAdmin.roles.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("platformAdmin.roles.subtitle")}</p>
         </div>
         <Dialog>
           <DialogTrigger asChild>
@@ -202,32 +204,32 @@ export default function RolesPage() {
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Create New Role</DialogTitle>
+              <DialogTitle>{t("platformAdmin.roles.createRoleTitle")}</DialogTitle>
               <DialogDescription>
                 Define a new role with specific permissions for your organization.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="role-name">Role Name</Label>
+                <Label htmlFor="role-name">{t("platformAdmin.roles.roleNameLabel")}</Label>
                 <Input
                   id="role-name"
                   value={newRole.name}
                   onChange={(e) => setNewRole({...newRole, name: e.target.value})}
-                  placeholder="e.g., Content Manager, Data Analyst"
+                  placeholder={t("platformAdmin.roles.roleNamePlaceholder")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="role-description">Description</Label>
+                <Label htmlFor="role-description">{t("platformAdmin.roles.roleDescriptionLabel")}</Label>
                 <Input
                   id="role-description"
                   value={newRole.description}
                   onChange={(e) => setNewRole({...newRole, description: e.target.value})}
-                  placeholder="Describe the role's responsibilities"
+                  placeholder={t("platformAdmin.roles.roleDescriptionPlaceholder")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Permissions</Label>
+                <Label>{t("platformAdmin.roles.permissionsLabel")}</Label>
                 <div className="border rounded-lg p-4 max-h-60 overflow-y-auto">
                   {permissionCategories.map(category => (
                     <div key={category} className="mb-4">
@@ -258,7 +260,7 @@ export default function RolesPage() {
                 Cancel
               </Button>
               <Button onClick={handleCreateRole} disabled={isCreating}>
-                {isCreating ? 'Creating...' : 'Create Role'}
+                {isCreating ? t("platformAdmin.roles.creating") : t("platformAdmin.roles.createRole")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -269,11 +271,11 @@ export default function RolesPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Roles</CardTitle>
-              <CardDescription>Manage roles and their permissions</CardDescription>
+              <CardTitle>{t("platformAdmin.roles.rolesTitle")}</CardTitle>
+              <CardDescription>{t("platformAdmin.roles.rolesDesc")}</CardDescription>
             </div>
             <Input
-              placeholder="Search roles..."
+              placeholder={t("platformAdmin.roles.searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
@@ -289,18 +291,18 @@ export default function RolesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Permissions</TableHead>
-                  <TableHead>System Role</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("platformAdmin.roles.name")}</TableHead>
+                  <TableHead>{t("platformAdmin.roles.roleDescriptionLabel")}</TableHead>
+                  <TableHead>{t("platformAdmin.roles.permissionsLabel")}</TableHead>
+                  <TableHead>{t("platformAdmin.roles.systemRole")}</TableHead>
+                  <TableHead>{t("platformAdmin.roles.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredRoles.map((role) => (
                   <TableRow key={role.id}>
                     <TableCell className="font-medium">{role.name}</TableCell>
-                    <TableCell>{role.description || '-'}</TableCell>
+                    <TableCell>{role.description || t("platformAdmin.roles.noDescription")}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {role.permissions.slice(0, 3).map(permId => {
@@ -324,7 +326,7 @@ export default function RolesPage() {
                           <Lock className="h-3 w-3" /> System
                         </span>
                       ) : (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Custom</span>
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">{t("platformAdmin.roles.custom")}</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -350,7 +352,7 @@ export default function RolesPage() {
                             {currentRole && (
                               <div className="space-y-4 py-4">
                                 <div className="space-y-2">
-                                  <Label htmlFor="edit-role-name">Role Name</Label>
+                                  <Label htmlFor="edit-role-name">{t("platformAdmin.roles.roleNameLabel")}</Label>
                                   <Input
                                     id="edit-role-name"
                                     value={currentRole.name}
@@ -359,7 +361,7 @@ export default function RolesPage() {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label htmlFor="edit-role-description">Description</Label>
+                                  <Label htmlFor="edit-role-description">{t("platformAdmin.roles.roleDescriptionLabel")}</Label>
                                   <Input
                                     id="edit-role-description"
                                     value={currentRole.description}
@@ -368,7 +370,7 @@ export default function RolesPage() {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label>Permissions</Label>
+                                  <Label>{t("platformAdmin.roles.permissionsLabel")}</Label>
                                   <div className="border rounded-lg p-4 max-h-60 overflow-y-auto">
                                     {permissionCategories.map(category => (
                                       <div key={category} className="mb-4">
@@ -401,7 +403,7 @@ export default function RolesPage() {
                                 Cancel
                               </Button>
                               <Button onClick={handleUpdateRole} disabled={isEditing || !currentRole || currentRole.is_system_role}>
-                                {isEditing ? 'Saving...' : 'Save Changes'}
+                                {isEditing ? t("platformAdmin.roles.saving") : t("platformAdmin.roles.saveChanges")}
                               </Button>
                             </DialogFooter>
                           </DialogContent>

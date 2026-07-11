@@ -1,70 +1,54 @@
+import { getTranslator } from "@/lib/i18n/server"
 import type { Metadata } from "next"
 import { LegalPageShell, LegalSection } from "@/components/legal/legal-page-shell"
 
-export const metadata: Metadata = {
-  title: "Security | DigiT",
-  description: "How DigiT protects your data with enterprise-grade security, encryption, and access controls.",
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getTranslator()
+  return {
+    title: t("legal.security.metadata.title"),
+    description: t("legal.security.metadata.description"),
+  }
 }
 
-export default function SecurityPage() {
+export default async function SecurityPage() {
+  const { t } = await getTranslator()
   return (
     <LegalPageShell
-      title="Security"
-      description="Security is foundational to DigiT. Here is how we protect your data and infrastructure."
-      lastUpdated="June 17, 2026"
+      title={t("legal.security.title")}
+      description={t("legal.security.description")}
+      lastUpdated={t("legal.security.lastUpdated")}
     >
-      <LegalSection heading="Data Encryption">
-        <p>
-          All data is encrypted in transit using TLS and at rest using industry-standard AES-256 encryption. Sensitive
-          credentials and secrets are stored in encrypted, access-controlled vaults.
-        </p>
+      <LegalSection heading={t("legal.security.encryption.heading")}>
+        <p>{t("legal.security.encryption.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="Tenant Isolation">
-        <p>
-          DigiT is built on a multi-tenant architecture with strict logical isolation. Row-level security policies
-          enforce that each organization can only access its own data, scoped to its tenant boundary at the database
-          level.
-        </p>
+      <LegalSection heading={t("legal.security.isolation.heading")}>
+        <p>{t("legal.security.isolation.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="Access Controls">
-        <p>
-          We enforce role-based access control (RBAC) with granular permissions across every module. Administrative
-          actions are protected, and all privileged operations are recorded in an immutable audit log.
-        </p>
+      <LegalSection heading={t("legal.security.access.heading")}>
+        <p>{t("legal.security.access.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="Authentication">
-        <p>
-          Authentication is handled through a secure, industry-standard provider with hashed credentials, session
-          management, and email verification. We never store plaintext passwords.
-        </p>
+      <LegalSection heading={t("legal.security.authentication.heading")}>
+        <p>{t("legal.security.authentication.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="Audit Logging">
-        <p>
-          Security-relevant events are captured in a tamper-resistant audit trail, giving organizations full
-          visibility into access, configuration changes, and data operations within their workspace.
-        </p>
+      <LegalSection heading={t("legal.security.audit.heading")}>
+        <p>{t("legal.security.audit.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="Infrastructure">
-        <p>
-          Our platform runs on hardened, continuously monitored cloud infrastructure with automated backups, network
-          isolation, and DDoS protection. We apply security patches promptly and follow the principle of least
-          privilege throughout our systems.
-        </p>
+      <LegalSection heading={t("legal.security.infrastructure.heading")}>
+        <p>{t("legal.security.infrastructure.content")}</p>
       </LegalSection>
 
-      <LegalSection heading="Reporting a Vulnerability">
+      <LegalSection heading={t("legal.security.reporting.heading")}>
         <p>
-          We welcome responsible disclosure. If you believe you have found a security vulnerability, please contact our
-          security team at{" "}
+          {t("legal.security.reporting.contentBefore")}{" "}
           <a href="mailto:security@digit-ai.org" className="text-primary hover:underline">
             security@digit-ai.org
           </a>
-          . We investigate all legitimate reports promptly.
+          {t("legal.security.reporting.contentAfter")}
         </p>
       </LegalSection>
     </LegalPageShell>

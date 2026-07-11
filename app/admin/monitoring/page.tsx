@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,6 +10,7 @@ import { Activity, Clock, AlertTriangle, AlertCircle, ArrowUp, ArrowDown, Minus,
 import type { ObservabilitySummary, ServiceLevelIndicator } from "@/lib/observability/dashboard"
 
 export default function MonitoringPage() {
+  const { t } = useI18n()
   const [summary, setSummary] = useState<ObservabilitySummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedService, setSelectedService] = useState<string | null>(null)
@@ -85,49 +87,49 @@ export default function MonitoringPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Monitoring</h1>
-        <p className="text-muted-foreground">Real-time observability and service health</p>
+        <h1 className="text-2xl font-bold">{t("admin.monitoring.title")}</h1>
+        <p className="text-muted-foreground">{t("admin.monitoring.subtitle")}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Uptime</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("admin.monitoring.uptime")}</CardTitle>
             <Activity className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary?.uptime ?? "--"}%</div>
-            <p className="text-xs text-muted-foreground">Last 30 days</p>
+            <p className="text-xs text-muted-foreground">{t("admin.monitoring.last30Days")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("admin.monitoring.avgResponseTime")}</CardTitle>
             <Clock className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary?.avgResponseTime ?? "--"}ms</div>
-            <p className="text-xs text-muted-foreground">p95 latency</p>
+            <p className="text-xs text-muted-foreground">{t("admin.monitoring.p95Latency")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Errors</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("admin.monitoring.errors")}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary?.totalErrors ?? "--"}</div>
-            <p className="text-xs text-muted-foreground">Last 100 log entries</p>
+            <p className="text-xs text-muted-foreground">{t("admin.monitoring.last100Entries")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("admin.monitoring.activeAlerts")}</CardTitle>
             <AlertCircle className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary?.activeAlerts ?? "--"}</div>
-            <p className="text-xs text-muted-foreground">Requiring attention</p>
+            <p className="text-xs text-muted-foreground">{t("admin.monitoring.requiringAttention")}</p>
           </CardContent>
         </Card>
       </div>
@@ -135,29 +137,29 @@ export default function MonitoringPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Service Health</CardTitle>
-            <CardDescription>SLI vs SLO targets for all services</CardDescription>
+            <CardTitle>{t("admin.monitoring.serviceHealth")}</CardTitle>
+            <CardDescription>{t("admin.monitoring.serviceHealthDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Service</TableHead>
-                  <TableHead>SLI</TableHead>
-                  <TableHead>SLO Target</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Trend</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("admin.monitoring.service")}</TableHead>
+                  <TableHead>{t("admin.monitoring.sli")}</TableHead>
+                  <TableHead>{t("admin.monitoring.sloTarget")}</TableHead>
+                  <TableHead>{t("admin.monitoring.status")}</TableHead>
+                  <TableHead>{t("admin.monitoring.trend")}</TableHead>
+                  <TableHead>{t("crm.page.tabs.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground">Loading...</TableCell>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground">{t("admin.monitoring.loading")}</TableCell>
                   </TableRow>
                 ) : !summary || summary.services.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground">No services data</TableCell>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground">{t("admin.monitoring.noServices")}</TableCell>
                   </TableRow>
                 ) : (
                   summary.services.map((svc) => (
@@ -200,14 +202,14 @@ export default function MonitoringPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Errors</CardTitle>
-            <CardDescription>Latest error events from audit logs</CardDescription>
+            <CardTitle>{t("admin.monitoring.recentErrors")}</CardTitle>
+            <CardDescription>{t("admin.monitoring.recentErrorsDesc")}</CardDescription>
           </CardHeader>
           <CardContent className="max-h-[400px] overflow-y-auto space-y-3">
             {loading ? (
-              <div className="text-center py-4 text-muted-foreground">Loading...</div>
+              <div className="text-center py-4 text-muted-foreground">{t("admin.monitoring.loading")}</div>
             ) : !summary || summary.recentErrors.length === 0 ? (
-              <div className="text-center py-4 text-muted-foreground">No recent errors</div>
+              <div className="text-center py-4 text-muted-foreground">{t("admin.monitoring.noRecentErrors")}</div>
             ) : (
               summary.recentErrors.map((err) => (
                 <div key={err.id} className="border rounded-lg p-3 text-sm space-y-1">
@@ -229,15 +231,15 @@ export default function MonitoringPage() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>{selectedService} - 24h Metrics</span>
-              <button className="text-sm text-muted-foreground hover:text-foreground" onClick={() => { setSelectedService(null); setServiceMetrics(null) }}>Close</button>
+              <button className="text-sm text-muted-foreground hover:text-foreground" onClick={() => { setSelectedService(null); setServiceMetrics(null) }}>{t("admin.monitoring.close")}</button>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="responseTime">
               <TabsList>
-                <TabsTrigger value="responseTime">Response Time</TabsTrigger>
-                <TabsTrigger value="errorRate">Error Rate</TabsTrigger>
-                <TabsTrigger value="throughput">Throughput</TabsTrigger>
+                <TabsTrigger value="responseTime">{t("admin.monitoring.responseTime")}</TabsTrigger>
+                <TabsTrigger value="errorRate">{t("admin.monitoring.errorRate")}</TabsTrigger>
+                <TabsTrigger value="throughput">{t("admin.monitoring.throughput")}</TabsTrigger>
               </TabsList>
               {(["responseTime", "errorRate", "throughput"] as const).map((metric) => (
                 <TabsContent key={metric} value={metric} className="pt-4">

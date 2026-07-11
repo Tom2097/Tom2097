@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -67,6 +68,7 @@ interface Session {
 }
 
 export default function SecurityPage() {
+  const { t } = useI18n()
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([])
   const [auditLoading, setAuditLoading] = useState(true)
   const [auditSearch, setAuditSearch] = useState("")
@@ -149,12 +151,12 @@ export default function SecurityPage() {
     setAllowlist([...allowlist, entry])
     setNewCidr("")
     setNewDesc("")
-    toast.success("IP allowlist entry added")
+    toast.success(t("admin.security.addedSuccess"))
   }
 
   const removeAllowlistEntry = (id: string) => {
     setAllowlist(allowlist.filter((e) => e.id !== id))
-    toast.success("IP allowlist entry removed")
+    toast.success(t("admin.security.removedSuccess"))
   }
 
   const revokeSession = async (sessionId: string) => {
@@ -166,10 +168,10 @@ export default function SecurityPage() {
       })
       if (res.ok) {
         setSessions(sessions.filter((s) => s.id !== sessionId))
-        toast.success("Session revoked")
+        toast.success(t("admin.security.revokedSuccess"))
       }
     } catch {
-      toast.error("Failed to revoke session")
+      toast.error(t("admin.security.revokeFailed"))
     }
   }
 
@@ -177,8 +179,8 @@ export default function SecurityPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Security</h1>
-          <p className="text-muted-foreground">Monitor security events and manage access controls</p>
+          <h1 className="text-2xl font-bold">{t("admin.security.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.security.subtitle")}</p>
         </div>
       </div>
 
@@ -205,7 +207,7 @@ export default function SecurityPage() {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    placeholder="Search audit events..."
+                    placeholder={t("admin.security.searchPlaceholder")}
                     className="pl-10"
                     value={auditSearch}
                     onChange={(e) => setAuditSearch(e.target.value)}
@@ -213,34 +215,34 @@ export default function SecurityPage() {
                 </div>
                 <Select value={auditAction} onValueChange={setAuditAction}>
                   <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Action" />
+                    <SelectValue placeholder={t("admin.security.action")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Actions</SelectItem>
-                    <SelectItem value="INSERT">INSERT</SelectItem>
-                    <SelectItem value="UPDATE">UPDATE</SelectItem>
-                    <SelectItem value="DELETE">DELETE</SelectItem>
+                    <SelectItem value="all">{t("admin.security.allActions")}</SelectItem>
+                    <SelectItem value="INSERT">{t("admin.security.insert")}</SelectItem>
+                    <SelectItem value="UPDATE">{t("admin.security.update")}</SelectItem>
+                    <SelectItem value="DELETE">{t("admin.security.delete")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </CardHeader>
             <CardContent>
               {auditLoading ? (
-                <div className="py-8 text-center text-muted-foreground">Loading...</div>
+                <div className="py-8 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
               ) : filteredAudit.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
                   <ScrollText className="mx-auto h-12 w-12 text-muted-foreground/30" />
-                  <p className="mt-4 font-medium">No audit events found</p>
+                  <p className="mt-4 font-medium">{t("admin.security.noAuditEvents")}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Action</TableHead>
-                      <TableHead>Resource</TableHead>
-                      <TableHead>Resource ID</TableHead>
-                      <TableHead>IP Address</TableHead>
-                      <TableHead>Timestamp</TableHead>
+                      <TableHead>{t("admin.security.action")}</TableHead>
+                      <TableHead>{t("admin.security.resource")}</TableHead>
+                      <TableHead>{t("admin.security.resourceId")}</TableHead>
+                      <TableHead>{t("admin.security.ipAddress")}</TableHead>
+                      <TableHead>{t("admin.security.timestamp")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -275,11 +277,11 @@ export default function SecurityPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>IP Allowlist</CardTitle>
-                  <CardDescription>Restrict admin access to trusted IP ranges</CardDescription>
+                  <CardTitle>{t("admin.security.ipAllowlist")}</CardTitle>
+                  <CardDescription>{t("admin.security.allowlistDesc")}</CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Label>Enabled</Label>
+                  <Label>{t("admin.security.enabled")}</Label>
                   <Switch checked={allowlistEnabled} onCheckedChange={setAllowlistEnabled} />
                 </div>
               </div>
@@ -289,20 +291,20 @@ export default function SecurityPage() {
                 <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 flex items-start gap-3">
                   <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
                   <div className="text-sm">
-                    <p className="font-medium">IP allowlist is enabled</p>
-                    <p className="text-muted-foreground">Only requests from allowed IP ranges can access the admin panel.</p>
+                    <p className="font-medium">{t("admin.security.allowlistWarning")}</p>
+                    <p className="text-muted-foreground">{t("admin.security.allowlistWarningDesc")}</p>
                   </div>
                 </div>
               )}
               <div className="flex gap-2">
                 <Input
-                  placeholder="CIDR (e.g. 10.0.0.0/8)"
+                  placeholder={t("admin.security.cidrPlaceholder")}
                   className="flex-1 font-mono"
                   value={newCidr}
                   onChange={(e) => setNewCidr(e.target.value)}
                 />
                 <Input
-                  placeholder="Description"
+                  placeholder={t("admin.security.descriptionPlaceholder")}
                   className="w-48"
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
@@ -315,10 +317,10 @@ export default function SecurityPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>CIDR Range</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Added</TableHead>
-                    <TableHead className="w-20">Actions</TableHead>
+                    <TableHead>{t("admin.security.cidrRange")}</TableHead>
+                    <TableHead>{t("admin.security.descriptionPlaceholder")}</TableHead>
+                    <TableHead>{t("admin.security.added")}</TableHead>
+                    <TableHead className="w-20">{t("crm.page.tabs.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -338,7 +340,7 @@ export default function SecurityPage() {
                   ))}
                   {allowlist.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">No allowlist entries</TableCell>
+                      <TableCell colSpan={4} className="text-center text-muted-foreground">{t("admin.security.noAllowlistEntries")}</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -350,27 +352,27 @@ export default function SecurityPage() {
         <TabsContent value="sessions" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Active Sessions</CardTitle>
-              <CardDescription>View and manage active admin sessions</CardDescription>
+              <CardTitle>{t("admin.security.activeSessions")}</CardTitle>
+              <CardDescription>{t("admin.security.activeSessionsDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
               {sessionsLoading ? (
-                <div className="py-8 text-center text-muted-foreground">Loading...</div>
+                <div className="py-8 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
               ) : sessions.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
                   <Monitor className="mx-auto h-12 w-12 text-muted-foreground/30" />
-                  <p className="mt-4 font-medium">No active sessions</p>
+                  <p className="mt-4 font-medium">{t("admin.security.noActiveSessions")}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>IP Address</TableHead>
-                      <TableHead>Started</TableHead>
-                      <TableHead>Expires</TableHead>
-                      <TableHead>Device</TableHead>
-                      <TableHead className="w-20">Actions</TableHead>
+                      <TableHead>{t("admin.security.user")}</TableHead>
+                      <TableHead>{t("admin.security.ipAddress")}</TableHead>
+                      <TableHead>{t("admin.security.started")}</TableHead>
+                      <TableHead>{t("admin.security.expires")}</TableHead>
+                      <TableHead>{t("admin.security.device")}</TableHead>
+                      <TableHead className="w-20">{t("crm.page.tabs.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState } from "react"
 import Link from "next/link"
@@ -36,6 +37,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
+  const { t } = useI18n()
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
@@ -55,7 +57,7 @@ export default function AdminLayout({
             {!isCollapsed && (
               <Link href="/admin" className="flex items-center gap-2">
                 <Activity className="h-5 w-5 text-primary" />
-                <span className="text-base font-bold">Admin</span>
+                <span className="text-base font-bold">{t("admin.layout.admin")}</span>
               </Link>
             )}
             {isCollapsed && (
@@ -66,7 +68,7 @@ export default function AdminLayout({
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
               className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
-              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={isCollapsed ? t("admin.layout.expandSidebar") : t("admin.layout.collapseSidebar")}
             >
               {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </button>
@@ -101,7 +103,7 @@ export default function AdminLayout({
               className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
             >
               <LayoutDashboard className="h-5 w-5 shrink-0" />
-              {!isCollapsed && <span>Back to Dashboard</span>}
+              {!isCollapsed && <span>{t("admin.layout.backToDashboard")}</span>}
             </Link>
           </div>
         </div>
@@ -119,7 +121,7 @@ export default function AdminLayout({
               <Activity className="mr-1 h-3 w-3" />
               Admin
             </Badge>
-            <span className="text-sm text-muted-foreground">Platform Administration</span>
+            <span className="text-sm text-muted-foreground">{t("admin.layout.platformAdministration")}</span>
           </div>
         </header>
 

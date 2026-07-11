@@ -1,3 +1,4 @@
+import { getTranslator } from "@/lib/i18n/server"
 import { createServiceClient } from '@/lib/supabase/service'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardStats, getRevenueMetrics, getOperationalMetrics, getRiskMetrics } from '@/lib/dashboard/queries'
@@ -8,23 +9,25 @@ import DashboardContent from './dashboard-content'
 
 export const dynamic = 'force-dynamic'
 
-function Err({ msg, detail, uid, oid }: { msg: string; detail?: string; uid?: string; oid?: string }) {
+async function Err({ msg, detail, uid, oid }: { msg: string; detail?: string; uid?: string; oid?: string }) {
+  const { t } = await getTranslator()
   return (
     <div style={{background:"#111",color:"#f44",padding:40,fontFamily:"monospace",minHeight:"100vh"}}>
-      <h1 style={{fontSize:24,marginBottom:16}}>Dashboard Auth Error: {msg}</h1>
-      {detail && <p>Detail: {detail}</p>}
-      {uid && <p>User: {uid}</p>}
-      {oid && <p>Org: {oid}</p>}
+      <h1 style={{fontSize:24,marginBottom:16}}>{t("dashboard.page.authError", { msg })}</h1>
+      {detail && <p>{t("dashboard.page.detail", { detail })}</p>}
+      {uid && <p>{t("dashboard.page.user", { uid })}</p>}
+      {oid && <p>{t("dashboard.page.org", { oid })}</p>}
       <div style={{marginTop:20}}>
-        <a href="/login-check" style={{color:"#0ff"}}>Go to Login Check →</a>
+        <a href="/login-check" style={{color:"#0ff"}}>{t("dashboard.page.goToLoginCheck")}</a>
         {' | '}
-        <a href="/auth/login" style={{color:"#0ff"}}>Back to Login →</a>
+        <a href="/auth/login" style={{color:"#0ff"}}>{t("dashboard.page.backToLogin")}</a>
       </div>
     </div>
   )
 }
 
 export default async function DashboardPage() {
+  const { t } = await getTranslator()
   const supabase = await createClient()
   const { data: { user }, error: userErr } = await supabase.auth.getUser()
   if (!user) {

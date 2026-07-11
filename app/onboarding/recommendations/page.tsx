@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -70,6 +71,7 @@ function loadFromStorage(key: string) {
 }
 
 export default function RecommendationsPage() {
+  const { t } = useI18n()
   const router = useRouter()
   const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(loadFromStorage("digit_analysis"))
   const [questionnaireData, setQuestionnaireData] = useState<QuestionnaireData | null>(loadFromStorage("digit_questionnaire"))
@@ -148,12 +150,11 @@ export default function RecommendationsPage() {
         <div className="text-center mb-8">
           <Badge className="mb-4" variant="secondary">
             <Sparkles className="w-3 h-3 mr-1" />
-            AI-Powered Recommendations
+            {t("onboarding.recommendations.badge")}
           </Badge>
-          <h1 className="text-3xl font-bold mb-2">Your Custom Software Suite</h1>
+          <h1 className="text-3xl font-bold mb-2">{t("onboarding.recommendations.title")}</h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Based on your {questionnaireData.industry} business profile, our AI has identified
-            the following solutions that best match your needs.
+            {t("onboarding.recommendations.subtitle", { industry: questionnaireData.industry })}
           </p>
         </div>
 
@@ -166,9 +167,9 @@ export default function RecommendationsPage() {
                   <Brain className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">AI Analysis Confidence</p>
+                  <p className="font-medium">{t("onboarding.recommendations.confidenceTitle")}</p>
                   <p className="text-sm text-muted-foreground">
-                    Based on {analysisResult.recommendations.length} modules analyzed
+                    {t("onboarding.recommendations.confidenceDesc", { count: analysisResult.recommendations.length })}
                   </p>
                 </div>
               </div>
@@ -177,7 +178,7 @@ export default function RecommendationsPage() {
                   <p className="text-2xl font-bold text-primary">
                     {Math.round(analysisResult.confidenceScore * 100)}%
                   </p>
-                  <p className="text-xs text-muted-foreground">Match Score</p>
+                  <p className="text-xs text-muted-foreground">{t("onboarding.recommendations.matchScore")}</p>
                 </div>
                 <Progress
                   value={analysisResult.confidenceScore * 100}
@@ -196,7 +197,7 @@ export default function RecommendationsPage() {
                 <Target className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold mb-2">AI Analysis Summary</h3>
+                <h3 className="font-semibold mb-2">{t("onboarding.recommendations.summaryTitle")}</h3>
                 <p className="text-muted-foreground">{analysisResult.overallAnalysis}</p>
               </div>
             </div>
@@ -206,9 +207,9 @@ export default function RecommendationsPage() {
         {/* Recommendations Grid */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Recommended Solutions</h2>
+            <h2 className="text-xl font-semibold">{t("onboarding.recommendations.recommendedSolutions")}</h2>
             <p className="text-sm text-muted-foreground">
-              {selectedModules.length} of {analysisResult.recommendations.length} selected
+              {t("onboarding.recommendations.selectedOf", { selected: selectedModules.length, total: analysisResult.recommendations.length })}
             </p>
           </div>
 
@@ -257,7 +258,7 @@ export default function RecommendationsPage() {
                               <div className="flex items-center gap-2 mt-1">
                                 <Badge variant="secondary" className="text-xs">
                                   <TrendingUp className="w-3 h-3 mr-1" />
-                                  {rec.score}% Match
+                                  {t("onboarding.recommendations.matchPercent", { percent: rec.score })}
                                 </Badge>
                                 <Badge
                                   variant="outline"
@@ -269,7 +270,7 @@ export default function RecommendationsPage() {
                                   )}
                                 >
                                   <Clock className="w-3 h-3 mr-1" />
-                                  {rec.implementationComplexity} complexity
+                                  {t("onboarding.recommendations.complexity", { complexity: rec.implementationComplexity })}
                                 </Badge>
                               </div>
                             </div>
@@ -299,13 +300,13 @@ export default function RecommendationsPage() {
                           <div className="flex items-center justify-between pt-3 border-t border-border/50">
                             <div className="flex items-center gap-2 text-sm">
                               <DollarSign className="w-4 h-4 text-green-500" />
-                              <span className="text-muted-foreground">Est. ROI:</span>
+                              <span className="text-muted-foreground">{t("onboarding.recommendations.estRoi")}</span>
                               <span className="font-medium text-green-500">{rec.estimatedROI}</span>
                             </div>
 
                             {/* Feedback buttons */}
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground mr-2">Was this helpful?</span>
+                              <span className="text-xs text-muted-foreground mr-2">{t("onboarding.recommendations.helpfulQuestion")}</span>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -321,7 +322,7 @@ export default function RecommendationsPage() {
                                       <ThumbsUp className="w-4 h-4" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>This is helpful</TooltipContent>
+                                  <TooltipContent>{t("onboarding.recommendations.helpfulTooltip")}</TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
                               <TooltipProvider>
@@ -339,7 +340,7 @@ export default function RecommendationsPage() {
                                       <ThumbsDown className="w-4 h-4" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Not relevant</TooltipContent>
+                                  <TooltipContent>{t("onboarding.recommendations.notRelevantTooltip")}</TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
                             </div>
@@ -366,22 +367,24 @@ export default function RecommendationsPage() {
               <div className="container max-w-6xl mx-auto flex items-center justify-between">
                 <div>
                   <p className="font-medium">
-                    {selectedModules.length} module{selectedModules.length > 1 ? "s" : ""} selected
+                    {selectedModules.length === 1
+                      ? t("onboarding.recommendations.moduleSelected_one", { count: selectedModules.length })
+                      : t("onboarding.recommendations.moduleSelected_other", { count: selectedModules.length })}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Click continue to see industry intelligence and complete setup
+                    {t("onboarding.recommendations.continueHint")}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <Button variant="ghost" onClick={() => router.push("/onboarding")}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back
+                    {t("onboarding.recommendations.backToOnboarding")}
                   </Button>
                   <Button
                     onClick={handleContinue}
                     className="bg-gradient-to-r from-primary to-cyan-600"
                   >
-                    Continue
+                    {t("onboarding.recommendations.continue")}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
@@ -411,6 +414,7 @@ function IndustryIntelligencePage({
   onBack: () => void
   onFinish: () => void
 }) {
+  const { t } = useI18n()
   const [activeTab, setActiveTab] = useState("insights")
   const [isGenerating, setIsGenerating] = useState(true)
 
@@ -449,12 +453,11 @@ function IndustryIntelligencePage({
         <div className="text-center mb-8">
           <Badge className="mb-4" variant="secondary">
             <Brain className="w-3 h-3 mr-1" />
-            AI-Generated Intelligence
+            {t("onboarding.recommendations.intelligenceBadge")}
           </Badge>
-          <h1 className="text-3xl font-bold mb-2">Industry Intelligence</h1>
+          <h1 className="text-3xl font-bold mb-2">{t("onboarding.recommendations.intelligenceTitle")}</h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Based on your selections, our AI has gathered relevant insights, trends, and resources
-            for your {questionnaireData.industry} business.
+            {t("onboarding.recommendations.intelligenceSubtitle", { industry: questionnaireData.industry })}
           </p>
         </div>
 
@@ -466,16 +469,15 @@ function IndustryIntelligencePage({
                 <Brain className="w-6 h-6 text-primary animate-pulse" />
               </div>
               <div className="flex-1">
-                <p className="font-medium">AI Learning System Active</p>
+                <p className="font-medium">{t("onboarding.recommendations.learningTitle")}</p>
                 <p className="text-sm text-muted-foreground">
-                  The more you use DigiT, the smarter your recommendations become.
-                  Your feedback helps our AI understand your unique needs.
+                  {t("onboarding.recommendations.learningDesc")}
                 </p>
               </div>
               {isGenerating && (
                 <Badge variant="secondary" className="animate-pulse">
                   <Sparkles className="w-3 h-3 mr-1" />
-                  Generating insights...
+                  {t("onboarding.recommendations.generating")}
                 </Badge>
               )}
             </div>
@@ -484,9 +486,9 @@ function IndustryIntelligencePage({
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="insights">Industry Insights</TabsTrigger>
-            <TabsTrigger value="resources">Tools & Resources</TabsTrigger>
-            <TabsTrigger value="roadmap">Your Roadmap</TabsTrigger>
+            <TabsTrigger value="insights">{t("onboarding.recommendations.insightsTab")}</TabsTrigger>
+            <TabsTrigger value="resources">{t("onboarding.recommendations.resourcesTab")}</TabsTrigger>
+            <TabsTrigger value="roadmap">{t("onboarding.recommendations.roadmapTab")}</TabsTrigger>
           </TabsList>
 
           {/* Insights Tab */}
@@ -517,7 +519,7 @@ function IndustryIntelligencePage({
                               <h3 className="font-semibold">{insight.title}</h3>
                             </div>
                             <Badge variant="secondary">
-                              {Math.round(insight.relevanceScore * 100)}% relevant
+                              {t("onboarding.recommendations.relevantPercent", { percent: Math.round(insight.relevanceScore * 100) })}
                             </Badge>
                           </div>
                           <p className="text-muted-foreground text-sm">{insight.description}</p>
@@ -545,7 +547,7 @@ function IndustryIntelligencePage({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="w-5 h-5 text-primary" />
-                  Recommended Tools for Your Stack
+                  {t("onboarding.recommendations.toolsTitle")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -565,11 +567,11 @@ function IndustryIntelligencePage({
                         </div>
                         <div>
                           <p className="font-medium">{rec?.moduleName || moduleId}</p>
-                          <p className="text-xs text-muted-foreground">Ready to configure</p>
+                          <p className="text-xs text-muted-foreground">{t("onboarding.recommendations.readyToConfigure")}</p>
                         </div>
                         <Badge variant="outline" className="ml-auto text-green-500 border-green-500">
                           <Check className="w-3 h-3 mr-1" />
-                          Selected
+                          {t("onboarding.recommendations.selected")}
                         </Badge>
                       </div>
                     )
@@ -582,7 +584,7 @@ function IndustryIntelligencePage({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="w-5 h-5 text-primary" />
-                  Compliance & Security
+                  {t("onboarding.recommendations.complianceTitle")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -595,7 +597,7 @@ function IndustryIntelligencePage({
                     ))
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      No specific compliance requirements selected. You can update this in settings.
+                      {t("onboarding.recommendations.noCompliance")}
                     </p>
                   )}
                 </div>
@@ -609,7 +611,7 @@ function IndustryIntelligencePage({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="w-5 h-5 text-primary" />
-                  Your Implementation Roadmap
+                  {t("onboarding.recommendations.roadmapTitle")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -631,17 +633,16 @@ function IndustryIntelligencePage({
             <Card className="border-primary/20 bg-primary/5">
               <CardContent className="p-6 text-center">
                 <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">You&apos;re All Set!</h3>
+                <h3 className="text-xl font-semibold mb-2">{t("onboarding.recommendations.allSetTitle")}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Your personalized DigiT dashboard is ready. As you use the platform,
-                  our AI will continue learning and improving recommendations.
+                  {t("onboarding.recommendations.allSetDesc")}
                 </p>
                 <Button
                   size="lg"
                   onClick={onFinish}
                   className="bg-gradient-to-r from-primary to-cyan-600"
                 >
-                  Launch Dashboard
+                  {t("onboarding.recommendations.launchDashboard")}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </CardContent>
@@ -653,13 +654,13 @@ function IndustryIntelligencePage({
         <div className="flex items-center justify-between mt-8 pt-6 border-t border-border/50">
           <Button variant="ghost" onClick={onBack}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Recommendations
+            {t("onboarding.recommendations.backToRecommendations")}
           </Button>
           <Button
             onClick={onFinish}
             className="bg-gradient-to-r from-primary to-cyan-600"
           >
-            Complete Setup
+            {t("onboarding.recommendations.completeSetup")}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>

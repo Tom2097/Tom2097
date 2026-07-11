@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -46,6 +47,7 @@ interface PlatformUser {
 }
 
 export default function UsersPage() {
+  const { t } = useI18n()
   const [users, setUsers] = useState<PlatformUser[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -122,8 +124,8 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Users</h1>
-          <p className="text-muted-foreground">Manage all platform users across tenants</p>
+          <h1 className="text-2xl font-bold">{t("admin.users.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.users.subtitle")}</p>
         </div>
       </div>
 
@@ -133,7 +135,7 @@ export default function UsersPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by email or name..."
+                placeholder={t("admin.users.searchPlaceholder")}
                 className="pl-10"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -143,25 +145,25 @@ export default function UsersPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="py-8 text-center text-muted-foreground">Loading...</div>
+            <div className="py-8 text-center text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
           ) : filteredUsers.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground">
               <Users className="mx-auto h-12 w-12 text-muted-foreground/30" />
-              <p className="mt-4 font-medium">No users found</p>
-              <p className="text-sm">{search ? "Try a different search term" : "No users registered yet"}</p>
+              <p className="mt-4 font-medium">{t("admin.users.noUsers")}</p>
+              <p className="text-sm">{search ? t("admin.users.trySearch") : t("admin.users.noUsersRegistered")}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Organization</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Last Active</TableHead>
-                  <TableHead>MFA</TableHead>
-                  <TableHead className="w-32">Actions</TableHead>
+                  <TableHead>{t("admin.users.user")}</TableHead>
+                  <TableHead>{t("crm.communicationHub.channels.email")}</TableHead>
+                  <TableHead>{t("admin.users.organization")}</TableHead>
+                  <TableHead>{t("admin.users.role")}</TableHead>
+                  <TableHead>{t("admin.users.status")}</TableHead>
+                  <TableHead>{t("admin.users.lastActive")}</TableHead>
+                  <TableHead>{t("admin.users.mfa")}</TableHead>
+                  <TableHead className="w-32">{t("admin.users.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -174,7 +176,7 @@ export default function UsersPage() {
                             {(user.full_name || "U").split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="font-medium">{user.full_name || "Unnamed"}</span>
+                        <span className="font-medium">{user.full_name || t("admin.users.unnamed")}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-xs">{user.email}</TableCell>
@@ -186,7 +188,7 @@ export default function UsersPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {user.last_active ? new Date(user.last_active).toLocaleDateString() : "Never"}
+                      {user.last_active ? new Date(user.last_active).toLocaleDateString() : t("admin.users.never")}
                     </TableCell>
                     <TableCell>
                       {user.mfa_enabled ? (
@@ -204,7 +206,7 @@ export default function UsersPage() {
                             setSelectedUser(user)
                             setProfileOpen(true)
                           }}
-                          title="View Profile"
+                          title={t("admin.users.viewProfile")}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -213,7 +215,7 @@ export default function UsersPage() {
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => handleImpersonate(user.id)}
-                            title="Impersonate"
+                            title={t("admin.users.impersonate")}
                           >
                             <UserCheck className="h-4 w-4 text-amber-500" />
                           </Button>
@@ -222,7 +224,7 @@ export default function UsersPage() {
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => handleSuspendUser(user.id)}
-                          title="Suspend User"
+                          title={t("admin.users.suspendUser")}
                         >
                           <PauseCircle className="h-4 w-4 text-destructive" />
                         </Button>
@@ -239,8 +241,8 @@ export default function UsersPage() {
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>User Profile</DialogTitle>
-            <DialogDescription>Detailed information about this user</DialogDescription>
+            <DialogTitle>{t("admin.users.profileTitle")}</DialogTitle>
+            <DialogDescription>{t("admin.users.profileDesc")}</DialogDescription>
           </DialogHeader>
           {selectedUser && (
             <div className="space-y-4">
@@ -251,26 +253,26 @@ export default function UsersPage() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-lg font-semibold">{selectedUser.full_name || "Unnamed"}</p>
+                  <p className="text-lg font-semibold">{selectedUser.full_name || t("admin.users.unnamed")}</p>
                   <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
                   <p className="text-xs text-muted-foreground">Joined {new Date(selectedUser.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="rounded-lg border p-3">
-                  <p className="text-muted-foreground text-xs">Role</p>
+                  <p className="text-muted-foreground text-xs">{t("admin.users.role")}</p>
                   <p className="font-medium capitalize">{selectedUser.role}</p>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <p className="text-muted-foreground text-xs">Status</p>
+                  <p className="text-muted-foreground text-xs">{t("admin.users.status")}</p>
                   <p className="font-medium capitalize">{selectedUser.status}</p>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <p className="text-muted-foreground text-xs">Organization</p>
+                  <p className="text-muted-foreground text-xs">{t("admin.users.organization")}</p>
                   <p className="font-medium">{selectedUser.organization_name || "—"}</p>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <p className="text-muted-foreground text-xs">MFA Enabled</p>
+                  <p className="text-muted-foreground text-xs">{t("admin.users.mfa_enabled")}</p>
                   <p className="font-medium">{selectedUser.mfa_enabled ? "Yes" : "No"}</p>
                 </div>
               </div>

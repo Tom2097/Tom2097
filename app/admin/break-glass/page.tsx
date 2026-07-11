@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,6 +15,7 @@ import { ShieldAlert, Shield, Clock, AlertTriangle, Ban, CheckCircle2 } from "lu
 import type { BreakGlassSession } from "@/lib/auth/break-glass"
 
 export default function BreakGlassPage() {
+  const { t } = useI18n()
   const [sessions, setSessions] = useState<BreakGlassSession[]>([])
   const [loading, setLoading] = useState(true)
   const [activateDialogOpen, setActivateDialogOpen] = useState(false)
@@ -51,11 +53,11 @@ export default function BreakGlassPage() {
 
   const handleActivate = async () => {
     if (!reason) {
-      toast.error("Please provide a reason")
+      toast.error(t("admin.breakGlass.reasonRequired"))
       return
     }
     if (!justification) {
-      toast.error("Please provide a justification")
+      toast.error(t("admin.breakGlass.justificationRequired"))
       return
     }
     setSubmitting(true)
@@ -67,16 +69,16 @@ export default function BreakGlassPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        toast.success("Break-glass access activated. Alarms triggered.")
+        toast.success(t("admin.breakGlass.activatedSuccess"))
         setActivateDialogOpen(false)
         setReason("")
         setJustification("")
         fetchSessions()
       } else {
-        toast.error(data.error || "Failed to activate break-glass")
+        toast.error(data.error || t("admin.breakGlass.activateFailed"))
       }
     } catch {
-      toast.error("Failed to activate break-glass")
+      toast.error(t("admin.breakGlass.activateFailed"))
     } finally {
       setSubmitting(false)
     }
@@ -90,11 +92,11 @@ export default function BreakGlassPage() {
         body: JSON.stringify({ action: "revoke", sessionId }),
       })
       if (res.ok) {
-        toast.success("Break-glass session revoked")
+        toast.success(t("admin.breakGlass.revokedSuccess"))
         fetchSessions()
       }
     } catch {
-      toast.error("Failed to revoke session")
+      toast.error(t("admin.breakGlass.revokeFailed"))
     }
   }
 
@@ -113,8 +115,8 @@ export default function BreakGlassPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Break-Glass Access</h1>
-          <p className="text-muted-foreground">Emergency privileged access with alarms and audit trail</p>
+          <h1 className="text-2xl font-bold">{t("admin.breakGlass.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.breakGlass.subtitle")}</p>
         </div>
         <Dialog open={activateDialogOpen} onOpenChange={setActivateDialogOpen}>
           <DialogTrigger asChild>
@@ -125,7 +127,7 @@ export default function BreakGlassPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Activate Emergency Access</DialogTitle>
+              <DialogTitle>{t("admin.breakGlass.emergencyTitle")}</DialogTitle>
               <DialogDescription>
                 This will grant you super_admin privileges for 15 minutes. All security teams will be alerted immediately.
                 This action is irreversible and fully audited.
@@ -135,34 +137,34 @@ export default function BreakGlassPage() {
               <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-3">
                 <div className="flex items-center gap-2 text-sm font-medium text-red-600">
                   <AlertTriangle className="h-4 w-4" />
-                  <span>Warning: This triggers an alarm</span>
+                  <span>{t("admin.breakGlass.warning")}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   All platform owners and security team members will be notified immediately.
                 </p>
               </div>
               <div className="space-y-2">
-                <Label>Reason for Emergency Access</Label>
+                <Label>{t("admin.breakGlass.reasonLabel")}</Label>
                 <Input
                   value={reason}
                   onChange={e => setReason(e.target.value)}
-                  placeholder="e.g., Production outage, security incident"
+                  placeholder={t("admin.breakGlass.reasonPlaceholder")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Detailed Justification</Label>
+                <Label>{t("admin.breakGlass.justificationLabel")}</Label>
                 <Textarea
                   value={justification}
                   onChange={e => setJustification(e.target.value)}
-                  placeholder="Provide a detailed explanation of why standard access elevation is insufficient"
+                  placeholder={t("admin.breakGlass.justificationPlaceholder")}
                   rows={4}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setActivateDialogOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setActivateDialogOpen(false)}>{t("admin.breakGlass.cancel")}</Button>
               <Button variant="destructive" onClick={handleActivate} disabled={submitting}>
-                {submitting ? "Activating..." : "Activate & Trigger Alarm"}
+                {submitting ? t("admin.breakGlass.activating") : t("admin.breakGlass.activateAndAlarm")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -187,25 +189,25 @@ export default function BreakGlassPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Break-Glass Sessions</CardTitle>
-          <CardDescription>History of emergency access activations with audit trail</CardDescription>
+          <CardTitle>{t("admin.breakGlass.sessionsTitle")}</CardTitle>
+          <CardDescription>{t("admin.breakGlass.sessionsDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <div className="text-center py-8 text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
           ) : sessions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No break-glass sessions</div>
+            <div className="text-center py-8 text-muted-foreground">{t("admin.breakGlass.noSessions")}</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Reason</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Alarm</TableHead>
-                  <TableHead>Started</TableHead>
-                  <TableHead>Expires</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("admin.breakGlass.reason")}</TableHead>
+                  <TableHead>{t("admin.breakGlass.role")}</TableHead>
+                  <TableHead>{t("admin.breakGlass.status")}</TableHead>
+                  <TableHead>{t("admin.breakGlass.alarm")}</TableHead>
+                  <TableHead>{t("admin.breakGlass.started")}</TableHead>
+                  <TableHead>{t("admin.breakGlass.expires")}</TableHead>
+                  <TableHead>{t("admin.breakGlass.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -252,7 +254,7 @@ export default function BreakGlassPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Security Guidelines</CardTitle>
+          <CardTitle>{t("admin.breakGlass.securityGuidelines")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>{"\u2022"} Break-glass access is <strong>time-limited to 15 minutes</strong> and auto-expires</p>

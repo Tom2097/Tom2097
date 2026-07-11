@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -26,6 +27,7 @@ interface SubscriptionData {
 }
 
 export default function BillingSettingsPage() {
+  const { t } = useI18n()
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -53,7 +55,7 @@ export default function BillingSettingsPage() {
           .single()
 
         if (!profile?.organization_id) {
-          throw new Error("No organization found")
+          throw new Error(t("settings.billing.noOrganization"))
         }
 
         const { data: sub } = await supabase
@@ -68,7 +70,7 @@ export default function BillingSettingsPage() {
           setWithinRefundWindow(withinWindow)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load subscription")
+        setError(err instanceof Error ? err.message : t("settings.billing.failedToLoad"))
       } finally {
         setLoading(false)
       }
@@ -84,7 +86,7 @@ export default function BillingSettingsPage() {
         window.location.href = url
       }
     } catch (err) {
-      setError("Failed to create billing portal session")
+      setError(t("settings.billing.failedPortal"))
     }
   }
 
@@ -104,7 +106,7 @@ export default function BillingSettingsPage() {
         .single()
 
       if (!user || !profile?.organization_id) {
-        throw new Error("Authentication required")
+        throw new Error(t("settings.billing.authRequired"))
       }
 
       const response = await fetch('/api/v1/billing/refund', {
@@ -115,13 +117,13 @@ export default function BillingSettingsPage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to request refund")
+        throw new Error(errorData.error || t("settings.billing.failedRefund"))
       }
 
       await trackRefundRequested(profile.organization_id, user.id, subscription.plan_id, refundReason)
       setRefundRequested(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to request refund")
+      setError(err instanceof Error ? err.message : t("settings.billing.failedRefund"))
     } finally {
       setIsRequestingRefund(false)
     }
@@ -144,9 +146,9 @@ export default function BillingSettingsPage() {
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <Card className="p-8 text-center">
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-destructive" />
-          <h2 className="text-xl font-bold mb-2">Error</h2>
+          <h2 className="text-xl font-bold mb-2">{t("settings.billing.errorTitle")}</h2>
           <p className="text-muted-foreground mb-6">{error}</p>
-          <Button onClick={() => window.location.reload()}>Retry</Button>
+          <Button onClick={() => window.location.reload()}>{t("settings.billing.retry")}</Button>
         </Card>
       </div>
     )
@@ -176,8 +178,8 @@ export default function BillingSettingsPage() {
             transition={{ duration: 0.6 }}
             className="mb-12"
           >
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Billing Settings</h1>
-            <p className="text-muted-foreground">Manage your subscription and payment methods</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t("settings.billing.title")}</h1>
+            <p className="text-muted-foreground">{t("settings.billing.subtitle")}</p>
           </motion.div>
 
           {/* Subscription Status */}
@@ -191,7 +193,7 @@ export default function BillingSettingsPage() {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-xl font-semibold text-foreground">
-                      {plan?.name || "Plan"} Subscription
+                      {plan?.name || t("settings.billing.plan")} Subscription
                     </h2>
                     <Badge className="bg-primary/10 text-primary">
                       {subscription?.status}
@@ -220,7 +222,7 @@ export default function BillingSettingsPage() {
                   <p className="text-2xl font-bold text-foreground">
                     {plan ? formatPrice(plan.priceInCents) : "-"}
                   </p>
-                  <p className="text-sm text-muted-foreground">/month</p>
+                  <p className="text-sm text-muted-foreground">{t("settings.billing.perMonth")}</p>
                 </div>
               </div>
             </Card>
@@ -233,7 +235,7 @@ export default function BillingSettingsPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <Card className="p-6 mb-8">
-              <h3 className="text-lg font-semibold text-foreground mb-6">Billing Actions</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-6">{t("settings.billing.billingActions")}</h3>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button onClick={handleManageBilling} className="gap-2">
                   <CreditCard className="w-4 h-4" />
@@ -257,7 +259,7 @@ export default function BillingSettingsPage() {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <Card className="p-6 mb-8">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Refund Request</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-4">{t("settings.billing.refundRequest")}</h3>
                 
                 {refundRequested ? (
                   <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
@@ -266,7 +268,7 @@ export default function BillingSettingsPage() {
                         <Check className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">Refund Request Received</p>
+                        <p className="font-medium text-foreground">{t("settings.billing.refundReceived")}</p>
                         <p className="text-sm text-muted-foreground mt-1">
                           Your refund request has been received. Processing may take 3-5 business days.
                         </p>
@@ -280,10 +282,10 @@ export default function BillingSettingsPage() {
                     </p>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="refund-reason">Reason for Refund (Optional)</Label>
+                      <Label htmlFor="refund-reason">{t("settings.billing.refundReasonLabel")}</Label>
                       <Textarea
                         id="refund-reason"
-                        placeholder="Please share why you're requesting a refund..."
+                        placeholder={t("settings.billing.refundReasonPlaceholder")}
                         value={refundReason}
                         onChange={(e) => setRefundReason(e.target.value)}
                         className="min-h-[100px]"
@@ -315,7 +317,7 @@ export default function BillingSettingsPage() {
                         <AlertCircle className="w-4 h-4 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">Refund Window Expired</p>
+                        <p className="font-medium text-foreground">{t("settings.billing.refundWindowExpired")}</p>
                         <p className="text-sm text-muted-foreground mt-1">
                           Refunds are only available within 30 days of your first payment. You are no longer eligible for a refund.
                         </p>
@@ -334,15 +336,15 @@ export default function BillingSettingsPage() {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <Card className="p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Billing Information</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">{t("settings.billing.billingInformation")}</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Plan</span>
+                  <span className="text-muted-foreground">{t("settings.billing.plan")}</span>
                   <span className="font-medium text-foreground">{plan?.name || "-"}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Billing Cycle</span>
-                  <span className="font-medium text-foreground">{isMonthly ? "Monthly" : "Annual"}</span>
+                  <span className="text-muted-foreground">{t("settings.billing.billingCycle")}</span>
+                  <span className="font-medium text-foreground">{isMonthly ? t("settings.billing.monthly") : t("settings.billing.annual")}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Price</span>

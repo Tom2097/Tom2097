@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,6 +18,7 @@ import type { Incident, Runbook } from "@/lib/incident/response"
 import { DEFAULT_RUNBOOKS } from "@/lib/incident/response"
 
 export default function IncidentsPage() {
+  const { t } = useI18n()
   const [incidents, setIncidents] = useState<Incident[]>([])
   const [loading, setLoading] = useState(true)
   const [reportDialogOpen, setReportDialogOpen] = useState(false)
@@ -43,7 +45,7 @@ export default function IncidentsPage() {
             const data = await getIncidents("default")
             if (!cancelled) setIncidents(data)
           } catch {
-            toast.error("Failed to load incidents")
+            toast.error(t("admin.incidents.loadFailed"))
           }
         }
       } finally {
@@ -66,7 +68,7 @@ export default function IncidentsPage() {
 
   const handleReportIncident = async () => {
     if (!formTitle) {
-      toast.error("Please provide an incident title")
+      toast.error(t("admin.incidents.titleRequired"))
       return
     }
     setSubmitting(true)
@@ -77,7 +79,7 @@ export default function IncidentsPage() {
         body: JSON.stringify({ action: "report", title: formTitle, description: formDescription, severity: formSeverity }),
       })
       if (res.ok) {
-        toast.success("Incident reported")
+        toast.success(t("admin.incidents.reported"))
         setReportDialogOpen(false)
         setFormTitle("")
         setFormDescription("")
@@ -85,10 +87,10 @@ export default function IncidentsPage() {
         fetchIncidents()
       } else {
         const data = await res.json()
-        toast.error(data.error || "Failed to report incident")
+        toast.error(data.error || t("admin.incidents.reportFailed"))
       }
     } catch {
-      toast.error("Failed to report incident")
+      toast.error(t("admin.incidents.reportFailed"))
     } finally {
       setSubmitting(false)
     }
@@ -153,8 +155,8 @@ export default function IncidentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Incident Response</h1>
-          <p className="text-muted-foreground">Manage and respond to security and operational incidents</p>
+          <h1 className="text-2xl font-bold">{t("admin.incidents.incident_response")}</h1>
+          <p className="text-muted-foreground">{t("admin.incidents.subtitle")}</p>
         </div>
         <div className="flex gap-2">
           <Dialog open={runbookDialogOpen} onOpenChange={setRunbookDialogOpen}>
@@ -166,8 +168,8 @@ export default function IncidentsPage() {
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Runbook Library</DialogTitle>
-                <DialogDescription>Pre-defined response procedures for common incident types</DialogDescription>
+                <DialogTitle>{t("admin.incidents.runbookLibrary")}</DialogTitle>
+                <DialogDescription>{t("admin.incidents.runbookLibraryDesc")}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 {DEFAULT_RUNBOOKS.map((rb) => (
@@ -205,37 +207,37 @@ export default function IncidentsPage() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Report New Incident</DialogTitle>
-                <DialogDescription>Document a security or operational incident for tracking and response</DialogDescription>
+                <DialogTitle>{t("admin.incidents.reportNewIncident")}</DialogTitle>
+                <DialogDescription>{t("admin.incidents.reportIncidentDesc")}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Title</Label>
-                  <Input value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder="e.g., Unauthorized API access detected" />
+                  <Label>{t("admin.incidents.title")}</Label>
+                  <Input value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder={t("admin.incidents.titlePlaceholder")} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Severity</Label>
+                  <Label>{t("admin.incidents.severityLabel")}</Label>
                   <Select value={formSeverity} onValueChange={(v) => setFormSeverity(v as Incident["severity"])}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="critical">Critical</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="critical">{t("feedback.page.critical")}</SelectItem>
+                      <SelectItem value="high">{t("benchmarks.page.high")}</SelectItem>
+                      <SelectItem value="medium">{t("benchmarks.page.medium")}</SelectItem>
+                      <SelectItem value="low">{t("benchmarks.page.low")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} placeholder="Describe the incident, affected systems, and initial findings" rows={4} />
+                  <Label>{t("admin.incidents.descriptionLabel")}</Label>
+                  <Textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} placeholder={t("admin.incidents.descriptionPlaceholder")} rows={4} />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setReportDialogOpen(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setReportDialogOpen(false)}>{t("admin.incidents.cancel")}</Button>
                 <Button onClick={handleReportIncident} disabled={submitting}>
-                  {submitting ? "Reporting..." : "Report Incident"}
+                  {submitting ? t("admin.incidents.reporting") : t("admin.incidents.reportIncident")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -252,7 +254,7 @@ export default function IncidentsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{severityCounts[sev]}</div>
-              <p className="text-xs text-muted-foreground">Active incidents</p>
+              <p className="text-xs text-muted-foreground">{t("admin.incidents.active_incidents")}</p>
             </CardContent>
           </Card>
         ))}
@@ -260,38 +262,38 @@ export default function IncidentsPage() {
 
       <Tabs defaultValue="all">
         <TabsList>
-          <TabsTrigger value="all">All Incidents</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="resolved">Resolved</TabsTrigger>
+          <TabsTrigger value="all">{t("admin.incidents.allIncidents")}</TabsTrigger>
+          <TabsTrigger value="active">{t("admin.incidents.active")}</TabsTrigger>
+          <TabsTrigger value="resolved">{t("admin.incidents.resolved")}</TabsTrigger>
         </TabsList>
         {["all", "active", "resolved"].map((tab) => (
           <TabsContent key={tab} value={tab}>
             <Card>
               <CardHeader>
-                <CardTitle>{tab === "all" ? "All" : tab === "active" ? "Active" : "Resolved"} Incidents</CardTitle>
+                <CardTitle>{tab === "all" ? t("admin.incidents.all") : tab === "active" ? t("admin.incidents.active") : t("admin.incidents.resolved")} Incidents</CardTitle>
                 <CardDescription>
-                  {tab === "all" ? "Complete incident log" : tab === "active" ? "Incidents requiring action" : "Closed incidents"}
+                  {tab === "all" ? t("admin.incidents.completeLog") : tab === "active" ? t("admin.incidents.requiringAction") : t("admin.incidents.closedIncidents")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {loading ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                  <div className="text-center py-8 text-muted-foreground">{t("predictiveMaintenance.page.loading")}</div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Severity</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Assigned To</TableHead>
-                        <TableHead>Detected</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead>{t("admin.incidents.title")}</TableHead>
+                        <TableHead>{t("admin.incidents.severityLabel")}</TableHead>
+                        <TableHead>{t("admin.incidents.status")}</TableHead>
+                        <TableHead>{t("admin.incidents.assignedTo")}</TableHead>
+                        <TableHead>{t("admin.incidents.detected")}</TableHead>
+                        <TableHead>{t("admin.incidents.actions")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {incidents.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center text-muted-foreground">No incidents found</TableCell>
+                          <TableCell colSpan={6} className="text-center text-muted-foreground">{t("admin.incidents.noIncidents")}</TableCell>
                         </TableRow>
                       ) : (
                         incidents
@@ -306,19 +308,19 @@ export default function IncidentsPage() {
                               </TableCell>
                               <TableCell>{getSeverityBadge(inc.severity)}</TableCell>
                               <TableCell>{getStatusBadge(inc.status)}</TableCell>
-                              <TableCell className="text-sm">{inc.assignedTo || <span className="text-muted-foreground">Unassigned</span>}</TableCell>
+                              <TableCell className="text-sm">{inc.assignedTo || <span className="text-muted-foreground">{t("admin.incidents.unassigned")}</span>}</TableCell>
                               <TableCell className="text-xs">{new Date(inc.detectedAt).toLocaleString()}</TableCell>
                               <TableCell>
                                 <div className="flex gap-1">
                                   {inc.status !== "resolved" && (
                                     <>
-                                      <Button size="sm" variant="outline" onClick={() => handleQuickAction(inc.id, "assign")} title="Assign to me">
+                                      <Button size="sm" variant="outline" onClick={() => handleQuickAction(inc.id, "assign")} title={t("admin.incidents.assignToMe")}>
                                         <UserCheck className="h-3 w-3" />
                                       </Button>
-                                      <Button size="sm" variant="outline" onClick={() => handleQuickAction(inc.id, "escalate")} title="Escalate">
+                                      <Button size="sm" variant="outline" onClick={() => handleQuickAction(inc.id, "escalate")} title={t("admin.incidents.escalate")}>
                                         <ArrowUpCircle className="h-3 w-3" />
                                       </Button>
-                                      <Button size="sm" variant="default" onClick={() => handleQuickAction(inc.id, "resolve")} title="Resolve">
+                                      <Button size="sm" variant="default" onClick={() => handleQuickAction(inc.id, "resolve")} title={t("admin.incidents.resolve")}>
                                         <CheckCircle2 className="h-3 w-3" />
                                       </Button>
                                     </>
@@ -339,7 +341,7 @@ export default function IncidentsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Security Policies</CardTitle>
+          <CardTitle>{t("admin.incidents.securityPolicies")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>{"\u2022"} Critical incidents require <strong>immediate</strong> escalation to the security team</p>

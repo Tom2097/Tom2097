@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,6 +17,7 @@ interface PlatformUser {
 }
 
 export default function AdminUsersPage() {
+  const { t } = useI18n()
   const [users, setUsers] = useState<PlatformUser[]>([])
   const [loading, setLoading] = useState(true)
   const [impersonating, setImpersonating] = useState<string | null>(null)
@@ -48,8 +50,8 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Users</h1>
-        <p className="text-muted-foreground mt-1">View all users across the platform</p>
+        <h1 className="text-3xl font-bold text-foreground">{t("platformAdmin.users.title")}</h1>
+        <p className="text-muted-foreground mt-1">{t("platformAdmin.users.subtitle")}</p>
       </div>
 
       <Card>
@@ -67,7 +69,7 @@ export default function AdminUsersPage() {
                     </span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">{user.full_name || "Unknown"}</p>
+                    <p className="text-sm font-medium text-foreground">{user.full_name || t("platformAdmin.users.unknown")}</p>
                     <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                 </div>
@@ -89,7 +91,7 @@ export default function AdminUsersPage() {
             {users.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <UsersIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No users found</p>
+                <p>{t("platformAdmin.users.noUsers")}</p>
               </div>
             )}
           </div>

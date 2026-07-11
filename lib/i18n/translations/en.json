@@ -1714,5 +1714,204 @@
         "realTimeMonitoring": "Real-time monitoring"
       }
     }
+  },
+  "legal": {
+    "privacy": {
+      "metadata": {
+        "title": "Privacy Policy | DigiT",
+        "description": "How DigiT collects, uses, protects, and shares your information across our enterprise intelligence platform."
+      },
+      "title": "Privacy Policy",
+      "description": "Your privacy matters. This policy explains what data we collect, why we collect it, and how we keep it safe.",
+      "lastUpdated": "June 17, 2026",
+      "section1": {
+        "heading": "1. Information We Collect",
+        "content": "We collect information you provide directly, such as your name, email address, company details, and billing information when you create an account or subscribe to a plan. We also collect usage data, device information, and log data automatically as you interact with the platform."
+      },
+      "section2": {
+        "heading": "2. How We Use Your Information",
+        "content": "We use your information to provide and improve our services, process payments, send transactional and service-related communications, provide customer support, and ensure the security and integrity of our platform. We never sell your personal data."
+      },
+      "section3": {
+        "heading": "3. Data Storage and Security",
+        "content": "Your data is stored on secure, access-controlled infrastructure with encryption in transit and at rest. Each organization's data is logically isolated using row-level security, ensuring tenants can only access their own records."
+      },
+      "section4": {
+        "heading": "4. Data Sharing",
+        "content": "We share data only with trusted sub-processors required to operate the service (for example, payment processing and cloud hosting), and only to the extent necessary. All sub-processors are bound by confidentiality and data-protection obligations."
+      },
+      "section5": {
+        "heading": "5. Your Rights",
+        "content": "Depending on your jurisdiction, you may have the right to access, correct, export, or delete your personal data. You can exercise these rights, including GDPR data-subject access requests, by contacting us. We respond to verified requests within 30 days."
+      },
+      "section6": {
+        "heading": "6. Data Retention",
+        "content": "We retain personal data only as long as necessary to provide the service and meet legal obligations. Organizations can configure custom retention policies for their data within the platform. When data is no longer needed, it is securely purged."
+      },
+      "section7": {
+        "heading": "7. Changes to This Policy",
+        "content": "We may update this Privacy Policy from time to time. Material changes will be communicated through the platform or via email. Continued use of the service after changes take effect constitutes acceptance."
+      }
+    },
+    "terms": {
+      "metadata": {
+        "title": "Terms of Service | DigiT",
+        "description": "The terms and conditions governing your use of the DigiT enterprise intelligence platform."
+      },
+      "title": "Terms of Service",
+      "description": "These terms govern your access to and use of DigiT. By using the platform, you agree to them.",
+      "lastUpdated": "June 17, 2026",
+      "section1": {
+        "heading": "1. Acceptance of Terms",
+        "content": "By accessing or using DigiT, you agree to be bound by these Terms of Service and all applicable laws. If you are using the service on behalf of an organization, you represent that you have authority to bind that organization to these terms."
+      },
+      "section2": {
+        "heading": "2. Accounts and Subscriptions",
+        "intro": "You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. Subscriptions renew automatically unless canceled.",
+        "monthlyLabel": "Monthly Plans:",
+        "monthlyText": "Monthly subscriptions include a 7-day free trial. You will not be charged until day 8. You may request a full refund within 30 days of your first payment. After this period, refunds are not available.",
+        "yearlyLabel": "Yearly Plans:",
+        "yearlyText": "Yearly subscriptions are non-refundable. Yearly plans require a 3-month minimum commitment. You can cancel after 3 months, but no refund will be issued for any unused portion of the subscription.",
+        "refundText": "Fees are billed in advance. You can request a refund for monthly plans within the 30-day window by visiting",
+        "refundLink": "Settings → Billing"
+      },
+      "section3": {
+        "heading": "3. Acceptable Use",
+        "content": "You agree not to misuse the platform, including by attempting to gain unauthorized access, disrupting service integrity, reverse-engineering the software, or using the service to store or transmit unlawful content. We may suspend accounts that violate these terms."
+      },
+      "section4": {
+        "heading": "4. Customer Data",
+        "content": "You retain all rights to the data you submit to the platform. You grant us a limited license to process that data solely to provide the service. We process data in accordance with our Privacy Policy and applicable data-protection agreements."
+      },
+      "section5": {
+        "heading": "5. Service Availability",
+        "content": "We strive to maintain high availability but do not guarantee uninterrupted access. We may perform maintenance, modify features, or discontinue parts of the service with reasonable notice where practical."
+      },
+      "section6": {
+        "heading": "6. Limitation of Liability",
+        "content": "To the maximum extent permitted by law, DigiT shall not be liable for any indirect, incidental, or consequential damages arising from your use of the service. Our total liability is limited to the amount you paid in the twelve months preceding the claim."
+      },
+      "section7": {
+        "heading": "7. Termination",
+        "content": "You may cancel your subscription at any time. We may suspend or terminate access for breach of these terms. Upon termination, you may export your data for a limited period before it is purged per our retention policies."
+      },
+      "section8": {
+        "heading": "8. Governing Law",
+        "content": "These terms are governed by the laws of the jurisdiction in which DigiT operates, without regard to conflict of law principles. Disputes will be resolved in the competent courts of that jurisdiction."
+      }
+    },
+    "security": {
+      "metadata": {
+        "title": "Security | DigiT",
+        "description": "How DigiT protects your data with enterprise-grade security, encryption, and access controls."
+      },
+      "title": "Security",
+      "description": "Security is foundational to DigiT. Here is how we protect your data and infrastructure.",
+      "lastUpdated": "June 17, 2026",
+      "encryption": {
+        "heading": "Data Encryption",
+        "content": "All data is encrypted in transit using TLS and at rest using industry-standard AES-256 encryption. Sensitive credentials and secrets are stored in encrypted, access-controlled vaults."
+      },
+      "isolation": {
+        "heading": "Tenant Isolation",
+        "content": "DigiT is built on a multi-tenant architecture with strict logical isolation. Row-level security policies enforce that each organization can only access its own data, scoped to its tenant boundary at the database level."
+      },
+      "access": {
+        "heading": "Access Controls",
+        "content": "We enforce role-based access control (RBAC) with granular permissions across every module. Administrative actions are protected, and all privileged operations are recorded in an immutable audit log."
+      },
+      "authentication": {
+        "heading": "Authentication",
+        "content": "Authentication is handled through a secure, industry-standard provider with hashed credentials, session management, and email verification. We never store plaintext passwords."
+      },
+      "audit": {
+        "heading": "Audit Logging",
+        "content": "Security-relevant events are captured in a tamper-resistant audit trail, giving organizations full visibility into access, configuration changes, and data operations within their workspace."
+      },
+      "infrastructure": {
+        "heading": "Infrastructure",
+        "content": "Our platform runs on hardened, continuously monitored cloud infrastructure with automated backups, network isolation, and DDoS protection. We apply security patches promptly and follow the principle of least privilege throughout our systems."
+      },
+      "reporting": {
+        "heading": "Reporting a Vulnerability",
+        "contentBefore": "We welcome responsible disclosure. If you believe you have found a security vulnerability, please contact our security team at",
+        "contentAfter": ". We investigate all legitimate reports promptly."
+      }
+    }
+  },
+  "admin": {
+    "page": {
+      "admin_dashboard": "Admin Dashboard",
+      "platformwide_overview_and_management": "Platform-wide overview and management",
+      "recent_tenant_registrations": "Recent Tenant Registrations",
+      "latest_organizations_to_join_the_platform": "Latest organizations to join the platform",
+      "no_tenants_registered_yet": "No tenants registered yet",
+      "organization": "Organization",
+      "users": "Users",
+      "active_nodes": "Active Nodes",
+      "last_incident": "Last Incident"
+    },
+    "revenue": {
+      "current_mrr": "Current MRR"
+    },
+    "impersonation": {
+      "you_will_be_able_to_view_the_platform": "You will be able to view the platform as this user. All actions are audited and time-boxed to 60 minutes.",
+      "all_impersonation_sessions_are_audited_and_automatically_expire": "All impersonation sessions are audited and automatically expire after 60 minutes"
+    },
+    "incidents": {
+      "incident_response": "Incident Response",
+      "active_incidents": "Active incidents"
+    },
+    "security": {
+      "insert": "INSERT",
+      "update": "UPDATE",
+      "delete": "DELETE"
+    },
+    "users": {
+      "mfa_enabled": "MFA Enabled"
+    },
+    "breakGlass": {
+      "all_platform_owners_and_security_team_members_will": "All platform owners and security team members will be notified immediately.",
+      "alarm_triggered_emergency_super_admin_access_is_currently_active": "Alarm triggered. Emergency super_admin access is currently active."
+    },
+    "tenants": {
+      "no_users_in_this_tenant": "No users in this tenant",
+      "suspend_tenant": "Suspend Tenant"
+    },
+    "tenantDetail": {
+      "loading_tenant_details": "Loading tenant details...",
+      "tenant_not_found": "Tenant not found",
+      "back_to_tenants": "Back to Tenants",
+      "billing_period": "Billing Period",
+      "payment_provider": "Payment Provider",
+      "no_subscription_data": "No subscription data",
+      "no_team_members": "No team members",
+      "no_workspace_configuration": "No workspace configuration",
+      "middot": "&middot;",
+      "this_will_suspend_the_tenant_and_mark_their": "This will suspend the tenant and mark their subscription as past due. Users will lose access.",
+      "reason": "Reason",
+      "send_an_email_notification_to_all_tenant_admins": "Send an email notification to all tenant admins.",
+      "message": "Message"
+    },
+    "featureFlags": {
+      "platformwide_feature_flag_management": "Platform-wide feature flag management",
+      "toggle_features_globally_activate_kill_switches_for_emergency": "Toggle features globally, activate kill switches for emergency shutdown, or configure canary rollouts",
+      "kill_switches_force_a_feature_off_globally_overriding": "Kill switches force a feature off globally, overriding all other flag settings. Use only for critical incidents."
+    },
+    "jit": {
+      "your_request_will_be_logged_and_requires_approval": "Your request will be logged and requires approval. Elevated access auto-expires."
+    }
+  },
+  "platformAdmin": {
+    "roles": {
+      "define_a_new_role_with_specific_permissions_for": "Define a new role with specific permissions for your organization.",
+      "update_role_details_and_permissions": "Update role details and permissions."
+    }
+  },
+  "adminPlatform": {
+    "breakGlass": {
+      "emergency_access_is_active_this_session_will_autoexpire": "Emergency access is active. This session will auto-expire.",
+      "emergency_access_for_critical_operations_all_actions_are": "Emergency access for critical operations. All actions are logged and alarmed."
+    }
   }
 }

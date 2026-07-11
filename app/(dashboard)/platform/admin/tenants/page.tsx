@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,6 +19,7 @@ interface Tenant {
 }
 
 export default function AdminTenantsPage() {
+  const { t } = useI18n()
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -57,8 +59,8 @@ export default function AdminTenantsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Tenants</h1>
-        <p className="text-muted-foreground mt-1">Manage all organizations on the platform</p>
+        <h1 className="text-3xl font-bold text-foreground">{t("platformAdmin.tenants.title")}</h1>
+        <p className="text-muted-foreground mt-1">{t("platformAdmin.tenants.subtitle")}</p>
       </div>
 
       <Card>
@@ -88,7 +90,7 @@ export default function AdminTenantsPage() {
                       {tenant.subscription.plan_id || tenant.subscription.status}
                     </Badge>
                   ) : (
-                    <Badge variant="outline">Trial</Badge>
+                    <Badge variant="outline">{t("platformAdmin.tenants.trial")}</Badge>
                   )}
                   <div className="text-xs text-muted-foreground">
                     {new Date(tenant.created_at).toLocaleDateString()}
@@ -96,13 +98,13 @@ export default function AdminTenantsPage() {
                   <div className="flex items-center gap-1">
                     <Button size="sm" variant="ghost" className="h-8 w-8" disabled={actioning === tenant.id}
                       onClick={() => handleAction(tenant.id, tenant.status === "suspended" ? "activate" : "suspend")}
-                      title={tenant.status === "suspended" ? "Activate" : "Suspend"}>
+                      title={tenant.status === "suspended" ? t("platformAdmin.tenants.activate") : t("platformAdmin.tenants.suspend")}>
                       {actioning === tenant.id ? <Loader2 className="w-4 h-4 animate-spin" /> :
                         tenant.status === "suspended" ? <PlayCircle className="w-4 h-4 text-chart-2" /> : <PauseCircle className="w-4 h-4 text-amber-500" />}
                     </Button>
                     <Button size="sm" variant="ghost" className="h-8 w-8" disabled={actioning === tenant.id}
-                      onClick={() => { if (confirm("Delete this tenant permanently?")) handleAction(tenant.id, "delete") }}
-                      title="Delete">
+                      onClick={() => { if (confirm(t("platformAdmin.tenants.deleteConfirm"))) handleAction(tenant.id, "delete") }}
+                      title={t("platformAdmin.tenants.delete")}>
                       <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
                   </div>
@@ -112,7 +114,7 @@ export default function AdminTenantsPage() {
             {tenants.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No organizations yet</p>
+                <p>{t("platformAdmin.tenants.noOrganizations")}</p>
               </div>
             )}
           </div>

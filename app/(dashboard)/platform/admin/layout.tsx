@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useEffect, useState } from "react"
 import { notFound, usePathname } from "next/navigation"
@@ -13,16 +14,16 @@ import {
   Loader2,
 } from "lucide-react"
 
-const adminNav = [
-  { label: "Dashboard", href: "/platform/admin/dashboard", icon: LayoutDashboard },
-  { label: "Tenants", href: "/platform/admin/tenants", icon: Building2 },
-  { label: "Users", href: "/platform/admin/users", icon: Users },
-  { label: "Roles", href: "/platform/admin/roles", icon: Shield },
-  { label: "Security", href: "/platform/admin/security", icon: Activity },
-]
-
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useI18n()
   const pathname = usePathname()
+  const adminNav = [
+    { label: t("platformAdmin.layout.dashboard"), href: "/platform/admin/dashboard", icon: LayoutDashboard },
+    { label: t("platformAdmin.layout.tenants"), href: "/platform/admin/tenants", icon: Building2 },
+    { label: t("platformAdmin.layout.users"), href: "/platform/admin/users", icon: Users },
+    { label: t("platformAdmin.layout.roles"), href: "/platform/admin/roles", icon: Shield },
+    { label: t("platformAdmin.layout.security"), href: "/platform/admin/security", icon: Activity },
+  ]
   const [isOwner, setIsOwner] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-56 border-r border-border/50 bg-muted/20 p-4 hidden md:block">
         <div className="flex items-center gap-2 px-2 mb-6">
           <Activity className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold">Platform Admin</span>
+          <span className="text-sm font-semibold">{t("platformAdmin.layout.platformAdmin")}</span>
         </div>
         <nav className="space-y-1">
           {adminNav.map((item) => {

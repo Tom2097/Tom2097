@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
@@ -30,6 +31,7 @@ interface SubscriptionData {
 }
 
 function CheckoutSuccessContent() {
+  const { t } = useI18n()
   const searchParams = useSearchParams()
   const sessionId = searchParams?.get("session_id")
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null)
@@ -74,24 +76,24 @@ function CheckoutSuccessContent() {
   const quickStartSteps = [
     {
       icon: BarChart3,
-      title: "Explore Analytics",
-      description: "View AI-powered insights and predictions",
+      title: t("checkout.success.exploreAnalytics"),
+      description: t("checkout.success.exploreAnalyticsDesc"),
       href: "/analytics",
-      action: "Open Analytics"
+      action: t("checkout.success.openAnalytics")
     },
     {
       icon: Users,
-      title: "Invite Your Team",
-      description: "Add team members to collaborate",
+      title: t("checkout.success.inviteTeam"),
+      description: t("checkout.success.inviteTeamDesc"),
       href: "/settings?tab=team",
-      action: "Manage Team"
+      action: t("checkout.success.manageTeam")
     },
     {
       icon: Zap,
-      title: "Connect Data Sources",
-      description: "Integrate your enterprise systems",
+      title: t("checkout.success.connectData"),
+      description: t("checkout.success.connectDataDesc"),
       href: "/settings?tab=organization",
-      action: "Setup Integrations"
+      action: t("checkout.success.setupIntegrations")
     }
   ]
 
@@ -138,11 +140,10 @@ function CheckoutSuccessContent() {
             className="text-center mb-12"
           >
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Welcome to DigiT {plan?.name || "Professional"}!
+              {t("checkout.success.welcome", { planName: plan?.name || "Professional" })}
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Your subscription is now active. You have full access to all {plan?.name || "plan"} features.
-              Let&apos;s get you started with AI-powered enterprise intelligence.
+              {t("checkout.success.activeDesc", { planName: plan?.name || "plan" })}
             </p>
           </motion.div>
 
@@ -157,10 +158,10 @@ function CheckoutSuccessContent() {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-xl font-semibold text-foreground">
-                      {plan?.name || "Professional"} Plan
+                      {t("checkout.success.planTitle", { planName: plan?.name || "Professional" })}
                     </h2>
                     <Badge className="bg-chart-2/20 text-chart-2 border-chart-2/30">
-                      Active
+                      {t("checkout.success.active")}
                     </Badge>
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -174,7 +175,7 @@ function CheckoutSuccessContent() {
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         <span>
-                          Next billing: {new Date(subscription.current_period_end).toLocaleDateString()}
+                          {t("checkout.success.nextBilling", { date: new Date(subscription.current_period_end).toLocaleDateString() })}
                         </span>
                       </div>
                     )}
@@ -198,29 +199,29 @@ function CheckoutSuccessContent() {
               transition={{ delay: 0.4 }}
             >
               <Card className="p-6 mb-8 border-border/50">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Your Plan Includes</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-4">{t("checkout.success.yourPlanIncludes")}</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-4 rounded-lg bg-muted/30">
                     <p className="text-2xl font-bold text-primary">
                       {plan.limits.users === -1 ? "∞" : plan.limits.users}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">Team Members</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("checkout.success.teamMembers")}</p>
                   </div>
                   <div className="text-center p-4 rounded-lg bg-muted/30">
                     <p className="text-2xl font-bold text-primary">{plan.limits.modules}</p>
-                    <p className="text-xs text-muted-foreground mt-1">AI Modules</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("checkout.success.aiModules")}</p>
                   </div>
                   <div className="text-center p-4 rounded-lg bg-muted/30">
                     <p className="text-2xl font-bold text-primary">
                       {plan.limits.dataPoints === -1 ? "∞" : `${(plan.limits.dataPoints / 1000000).toFixed(0)}M`}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">Data Points</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("checkout.success.dataPoints")}</p>
                   </div>
                   <div className="text-center p-4 rounded-lg bg-muted/30">
                     <p className="text-2xl font-bold text-primary">
                       {plan.limits.apiCalls === -1 ? "∞" : `${(plan.limits.apiCalls / 1000).toFixed(0)}K`}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">API Calls</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("checkout.success.apiCalls")}</p>
                   </div>
                 </div>
               </Card>
@@ -233,7 +234,7 @@ function CheckoutSuccessContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <h3 className="text-lg font-semibold text-foreground mb-4">Quick Start Guide</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">{t("checkout.success.quickStart")}</h3>
             <div className="grid gap-4 mb-8">
               {quickStartSteps.map((step, index) => (
                 <Card 
@@ -271,14 +272,14 @@ function CheckoutSuccessContent() {
           >
             <Button size="lg" className="gap-2" asChild>
               <Link href="/">
-                Go to Dashboard
+                {t("checkout.success.goToDashboard")}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
             <p className="text-sm text-muted-foreground mt-4">
-              Need help getting started?{" "}
+              {t("checkout.success.needHelp")}{" "}
               <a href="mailto:support@digit-enterprise.com" className="text-primary hover:underline">
-                Contact our support team
+                {t("checkout.success.contactSupport")}
               </a>
             </p>
           </motion.div>
@@ -292,7 +293,7 @@ function CheckoutSuccessContent() {
           >
             <Button variant="ghost" size="sm" className="text-muted-foreground">
               <Download className="w-4 h-4 mr-2" />
-              Download Receipt
+              {t("checkout.success.downloadReceipt")}
             </Button>
           </motion.div>
         </div>
@@ -310,6 +311,7 @@ function CheckoutSuccessFallback() {
 }
 
 export default function CheckoutSuccessPage() {
+  const { t } = useI18n()
   return (
     <Suspense fallback={<CheckoutSuccessFallback />}>
       <CheckoutSuccessContent />

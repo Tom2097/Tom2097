@@ -1,4 +1,5 @@
 "use client"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
@@ -10,7 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AlertCircle, Loader2, Eye, EyeOff, Check, X, Shield } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 
-function getPasswordStrength(password: string) {
+function getPasswordStrength(password: string, t: (key: string) => string) {
   let score = 0
   const checks = {
     length: password.length >= 8,
@@ -26,17 +27,18 @@ function getPasswordStrength(password: string) {
   if (checks.number) score++
   if (checks.special) score++
 
-  let label = "Very weak"
+  let label = t("auth.signUp.veryWeak")
   let color = "bg-destructive"
-  if (score >= 5) { label = "Very strong"; color = "bg-green-500" }
-  else if (score >= 4) { label = "Strong"; color = "bg-green-400" }
-  else if (score >= 3) { label = "Fair"; color = "bg-amber-400" }
-  else if (score >= 2) { label = "Weak"; color = "bg-orange-500" }
+  if (score >= 5) { label = t("auth.signUp.veryStrong"); color = "bg-green-500" }
+  else if (score >= 4) { label = t("auth.signUp.strong"); color = "bg-green-400" }
+  else if (score >= 3) { label = t("auth.signUp.fair"); color = "bg-amber-400" }
+  else if (score >= 2) { label = t("auth.signUp.weak"); color = "bg-orange-500" }
 
   return { score, checks, label, color }
 }
 
 export default function SignUpPage() {
+  const { t } = useI18n()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -48,7 +50,7 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const strength = useMemo(() => getPasswordStrength(password), [password])
+  const strength = useMemo(() => getPasswordStrength(password, t), [password, t])
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword
 
@@ -56,12 +58,12 @@ export default function SignUpPage() {
     e.preventDefault()
     
     if (password !== confirmPassword) {
-      setError("Passwords do not match.")
+      setError(t("auth.signUp.passwordsDoNotMatchError"))
       return
     }
 
     if (strength.score < 3) {
-      setError("Please choose a stronger password.")
+      setError(t("auth.signUp.strongerPassword"))
       return
     }
 
@@ -80,15 +82,15 @@ export default function SignUpPage() {
         }),
       })
 
-      const result = await response.json().catch(() => ({ error: 'Invalid response from server' }))
+      const result = await response.json().catch(() => ({ error: t("auth.signUp.invalidResponse") }))
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create account')
+        throw new Error(result.error || t("auth.signUp.failedToCreate"))
       }
 
       router.push("/auth/sign-up-success")
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account')
+      setError(err instanceof Error ? err.message : t("auth.signUp.failedToCreate"))
       setIsLoading(false)
     }
   }
@@ -107,9 +109,9 @@ export default function SignUpPage() {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Logo size="lg" />
           </div>
-  <CardTitle className="text-2xl">Start your 7-day free trial</CardTitle>
+  <CardTitle className="text-2xl">{t("auth.signUp.title")}</CardTitle>
   <CardDescription>
-    No credit card required. Start your 7-day free trial.
+    {t("auth.signUp.description")}
   </CardDescription>
         </CardHeader>
         <form onSubmit={handleSignUp}>
@@ -121,11 +123,11 @@ export default function SignUpPage() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="fullName">{t("auth.signUp.fullNameLabel")}</Label>
               <Input
                 id="fullName"
                 type="text"
-                placeholder="John Smith"
+                placeholder={t("auth.signUp.fullNamePlaceholder")}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
@@ -133,11 +135,11 @@ export default function SignUpPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="companyName">Company Name</Label>
+              <Label htmlFor="companyName">{t("auth.signUp.companyNameLabel")}</Label>
               <Input
                 id="companyName"
                 type="text"
-                placeholder="Acme Inc."
+                placeholder={t("auth.signUp.companyNamePlaceholder")}
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 required
@@ -145,11 +147,11 @@ export default function SignUpPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Work Email</Label>
+              <Label htmlFor="email">{t("auth.signUp.emailLabel")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@company.com"
+                placeholder={t("auth.signUp.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -159,12 +161,12 @@ export default function SignUpPage() {
 
             {/* Password with strength indicator */}
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("auth.signUp.passwordLabel")}</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Create a strong password"
+                  placeholder={t("auth.signUp.passwordPlaceholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -175,7 +177,7 @@ export default function SignUpPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? t("auth.signUp.hidePassword") : t("auth.signUp.showPassword")}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -204,11 +206,11 @@ export default function SignUpPage() {
                   {/* Requirement checklist */}
                   <div className="grid grid-cols-2 gap-1.5">
                     {[
-                      { check: strength.checks.length, label: "8+ characters" },
-                      { check: strength.checks.uppercase, label: "Uppercase" },
-                      { check: strength.checks.lowercase, label: "Lowercase" },
-                      { check: strength.checks.number, label: "Number" },
-                      { check: strength.checks.special, label: "Special char" },
+                      { check: strength.checks.length, label: t("auth.signUp.lengthReq") },
+                      { check: strength.checks.uppercase, label: t("auth.signUp.uppercaseReq") },
+                      { check: strength.checks.lowercase, label: t("auth.signUp.lowercaseReq") },
+                      { check: strength.checks.number, label: t("auth.signUp.numberReq") },
+                      { check: strength.checks.special, label: t("auth.signUp.specialReq") },
                     ].map((item) => (
                       <div key={item.label} className="flex items-center gap-1.5">
                         {item.check ? (
@@ -228,12 +230,12 @@ export default function SignUpPage() {
 
             {/* Confirm Password */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">{t("auth.signUp.confirmPasswordLabel")}</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Re-enter your password"
+                  placeholder={t("auth.signUp.confirmPasswordPlaceholder")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -246,19 +248,19 @@ export default function SignUpPage() {
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  aria-label={showConfirmPassword ? t("auth.signUp.hidePassword") : t("auth.signUp.showPassword")}
                 >
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               {passwordsMatch && (
                 <p className="text-xs text-green-500 flex items-center gap-1">
-                  <Check className="w-3 h-3" /> Passwords match
+                  <Check className="w-3 h-3" /> {t("auth.signUp.passwordsMatch")}
                 </p>
               )}
               {passwordsMismatch && (
                 <p className="text-xs text-destructive flex items-center gap-1">
-                  <X className="w-3 h-3" /> Passwords do not match
+                  <X className="w-3 h-3" /> {t("auth.signUp.passwordsDoNotMatch")}
                 </p>
               )}
             </div>
@@ -272,27 +274,27 @@ export default function SignUpPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating account...
+                  {t("auth.signUp.creatingAccount")}
                 </>
               ) : (
-                "Start free trial"
+                t("auth.signUp.startTrial")
               )}
             </Button>
 
             {/* Security badge */}
             <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
               <Shield className="w-3 h-3" />
-              <span>Your data is encrypted and secure</span>
+              <span>{t("auth.signUp.encrypted")}</span>
             </div>
 
             <p className="text-sm text-muted-foreground text-center">
-              Already have an account?{" "}
+              {t("auth.signUp.alreadyHaveAccount")}{" "}
               <Link href="/auth/login" className="text-primary hover:underline">
-                Sign in
+                {t("auth.signUp.signIn")}
               </Link>
             </p>
             <p className="text-xs text-muted-foreground text-center">
-              By signing up, you agree to our Terms of Service and Privacy Policy.
+              {t("auth.signUp.termsAgree")}
             </p>
           </CardFooter>
         </form>

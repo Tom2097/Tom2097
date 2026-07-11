@@ -1,23 +1,27 @@
+import { getTranslator } from "@/lib/i18n/server"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { Logo } from "@/components/digit/logo"
 import { ArrowLeft, CheckCircle2 } from "lucide-react"
 
-export const metadata: Metadata = {
-  title: "System Status | DigiT",
-  description: "Real-time operational status of DigiT platform services.",
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getTranslator()
+  return {
+    title: t("status.page.title"),
+    description: t("status.page.description"),
+  }
 }
 
-const services = [
-  { name: "Web Application", description: "Dashboard and user interface" },
-  { name: "API", description: "Core REST API and integrations" },
-  { name: "Authentication", description: "Login, signup, and session management" },
-  { name: "Database", description: "Primary data storage and queries" },
-  { name: "AI Services", description: "AI assistant and intelligence modules" },
-  { name: "Billing & Payments", description: "Subscription and payment processing" },
-]
-
-export default function StatusPage() {
+export default async function StatusPage() {
+  const { t } = await getTranslator()
+  const services = [
+    { name: t("status.page.webApp"), description: t("status.page.webAppDesc") },
+    { name: t("status.page.api"), description: t("status.page.apiDesc") },
+    { name: t("status.page.auth"), description: t("status.page.authDesc") },
+    { name: t("status.page.database"), description: t("status.page.databaseDesc") },
+    { name: t("status.page.aiServices"), description: t("status.page.aiServicesDesc") },
+    { name: t("status.page.billing"), description: t("status.page.billingDesc") },
+  ]
   return (
     <div className="min-h-screen bg-background">
       <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(rgba(0,212,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
@@ -32,7 +36,7 @@ export default function StatusPage() {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {t("status.page.back")}
           </Link>
         </div>
       </header>
@@ -44,8 +48,8 @@ export default function StatusPage() {
             <CheckCircle2 className="h-7 w-7 text-emerald-500" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">All Systems Operational</h1>
-            <p className="text-sm text-muted-foreground">All services are running normally.</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("status.page.allOperational")}</h1>
+            <p className="text-sm text-muted-foreground">{t("status.page.allServicesNormal")}</p>
           </div>
         </div>
 
@@ -64,14 +68,14 @@ export default function StatusPage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-500" />
-                <span className="text-sm font-medium text-emerald-500">Operational</span>
+                <span className="text-sm font-medium text-emerald-500">{t("status.page.operational")}</span>
               </div>
             </div>
           ))}
         </div>
 
         <p className="mt-8 text-sm text-muted-foreground">
-          For incident history or to report an issue, contact{" "}
+          {t("status.page.contact")}{" "}
           <a href="mailto:support@digit-ai.org" className="text-primary hover:underline">
             support@digit-ai.org
           </a>
