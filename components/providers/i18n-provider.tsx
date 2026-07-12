@@ -75,7 +75,7 @@ export function I18nProvider({
         return
       }
 
-      console.log('[I18n] Switching locale to:', newLocale)
+      console.warn('[I18n] Switching locale to:', newLocale)
       setCookie(LOCALE_COOKIE, newLocale)
 
       // Fire-and-forget profile sync; cookie is the source of truth.

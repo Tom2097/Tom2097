@@ -1021,14 +1021,6 @@
       "viewAll": "ਸਾਰੇ ਸਿਸਟਮ ਵੇਖੋ",
       "upgradeToUnlock": "ਅਨਲੌਕ ਕਰਨ ਲਈ ਅਪਗ੍ਰੇਡ ਕਰੋ",
       "viewPlans": "ਯੋਜਨਾਵਾਂ ਵੇਖੋ"
-    },
-    "error": {
-      "authError": "ਡੈਸ਼ਬੋਰਡ ਪ੍ਰਮਾਣੀਕਰਨ ਗਲਤੀ:",
-      "detail": "ਵੇਰਵਾ:",
-      "user": "ਉਪਭੋਗਤਾ:",
-      "org": "ਸੰਸਥਾ:",
-      "goToLoginCheck": "ਲੌਗਇਨ ਚੈੱਕ 'ਤੇ ਜਾਓ →",
-      "backToLogin": "ਲੌਗਇਨ 'ਤੇ ਵਾਪਸ ਜਾਓ →"
     }
   },
   "recordings": {

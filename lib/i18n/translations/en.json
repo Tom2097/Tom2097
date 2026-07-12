@@ -1021,14 +1021,6 @@
       "viewAll": "View All Systems",
       "upgradeToUnlock": "Upgrade to unlock",
       "viewPlans": "View Plans"
-    },
-    "error": {
-      "authError": "Dashboard Auth Error:",
-      "detail": "Detail:",
-      "user": "User:",
-      "org": "Org:",
-      "goToLoginCheck": "Go to Login Check →",
-      "backToLogin": "Back to Login →"
     }
   },
   "recordings": {
