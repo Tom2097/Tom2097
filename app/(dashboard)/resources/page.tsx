@@ -1,27 +1,33 @@
-import { Boxes, Package, Truck, Wrench, Calendar, AlertTriangle } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { redirect } from "next/navigation"
+import { Boxes, Truck, AlertTriangle } from "lucide-react"
 import { extractTenantContext } from "@/lib/multitenant/context.server"
-import { getAssetTree } from "@/lib/resources/assets"
+import { getAssetTree, type AssetNode } from "@/lib/resources/assets"
 import { listInventory } from "@/lib/resources/inventory"
 import { getCapacityUtilization, getVendorScorecard } from "@/lib/resources/analytics"
 import { getTranslator } from "@/lib/i18n/server"
+import { NewAssetDialog } from "@/components/digit/resources/new-asset-dialog"
+import { ScheduleMaintenanceDialog } from "@/components/digit/resources/schedule-maintenance-dialog"
+
+function flattenAssets(nodes: (AssetNode & { children?: AssetNode[] })[]): AssetNode[] {
+  return nodes.flatMap((n) => [n, ...(n.children ? flattenAssets(n.children as (AssetNode & { children?: AssetNode[] })[]) : [])])
+}
 
 export default async function ResourcesPage() {
   const ctx = await extractTenantContext()
+  if (!ctx) redirect("/auth/login")
   const { t } = await getTranslator()
-  const orgId = ctx?.organizationId
+  const orgId = ctx.organizationId
 
-  const [assets, inventory, capacity, vendors] = orgId
-    ? await Promise.all([
-        getAssetTree(orgId).catch(() => []),
-        listInventory(orgId).catch(() => []),
-        getCapacityUtilization(orgId).catch(() => null),
-        getVendorScorecard(orgId).catch(() => []),
-      ])
-    : [[], [], null, []]
+  const [assets, inventory, capacity, vendors] = await Promise.all([
+    getAssetTree(orgId).catch(() => []),
+    listInventory(orgId).catch(() => []),
+    getCapacityUtilization(orgId).catch(() => null),
+    getVendorScorecard(orgId).catch(() => []),
+  ])
 
   const lowStock = inventory.filter((i) => (i.quantity ?? 0) <= (i.reorder_point ?? 0))
   const utilization = capacity ? Math.round(capacity.utilization_pct * 100) / 100 : 0
+  const flatAssets = flattenAssets(assets as (AssetNode & { children?: AssetNode[] })[])
 
   return (
     <div className="space-y-6">
@@ -36,8 +42,8 @@ export default async function ResourcesPage() {
           </div>
         </div>
         <div className="flex gap-2">
-           <Button variant="outline"><Package className="h-4 w-4 mr-2" />{t("resources.page.addAsset")}</Button>
-           <Button><Wrench className="h-4 w-4 mr-2" />{t("resources.page.schedule")}</Button>
+           <NewAssetDialog label={t("resources.page.addAsset")} />
+           <ScheduleMaintenanceDialog label={t("resources.page.schedule")} assets={flatAssets.map((a) => ({ id: a.id, name: a.name }))} />
         </div>
       </div>
 

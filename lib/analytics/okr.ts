@@ -24,6 +24,31 @@ export interface KeyResult {
   weight: number
 }
 
+export async function createObjective(
+  organizationId: string,
+  input: { name: string; category?: string; owner?: string; start_date: string; end_date: string },
+  userId: string,
+): Promise<Objective | null> {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("okr_objectives")
+    .insert({
+      organization_id: organizationId,
+      name: input.name,
+      category: input.category ?? null,
+      owner: input.owner ?? null,
+      start_date: input.start_date,
+      end_date: input.end_date,
+      status: "on_track",
+      progress: 0,
+      created_by: userId,
+    })
+    .select("*")
+    .single()
+  if (error) return null
+  return data as Objective
+}
+
 export async function listObjectives(organizationId: string): Promise<Objective[]> {
   const db = createServiceClient()
   const { data } = await db.from("okr_objectives").select("*").eq("organization_id", organizationId).order("created_at", { ascending: false })

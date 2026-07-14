@@ -1,24 +1,25 @@
-import { Activity, BarChart3, TrendingUp, Target, AlertTriangle } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { redirect } from "next/navigation"
+import { Activity, TrendingUp, Target, AlertTriangle } from "lucide-react"
 import { extractTenantContext } from "@/lib/multitenant/context.server"
 import { listObjectives, computePacing } from "@/lib/analytics/okr"
 import { getCohortBenchmarks } from "@/lib/analytics/cohorts"
 import { driverDecomposition, forecastMetric } from "@/lib/analytics/forecasting"
 import { getTranslator } from "@/lib/i18n/server"
+import { NewObjectiveDialog } from "@/components/digit/performance/new-objective-dialog"
+import { RunReportButton } from "@/components/digit/performance/run-report-button"
 
 export default async function PerformancePage() {
   const ctx = await extractTenantContext()
+  if (!ctx) redirect("/auth/login")
   const { t } = await getTranslator()
-  const orgId = ctx?.organizationId
+  const orgId = ctx.organizationId
 
-  const [objectives, benchmarks, drivers, forecast] = orgId
-    ? await Promise.all([
-        listObjectives(orgId).catch(() => []),
-        getCohortBenchmarks(orgId, "revenue").catch(() => []),
-        driverDecomposition(orgId).catch(() => []),
-        forecastMetric(orgId, "revenue", 6).catch(() => []),
-      ])
-    : [[], [], [], []]
+  const [objectives, benchmarks, drivers, forecast] = await Promise.all([
+    listObjectives(orgId).catch(() => []),
+    getCohortBenchmarks(orgId, "revenue").catch(() => []),
+    driverDecomposition(orgId).catch(() => []),
+    forecastMetric(orgId, "revenue", 6).catch(() => []),
+  ])
 
   const activeObjectives = objectives.filter((o) => o.status !== "completed")
 
@@ -35,8 +36,8 @@ export default async function PerformancePage() {
           </div>
         </div>
         <div className="flex gap-2">
-           <Button variant="outline"><Target className="h-4 w-4 mr-2" />{t("performance.page.newObjective")}</Button>
-           <Button><BarChart3 className="h-4 w-4 mr-2" />{t("performance.page.runReport")}</Button>
+           <NewObjectiveDialog label={t("performance.page.newObjective")} />
+           <RunReportButton label={t("performance.page.runReport")} />
         </div>
       </div>
 

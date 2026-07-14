@@ -54,15 +54,29 @@ export async function forecastMetric(
 
 export async function driverDecomposition(organizationId: string): Promise<Array<{ driver: string; contribution: number; direction: "up" | "down" }>> {
   const db = createServiceClient()
-  const { data } = await db.rpc("analytics_event_breakdown", {
-    p_org: organizationId, p_event: "", p_category: "", p_dimension: "event_name",
-    p_start: new Date(Date.now() - 30 * 86400000).toISOString(),
-    p_end: new Date().toISOString(), p_agg: "count", p_limit: 10,
-  })
-  const rows = (data ?? []) as Array<{ label: string; value: number }>
+  const now = new Date()
+  const periodMs = 30 * 86400000
+  const currentStart = new Date(now.getTime() - periodMs)
+  const priorStart = new Date(now.getTime() - 2 * periodMs)
+
+  const [{ data: currentData }, { data: priorData }] = await Promise.all([
+    db.rpc("analytics_event_breakdown", {
+      p_org: organizationId, p_event: "", p_category: "", p_dimension: "event_name",
+      p_start: currentStart.toISOString(), p_end: now.toISOString(), p_agg: "count", p_limit: 10,
+    }),
+    db.rpc("analytics_event_breakdown", {
+      p_org: organizationId, p_event: "", p_category: "", p_dimension: "event_name",
+      p_start: priorStart.toISOString(), p_end: currentStart.toISOString(), p_agg: "count", p_limit: 10,
+    }),
+  ])
+
+  const rows = (currentData ?? []) as Array<{ label: string; value: number }>
+  const priorByLabel = new Map(((priorData ?? []) as Array<{ label: string; value: number }>).map((r) => [r.label, r.value]))
   const total = rows.reduce((a, b) => a + b.value, 0)
+
   return rows.map((r) => ({
-    driver: r.label, contribution: total > 0 ? Math.round((r.value / total) * 100) : 0,
-    direction: (Math.random() > 0.5 ? "up" : "down") as "up" | "down",
+    driver: r.label,
+    contribution: total > 0 ? Math.round((r.value / total) * 100) : 0,
+    direction: (r.value >= (priorByLabel.get(r.label) ?? 0) ? "up" : "down") as "up" | "down",
   }))
 }
