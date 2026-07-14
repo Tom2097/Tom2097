@@ -33,14 +33,13 @@ export default function OperationsPage() {
   const [metrics, setMetrics] = useState({
     ingestionRate: 0,
     processingTime: 0,
-    entityAccuracy: 0,
-    routingAccuracy: 0,
-    anomalies: 0,
-    activeWorkflows: 0,
+    analysisSuccessRate: 0,
+    autoActionRate: 0,
+    openCapas: 0,
     whatsappMessages: 0,
     emailMessages: 0,
   })
-  const [chartData, setChartData] = useState<Array<{ name: string; value: number; entities: number }>>([])
+  const [chartData, setChartData] = useState<Array<{ name: string; value: number }>>([])
   const [anomalies, setAnomalies] = useState<Array<{ id: string; type: string; severity: string; timestamp: string }>>([])
 
   const handleSelectDoc = (doc: { id: string; name: string; content?: string; extracted_entities?: Record<string, unknown> }) => {
@@ -52,47 +51,32 @@ export default function OperationsPage() {
   }
 
   useEffect(() => {
-    // Simulate real-time metrics updates
-    const interval = setInterval(() => {
-      setMetrics(prev => ({
-        ...prev,
-        ingestionRate: Math.floor(Math.random() * 50) + 10,
-        processingTime: Math.floor(Math.random() * 2000) + 500,
-        entityAccuracy: Math.floor(Math.random() * 20) + 80,
-        routingAccuracy: Math.floor(Math.random() * 20) + 80,
-        anomalies: Math.floor(Math.random() * 5),
-        activeWorkflows: Math.floor(Math.random() * 10) + 5,
-        whatsappMessages: Math.floor(Math.random() * 100) + 20,
-        emailMessages: Math.floor(Math.random() * 200) + 50,
-      }))
-      
-      // Update chart data
-      setChartData(prev => {
-        const now = new Date()
-        const newPoint = {
-          name: now.toLocaleTimeString(),
-          value: Math.floor(Math.random() * 50) + 10,
-          entities: Math.floor(Math.random() * 20) + 5,
-        }
-        return [...prev.slice(-9), newPoint]
-      })
-      
-      // Update anomalies
-      if (Math.random() > 0.7) {
-        setAnomalies(prev => {
-          const now = new Date()
-          const newAnomaly = {
-            id: `anomaly-${Date.now()}`,
-            type: ['routing_error', 'extraction_failure', 'processing_delay'][Math.floor(Math.random() * 3)],
-            severity: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
-            timestamp: now.toISOString(),
-          }
-          return [...prev.slice(-4), newAnomaly]
+    let mounted = true
+
+    const fetchMetrics = async () => {
+      try {
+        const res = await fetch('/api/v1/operations/metrics')
+        if (!res.ok || !mounted) return
+        const data = await res.json()
+        setMetrics({
+          ingestionRate: data.ingestionRate ?? 0,
+          processingTime: data.processingTime ?? 0,
+          analysisSuccessRate: data.analysisSuccessRate ?? 0,
+          autoActionRate: data.autoActionRate ?? 0,
+          openCapas: data.openCapas ?? 0,
+          whatsappMessages: data.whatsappMessages ?? 0,
+          emailMessages: data.emailMessages ?? 0,
         })
+        setChartData(data.chartData ?? [])
+        setAnomalies(data.anomalies ?? [])
+      } catch {
+        // Non-fatal -- tiles just keep their last known values.
       }
-    }, 3000)
-    
-    return () => clearInterval(interval)
+    }
+
+    fetchMetrics()
+    const interval = setInterval(fetchMetrics, 15000)
+    return () => { mounted = false; clearInterval(interval) }
   }, [])
 
   return (
@@ -140,22 +124,22 @@ export default function OperationsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("operations.page.entityAccuracy")}</CardTitle>
+            <CardTitle className="text-sm font-medium">Analysis Success Rate</CardTitle>
             <Brain className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.entityAccuracy}%</div>
-            <p className="text-xs text-muted-foreground">NER accuracy</p>
+            <div className="text-2xl font-bold">{metrics.analysisSuccessRate}%</div>
+            <p className="text-xs text-muted-foreground">Documents analyzed without error</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("operations.page.routingAccuracy")}</CardTitle>
+            <CardTitle className="text-sm font-medium">Auto-Action Rate</CardTitle>
             <Zap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.routingAccuracy}%</div>
-            <p className="text-xs text-muted-foreground">Auto-routing accuracy</p>
+            <div className="text-2xl font-bold">{metrics.autoActionRate}%</div>
+            <p className="text-xs text-muted-foreground">Classified docs with a task created</p>
           </CardContent>
         </Card>
       </div>
@@ -181,10 +165,10 @@ export default function OperationsPage() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>{t("operations.page.operationalStatus")}</span>
-              {metrics.anomalies > 0 && (
+              {anomalies.length > 0 && (
                 <Badge variant="destructive" className="gap-1">
                   <AlertTriangle className="h-3 w-3" />
-                  {metrics.anomalies} alerts
+                  {anomalies.length} alerts
                 </Badge>
               )}
             </CardTitle>
@@ -217,8 +201,8 @@ export default function OperationsPage() {
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-purple-500" />
                   <div>
-                    <div className="font-medium">{t("operations.page.activeWorkflows")}</div>
-                    <div className="text-sm text-muted-foreground">{metrics.activeWorkflows} {t("operations.page.workflowsRunning")}</div>
+                    <div className="font-medium">Open CAPAs</div>
+                    <div className="text-sm text-muted-foreground">{metrics.openCapas} awaiting resolution</div>
                   </div>
                 </div>
                 <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>

@@ -725,7 +725,7 @@ export async function generateReport(
     data: opts.includeData ? data : undefined,
     metadata: {
       generationTime,
-      modelUsed: opts.depth === "comprehensive" ? DEFAULT_CHAT_MODEL : FAST_MODEL,
+      modelUsed: opts.depth === "comprehensive" ? DEFAULT_CHAT_MODEL.modelId : FAST_MODEL.modelId,
       confidence: 85, // Placeholder - could be calculated from section confidence
     },
   }
@@ -1141,7 +1141,7 @@ export async function generateCustomReport(
     data: opts.includeData ? data : undefined,
     metadata: {
       generationTime: 0,
-      modelUsed: DEFAULT_CHAT_MODEL,
+      modelUsed: DEFAULT_CHAT_MODEL.modelId,
       confidence: 85,
     },
   }

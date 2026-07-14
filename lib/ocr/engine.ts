@@ -13,7 +13,7 @@ export async function runOcr(documentId: string, organizationId: string): Promis
 
   const { data: doc } = await db
     .from("documents")
-    .select("storage_path, mime_type")
+    .select("storage_path, mime_type, metadata")
     .eq("id", documentId)
     .eq("organization_id", organizationId)
     .maybeSingle()
@@ -51,7 +51,7 @@ export async function runOcr(documentId: string, organizationId: string): Promis
         }
         await db.from("documents").update({
           content: result.text,
-          metadata: { ...doc, ocr_confidence: result.confidence, ocr_processed_at: new Date().toISOString() },
+          metadata: { ...(doc.metadata as Record<string, unknown> ?? {}), ocr_confidence: result.confidence, ocr_processed_at: new Date().toISOString() },
         }).eq("id", documentId)
         return result
       }

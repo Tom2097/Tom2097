@@ -1,4 +1,4 @@
-import { generateText } from "ai"
+import { generateText, type LanguageModel } from "ai"
 import { z } from "zod"
 import { DEFAULT_CHAT_MODEL, FAST_MODEL, BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
 import { createServiceClient } from "@/lib/supabase/service"
@@ -89,7 +89,7 @@ export interface NLPAnalysisOptions {
   /** Length of summary (for summary type) */
   summaryLength?: "short" | "medium" | "long"
   /** Model to use */
-  model?: string
+  model?: LanguageModel
   /** Temperature (0-1) */
   temperature?: number
   /** Maximum tokens */

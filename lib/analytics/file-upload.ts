@@ -272,7 +272,7 @@ export async function analyzeFile(
     analysisType: options.analysisType,
     processedAt: new Date().toISOString(),
     processingTime,
-    modelUsed: DEFAULT_CHAT_MODEL,
+    modelUsed: DEFAULT_CHAT_MODEL.modelId,
     tokensUsed: (result as unknown as { usage?: { totalTokens?: number } }).usage?.totalTokens ?? 0,
   }
   

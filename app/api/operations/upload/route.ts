@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { checkTenantRateLimit } from '@/lib/multitenant/rate-limit'
-import { analyzeDocument } from '@/lib/document-processing/analyze'
+import { runUnderstandingAndActions } from '@/lib/document-processing/pipeline'
+import { runOcr } from '@/lib/ocr/engine'
 import { extractText } from 'unpdf'
 import * as xlsx from 'xlsx'
 
@@ -88,6 +89,7 @@ export async function POST(request: Request) {
     let mimeType = 'text/plain'
     let sizeBytes = 0
     let metadata: Record<string, unknown> = { source: 'operations_upload' }
+    let fileBuffer: Buffer | null = null
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData()
@@ -102,6 +104,9 @@ export async function POST(request: Request) {
       mimeType = parsed.mimeType
       sizeBytes = parsed.sizeBytes
       metadata = { source: 'operations_upload', filename: file.name, mime_type: mimeType }
+      // File/Blob can be read more than once -- safe to read again here for
+      // the raw bytes now that parseFile() has already consumed it for text.
+      fileBuffer = Buffer.from(await file.arrayBuffer())
     } else if (contentType.includes('application/json')) {
       const body = await request.json()
       if (!body.text || !body.name) {
@@ -143,23 +148,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to save document' }, { status: 500 })
     }
 
-    let analysis: Record<string, unknown> | undefined
+    // Persist the raw bytes to Supabase Storage so OCR (which reads via a
+    // signed URL) has something to read, and so the file itself is
+    // retrievable later -- storage_path was previously always empty.
+    let storagePath: string | undefined
+    if (fileBuffer) {
+      storagePath = `${ctx.organizationId}/${doc.id}/${name}`
+      const { error: storageError } = await db.storage
+        .from('documents')
+        .upload(storagePath, fileBuffer, { contentType: mimeType, upsert: true })
+      if (storageError) {
+        console.error('[operations/upload] storage upload failed:', storageError)
+        storagePath = undefined
+      } else {
+        await db.from('documents').update({ storage_path: storagePath }).eq('id', doc.id)
+      }
+    }
+
+    // Scanned/photographed images have no text from parseFile() -- run real
+    // OCR (degrades to null gracefully if OCR_API_KEY isn't configured).
+    if (storagePath && mimeType.startsWith('image/') && !content.trim()) {
+      const ocrResult = await runOcr(doc.id, ctx.organizationId).catch(() => null)
+      if (ocrResult?.text) content = ocrResult.text
+    }
+
+    let pipelineResult: Awaited<ReturnType<typeof runUnderstandingAndActions>> | undefined
 
     if (content.trim()) {
       const rateLimited = await checkTenantRateLimit(ctx.tenantId, 200, 20)
       if (rateLimited) return rateLimited
 
-      try {
-        analysis = await analyzeDocument(content, name)
-      } catch (analysisError) {
-        console.error('[operations/upload] analysis failed:', analysisError)
-        analysis = { status: 'failed' }
-      }
-
-      await db
-        .from('documents')
-        .update({ metadata: { ...(doc.metadata as Record<string, unknown>), analysis } })
-        .eq('id', doc.id)
+      pipelineResult = await runUnderstandingAndActions(ctx.organizationId, doc.id, content, name, ctx.userId)
     }
 
     const responseDoc = {
@@ -170,7 +189,8 @@ export async function POST(request: Request) {
       size_bytes: doc.size_bytes,
       created_at: doc.created_at,
       mime_type: doc.mime_type,
-      analysis,
+      analysis: pipelineResult?.analysis,
+      classification: pipelineResult?.classification,
     }
 
     return NextResponse.json({ success: true, document: responseDoc, document_id: doc.id })

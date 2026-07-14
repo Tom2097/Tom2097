@@ -51,26 +51,43 @@ export async function autoCreateTasks(
 export async function getDocumentFeed(organizationId: string, limit = 50): Promise<Array<{
   id: string; name: string; type: string; classification: string | null
   status: string; task_count: number; created_at: string
+  content: string | null; extracted_entities: Record<string, unknown> | null
 }>> {
   const db = createServiceClient()
   const { data } = await db.from("documents")
-    .select("id, name, type, classification, status, created_at")
+    .select("id, name, type, classification, status, created_at, content, extracted_entities")
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false })
     .limit(limit)
+
+  const docs = data ?? []
+  if (docs.length === 0) return []
+
+  const { data: taskRows } = await db
+    .from("document_tasks")
+    .select("document_id")
+    .in("document_id", docs.map((d) => d.id))
+
+  const taskCounts = new Map<string, number>()
+  for (const row of taskRows ?? []) {
+    const id = row.document_id as string
+    taskCounts.set(id, (taskCounts.get(id) ?? 0) + 1)
+  }
 
   interface AutoCreateItem {
     id: string
     name: string
     type: string
-    classification: string
+    classification: string | null
     status: string
     created_at: string
+    content: string | null
+    extracted_entities: Record<string, unknown> | null
     task_count: number
   }
 
-  return (data ?? []).map((d) => ({
+  return docs.map((d) => ({
     ...d,
-    task_count: 0
+    task_count: taskCounts.get(d.id as string) ?? 0,
   })) as AutoCreateItem[]
 }

@@ -38,7 +38,7 @@ export function UniversalIntake() {
         body: JSON.stringify({ url: url.trim() }),
       })
       const data = await res.json()
-      setResult({ success: res.ok, docId: data.document_id, error: data.error })
+      setResult({ success: res.ok, docId: data.document_id, error: data.error, analysis: data.analysis })
     } catch { setResult({ success: false, error: "Network error" }) }
     finally { setLoading(false) }
   }
