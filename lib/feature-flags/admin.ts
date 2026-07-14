@@ -1,5 +1,3 @@
-"use server"
-
 import { createServiceClient } from "@/lib/supabase/service"
 import { DEFAULT_FEATURE_FLAGS, type FeatureFlag } from "@/lib/feature-flags"
 
@@ -71,9 +69,38 @@ export async function isFeatureKilled(flag: FeatureFlag): Promise<boolean> {
   return data?.killed === true
 }
 
+export async function getAllKillSwitches(): Promise<Record<string, boolean>> {
+  const supabase = await createServiceClient()
+  const { data } = await supabase.from("feature_kill_switches").select("flag, killed")
+
+  const result: Record<string, boolean> = {}
+  for (const row of (data as { flag: string; killed: boolean }[] | null) || []) {
+    result[row.flag] = row.killed
+  }
+  return result
+}
+
 export async function getCanaryPercentage(flag: FeatureFlag): Promise<number> {
+  const supabase = await createServiceClient()
+  const { data } = await supabase
+    .from("feature_flag_canary")
+    .select("percent")
+    .eq("flag", flag)
+    .single()
+
+  if (typeof data?.percent === "number") return data.percent
   const def = FEATURE_FLAG_DEFINITIONS.find(d => d.id === flag)
   return def?.canaryPercent || 0
+}
+
+export async function setCanaryPercentage(flag: FeatureFlag, percent: number): Promise<boolean> {
+  const clamped = Math.min(100, Math.max(0, Math.round(percent)))
+  const supabase = await createServiceClient()
+  const { error } = await supabase
+    .from("feature_flag_canary")
+    .upsert({ flag, percent: clamped, updated_at: new Date().toISOString() })
+
+  return !error
 }
 
 export async function isInCanaryGroup(flag: FeatureFlag, userId: string): Promise<boolean> {

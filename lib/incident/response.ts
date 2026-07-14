@@ -103,12 +103,8 @@ export const DEFAULT_RUNBOOKS: Runbook[] = [
   },
 ]
 
-export async function getIncidents(organizationId: string, status?: string): Promise<Incident[]> {
-  const supabase = await createServiceClient()
-  let query = supabase.from("incidents").select("*").eq("organization_id", organizationId)
-  if (status) query = query.eq("status", status)
-  const { data } = await query.order("detected_at", { ascending: false })
-  return ((data as Record<string, unknown>[]) || []).map(i => ({
+function mapIncidentRow(i: Record<string, unknown>): Incident {
+  return {
     id: i.id as string,
     organizationId: i.organization_id as string,
     title: i.title as string,
@@ -119,5 +115,80 @@ export async function getIncidents(organizationId: string, status?: string): Pro
     detectedAt: i.detected_at as string,
     resolvedAt: i.resolved_at as string | undefined,
     runbookId: i.runbook_id as string | undefined,
-  }))
+  }
+}
+
+export async function getIncidents(organizationId: string, status?: string): Promise<Incident[]> {
+  const supabase = await createServiceClient()
+  let query = supabase.from("incidents").select("*").eq("organization_id", organizationId)
+  if (status) query = query.eq("status", status)
+  const { data } = await query.order("detected_at", { ascending: false })
+  return ((data as Record<string, unknown>[]) || []).map(mapIncidentRow)
+}
+
+const SEVERITY_ORDER: Incident["severity"][] = ["low", "medium", "high", "critical"]
+
+/** Assign an incident to a user. Moves a freshly-detected incident into "investigating". */
+export async function assignIncident(
+  organizationId: string,
+  incidentId: string,
+  userId: string
+): Promise<Incident | null> {
+  const supabase = await createServiceClient()
+  const { data: current } = await supabase
+    .from("incidents")
+    .select("status")
+    .eq("organization_id", organizationId)
+    .eq("id", incidentId)
+    .single()
+  if (!current) return null
+
+  const update: Record<string, unknown> = { assigned_to: userId }
+  if (current.status === "detected") update.status = "investigating"
+
+  const { data } = await supabase
+    .from("incidents")
+    .update(update)
+    .eq("organization_id", organizationId)
+    .eq("id", incidentId)
+    .select("*")
+    .single()
+  return data ? mapIncidentRow(data) : null
+}
+
+/** Escalate an incident's severity by one level (capped at "critical"). */
+export async function escalateIncident(organizationId: string, incidentId: string): Promise<Incident | null> {
+  const supabase = await createServiceClient()
+  const { data: current } = await supabase
+    .from("incidents")
+    .select("severity")
+    .eq("organization_id", organizationId)
+    .eq("id", incidentId)
+    .single()
+  if (!current) return null
+
+  const currentIndex = SEVERITY_ORDER.indexOf(current.severity as Incident["severity"])
+  const nextSeverity = SEVERITY_ORDER[Math.min(currentIndex + 1, SEVERITY_ORDER.length - 1)]
+
+  const { data } = await supabase
+    .from("incidents")
+    .update({ severity: nextSeverity })
+    .eq("organization_id", organizationId)
+    .eq("id", incidentId)
+    .select("*")
+    .single()
+  return data ? mapIncidentRow(data) : null
+}
+
+/** Mark an incident resolved. */
+export async function resolveIncident(organizationId: string, incidentId: string): Promise<Incident | null> {
+  const supabase = await createServiceClient()
+  const { data } = await supabase
+    .from("incidents")
+    .update({ status: "resolved", resolved_at: new Date().toISOString() })
+    .eq("organization_id", organizationId)
+    .eq("id", incidentId)
+    .select("*")
+    .single()
+  return data ? mapIncidentRow(data) : null
 }
