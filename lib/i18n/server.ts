@@ -1,4 +1,5 @@
-import { resolveLocale, type Locale } from './config'
+import { cookies } from 'next/headers'
+import { resolveLocale, LOCALE_COOKIE, type Locale } from './config'
 import { getDictionary } from './get-dictionary'
 
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
@@ -11,7 +12,8 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 }
 
 export async function getTranslator(locale?: string | null) {
-  const resolved = resolveLocale(locale)
+  const localeInput = locale ?? (await cookies()).get(LOCALE_COOKIE)?.value
+  const resolved = resolveLocale(localeInput)
   const dict = await getDictionary(resolved)
 
   return {
