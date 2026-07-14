@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
+import useSWR from "swr"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
@@ -36,30 +36,13 @@ const PIPELINE_STAGES: { id: DesignPartner["stage"]; icon: React.ElementType; co
 
 export default function DesignPartnerPipeline() {
   const { t } = useI18n()
-  const [partners, setPartners] = useState<DesignPartner[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data, isLoading, mutate } = useSWR<{ partners: DesignPartner[] }>('/api/v1/design-partners', (url: string) => fetch(url).then(r => r.json()))
+  const partners = data?.partners ?? []
   const [activeTab, setActiveTab] = useState("pipeline")
   const [selectedPartner, setSelectedPartner] = useState<DesignPartner | null>(null)
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
   const [noteText, setNoteText] = useState("")
   const [submitting, setSubmitting] = useState(false)
-
-  const fetchPartners = useCallback(async () => {
-    try {
-      const res = await fetch('/api/v1/design-partners')
-      if (!res.ok) throw new Error(t('designPartner.page.errors.loadFailed'))
-      const data = await res.json()
-      setPartners(data.partners ?? [])
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('designPartner.page.errors.loadFailed'))
-    } finally {
-      setLoading(false)
-    }
-  }, [t])
-
-  useEffect(() => {
-    fetchPartners()
-  }, [fetchPartners])
 
   const getStagePartners = (stage: string) => partners.filter(p => p.stage === stage)
 
@@ -76,9 +59,9 @@ export default function DesignPartnerPipeline() {
         throw new Error(errorData.error || t('designPartner.page.errors.moveFailed'))
       }
       const data = await res.json()
-      setPartners(prev => prev.map(p =>
-        p.id === partnerId ? { ...data.partner } : p
-      ))
+      await mutate({
+        partners: partners.map(p => p.id === partnerId ? { ...data.partner } : p)
+      }, false)
       toast.success(t('designPartner.page.success.moved'))
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('designPartner.page.errors.moveFailed'))
@@ -104,9 +87,9 @@ export default function DesignPartnerPipeline() {
         throw new Error(errorData.error || t('designPartner.page.errors.saveNoteFailed'))
       }
       const data = await res.json()
-      setPartners(prev => prev.map(p =>
-        p.id === selectedPartner.id ? { ...data.partner } : p
-      ))
+      await mutate({
+        partners: partners.map(p => p.id === selectedPartner.id ? { ...data.partner } : p)
+      }, false)
       toast.success(t('designPartner.page.success.noteSaved'))
       setNoteText("")
       setNotesDialogOpen(false)
@@ -134,7 +117,7 @@ export default function DesignPartnerPipeline() {
         </Badge>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/50 mb-4" />
