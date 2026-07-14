@@ -47,12 +47,9 @@ async function parseFile(file: File): Promise<{ content: string; rawData: unknow
     return { content: '', rawData: data, mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', sizeBytes }
   }
 
-  // Fallback: treat as text if small enough
-  if (file.size < 1024 * 1024) {
-    const text = await file.text()
-    return { content: text, rawData: null, mimeType: mimeType || 'text/plain', sizeBytes }
-  }
-
+  // Fallback: anything else (PDF, images, docx, zip, ...) is binary. Decoding
+  // it via file.text() would corrupt it and can embed NUL bytes that Postgres
+  // text columns reject outright, so just record it without extracted content.
   return { content: '', rawData: null, mimeType: mimeType || 'application/octet-stream', sizeBytes }
 }
 
