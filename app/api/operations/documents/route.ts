@@ -12,7 +12,7 @@ export async function GET() {
     const db = createServiceClient()
     const { data, error } = await db
       .from('documents')
-      .select('id, name, type, mime_type, size_bytes, created_at')
+      .select('id, name, type, file_type, file_size, created_at')
       .eq('organization_id', ctx.organizationId)
       .order('created_at', { ascending: false })
 
@@ -25,8 +25,8 @@ export async function GET() {
       id: doc.id,
       name: doc.name,
       type: doc.type,
-      file_size: doc.size_bytes,
-      size_bytes: doc.size_bytes,
+      file_size: doc.file_size,
+      size_bytes: doc.file_size,
       created_at: doc.created_at,
     }))
 
