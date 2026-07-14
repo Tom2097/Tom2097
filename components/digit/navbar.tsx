@@ -60,7 +60,7 @@ const searchItems = [
   { type: 'feature', title: 'Data Sources', description: 'Connect and manage data integrations', icon: FileText, href: '/settings?tab=organization', category: 'Features' },
   // Actions
   { type: 'action', title: 'Open AI Assistant', description: 'Get AI-powered help', icon: MessageSquare, href: '#ai-assistant', category: 'Actions' },
-  { type: 'action', title: 'Generate Report', description: 'Create analytics report', icon: FileText, href: '#report', category: 'Actions' },
+  { type: 'action', title: 'Generate Report', description: 'Create analytics report', icon: FileText, href: '/analytics', category: 'Actions' },
 ]
 
 const recentSearches = [

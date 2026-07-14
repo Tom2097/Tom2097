@@ -1585,6 +1585,7 @@
       "close": "Close",
       "saveNote": "Save Note",
       "errors": {
+        "loadFailed": "Failed to load design partners",
         "moveFailed": "Failed to move partner stage",
         "saveNoteFailed": "Failed to save note",
         "enterNote": "Please enter a note",

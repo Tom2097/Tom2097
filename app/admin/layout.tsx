@@ -29,7 +29,8 @@ const ADMIN_NAV = [
   { label: "JIT Access", icon: ShieldAlert, href: "/admin/jit" },
   { label: "Security", icon: Shield, href: "/admin/security" },
   { label: "Revenue", icon: IndianRupee, href: "/admin/revenue" },
-  { label: "Settings", icon: Settings, href: "/admin/settings" },
+  { label: "Feature Flags", icon: Settings, href: "/admin/feature-flags" },
+  { label: "Incidents", icon: Activity, href: "/admin/incidents" },
 ]
 
 export default function AdminLayout({

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -34,22 +34,32 @@ const PIPELINE_STAGES: { id: DesignPartner["stage"]; icon: React.ElementType; co
   { id: "advocate", icon: Star, color: "text-orange-500" },
 ]
 
-const SAMPLE_PARTNERS: DesignPartner[] = [
-  { id: "1", name: "Rajesh Kumar", company: "TechCorp India", email: "rajesh@techcorp.in", stage: "pilot", vertical: "Healthcare", feedbackScore: 88, lastTouchpoint: "2026-07-01", notes: "Testing compliance workspace" },
-  { id: "2", name: "Sarah Chen", company: "FinServe Asia", email: "sarah@finserve.sg", stage: "evaluation", vertical: "Banking", feedbackScore: 72, lastTouchpoint: "2026-06-28", notes: "Interested in AI Intelligence" },
-  { id: "3", name: "Michael Okafor", company: "Lagos Manufacturing", email: "michael@lagosmfg.ng", stage: "awareness", vertical: "Manufacturing", feedbackScore: 45, lastTouchpoint: "2026-06-25", notes: "Initial demo completed" },
-  { id: "4", name: "Ananya Patel", company: "MediChain Health", email: "ananya@medichain.in", stage: "launch", vertical: "Healthcare", feedbackScore: 95, lastTouchpoint: "2026-07-03", notes: "Going live next week" },
-  { id: "5", name: "James Wilson", company: "EduTech Global", email: "james@edutech.io", stage: "advocate", vertical: "Education", feedbackScore: 92, lastTouchpoint: "2026-07-02", notes: "Provided testimonial, referring 2 more" },
-]
-
 export default function DesignPartnerPipeline() {
   const { t } = useI18n()
-  const [partners, setPartners] = useState<DesignPartner[]>(SAMPLE_PARTNERS)
+  const [partners, setPartners] = useState<DesignPartner[]>([])
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("pipeline")
   const [selectedPartner, setSelectedPartner] = useState<DesignPartner | null>(null)
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
   const [noteText, setNoteText] = useState("")
   const [submitting, setSubmitting] = useState(false)
+
+  const fetchPartners = useCallback(async () => {
+    try {
+      const res = await fetch('/api/v1/design-partners')
+      if (!res.ok) throw new Error(t('designPartner.page.errors.loadFailed'))
+      const data = await res.json()
+      setPartners(data.partners ?? [])
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('designPartner.page.errors.loadFailed'))
+    } finally {
+      setLoading(false)
+    }
+  }, [t])
+
+  useEffect(() => {
+    fetchPartners()
+  }, [fetchPartners])
 
   const getStagePartners = (stage: string) => partners.filter(p => p.stage === stage)
 
@@ -65,8 +75,9 @@ export default function DesignPartnerPipeline() {
         const errorData = await res.json()
         throw new Error(errorData.error || t('designPartner.page.errors.moveFailed'))
       }
+      const data = await res.json()
       setPartners(prev => prev.map(p =>
-        p.id === partnerId ? { ...p, stage: newStage as DesignPartner["stage"] } : p
+        p.id === partnerId ? { ...data.partner } : p
       ))
       toast.success(t('designPartner.page.success.moved'))
     } catch (error) {
@@ -92,8 +103,9 @@ export default function DesignPartnerPipeline() {
         const errorData = await res.json()
         throw new Error(errorData.error || t('designPartner.page.errors.saveNoteFailed'))
       }
+      const data = await res.json()
       setPartners(prev => prev.map(p =>
-        p.id === selectedPartner.id ? { ...p, notes: noteText } : p
+        p.id === selectedPartner.id ? { ...data.partner } : p
       ))
       toast.success(t('designPartner.page.success.noteSaved'))
       setNoteText("")
@@ -122,6 +134,15 @@ export default function DesignPartnerPipeline() {
         </Badge>
       </div>
 
+      {loading ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/50 mb-4" />
+            <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+          </CardContent>
+        </Card>
+      ) : (
+      <>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="pipeline">{t('designPartner.page.tabs.pipeline')}</TabsTrigger>
@@ -334,6 +355,7 @@ export default function DesignPartnerPipeline() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </>)}
     </div>
   )
 }

@@ -466,15 +466,20 @@ function PricingContent() {
                   variant="outline"
                   onClick={() => {
                     if (!discountCode) return
-                    fetch("/api/v1/billing/validate-discount", {
+                    fetch("/api/v1/billing/discounts", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ code: discountCode, planId: selectedTier }),
+                      body: JSON.stringify({ code: discountCode, plan: selectedTier }),
                     })
-                      .then((r) => r.json())
-                      .then((data) => {
-                        if (data.valid) { setDiscountValid(true); setDiscountError("") }
-                        else { setDiscountValid(false); setDiscountError(data.error || "Invalid code") }
+                      .then(async (r) => {
+                        const data = await r.json()
+                        if (r.ok && data.valid) {
+                          setDiscountValid(true)
+                          setDiscountError("")
+                        } else {
+                          setDiscountValid(false)
+                          setDiscountError(data.error || data.reason || "Invalid code")
+                        }
                       })
                       .catch(() => { setDiscountError("Failed to validate") })
                   }}
