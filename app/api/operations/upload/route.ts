@@ -103,13 +103,11 @@ export async function POST(request: Request) {
       name,
       type,
       content,
-      file_type: mimeType,
-      file_size: sizeBytes,
-      file_path: '',
+      mime_type: mimeType,
+      size_bytes: sizeBytes,
+      storage_path: '',
       metadata,
-      created_by: ctx.userId,
-      updated_by: ctx.userId,
-      status: 'active',
+      uploaded_by: ctx.userId,
     }
 
     if (rawData && rawData.length > 0) {
@@ -119,7 +117,7 @@ export async function POST(request: Request) {
     const { data: doc, error } = await db
       .from('documents')
       .insert(insert)
-      .select('id, name, type, file_type, file_size, created_at, content, raw_data, metadata')
+      .select('id, name, type, mime_type, size_bytes, created_at, content, raw_data, metadata')
       .single()
 
     if (error) {
@@ -131,10 +129,10 @@ export async function POST(request: Request) {
       id: doc.id,
       name: doc.name,
       type: doc.type,
-      file_size: doc.file_size,
-      size_bytes: doc.file_size,
+      file_size: doc.size_bytes,
+      size_bytes: doc.size_bytes,
       created_at: doc.created_at,
-      mime_type: doc.file_type,
+      mime_type: doc.mime_type,
     }
 
     return NextResponse.json({ success: true, document: responseDoc, document_id: doc.id })
