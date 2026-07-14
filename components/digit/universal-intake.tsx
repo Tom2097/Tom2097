@@ -12,7 +12,12 @@ export function UniversalIntake() {
   const [activeDoor, setActiveDoor] = useState("upload")
   const [url, setUrl] = useState("")
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<{ success: boolean; docId?: string; error?: string } | null>(null)
+  const [result, setResult] = useState<{
+    success: boolean
+    docId?: string
+    error?: string
+    analysis?: { documentType?: string; summary?: string; keyFields?: Record<string, string>; status?: string }
+  } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const doors = [
@@ -48,7 +53,7 @@ export function UniversalIntake() {
       formData.append("file", file)
       const res = await fetch("/api/operations/upload", { method: "POST", body: formData })
       const data = await res.json()
-      setResult({ success: res.ok, docId: data.document?.id, error: data.error })
+      setResult({ success: res.ok, docId: data.document?.id, error: data.error, analysis: data.document?.analysis })
     } catch { setResult({ success: false, error: "Upload failed" }) }
     finally { setLoading(false) }
   }
@@ -121,9 +126,33 @@ export function UniversalIntake() {
             )}
 
             {result && (
-              <div className={`flex items-center gap-2 p-3 rounded-lg mt-4 ${result.success ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}>
-                {result.success ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-                <span className="text-sm">{result.success ? `Ingested: ${result.docId}` : result.error}</span>
+              <div className={`rounded-lg mt-4 p-3 ${result.success ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}>
+                <div className="flex items-center gap-2">
+                  {result.success ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertCircle className="h-4 w-4 shrink-0" />}
+                  <span className="text-sm">
+                    {result.success
+                      ? result.analysis?.documentType
+                        ? `Classified as ${result.analysis.documentType}`
+                        : `Ingested: ${result.docId}`
+                      : result.error}
+                  </span>
+                </div>
+                {result.analysis?.summary && (
+                  <p className="mt-2 text-sm text-foreground/80">{result.analysis.summary}</p>
+                )}
+                {result.analysis?.keyFields && Object.keys(result.analysis.keyFields).length > 0 && (
+                  <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    {Object.entries(result.analysis.keyFields).map(([key, value]) => (
+                      <div key={key} className="contents">
+                        <dt className="text-muted-foreground">{key}</dt>
+                        <dd className="text-foreground/90 truncate">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+                {result.analysis?.status === "failed" && (
+                  <p className="mt-2 text-xs text-muted-foreground">Saved, but analysis couldn&apos;t be completed.</p>
+                )}
               </div>
             )}
           </motion.div>

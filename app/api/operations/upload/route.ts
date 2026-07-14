@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { extractTenantContext } from '@/lib/multitenant/context.server'
+import { checkTenantRateLimit } from '@/lib/multitenant/rate-limit'
+import { analyzeDocument } from '@/lib/document-processing/analyze'
+import { extractText } from 'unpdf'
 import * as xlsx from 'xlsx'
+
+export const maxDuration = 30
 
 async function parseFile(file: File): Promise<{ content: string; rawData: unknown[] | null; mimeType: string; sizeBytes: number }> {
   const mimeType = file.type || 'application/octet-stream'
@@ -47,8 +52,21 @@ async function parseFile(file: File): Promise<{ content: string; rawData: unknow
     return { content: '', rawData: data, mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', sizeBytes }
   }
 
-  // Fallback: anything else (PDF, images, docx, zip, ...) is binary. Decoding
-  // it via file.text() would corrupt it and can embed NUL bytes that Postgres
+  // PDF
+  if (name.endsWith('.pdf') || mimeType === 'application/pdf') {
+    const buffer = await file.arrayBuffer()
+    try {
+      const { text } = await extractText(new Uint8Array(buffer), { mergePages: true })
+      return { content: text, rawData: null, mimeType: 'application/pdf', sizeBytes }
+    } catch {
+      // Scanned/image-only PDFs have no extractable text layer -- still
+      // record the file, just without content to analyze.
+      return { content: '', rawData: null, mimeType: 'application/pdf', sizeBytes }
+    }
+  }
+
+  // Fallback: anything else (images, docx, zip, ...) is binary. Decoding it
+  // via file.text() would corrupt it and can embed NUL bytes that Postgres
   // text columns reject outright, so just record it without extracted content.
   return { content: '', rawData: null, mimeType: mimeType || 'application/octet-stream', sizeBytes }
 }
@@ -125,6 +143,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to save document' }, { status: 500 })
     }
 
+    let analysis: Record<string, unknown> | undefined
+
+    if (content.trim()) {
+      const rateLimited = await checkTenantRateLimit(ctx.tenantId, 200, 20)
+      if (rateLimited) return rateLimited
+
+      try {
+        analysis = await analyzeDocument(content, name)
+      } catch (analysisError) {
+        console.error('[operations/upload] analysis failed:', analysisError)
+        analysis = { status: 'failed' }
+      }
+
+      await db
+        .from('documents')
+        .update({ metadata: { ...(doc.metadata as Record<string, unknown>), analysis } })
+        .eq('id', doc.id)
+    }
+
     const responseDoc = {
       id: doc.id,
       name: doc.name,
@@ -133,6 +170,7 @@ export async function POST(request: Request) {
       size_bytes: doc.size_bytes,
       created_at: doc.created_at,
       mime_type: doc.mime_type,
+      analysis,
     }
 
     return NextResponse.json({ success: true, document: responseDoc, document_id: doc.id })
