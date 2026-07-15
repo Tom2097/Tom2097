@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server"
-import { getAuthenticatedUser, getOrganizationId, handleAuthError } from "@/lib/auth/server-auth"
+import { getAuthenticatedUser, getOrganizationId, requirePlatformAdmin, handleAuthError } from "@/lib/auth/server-auth"
 import { getIncidents, reportIncident, assignIncident, escalateIncident, resolveIncident } from "@/lib/incident/response"
 import type { Incident } from "@/lib/incident/response"
 
 export async function GET() {
   try {
     const user = await getAuthenticatedUser()
+    await requirePlatformAdmin(user.id)
     const organizationId = await getOrganizationId(user.id)
     const incidents = await getIncidents(organizationId)
     return NextResponse.json({ incidents })
@@ -17,6 +18,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const user = await getAuthenticatedUser()
+    await requirePlatformAdmin(user.id)
     const organizationId = await getOrganizationId(user.id)
     const body = await request.json()
     const { action } = body as { action?: string }

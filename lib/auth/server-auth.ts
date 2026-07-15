@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { NextResponse } from 'next/server'
+import { isPlatformAdmin } from '@/lib/auth/rbac'
 
 export async function getAuthenticatedUser() {
   const supabase = await createClient()
@@ -11,6 +12,14 @@ export async function getAuthenticatedUser() {
   }
 
   return user
+}
+
+/** Throws 'Forbidden' (via handleAuthError) unless the given user is a platform admin. */
+export async function requirePlatformAdmin(userId: string) {
+  const isAdmin = await isPlatformAdmin(userId)
+  if (!isAdmin) {
+    throw new Error('Forbidden')
+  }
 }
 
 export async function getOrganizationId(userId: string) {
@@ -39,6 +48,12 @@ export function handleAuthError(error: Error) {
     return NextResponse.json(
       { error: 'Organization not found' },
       { status: 404 }
+    )
+  }
+  if (error.message === 'Forbidden') {
+    return NextResponse.json(
+      { error: 'Forbidden' },
+      { status: 403 }
     )
   }
   console.error('Auth Error:', error)
