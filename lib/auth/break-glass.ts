@@ -78,33 +78,58 @@ export async function requestBreakGlassAccess(
   return { success: true }
 }
 
+function toBreakGlassSession(data: Record<string, any>): BreakGlassSession {
+  return {
+    id: data.id,
+    adminId: data.admin_id,
+    adminName: data.admin_name,
+    adminEmail: data.admin_email,
+    reason: data.reason,
+    role: data.role || "platform_admin",
+    status: data.status || "active",
+    alarmTriggered: data.alarm_triggered || false,
+    createdAt: data.created_at,
+    startedAt: data.started_at || data.created_at,
+    expiresAt: data.expires_at,
+    endedAt: data.ended_at,
+  }
+}
+
 /**
- * Ends the active break-glass session.
+ * Ends a break-glass session. Ends the caller's own active session when no
+ * sessionId is given, or a specific session (any admin's) when one is
+ * provided -- used by the admin console to revoke sessions on behalf of
+ * others.
  */
-export async function endBreakGlassSession() {
+export async function endBreakGlassSession(sessionId?: string) {
   const user = await getAuthenticatedUser()
   if (!user) return { success: false, error: "Unauthorized" }
 
   const supabase = await createClient()
-  const { error } = await supabase
+  let query = supabase
     .from("break_glass_sessions")
     .update({
-      expires_at: new Date().toISOString(),
       status: "ended",
       ended_at: new Date().toISOString(),
     })
-    .eq("admin_id", user.id)
-    .is("expires_at", null)
+    .eq("status", "active")
+
+  query = sessionId ? query.eq("id", sessionId) : query.eq("admin_id", user.id)
+
+  const { data, error } = await query.select("id")
 
   if (error) {
     console.error("Failed to end break-glass session:", error)
     return { success: false, error: error.message }
   }
+  if (!data || data.length === 0) {
+    return { success: false, error: "No active session found" }
+  }
 
   // Audit log
   await createAuditEntry(
     "break_glass_sessions",
-    user.id,
+    data[0].id,
     "UPDATE",
     { status: "active" },
     { status: "ended" },
@@ -127,28 +152,30 @@ export async function getActiveBreakGlassSession(): Promise<BreakGlassSession | 
     .from("break_glass_sessions")
     .select("*")
     .eq("admin_id", user.id)
-    .is("expires_at", null)
-    .or(`expires_at.gt.now()`)
+    .eq("status", "active")
+    .gt("expires_at", new Date().toISOString())
     .order("created_at", { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
   if (!data) return null
+  return toBreakGlassSession(data)
+}
 
-  return {
-    id: data.id,
-    adminId: data.admin_id,
-    adminName: data.admin_name,
-    adminEmail: data.admin_email,
-    reason: data.reason,
-    role: data.role || "platform_admin",
-    status: data.status || "active",
-    alarmTriggered: data.alarm_triggered || false,
-    createdAt: data.created_at,
-    startedAt: data.started_at || data.created_at,
-    expiresAt: data.expires_at,
-    endedAt: data.ended_at,
-  }
+/**
+ * Gets every currently active break-glass session platform-wide, for the
+ * admin console's session list.
+ */
+export async function listActiveBreakGlassSessions(): Promise<BreakGlassSession[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from("break_glass_sessions")
+    .select("*")
+    .eq("status", "active")
+    .gt("expires_at", new Date().toISOString())
+    .order("created_at", { ascending: false })
+
+  return (data ?? []).map(toBreakGlassSession)
 }
 
 /**

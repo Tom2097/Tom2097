@@ -25,6 +25,11 @@ export async function POST(request: Request) {
  * DELETE: End break-glass session
  */
 export async function DELETE() {
+  const user = await getAuthenticatedUser()
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   const result = await endBreakGlassSession()
 
   if (!result.success) {
