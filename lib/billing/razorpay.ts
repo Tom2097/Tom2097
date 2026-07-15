@@ -16,10 +16,18 @@ const razorpayInstance = axios.create({
 })
 
 // Razorpay plan configuration
+// Keyed by the real plan ids from lib/products.ts (starter/professional/
+// enterprise) -- this previously used a stale free/pro/enterprise naming
+// scheme that didn't match any real plan id, so INR checkout for starter
+// and professional plans always failed with "Invalid plan".
 const RAZORPAY_PLANS: Record<string, { planId: string; name: string }> = {
-  pro: {
-    planId: process.env.RAZORPAY_PRO_PLAN_ID || "plan_1234567890",
-    name: "Pro",
+  starter: {
+    planId: process.env.RAZORPAY_STARTER_PLAN_ID || "plan_1234567890",
+    name: "Starter",
+  },
+  professional: {
+    planId: process.env.RAZORPAY_PROFESSIONAL_PLAN_ID || "plan_1234567891",
+    name: "Professional",
   },
   enterprise: {
     planId: process.env.RAZORPAY_ENTERPRISE_PLAN_ID || "plan_0987654321",

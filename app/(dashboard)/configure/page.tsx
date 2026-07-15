@@ -30,7 +30,7 @@ export default function ConfigurePage() {
   const [showWizard, setShowWizard] = useState(false)
 
   if (showWizard) {
-    return <SetupWizard onComplete={() => setShowWizard(false)} />
+    return <SetupWizard onComplete={() => setShowWizard(false)} onCancel={() => setShowWizard(false)} />
   }
 
   return (

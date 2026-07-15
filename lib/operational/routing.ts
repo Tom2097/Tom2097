@@ -97,10 +97,16 @@ export async function classifyAndRoute(
     }
   }
   
-  // Update document with routing information
+  // Update document with routing information. Merge into existing metadata
+  // rather than replacing it -- this runs after other pipeline steps
+  // (e.g. AI analysis) have already written their own metadata fields.
+  const { data: existing } = await db.from("documents").select("metadata").eq("id", documentId).maybeSingle()
+  const existingMetadata = (existing?.metadata as Record<string, unknown>) ?? {}
+
   await db.from("documents").update({
     classification: classification?.primary ?? null,
     metadata: {
+      ...existingMetadata,
       routed_to: target,
       intent: intent?.primary ?? null,
       routing_rules_applied: {

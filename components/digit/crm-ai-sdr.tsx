@@ -11,7 +11,10 @@ import { Sparkles, Building2, Globe, Users, Briefcase, TrendingUp, Loader2, Sear
 interface EnrichmentResult {
   company_name: string; domain: string; industry: string; size: string
   revenue: string; location: string; description: string; recent_news: string[]
+  ai_generated?: boolean
 }
+
+const SEARCH_STAGES = ["Looking up company details...", "Analyzing industry and size...", "Drafting research summary..."]
 
 function extractDomain(email: string): string | null {
   const parts = email.split("@")
@@ -24,12 +27,18 @@ export function CrmAiSdr() {
   const [result, setResult] = useState<EnrichmentResult | null>(null)
   const [history, setHistory] = useState<Array<{ query: string; result: EnrichmentResult }>>([])
   const [error, setError] = useState("")
+  const [stage, setStage] = useState(0)
 
   const enrich = async () => {
     if (!query.trim()) return
     setLoading(true)
     setResult(null)
     setError("")
+    setStage(0)
+
+    const stageInterval = setInterval(() => {
+      setStage((s) => Math.min(s + 1, SEARCH_STAGES.length - 1))
+    }, 1200)
 
     try {
       const domain = query.includes("@") ? extractDomain(query) : query.toLowerCase().replace(/\s+/g, "")
@@ -48,6 +57,7 @@ export function CrmAiSdr() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Enrichment failed")
     } finally {
+      clearInterval(stageInterval)
       setLoading(false)
     }
   }
@@ -76,6 +86,12 @@ export function CrmAiSdr() {
         </Button>
       </div>
 
+      {loading && (
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          {SEARCH_STAGES[stage]}
+        </p>
+      )}
       {error && <p className="text-xs text-red-500">{error}</p>}
 
       <motion.div initial={false} animate={{ height: result ? "auto" : 0 }} className="overflow-hidden">
@@ -89,6 +105,12 @@ export function CrmAiSdr() {
                 </div>
                 <Badge variant="outline" className="text-[10px]">{result.industry}</Badge>
               </div>
+
+              {result.ai_generated && (
+                <p className="text-[10px] text-muted-foreground italic">
+                  AI-inferred estimate, not verified third-party data — confirm before using in outreach.
+                </p>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">

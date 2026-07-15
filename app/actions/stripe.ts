@@ -1,11 +1,12 @@
 "use server"
 
-import { stripe } from "@/lib/stripe"
+import { getStripe } from "@/lib/stripe"
 import { SUBSCRIPTION_PLANS, getPlanById } from "@/lib/products"
 import { createClient } from "@/lib/supabase/server"
 import { validateDiscountCode, applyDiscount, recordDiscountUse } from "@/lib/billing/discounts"
 
 export async function createCheckoutSession(planId: string, discountCode?: string) {
+  const stripe = await getStripe()
   const plan = getPlanById(planId)
   if (!plan) {
     throw new Error("Invalid plan selected")
@@ -126,6 +127,7 @@ export async function createCheckoutSession(planId: string, discountCode?: strin
 }
 
 export async function createBillingPortalSession() {
+  const stripe = await getStripe()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    await trackUsage(organizationId, feature, quantity)
+    await trackUsage(organizationId, user.id, feature, quantity)
     
     return NextResponse.json({ success: true })
   } catch (error) {

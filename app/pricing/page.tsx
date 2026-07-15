@@ -27,6 +27,7 @@ const tierIcons = {
 
 // Component that uses useSearchParams
 function CanceledBanner() {
+  const { t } = useI18n()
   const searchParams = useSearchParams()
   const canceled = searchParams?.get("canceled")
 
@@ -35,7 +36,7 @@ function CanceledBanner() {
   return (
     <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-3">
       <p className="text-center text-sm text-amber-600">
-        Checkout was canceled. Feel free to try again when you&apos;re ready.
+        {t("pricing.canceled")}
       </p>
     </div>
   )
@@ -54,6 +55,7 @@ const PricingCard = React.memo(function PricingCard({
   currency: string
   onSelect: (tierId: string) => void
 }) {
+  const { t } = useI18n()
   const TierIcon = tierIcons[tier.id as keyof typeof tierIcons]
   const curr = currencies.find(c => c.code === currency) || currencies[0]
 
@@ -91,7 +93,7 @@ const PricingCard = React.memo(function PricingCard({
       >
         {tier.highlighted && (
           <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-            <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
+            <Badge className="bg-primary text-primary-foreground">{t("pricing.card.mostPopular")}</Badge>
           </div>
         )}
 
@@ -110,23 +112,23 @@ const PricingCard = React.memo(function PricingCard({
         <div className="mb-6">
           <div className="flex items-baseline gap-1">
             <span className="text-4xl font-bold text-foreground">{curr.symbol}{price.toLocaleString("en-IN")}</span>
-            <span className="text-muted-foreground">/month</span>
+            <span className="text-muted-foreground">{t("pricing.card.perMonth")}</span>
           </div>
           {isAnnual && (
             <p className="text-sm text-chart-2 mt-1">
-              Billed annually ({curr.symbol}{getYearlyTotal().toLocaleString("en-IN")}/year)
+              {t("pricing.card.billedAnnually")} ({curr.symbol}{getYearlyTotal().toLocaleString("en-IN")}/{t("pricing.card.year")})
             </p>
           )}
           {currency === "INR" && curr.gstRate && (
             <p className="text-xs text-muted-foreground mt-1">
-              +{curr.gstRate}% GST
+              {t("pricing.card.gst", { rate: curr.gstRate })}
             </p>
           )}
         </div>
 
         <div className="flex-1 mb-8">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
-            What&apos;s included
+            {t("pricing.card.whatsIncluded")}
           </p>
           <ul className="space-y-3">
             {tier.features.map((feature, i) => (
@@ -183,6 +185,31 @@ function PricingContent() {
       setLoadingUser(false)
     })
   }, [])
+
+  const [addonStatus, setAddonStatus] = useState<Record<string, "loading" | "done" | "error">>({})
+  const [addonError, setAddonError] = useState<string | null>(null)
+
+  const handleAddAddon = async (addonId: string) => {
+    if (!user) {
+      router.push(`/auth/sign-up`)
+      return
+    }
+    setAddonStatus((prev) => ({ ...prev, [addonId]: "loading" }))
+    setAddonError(null)
+    try {
+      const res = await fetch("/api/v1/billing/addons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ addonId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? "Failed to add")
+      setAddonStatus((prev) => ({ ...prev, [addonId]: "done" }))
+    } catch (err) {
+      setAddonStatus((prev) => ({ ...prev, [addonId]: "error" }))
+      setAddonError(err instanceof Error ? err.message : "Failed to add")
+    }
+  }
 
   const handleSelectPlan = (tierId: string) => {
     if (!user) {
@@ -247,24 +274,23 @@ function PricingContent() {
           >
             <Badge variant="secondary" className="mb-4">
               <Star className="w-3 h-3 mr-1" />
-              Trusted by 500+ Enterprises
+              {t("pricing.hero.trustedBy")}
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              Simple, Transparent{" "}
+              {t("pricing.hero.titlePrefix")}{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-chart-2">
-                Pricing
+                {t("pricing.hero.titleHighlight")}
               </span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-              Choose the plan that scales with your business. All plans include a 7-day free trial
-              with full access to features.
+              {t("pricing.hero.subtitle")}
             </p>
 
             {/* Billing Toggle */}
             <div className="flex items-center justify-center gap-4 mb-12 flex-wrap">
               <div className="flex items-center gap-4">
                 <span className={`text-sm ${!isAnnual ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                  Monthly
+                  {t("pricing.toggle.monthly")}
                 </span>
                 <Switch
                   checked={isAnnual}
@@ -272,12 +298,12 @@ function PricingContent() {
                   className="data-[state=checked]:bg-primary"
                 />
                 <span className={`text-sm ${isAnnual ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                  Annual
+                  {t("pricing.toggle.annual")}
                 </span>
                 {isAnnual && (
                   <>
                     <Badge variant="secondary" className="bg-chart-2/20 text-chart-2 border-chart-2/30">
-                      Save 15%
+                      {t("pricing.toggle.save")}
                     </Badge>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -286,13 +312,12 @@ function PricingContent() {
                           className="bg-amber-500/10 text-amber-600 border-amber-500/30 cursor-help"
                         >
                           <Info className="w-3 h-3 mr-1" />
-                          3-month minimum commitment
+                          {t("pricing.toggle.commitment")}
                         </Badge>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="text-sm">
-                          Yearly plans require a 3-month minimum commitment. You can cancel after 3 months, but no
-                          refunds are available.
+                          {t("pricing.toggle.commitmentTooltip")}
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -341,9 +366,9 @@ function PricingContent() {
       <section className="py-20 px-6 bg-muted/30">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Enhance Your Plan</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-4">{t("pricing.addons.title")}</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Add extra capabilities to any plan based on your specific needs
+              {t("pricing.addons.subtitle")}
             </p>
           </div>
 
@@ -355,13 +380,30 @@ function PricingContent() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <Card className="p-6 border-border/50 bg-card/50 hover:border-primary/50 transition-all duration-300">
+                <Card className="p-6 border-border/50 bg-card/50 hover:border-primary/50 transition-all duration-300 flex flex-col">
                   <h3 className="font-semibold text-foreground mb-2">{addon.name}</h3>
                   <p className="text-sm text-muted-foreground mb-4">{addon.description}</p>
-                  <div className="flex items-baseline gap-1">
+                  <div className="flex items-baseline gap-1 mb-4">
                     <span className="text-2xl font-bold text-foreground">${addon.price}</span>
                     <span className="text-xs text-muted-foreground">/{addon.unit}</span>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-auto"
+                    disabled={addonStatus[addon.id] === "loading" || addonStatus[addon.id] === "done"}
+                    onClick={() => handleAddAddon(addon.id)}
+                  >
+                    {addonStatus[addon.id] === "loading" ? (
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    ) : addonStatus[addon.id] === "done" ? (
+                      <Check className="h-3 w-3 mr-1" />
+                    ) : null}
+                    {addonStatus[addon.id] === "done" ? t("pricing.addons.added") : t("pricing.addons.addToPlan")}
+                  </Button>
+                  {addonStatus[addon.id] === "error" && (
+                    <p className="text-xs text-destructive mt-2">{addonError}</p>
+                  )}
                 </Card>
               </motion.div>
             ))}
@@ -373,9 +415,9 @@ function PricingContent() {
       <section className="py-20 px-6">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Platform Modules</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-4">{t("pricing.modules.title")}</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Configurable AI-powered intelligence for any team or business function
+              {t("pricing.modules.subtitle")}
             </p>
           </div>
 
@@ -406,21 +448,21 @@ function PricingContent() {
             <div className="flex items-center gap-3">
               <Logo size="sm" />
               <span className="text-sm text-muted-foreground">
-                © 2026 DigiT Enterprise Intelligence. All rights reserved.
+                {t("pricing.footer.copyright")}
               </span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <Link href="/privacy" className="hover:text-foreground transition-colors">
-                Privacy
+                {t("pricing.footer.privacy")}
               </Link>
               <Link href="/terms" className="hover:text-foreground transition-colors">
-                Terms
+                {t("pricing.footer.terms")}
               </Link>
               <Link href="/security" className="hover:text-foreground transition-colors">
-                Security
+                {t("pricing.footer.security")}
               </Link>
               <Link href="/status" className="hover:text-foreground transition-colors">
-                Status
+                {t("pricing.footer.status")}
               </Link>
             </div>
           </div>
@@ -433,7 +475,7 @@ function PricingContent() {
           <Card className="max-w-2xl w-full max-h-[90vh] overflow-auto">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-lg font-semibold">
-                Subscribe to {pricingTiers.find((t) => t.id === selectedTier)?.name}
+                {t("pricing.checkout.subscribeTo", { plan: pricingTiers.find((tier) => tier.id === selectedTier)?.name ?? "" })}
               </h3>
               <Button
                 variant="ghost"
@@ -452,7 +494,7 @@ function PricingContent() {
             <div className="p-4 border-b border-border space-y-3">
               <div className="flex items-center gap-2">
                 <Input
-                  placeholder="Founding discount code?"
+                  placeholder={t("pricing.checkout.discountPlaceholder")}
                   value={discountCode}
                   onChange={(e) => {
                     setDiscountCode(e.target.value.toUpperCase())
@@ -481,14 +523,14 @@ function PricingContent() {
                           setDiscountError(data.error || data.reason || "Invalid code")
                         }
                       })
-                      .catch(() => { setDiscountError("Failed to validate") })
+                      .catch(() => { setDiscountError(t("pricing.checkout.failedToValidate")) })
                   }}
                 >
-                  Apply
+                  {t("pricing.checkout.apply")}
                 </Button>
               </div>
               {discountError && <p className="text-xs text-destructive">{discountError}</p>}
-              {discountValid && <p className="text-xs text-chart-2">Discount code applied!</p>}
+              {discountValid && <p className="text-xs text-chart-2">{t("pricing.checkout.discountApplied")}</p>}
             </div>
             <div className="p-0">
               <Checkout

@@ -35,7 +35,7 @@ interface FAQItem {
 const faqs: FAQItem[] = [
   {
     question: "How do I connect my data sources?",
-    answer: "Navigate to Settings > Integrations and click 'Add New Connection'. Follow the setup wizard to authenticate and configure your data source. DigiT supports 50+ enterprise integrations including Salesforce, SAP, Oracle, and more.",
+    answer: "Go to Configure > Create New Workspace and toggle on the sources you want in step 3 (Data & Integrations). Gmail, Google Drive, and Slack connect directly; other sources are registered for manual credential setup afterward.",
     category: "Getting Started"
   },
   {

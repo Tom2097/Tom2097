@@ -816,6 +816,44 @@
       "passkeyError": "पासकी प्रमाणीकरण रद्द कर दिया गया।",
       "passkeyErrorGeneric": "एक अप्रत्याशित त्रुटि हुई।"
     },
+    "signUp": {
+      "title": "अपना खाता बनाएं",
+      "description": "अपना निःशुल्क परीक्षण शुरू करें — किसी क्रेडिट कार्ड की आवश्यकता नहीं",
+      "fullNameLabel": "पूरा नाम",
+      "fullNamePlaceholder": "जेन डो",
+      "companyNameLabel": "कंपनी का नाम",
+      "companyNamePlaceholder": "एक्मे इंक.",
+      "emailLabel": "ईमेल",
+      "emailPlaceholder": "आपका@कंपनी.कॉम",
+      "passwordLabel": "पासवर्ड",
+      "passwordPlaceholder": "एक पासवर्ड बनाएं",
+      "confirmPasswordLabel": "पासवर्ड की पुष्टि करें",
+      "confirmPasswordPlaceholder": "अपना पासवर्ड फिर से दर्ज करें",
+      "showPassword": "पासवर्ड दिखाएं",
+      "hidePassword": "पासवर्ड छिपाएं",
+      "veryWeak": "बहुत कमज़ोर",
+      "weak": "कमज़ोर",
+      "fair": "ठीक-ठाक",
+      "strong": "मज़बूत",
+      "veryStrong": "बहुत मज़बूत",
+      "lengthReq": "कम से कम 8 अक्षर",
+      "uppercaseReq": "एक बड़ा अक्षर",
+      "lowercaseReq": "एक छोटा अक्षर",
+      "numberReq": "एक अंक",
+      "specialReq": "एक विशेष वर्ण",
+      "passwordsMatch": "पासवर्ड मेल खाते हैं",
+      "passwordsDoNotMatch": "पासवर्ड मेल नहीं खाते",
+      "passwordsDoNotMatchError": "पासवर्ड मेल नहीं खाते",
+      "strongerPassword": "कृपया एक मज़बूत पासवर्ड चुनें",
+      "invalidResponse": "सर्वर से अप्रत्याशित प्रतिक्रिया",
+      "failedToCreate": "खाता बनाने में विफल",
+      "creatingAccount": "खाता बनाया जा रहा है...",
+      "startTrial": "निःशुल्क परीक्षण शुरू करें",
+      "encrypted": "आपका डेटा एन्क्रिप्टेड और सुरक्षित है",
+      "alreadyHaveAccount": "पहले से खाता है?",
+      "signIn": "साइन इन करें",
+      "termsAgree": "साइन अप करके, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत होते हैं"
+    },
     "signUpSuccess": {
       "accountReady": "खाता तैयार है",
       "accountActive": "आपका खाता बन गया है और सक्रिय है",
@@ -1726,6 +1764,54 @@
         "aiAnalysis": "AI-संचालित विश्लेषण",
         "realTimeMonitoring": "वास्तविक-समय निगरानी"
       }
+    }
+  },
+  "pricing": {
+    "canceled": "चेकआउट रद्द कर दिया गया। जब आप तैयार हों तो फिर से प्रयास करें।",
+    "hero": {
+      "trustedBy": "500+ उद्यमों द्वारा भरोसेमंद",
+      "titlePrefix": "सरल, पारदर्शी",
+      "titleHighlight": "मूल्य निर्धारण",
+      "subtitle": "वह योजना चुनें जो आपके व्यवसाय के साथ बढ़े। सभी योजनाओं में सुविधाओं तक पूर्ण पहुंच के साथ 7-दिन का निःशुल्क परीक्षण शामिल है।"
+    },
+    "toggle": {
+      "monthly": "मासिक",
+      "annual": "वार्षिक",
+      "save": "15% बचाएं",
+      "commitment": "3 महीने की न्यूनतम प्रतिबद्धता",
+      "commitmentTooltip": "वार्षिक योजनाओं के लिए 3 महीने की न्यूनतम प्रतिबद्धता आवश्यक है। आप 3 महीने बाद रद्द कर सकते हैं, लेकिन कोई धनवापसी उपलब्ध नहीं है।"
+    },
+    "card": {
+      "mostPopular": "सबसे लोकप्रिय",
+      "perMonth": "/माह",
+      "billedAnnually": "वार्षिक रूप से बिल किया गया",
+      "year": "वर्ष",
+      "gst": "+{rate}% जीएसटी",
+      "whatsIncluded": "इसमें क्या शामिल है"
+    },
+    "addons": {
+      "title": "अपनी योजना को बेहतर बनाएं",
+      "subtitle": "अपनी विशिष्ट आवश्यकताओं के आधार पर किसी भी योजना में अतिरिक्त क्षमताएं जोड़ें",
+      "addToPlan": "योजना में जोड़ें",
+      "added": "जोड़ा गया"
+    },
+    "modules": {
+      "title": "प्लेटफ़ॉर्म मॉड्यूल",
+      "subtitle": "किसी भी टीम या व्यावसायिक कार्य के लिए कॉन्फ़िगर करने योग्य AI-संचालित इंटेलिजेंस"
+    },
+    "footer": {
+      "copyright": "© 2026 DigiT एंटरप्राइज़ इंटेलिजेंस। सर्वाधिकार सुरक्षित।",
+      "privacy": "गोपनीयता",
+      "terms": "शर्तें",
+      "security": "सुरक्षा",
+      "status": "स्थिति"
+    },
+    "checkout": {
+      "subscribeTo": "{plan} की सदस्यता लें",
+      "discountPlaceholder": "फाउंडिंग डिस्काउंट कोड?",
+      "apply": "लागू करें",
+      "discountApplied": "डिस्काउंट कोड लागू हो गया!",
+      "failedToValidate": "सत्यापित करने में विफल"
     }
   },
   "legal": {

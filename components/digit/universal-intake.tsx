@@ -90,7 +90,7 @@ export function UniversalIntake() {
               <div className="py-8 text-center space-y-3">
                 <Mail className="h-10 w-10 mx-auto text-purple-500" />
                 <p className="text-sm font-medium">Forward emails to</p>
-                <code className="px-3 py-1.5 bg-muted rounded-lg text-sm font-mono">ingest@digit.app</code>
+                <code className="px-3 py-1.5 bg-muted rounded-lg text-sm font-mono">support@digit-ai.in</code>
                 <p className="text-xs text-muted-foreground">Attachments are automatically extracted and processed</p>
               </div>
             )}

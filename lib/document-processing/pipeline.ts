@@ -2,11 +2,13 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { analyzeDocument, type DocumentAnalysis } from '@/lib/document-processing/analyze'
 import { classifyText } from '@/lib/analytics/nlp'
 import { triggerAutoActions } from '@/lib/operational/actions'
+import { classifyAndRoute } from '@/lib/operational/routing'
 
 export interface PipelineResult {
   analysis: DocumentAnalysis | { status: 'failed' }
   classification: string | null
   autoActions?: { tasks_created: string[]; recipe_results: string[] }
+  routedTo?: string
 }
 
 /**
@@ -62,5 +64,12 @@ export async function runUnderstandingAndActions(
     }
   }
 
-  return { analysis, classification, autoActions }
+  let routedTo: string | undefined
+  try {
+    routedTo = await classifyAndRoute(organizationId, documentId, content)
+  } catch (err) {
+    console.error('[pipeline] classifyAndRoute failed:', err)
+  }
+
+  return { analysis, classification, autoActions, routedTo }
 }

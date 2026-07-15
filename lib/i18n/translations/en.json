@@ -816,6 +816,44 @@
       "passkeyError": "Passkey authentication was canceled.",
       "passkeyErrorGeneric": "An unexpected error occurred."
     },
+    "signUp": {
+      "title": "Create your account",
+      "description": "Start your free trial — no credit card required",
+      "fullNameLabel": "Full name",
+      "fullNamePlaceholder": "Jane Doe",
+      "companyNameLabel": "Company name",
+      "companyNamePlaceholder": "Acme Inc.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@company.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a password",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "veryWeak": "Very weak",
+      "weak": "Weak",
+      "fair": "Fair",
+      "strong": "Strong",
+      "veryStrong": "Very strong",
+      "lengthReq": "At least 8 characters",
+      "uppercaseReq": "One uppercase letter",
+      "lowercaseReq": "One lowercase letter",
+      "numberReq": "One number",
+      "specialReq": "One special character",
+      "passwordsMatch": "Passwords match",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "passwordsDoNotMatchError": "Passwords do not match",
+      "strongerPassword": "Please choose a stronger password",
+      "invalidResponse": "Unexpected response from the server",
+      "failedToCreate": "Failed to create account",
+      "creatingAccount": "Creating account...",
+      "startTrial": "Start free trial",
+      "encrypted": "Your data is encrypted and secure",
+      "alreadyHaveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "termsAgree": "By signing up, you agree to our Terms of Service and Privacy Policy"
+    },
     "signUpSuccess": {
       "accountReady": "Account ready",
       "accountActive": "Your account has been created and is active",
@@ -1726,6 +1764,54 @@
         "aiAnalysis": "AI-powered analysis",
         "realTimeMonitoring": "Real-time monitoring"
       }
+    }
+  },
+  "pricing": {
+    "canceled": "Checkout was canceled. Feel free to try again when you're ready.",
+    "hero": {
+      "trustedBy": "Trusted by 500+ Enterprises",
+      "titlePrefix": "Simple, Transparent",
+      "titleHighlight": "Pricing",
+      "subtitle": "Choose the plan that scales with your business. All plans include a 7-day free trial with full access to features."
+    },
+    "toggle": {
+      "monthly": "Monthly",
+      "annual": "Annual",
+      "save": "Save 15%",
+      "commitment": "3-month minimum commitment",
+      "commitmentTooltip": "Yearly plans require a 3-month minimum commitment. You can cancel after 3 months, but no refunds are available."
+    },
+    "card": {
+      "mostPopular": "Most Popular",
+      "perMonth": "/month",
+      "billedAnnually": "Billed annually",
+      "year": "year",
+      "gst": "+{rate}% GST",
+      "whatsIncluded": "What's included"
+    },
+    "addons": {
+      "title": "Enhance Your Plan",
+      "subtitle": "Add extra capabilities to any plan based on your specific needs",
+      "addToPlan": "Add to plan",
+      "added": "Added"
+    },
+    "modules": {
+      "title": "Platform Modules",
+      "subtitle": "Configurable AI-powered intelligence for any team or business function"
+    },
+    "footer": {
+      "copyright": "© 2026 DigiT Enterprise Intelligence. All rights reserved.",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "security": "Security",
+      "status": "Status"
+    },
+    "checkout": {
+      "subscribeTo": "Subscribe to {plan}",
+      "discountPlaceholder": "Founding discount code?",
+      "apply": "Apply",
+      "discountApplied": "Discount code applied!",
+      "failedToValidate": "Failed to validate"
     }
   },
   "legal": {

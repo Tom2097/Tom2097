@@ -1,5 +1,7 @@
 "use client"
 
+import { useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight, Activity, Zap, Shield, Globe, Crown, Lock, ChevronRight, RefreshCw, AlertTriangle, BarChart2, TrendingUp, MessageSquare, Users, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -36,6 +38,8 @@ export default function DashboardContent({
   operations,
 }: DashboardContentProps) {
   const { t } = useI18n()
+  const router = useRouter()
+  const [isRefreshing, startRefresh] = useTransition()
 
   const isTrialing = subscription?.status === 'trialing'
   const isActive = subscription?.status === 'active'
@@ -162,8 +166,14 @@ export default function DashboardContent({
               <p className="text-sm text-muted-foreground">{t("dashboard.liveMetrics.subtitle")}</p>
             </div>
            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="gap-1 text-sm">
-                <RefreshCw className="h-3 w-3" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-sm"
+                disabled={isRefreshing}
+                onClick={() => startRefresh(() => router.refresh())}
+              >
+                <RefreshCw className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} />
                 {t("dashboard.liveMetrics.refresh")}
               </Button>
               <span className="relative flex h-3 w-3">

@@ -816,6 +816,44 @@
       "passkeyError": "ਪਾਸਕੀ ਪ੍ਰਮਾਣੀਕਰਨ ਰੱਦ ਕਰ ਦਿੱਤਾ ਗਿਆ।",
       "passkeyErrorGeneric": "ਇੱਕ ਅਣਕਿਆਸੀ ਗਲਤੀ ਹੋਈ।"
     },
+    "signUp": {
+      "title": "ਆਪਣਾ ਖਾਤਾ ਬਣਾਓ",
+      "description": "ਆਪਣਾ ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਸ਼ੁਰੂ ਕਰੋ — ਕਿਸੇ ਕ੍ਰੈਡਿਟ ਕਾਰਡ ਦੀ ਲੋੜ ਨਹੀਂ",
+      "fullNameLabel": "ਪੂਰਾ ਨਾਮ",
+      "fullNamePlaceholder": "ਜੇਨ ਡੋ",
+      "companyNameLabel": "ਕੰਪਨੀ ਦਾ ਨਾਮ",
+      "companyNamePlaceholder": "ਏਕਮੇ ਇੰਕ.",
+      "emailLabel": "ਈਮੇਲ",
+      "emailPlaceholder": "ਤੁਹਾਡਾ@ਕੰਪਨੀ.ਕਾਮ",
+      "passwordLabel": "ਪਾਸਵਰਡ",
+      "passwordPlaceholder": "ਇੱਕ ਪਾਸਵਰਡ ਬਣਾਓ",
+      "confirmPasswordLabel": "ਪਾਸਵਰਡ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
+      "confirmPasswordPlaceholder": "ਆਪਣਾ ਪਾਸਵਰਡ ਦੁਬਾਰਾ ਦਰਜ ਕਰੋ",
+      "showPassword": "ਪਾਸਵਰਡ ਦਿਖਾਓ",
+      "hidePassword": "ਪਾਸਵਰਡ ਓਹਲੇ ਕਰੋ",
+      "veryWeak": "ਬਹੁਤ ਕਮਜ਼ੋਰ",
+      "weak": "ਕਮਜ਼ੋਰ",
+      "fair": "ਠੀਕ-ਠਾਕ",
+      "strong": "ਮਜ਼ਬੂਤ",
+      "veryStrong": "ਬਹੁਤ ਮਜ਼ਬੂਤ",
+      "lengthReq": "ਘੱਟੋ-ਘੱਟ 8 ਅੱਖਰ",
+      "uppercaseReq": "ਇੱਕ ਵੱਡਾ ਅੱਖਰ",
+      "lowercaseReq": "ਇੱਕ ਛੋਟਾ ਅੱਖਰ",
+      "numberReq": "ਇੱਕ ਅੰਕ",
+      "specialReq": "ਇੱਕ ਖਾਸ ਅੱਖਰ",
+      "passwordsMatch": "ਪਾਸਵਰਡ ਮੇਲ ਖਾਂਦੇ ਹਨ",
+      "passwordsDoNotMatch": "ਪਾਸਵਰਡ ਮੇਲ ਨਹੀਂ ਖਾਂਦੇ",
+      "passwordsDoNotMatchError": "ਪਾਸਵਰਡ ਮੇਲ ਨਹੀਂ ਖਾਂਦੇ",
+      "strongerPassword": "ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਮਜ਼ਬੂਤ ਪਾਸਵਰਡ ਚੁਣੋ",
+      "invalidResponse": "ਸਰਵਰ ਤੋਂ ਅਣਕਿਆਸਾ ਜਵਾਬ",
+      "failedToCreate": "ਖਾਤਾ ਬਣਾਉਣ ਵਿੱਚ ਅਸਫਲ",
+      "creatingAccount": "ਖਾਤਾ ਬਣਾਇਆ ਜਾ ਰਿਹਾ ਹੈ...",
+      "startTrial": "ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਸ਼ੁਰੂ ਕਰੋ",
+      "encrypted": "ਤੁਹਾਡਾ ਡਾਟਾ ਇਨਕ੍ਰਿਪਟਡ ਅਤੇ ਸੁਰੱਖਿਅਤ ਹੈ",
+      "alreadyHaveAccount": "ਪਹਿਲਾਂ ਤੋਂ ਖਾਤਾ ਹੈ?",
+      "signIn": "ਸਾਈਨ ਇਨ ਕਰੋ",
+      "termsAgree": "ਸਾਈਨ ਅਪ ਕਰਕੇ, ਤੁਸੀਂ ਸਾਡੀਆਂ ਸੇਵਾ ਦੀਆਂ ਸ਼ਰਤਾਂ ਅਤੇ ਗੋਪਨੀਯਤਾ ਨੀਤੀ ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ"
+    },
     "signUpSuccess": {
       "accountReady": "ਖਾਤਾ ਤਿਆਰ ਹੈ",
       "accountActive": "ਤੁਹਾਡਾ ਖਾਤਾ ਬਣ ਗਿਆ ਹੈ ਅਤੇ ਸਰਗਰਮ ਹੈ",
@@ -1726,6 +1764,54 @@
         "aiAnalysis": "AI-ਸੰਚਾਲਿਤ ਵਿਸ਼ਲੇਸ਼ਣ",
         "realTimeMonitoring": "ਅਸਲੀ-ਸਮਾਂ ਨਿਗਰਾਨੀ"
       }
+    }
+  },
+  "pricing": {
+    "canceled": "ਚੈੱਕਆਉਟ ਰੱਦ ਕਰ ਦਿੱਤਾ ਗਿਆ। ਜਦੋਂ ਤੁਸੀਂ ਤਿਆਰ ਹੋਵੋ ਤਾਂ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+    "hero": {
+      "trustedBy": "500+ ਉੱਦਮਾਂ ਦੁਆਰਾ ਭਰੋਸੇਯੋਗ",
+      "titlePrefix": "ਸਧਾਰਨ, ਪਾਰਦਰਸ਼ੀ",
+      "titleHighlight": "ਕੀਮਤ",
+      "subtitle": "ਉਹ ਯੋਜਨਾ ਚੁਣੋ ਜੋ ਤੁਹਾਡੇ ਕਾਰੋਬਾਰ ਨਾਲ ਵਧੇ। ਸਾਰੀਆਂ ਯੋਜਨਾਵਾਂ ਵਿੱਚ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਤੱਕ ਪੂਰੀ ਪਹੁੰਚ ਦੇ ਨਾਲ 7-ਦਿਨ ਦਾ ਮੁਫ਼ਤ ਟ੍ਰਾਇਲ ਸ਼ਾਮਲ ਹੈ।"
+    },
+    "toggle": {
+      "monthly": "ਮਹੀਨਾਵਾਰ",
+      "annual": "ਸਾਲਾਨਾ",
+      "save": "15% ਬਚਾਓ",
+      "commitment": "3 ਮਹੀਨਿਆਂ ਦੀ ਘੱਟੋ-ਘੱਟ ਵਚਨਬੱਧਤਾ",
+      "commitmentTooltip": "ਸਾਲਾਨਾ ਯੋਜਨਾਵਾਂ ਲਈ 3 ਮਹੀਨਿਆਂ ਦੀ ਘੱਟੋ-ਘੱਟ ਵਚਨਬੱਧਤਾ ਲੋੜੀਂਦੀ ਹੈ। ਤੁਸੀਂ 3 ਮਹੀਨਿਆਂ ਬਾਅਦ ਰੱਦ ਕਰ ਸਕਦੇ ਹੋ, ਪਰ ਕੋਈ ਰਿਫੰਡ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।"
+    },
+    "card": {
+      "mostPopular": "ਸਭ ਤੋਂ ਪ੍ਰਸਿੱਧ",
+      "perMonth": "/ਮਹੀਨਾ",
+      "billedAnnually": "ਸਾਲਾਨਾ ਬਿਲ ਕੀਤਾ ਗਿਆ",
+      "year": "ਸਾਲ",
+      "gst": "+{rate}% ਜੀਐਸਟੀ",
+      "whatsIncluded": "ਇਸ ਵਿੱਚ ਕੀ ਸ਼ਾਮਲ ਹੈ"
+    },
+    "addons": {
+      "title": "ਆਪਣੀ ਯੋਜਨਾ ਨੂੰ ਵਧਾਓ",
+      "subtitle": "ਆਪਣੀਆਂ ਖਾਸ ਲੋੜਾਂ ਦੇ ਆਧਾਰ 'ਤੇ ਕਿਸੇ ਵੀ ਯੋਜਨਾ ਵਿੱਚ ਵਾਧੂ ਸਮਰੱਥਾਵਾਂ ਸ਼ਾਮਲ ਕਰੋ",
+      "addToPlan": "ਯੋਜਨਾ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ",
+      "added": "ਸ਼ਾਮਲ ਕੀਤਾ ਗਿਆ"
+    },
+    "modules": {
+      "title": "ਪਲੇਟਫਾਰਮ ਮੋਡੀਊਲ",
+      "subtitle": "ਕਿਸੇ ਵੀ ਟੀਮ ਜਾਂ ਵਪਾਰਕ ਕਾਰਜ ਲਈ ਕੌਂਫਿਗਰ ਕਰਨ ਯੋਗ AI-ਸੰਚਾਲਿਤ ਇੰਟੈਲੀਜੈਂਸ"
+    },
+    "footer": {
+      "copyright": "© 2026 DigiT ਐਂਟਰਪ੍ਰਾਈਜ਼ ਇੰਟੈਲੀਜੈਂਸ। ਸਾਰੇ ਅਧਿਕਾਰ ਸੁਰੱਖਿਅਤ।",
+      "privacy": "ਗੋਪਨੀਯਤਾ",
+      "terms": "ਸ਼ਰਤਾਂ",
+      "security": "ਸੁਰੱਖਿਆ",
+      "status": "ਸਥਿਤੀ"
+    },
+    "checkout": {
+      "subscribeTo": "{plan} ਦੀ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਲਓ",
+      "discountPlaceholder": "ਫਾਊਂਡਿੰਗ ਡਿਸਕਾਊਂਟ ਕੋਡ?",
+      "apply": "ਲਾਗੂ ਕਰੋ",
+      "discountApplied": "ਡਿਸਕਾਊਂਟ ਕੋਡ ਲਾਗੂ ਹੋ ਗਿਆ!",
+      "failedToValidate": "ਪ੍ਰਮਾਣਿਤ ਕਰਨ ਵਿੱਚ ਅਸਫਲ"
     }
   },
   "legal": {

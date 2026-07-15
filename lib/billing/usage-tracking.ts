@@ -146,7 +146,7 @@ export async function checkUsageLimits(organizationId: string): Promise<{
     // Get organization subscription
     const { data: subscription, error: subError } = await supabase
       .from('subscriptions')
-      .select('plan')
+      .select('plan_id')
       .eq('organization_id', organizationId)
       .single()
     
@@ -159,7 +159,7 @@ export async function checkUsageLimits(organizationId: string): Promise<{
       }
     }
     
-    const plan = subscription.plan as SubscriptionPlan
+    const plan = subscription.plan_id as SubscriptionPlan
     const limits = USAGE_LIMITS[plan] || USAGE_LIMITS.free
     
     // Get current usage for this billing period

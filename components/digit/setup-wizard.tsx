@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Check, Building2, SlidersHorizontal, Database, Puzzle, Shield, Rocket, Loader2 } from "lucide-react"
+import { Check, Building2, SlidersHorizontal, Database, Puzzle, Shield, Rocket, Loader2, AlertCircle, X } from "lucide-react"
 import { ComplianceFrameworkPanel, ResourcesFrameworkPanel, PerformanceFrameworkPanel, OperationalFrameworkPanel } from "@/components/digit/wizard-panels"
 import { HealthcareFrameworkPanel } from "@/components/digit/wizard-panels/HealthcareFrameworkPanel"
 import { BankingFrameworkPanel } from "@/components/digit/wizard-panels/BankingFrameworkPanel"
@@ -26,6 +26,19 @@ const steps = [
   { id: "review", title: "Review & Activate", icon: Rocket },
 ]
 
+// Only gmail/google_drive/slack have a real sync implementation
+// (lib/connectors/engine.ts) -- the rest are registered as "custom" so they
+// still show up as a real connector row, but need manual credential setup
+// via Settings > Integrations (no OAuth handshake happens from this wizard).
+const dataSourceTypes: Record<string, string> = {
+  Gmail: "gmail",
+  "Google Drive": "google_drive",
+  Slack: "slack",
+  SharePoint: "custom",
+  Dropbox: "custom",
+  "Custom API": "custom",
+}
+
 const verticals = [
   "Compliance",
   "Resources",
@@ -41,14 +54,16 @@ const verticals = [
 
 interface SetupWizardProps {
   onComplete: () => void
+  onCancel?: () => void
   initialVertical?: string
 }
 
-export function SetupWizard({ onComplete, initialVertical = "compliance" }: SetupWizardProps) {
+export function SetupWizard({ onComplete, onCancel, initialVertical = "compliance" }: SetupWizardProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [vertical, setVertical] = useState(initialVertical.toLowerCase())
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [connectionStatus, setConnectionStatus] = useState<Record<string, "connecting" | "connected" | "error">>({})
   const [formData, setFormData] = useState<Record<string, unknown>>({
     name: "",
     description: "",
@@ -64,6 +79,21 @@ export function SetupWizard({ onComplete, initialVertical = "compliance" }: Setu
 
   const update = (key: string, value: unknown) => {
     setFormData((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const connectSource = async (source: string) => {
+    setConnectionStatus((prev) => ({ ...prev, [source]: "connecting" }))
+    try {
+      const res = await fetch("/api/v1/connectors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: source, type: dataSourceTypes[source] ?? "custom", credentials: {}, settings: {} }),
+      })
+      if (!res.ok) throw new Error("Failed to connect")
+      setConnectionStatus((prev) => ({ ...prev, [source]: "connected" }))
+    } catch {
+      setConnectionStatus((prev) => ({ ...prev, [source]: "error" }))
+    }
   }
 
   const updateFramework = (key: string, value: unknown) => {
@@ -123,8 +153,19 @@ export function SetupWizard({ onComplete, initialVertical = "compliance" }: Setu
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
-      <Card className="w-full max-w-2xl">
+      <Card className="w-full max-w-2xl relative">
         <CardHeader>
+          {onCancel && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-4 top-4 h-8 w-8"
+              onClick={onCancel}
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
           <div className="flex items-center justify-between mb-6">
             {steps.map((s, i) => (
               <div key={s.id} className="flex items-center">
@@ -187,16 +228,25 @@ export function SetupWizard({ onComplete, initialVertical = "compliance" }: Setu
                   <p className="text-sm text-muted-foreground mb-2">Connect external data sources to this workspace:</p>
                   {["Gmail", "Google Drive", "Slack", "SharePoint", "Dropbox", "Custom API"].map((source) => (
                     <div key={source} className="flex items-center justify-between">
-                      <Label>{source}</Label>
+                      <div className="flex items-center gap-2">
+                        <Label>{source}</Label>
+                        {connectionStatus[source] === "connecting" && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                        {connectionStatus[source] === "connected" && <Check className="h-3 w-3 text-green-500" />}
+                        {connectionStatus[source] === "error" && <AlertCircle className="h-3 w-3 text-destructive" />}
+                      </div>
                       <Switch
                         checked={((formData.dataSources as string[]) ?? []).includes(source)}
                         onCheckedChange={(v) => {
                           const current = (formData.dataSources as string[]) ?? []
                           update("dataSources", v ? [...current, source] : current.filter((s) => s !== source))
+                          if (v) connectSource(source)
                         }}
                       />
                     </div>
                   ))}
+                  <p className="text-xs text-muted-foreground">
+                    Gmail, Google Drive, and Slack are registered immediately; finish authenticating them afterward in Settings &gt; Integrations. Other sources are registered for manual credential setup.
+                  </p>
                 </div>
               )}
 
