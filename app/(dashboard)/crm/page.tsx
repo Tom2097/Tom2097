@@ -125,7 +125,6 @@ export default async function CRMPage() {
          <MetricCard label={t("crm.page.winRate")} value={(() => { const won = pipeline.stages.find(s => s.stage === 'won')?.count ?? 0; const lost = pipeline.stages.find(s => s.stage === 'lost')?.count ?? 0; const total = won + lost; return total > 0 ? `${Math.round((won / total) * 100)}%` : '0%' })()} />
          <MetricCard label={t("crm.page.anomalies")} value={anomalies.anomalies.length} subtitle={t("crm.page.last30Days")} />
          <MetricCard label={t("crm.page.forecastGrowth")} value={forecast && forecast.length >= 2 ? `${Math.round(((forecast[forecast.length - 1].forecast - (forecast[0].actual || 0)) / ((forecast[0].actual || 1))) * 100)}%` : '0%'} subtitle={t("crm.page.next6Months")} />
-          <MetricCard label={t("crm.page.whatsappIntegration")} value={pipelineRealtime.whatsappConnected ? t("crm.page.connected") : t("crm.page.disconnected")} variant={pipelineRealtime.whatsappConnected ? 'highlight' : 'glass'} />
        </MetricGrid>
 
        {/* Real-Time Pipeline Charts */}
@@ -178,24 +177,30 @@ export default async function CRMPage() {
 
              <div className="rounded-xl border border-border/50 bg-card p-4">
                <div className="flex items-center justify-between mb-2">
-                 <h4 className="text-sm font-medium">WhatsApp Activity</h4>
-                 <MessageCircle className="h-4 w-4 text-green-500" />
+                 <h4 className="text-sm font-medium">{t("crm.page.whatsappIntegration")}</h4>
+                 <MessageCircle className={`h-4 w-4 ${pipelineRealtime.whatsappConnected ? "text-green-500" : "text-muted-foreground"}`} />
                </div>
-               <div className="text-2xl font-bold">{pipelineRealtime.whatsappConnected ? pipelineRealtime.dealVelocity || 0 : 0}</div>
-               <p className="text-xs text-muted-foreground">messages/day</p>
-               <div className="mt-4 h-16 flex items-center justify-center">
-                 {pipelineRealtime.whatsappConnected ? (
-                   <div className="flex items-center gap-2 text-green-500">
-                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                     <span className="text-xs">Connected</span>
+               {pipelineRealtime.whatsappConnected ? (
+                 <>
+                   <div className="text-2xl font-bold">{pipelineRealtime.dealVelocity || 0}</div>
+                   <p className="text-xs text-muted-foreground">messages/day</p>
+                   <div className="mt-4 h-16 flex items-center justify-center">
+                     <div className="flex items-center gap-2 text-green-500">
+                       <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                       <span className="text-xs">{t("crm.page.connected")}</span>
+                     </div>
                    </div>
-                 ) : (
-                   <div className="flex items-center gap-2 text-red-500">
-                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                     <span className="text-xs">Disconnected</span>
-                   </div>
-                 )}
-               </div>
+                 </>
+               ) : (
+                 <div className="mt-1 flex h-[104px] flex-col items-center justify-center gap-1.5 text-center">
+                   <Badge variant="secondary" className="text-[10px] font-medium text-muted-foreground">
+                     {t("crm.page.disconnected")}
+                   </Badge>
+                   <p className="max-w-[170px] text-[11px] leading-snug text-muted-foreground/70">
+                     Connect a WhatsApp Business account in the Nurture tab to enable live messaging
+                   </p>
+                 </div>
+               )}
              </div>
 
              <div className="rounded-xl border border-border/50 bg-card p-4">
