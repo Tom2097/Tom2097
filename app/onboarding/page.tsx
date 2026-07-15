@@ -115,6 +115,8 @@ export default function OnboardingPage() {
       case 4:
         return data.technicalMaturity && data.budgetRange && data.timelineUrgency
       case 5:
+        return Boolean(data.fullLegalName && data.governmentIdType && data.acceptedTerms)
+      case 6:
         return analysisResult !== null
       default:
         return false
@@ -161,18 +163,12 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     if (currentStep === 6 && !analysisResult && !isAnalyzing) {
-      Promise.resolve().then(() => setIsAnalyzing(true))
-      fetch("/api/v1/ai/analyze-business", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
-        .then((res) => res.ok ? res.json() : Promise.reject())
-        .then((result) => setAnalysisResult(result))
-        .catch(() => {})
-        .finally(() => setIsAnalyzing(false))
+      /* eslint-disable react-hooks/set-state-in-effect */
+      runAIAnalysis()
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
-  }, [currentStep, analysisResult, isAnalyzing, data])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, analysisResult, isAnalyzing])
 
   const handleNext = () => {
     if (currentStep < 6) {
