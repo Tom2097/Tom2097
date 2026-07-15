@@ -103,8 +103,8 @@ export async function createCheckoutSession(planId: string, discountCode?: strin
       },
     ],
     mode: "subscription",
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/pricing?canceled=true`,
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/pricing?canceled=true`,
     metadata: {
       plan_id: plan.id,
       organization_id: profile.organization_id,
@@ -155,10 +155,23 @@ export async function createBillingPortalSession() {
     throw new Error("No billing account found")
   }
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: subscription.stripe_customer_id,
-    return_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/settings`,
-  })
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: subscription.stripe_customer_id,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/settings`,
+    })
 
-  return { url: session.url }
+    return { url: session.url }
+  } catch (err: any) {
+    if (err?.code === "resource_missing" || err?.raw?.code === "resource_missing") {
+      // Stripe customer no longer exists (e.g. test/live mode mismatch) — clear the
+      // stale reference so the UI falls back to the "Upgrade Plan" state.
+      await supabase
+        .from("subscriptions")
+        .update({ stripe_customer_id: null })
+        .eq("organization_id", profile.organization_id)
+      throw new Error("Your billing account could not be found. Please start a new subscription.")
+    }
+    throw err
+  }
 }
