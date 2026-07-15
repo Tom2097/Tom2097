@@ -3,10 +3,9 @@ import { createServiceClient } from "@/lib/supabase/service"
 export interface DsarRequest {
   id: string
   organization_id: string
-  requester_email: string
-  request_type: "export" | "delete" | "rectify" | "restrict"
-  status: "pending" | "in_progress" | "completed" | "rejected"
-  data: Record<string, unknown> | null
+  subject_email: string
+  request_type: "access" | "erasure" | "rectification" | "portability" | "restriction"
+  status: "open" | "in_progress" | "awaiting_verification" | "completed" | "rejected"
   completed_at: string | null
   created_at: string
 }
@@ -19,7 +18,7 @@ export async function createDsarRequest(
   const db = createServiceClient()
   const { data, error } = await db
     .from("dsar_requests")
-    .insert({ organization_id: organizationId, requester_email: requesterEmail, request_type: requestType, status: "pending" })
+    .insert({ organization_id: organizationId, subject_email: requesterEmail, request_type: requestType, status: "open" })
     .select("*")
     .single()
   if (error) return null
@@ -64,7 +63,7 @@ export interface ConsentRecord {
   id: string
   organization_id: string
   user_id: string
-  purpose: string
+  consent_type: string
   granted: boolean
   granted_at: string
   revoked_at: string | null
@@ -83,7 +82,7 @@ export async function recordConsent(
   const { error } = await db.from("consent_records").insert({
     organization_id: organizationId,
     user_id: userId,
-    purpose,
+    consent_type: purpose,
     granted: true,
     granted_at: new Date().toISOString(),
     ip_address: ipAddress,
@@ -103,7 +102,7 @@ export async function revokeConsent(
     .update({ granted: false, revoked_at: new Date().toISOString() })
     .eq("organization_id", organizationId)
     .eq("user_id", userId)
-    .eq("purpose", purpose)
+    .eq("consent_type", purpose)
   return !error
 }
 

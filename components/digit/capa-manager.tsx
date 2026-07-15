@@ -39,13 +39,13 @@ interface CapaRecord {
   id: string
   title: string
   description: string
-  category: string
-  priority: string
-  state: string
+  source: string
+  severity: string
+  status: string
   created_at: string
 }
 
-const stateColors: Record<string, string> = {
+const statusColors: Record<string, string> = {
   open: "bg-amber-500/20 text-amber-600",
   investigation: "bg-blue-500/20 text-blue-600",
   action: "bg-purple-500/20 text-purple-600",
@@ -55,9 +55,9 @@ const stateColors: Record<string, string> = {
 
 const validNextStates: Record<string, string[]> = {
   open: ["investigation"],
-  investigation: ["open", "action"],
-  action: ["investigation", "verification"],
-  verification: ["action", "closed"],
+  investigation: ["action", "open"],
+  action: ["verification", "investigation"],
+  verification: ["closed", "action"],
 }
 
 export function CapaManager() {
@@ -66,15 +66,15 @@ export function CapaManager() {
   const [addOpen, setAddOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState<string>("all")
-  const [newCapa, setNewCapa] = useState({ title: "", description: "", category: "quality", priority: "medium" })
+  const [newCapa, setNewCapa] = useState({ title: "", description: "", source: "quality", severity: "major" })
   const [submitting, setSubmitting] = useState(false)
 
   const fetchCapas = async () => {
     try {
-      const res = await fetch("/api/v1/capa/persist")
+      const res = await fetch("/api/v1/compliance/capas")
       if (res.ok) {
         const data = await res.json()
-        setCapas(data.capas || [])
+        setCapas(Array.isArray(data) ? data : [])
       }
     } finally {
       setLoading(false)
@@ -87,30 +87,30 @@ export function CapaManager() {
     if (!newCapa.title) return
     setSubmitting(true)
     try {
-      await fetch("/api/v1/capa/persist", {
+      await fetch("/api/v1/compliance/capas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newCapa),
       })
       setAddOpen(false)
-      setNewCapa({ title: "", description: "", category: "quality", priority: "medium" })
+      setNewCapa({ title: "", description: "", source: "quality", severity: "major" })
       fetchCapas()
     } finally {
       setSubmitting(false)
     }
   }
 
-  const handleTransition = async (id: string, toState: string) => {
-    await fetch("/api/v1/capa/persist", {
-      method: "PUT",
+  const handleTransition = async (id: string, toStatus: string) => {
+    await fetch(`/api/v1/compliance/capas/${id}`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, state: toState }),
+      body: JSON.stringify({ status: toStatus, notes: null }),
     })
     fetchCapas()
   }
 
   const filtered = capas.filter(c => {
-    if (filter !== "all" && c.state !== filter) return false
+    if (filter !== "all" && c.status !== filter) return false
     if (search && !c.title.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
@@ -142,8 +142,8 @@ export function CapaManager() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Select value={newCapa.category} onValueChange={(v) => setNewCapa(p => ({ ...p, category: v }))}>
+                  <Label>Source</Label>
+                  <Select value={newCapa.source} onValueChange={(v) => setNewCapa(p => ({ ...p, source: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="quality">Quality</SelectItem>
@@ -154,13 +154,12 @@ export function CapaManager() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Priority</Label>
-                  <Select value={newCapa.priority} onValueChange={(v) => setNewCapa(p => ({ ...p, priority: v }))}>
+                  <Label>Severity</Label>
+                  <Select value={newCapa.severity} onValueChange={(v) => setNewCapa(p => ({ ...p, severity: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="minor">Minor</SelectItem>
+                      <SelectItem value="major">Major</SelectItem>
                       <SelectItem value="critical">Critical</SelectItem>
                     </SelectContent>
                   </Select>
@@ -209,14 +208,14 @@ export function CapaManager() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-sm font-medium text-foreground">{capa.title}</p>
-                    <Badge variant="secondary" className={stateColors[capa.state]}>{capa.state}</Badge>
-                    <Badge variant="outline" className="text-xs">{capa.priority}</Badge>
+                    <Badge variant="secondary" className={statusColors[capa.status]}>{capa.status}</Badge>
+                    <Badge variant="outline" className="text-xs">{capa.severity}</Badge>
                   </div>
                   {capa.description && <p className="text-xs text-muted-foreground line-clamp-2">{capa.description}</p>}
-                  <p className="text-xs text-muted-foreground mt-2">Created {new Date(capa.created_at).toLocaleDateString()} · {capa.category}</p>
+                  <p className="text-xs text-muted-foreground mt-2">Created {new Date(capa.created_at).toLocaleDateString()} · {capa.source}</p>
                 </div>
                 <div className="flex items-center gap-1 ml-4">
-                  {validNextStates[capa.state]?.map((next) => (
+                  {validNextStates[capa.status]?.map((next) => (
                     <Button key={next} size="sm" variant="ghost" className="text-xs gap-1" onClick={() => handleTransition(capa.id, next)}>
                       {next} <ArrowRight className="w-3 h-3" />
                     </Button>

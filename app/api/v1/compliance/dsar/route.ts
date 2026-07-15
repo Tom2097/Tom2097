@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
 
     switch (body.action) {
       case "create": {
-        const dsar = await createDsarRequest(organizationId, user.email!, body.requestType)
+        const subjectEmail = typeof body.subjectEmail === "string" && body.subjectEmail.trim() ? body.subjectEmail.trim() : user.email!
+        const dsar = await createDsarRequest(organizationId, subjectEmail, body.requestType)
         if (!dsar) {
           return NextResponse.json({ error: "Failed to create DSAR request" }, { status: 500 })
         }
