@@ -179,6 +179,21 @@ export async function listActiveBreakGlassSessions(): Promise<BreakGlassSession[
 }
 
 /**
+ * Gets recent break-glass sessions (any status) platform-wide, newest
+ * first, for the admin console's session history table.
+ */
+export async function listBreakGlassSessions(limit = 50): Promise<BreakGlassSession[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from("break_glass_sessions")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit)
+
+  return (data ?? []).map(toBreakGlassSession)
+}
+
+/**
  * Checks if break-glass access is active for the current user.
  */
 export async function isBreakGlassActive(): Promise<boolean> {

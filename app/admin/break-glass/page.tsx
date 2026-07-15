@@ -65,7 +65,7 @@ export default function BreakGlassPage() {
       const res = await fetch("/api/v1/admin/break-glass", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "activate", reason, justification }),
+        body: JSON.stringify({ action: "activate", reason: `${reason} — ${justification}` }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -104,9 +104,10 @@ export default function BreakGlassPage() {
     const map: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       active: "destructive",
       expired: "outline",
+      ended: "secondary",
       revoked: "secondary",
     }
-    return <Badge variant={map[status]}>{status}</Badge>
+    return <Badge variant={map[status] ?? "outline"}>{status}</Badge>
   }
 
   const activeSessions = sessions.filter(s => s.status === "active")
@@ -129,7 +130,7 @@ export default function BreakGlassPage() {
             <DialogHeader>
               <DialogTitle>{t("admin.breakGlass.emergencyTitle")}</DialogTitle>
               <DialogDescription>
-                This will grant you super_admin privileges for 15 minutes. All security teams will be alerted immediately.
+                This will grant you super_admin privileges for 30 minutes. All security teams will be alerted immediately.
                 This action is irreversible and fully audited.
               </DialogDescription>
             </DialogHeader>
@@ -257,7 +258,7 @@ export default function BreakGlassPage() {
           <CardTitle>{t("admin.breakGlass.securityGuidelines")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>{"\u2022"} Break-glass access is <strong>time-limited to 15 minutes</strong> and auto-expires</p>
+          <p>{"\u2022"} Break-glass access is <strong>time-limited to 30 minutes</strong> and auto-expires</p>
           <p>{"\u2022"} Activation triggers an <strong>immediate security alarm</strong> notifying all platform owners</p>
           <p>{"\u2022"} A detailed <strong>justification</strong> is required for compliance and post-incident review</p>
           <p>{"\u2022"} All actions during break-glass sessions are <strong>audit-logged</strong> with maximum visibility</p>
