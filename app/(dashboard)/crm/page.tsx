@@ -288,54 +288,54 @@ export default async function CRMPage() {
         <TabsList className="h-auto w-full flex-col items-stretch gap-4 rounded-2xl border border-border/50 bg-card p-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="mr-1 flex shrink-0 items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-blue-500/80">
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />{t("crm.tabGroups.pipeline")}
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />{t("crm.page.tabGroups.pipeline")}
             </span>
-            <TabsTrigger value="leads" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><BarChart3 className="h-3.5 w-3.5" /> {t("crm.tabs.leads")}</TabsTrigger>
-            <TabsTrigger value="pipeline" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><Target className="h-3.5 w-3.5" /> {t("crm.tabs.pipeline")}</TabsTrigger>
-            <TabsTrigger value="quotes" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><FileText className="h-3.5 w-3.5" /> {t("crm.tabs.quotes")}</TabsTrigger>
-            <TabsTrigger value="forecast" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><BarChart3 className="h-3.5 w-3.5" /> {t("crm.tabs.forecast")}</TabsTrigger>
-            <TabsTrigger value="contacts" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><Users className="h-3.5 w-3.5" /> {t("crm.tabs.people")}</TabsTrigger>
-            <TabsTrigger value="hierarchy" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><Users className="h-3.5 w-3.5" /> {t("crm.tabs.organizations")}</TabsTrigger>
+            <TabsTrigger value="leads" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><BarChart3 className="h-3.5 w-3.5" /> {t("crm.page.tabs.leads")}</TabsTrigger>
+            <TabsTrigger value="pipeline" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><Target className="h-3.5 w-3.5" /> {t("crm.page.tabs.pipeline")}</TabsTrigger>
+            <TabsTrigger value="quotes" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><FileText className="h-3.5 w-3.5" /> {t("crm.page.tabs.quotes")}</TabsTrigger>
+            <TabsTrigger value="forecast" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><BarChart3 className="h-3.5 w-3.5" /> {t("crm.page.tabs.forecast")}</TabsTrigger>
+            <TabsTrigger value="contacts" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><Users className="h-3.5 w-3.5" /> {t("crm.page.tabs.people")}</TabsTrigger>
+            <TabsTrigger value="hierarchy" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-blue-500/10 data-[state=active]:!text-blue-600 dark:data-[state=active]:!text-blue-400"><Users className="h-3.5 w-3.5" /> {t("crm.page.tabs.organizations")}</TabsTrigger>
           </div>
 
           <div className="h-px w-full bg-border/50" />
 
           <div className="flex flex-wrap items-center gap-2">
             <span className="mr-1 flex shrink-0 items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-500/80">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{t("crm.tabGroups.engagement")}
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{t("crm.page.tabGroups.engagement")}
             </span>
-            <TabsTrigger value="communications" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-emerald-500/10 data-[state=active]:!text-emerald-600 dark:data-[state=active]:!text-emerald-400"><Mail className="h-3.5 w-3.5" /> {t("crm.tabs.communications")}</TabsTrigger>
-            <TabsTrigger value="nurture" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-emerald-500/10 data-[state=active]:!text-emerald-600 dark:data-[state=active]:!text-emerald-400"><MessageSquare className="h-3.5 w-3.5" /> {t("crm.tabs.nurture")}</TabsTrigger>
-            <TabsTrigger value="tasks" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-emerald-500/10 data-[state=active]:!text-emerald-600 dark:data-[state=active]:!text-emerald-400"><Target className="h-3.5 w-3.5" /> {t("crm.tabs.tasks")}</TabsTrigger>
-            <TabsTrigger value="timeline" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-emerald-500/10 data-[state=active]:!text-emerald-600 dark:data-[state=active]:!text-emerald-400"><Phone className="h-3.5 w-3.5" /> {t("crm.tabs.timeline")}</TabsTrigger>
-            <TabsTrigger value="conversations" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-emerald-500/10 data-[state=active]:!text-emerald-600 dark:data-[state=active]:!text-emerald-400"><MessageSquare className="h-3.5 w-3.5" /> {t("crm.tabs.talk")}</TabsTrigger>
+            <TabsTrigger value="communications" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-emerald-500/10 data-[state=active]:!text-emerald-600 dark:data-[state=active]:!text-emerald-400"><Mail className="h-3.5 w-3.5" /> {t("crm.page.tabs.communications")}</TabsTrigger>
+            <TabsTrigger value="nurture" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-emerald-500/10 data-[state=active]:!text-emerald-600 dark:data-[state=active]:!text-emerald-400"><MessageSquare className="h-3.5 w-3.5" /> {t("crm.page.tabs.nurture")}</TabsTrigger>
+            <TabsTrigger value="tasks" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-emerald-500/10 data-[state=active]:!text-emerald-600 dark:data-[state=active]:!text-emerald-400"><Target className="h-3.5 w-3.5" /> {t("crm.page.tabs.tasks")}</TabsTrigger>
+            <TabsTrigger value="timeline" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-emerald-500/10 data-[state=active]:!text-emerald-600 dark:data-[state=active]:!text-emerald-400"><Phone className="h-3.5 w-3.5" /> {t("crm.page.tabs.timeline")}</TabsTrigger>
+            <TabsTrigger value="conversations" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-emerald-500/10 data-[state=active]:!text-emerald-600 dark:data-[state=active]:!text-emerald-400"><MessageSquare className="h-3.5 w-3.5" /> {t("crm.page.tabs.talk")}</TabsTrigger>
           </div>
 
           <div className="h-px w-full bg-border/50" />
 
           <div className="flex flex-wrap items-center gap-2">
             <span className="mr-1 flex shrink-0 items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-violet-500/80">
-              <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />{t("crm.tabGroups.intelligence")}
+              <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />{t("crm.page.tabGroups.intelligence")}
             </span>
-            <TabsTrigger value="ai-sdr" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><Sparkles className="h-3.5 w-3.5" /> {t("crm.tabs.ai")}</TabsTrigger>
-            <TabsTrigger value="next-best-action" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><Zap className="h-3.5 w-3.5" /> {t("crm.tabs.actions")}</TabsTrigger>
-            <TabsTrigger value="deal-health" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><AlertTriangle className="h-3.5 w-3.5" /> {t("crm.tabs.health")}</TabsTrigger>
-            <TabsTrigger value="duplicates" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><Copy className="h-3.5 w-3.5" /> {t("crm.tabs.duplicates")}</TabsTrigger>
-            <TabsTrigger value="briefing" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><Sun className="h-3.5 w-3.5" /> {t("crm.tabs.daily")}</TabsTrigger>
-            <TabsTrigger value="vertical-signals" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><TrendingUpIcon className="h-3.5 w-3.5" /> {t("crm.tabs.markets")}</TabsTrigger>
-            <TabsTrigger value="lead-roi" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><DollarSign className="h-3.5 w-3.5" /> {t("crm.tabs.roi")}</TabsTrigger>
+            <TabsTrigger value="ai-sdr" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><Sparkles className="h-3.5 w-3.5" /> {t("crm.page.tabs.ai")}</TabsTrigger>
+            <TabsTrigger value="next-best-action" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><Zap className="h-3.5 w-3.5" /> {t("crm.page.tabs.actions")}</TabsTrigger>
+            <TabsTrigger value="deal-health" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><AlertTriangle className="h-3.5 w-3.5" /> {t("crm.page.tabs.health")}</TabsTrigger>
+            <TabsTrigger value="duplicates" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><Copy className="h-3.5 w-3.5" /> {t("crm.page.tabs.duplicates")}</TabsTrigger>
+            <TabsTrigger value="briefing" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><Sun className="h-3.5 w-3.5" /> {t("crm.page.tabs.daily")}</TabsTrigger>
+            <TabsTrigger value="vertical-signals" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><TrendingUpIcon className="h-3.5 w-3.5" /> {t("crm.page.tabs.markets")}</TabsTrigger>
+            <TabsTrigger value="lead-roi" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-violet-500/10 data-[state=active]:!text-violet-600 dark:data-[state=active]:!text-violet-400"><DollarSign className="h-3.5 w-3.5" /> {t("crm.page.tabs.roi")}</TabsTrigger>
           </div>
 
           <div className="h-px w-full bg-border/50" />
 
           <div className="flex flex-wrap items-center gap-2">
             <span className="mr-1 flex shrink-0 items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-500/80">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />{t("crm.tabGroups.support")}
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />{t("crm.page.tabGroups.support")}
             </span>
-            <TabsTrigger value="events" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-amber-500/10 data-[state=active]:!text-amber-600 dark:data-[state=active]:!text-amber-400"><Layers className="h-3.5 w-3.5" /> {t("crm.tabs.events")}</TabsTrigger>
-            <TabsTrigger value="success" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-amber-500/10 data-[state=active]:!text-amber-600 dark:data-[state=active]:!text-amber-400"><Heart className="h-3.5 w-3.5" /> {t("crm.tabs.customerSuccess")}</TabsTrigger>
-            <TabsTrigger value="support" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-amber-500/10 data-[state=active]:!text-amber-600 dark:data-[state=active]:!text-amber-400"><Ticket className="h-3.5 w-3.5" /> {t("crm.tabs.tickets")}</TabsTrigger>
-            <TabsTrigger value="analytics" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-amber-500/10 data-[state=active]:!text-amber-600 dark:data-[state=active]:!text-amber-400"><Target className="h-3.5 w-3.5" /> {t("crm.tabs.analytics")}</TabsTrigger>
+            <TabsTrigger value="events" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-amber-500/10 data-[state=active]:!text-amber-600 dark:data-[state=active]:!text-amber-400"><Layers className="h-3.5 w-3.5" /> {t("crm.page.tabs.events")}</TabsTrigger>
+            <TabsTrigger value="success" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-amber-500/10 data-[state=active]:!text-amber-600 dark:data-[state=active]:!text-amber-400"><Heart className="h-3.5 w-3.5" /> {t("crm.page.tabs.customerSuccess")}</TabsTrigger>
+            <TabsTrigger value="support" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-amber-500/10 data-[state=active]:!text-amber-600 dark:data-[state=active]:!text-amber-400"><Ticket className="h-3.5 w-3.5" /> {t("crm.page.tabs.tickets")}</TabsTrigger>
+            <TabsTrigger value="analytics" className="flex-none gap-1.5 text-xs data-[state=active]:!bg-amber-500/10 data-[state=active]:!text-amber-600 dark:data-[state=active]:!text-amber-400"><Target className="h-3.5 w-3.5" /> {t("crm.page.tabs.analytics")}</TabsTrigger>
           </div>
         </TabsList>
 
