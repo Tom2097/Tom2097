@@ -2005,7 +2005,9 @@
       "kill_switches_force_a_feature_off_globally_overriding": "Kill switches force a feature off globally, overriding all other flag settings. Use only for critical incidents."
     },
     "jit": {
-      "your_request_will_be_logged_and_requires_approval": "Your request will be logged and requires approval. Elevated access auto-expires."
+      "your_request_will_be_logged_and_requires_approval": "Your request will be logged and requires approval. Elevated access auto-expires.",
+      "revokedSuccess": "Elevation revoked",
+      "revokeFailed": "Failed to revoke elevation"
     }
   },
   "platformAdmin": {

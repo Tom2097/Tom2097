@@ -41,15 +41,11 @@ export default function JitAccessPage() {
 
   const fetchData = useCallback(async (cancelled?: { current: boolean }) => {
     try {
-      const [requestsRes, statusRes] = await Promise.all([
-        fetch("/api/v1/admin/jit"),
-        fetch("/api/v1/admin/jit"),
-      ])
-      const requestsData = await requestsRes.json()
-      const statusData = await statusRes.json()
-      if (requestsRes.ok && (!cancelled || !cancelled.current)) setRequests(requestsData.requests || [])
-      if (statusRes.ok && (!cancelled || !cancelled.current)) {
-        setActiveElevation(statusData.active ? { role: statusData.role, expiresAt: statusData.expiresAt } : null)
+      const res = await fetch("/api/v1/admin/jit")
+      const data = await res.json()
+      if (res.ok && (!cancelled || !cancelled.current)) {
+        setRequests(data.requests || [])
+        setActiveElevation(data.active ? { role: data.role, expiresAt: data.expiresAt } : null)
       }
     } catch {
       if (!cancelled || !cancelled.current) toast.error(t("admin.jit.loadFailed"))
@@ -192,13 +188,18 @@ export default function JitAccessPage() {
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={async () => {
-              await fetch("/api/v1/admin/jit", {
+              const res = await fetch("/api/v1/admin/jit", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "revoke" }),
               })
+              const result = await res.json()
+              if (res.ok) {
+                toast.success(t("admin.jit.revokedSuccess"))
+              } else {
+                toast.error(result.error || t("admin.jit.revokeFailed"))
+              }
               fetchData()
-              toast.success(t("admin.jit.revokedSuccess"))
             }}>
               Revoke Now
             </Button>

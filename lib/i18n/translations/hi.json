@@ -2005,7 +2005,9 @@
       "kill_switches_force_a_feature_off_globally_overriding": "किल स्विच अन्य सभी फ़्लैग सेटिंग्स को ओवरराइड करते हुए, वैश्विक स्तर पर एक सुविधा को बंद कर देता है। केवल गंभीर घटनाओं के लिए उपयोग करें."
     },
     "jit": {
-      "your_request_will_be_logged_and_requires_approval": "आपका अनुरोध लॉग इन किया जाएगा और अनुमोदन की आवश्यकता होगी। उन्नत पहुंच स्वतः समाप्त हो जाती है।"
+      "your_request_will_be_logged_and_requires_approval": "आपका अनुरोध लॉग इन किया जाएगा और अनुमोदन की आवश्यकता होगी। उन्नत पहुंच स्वतः समाप्त हो जाती है।",
+      "revokedSuccess": "एलिवेशन निरस्त कर दिया गया",
+      "revokeFailed": "एलिवेशन निरस्त करने में विफल"
     }
   },
   "platformAdmin": {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getAuthenticatedUser, handleAuthError } from "@/lib/auth/server-auth"
+import { getAuthenticatedUser, getOrganizationId, handleAuthError } from "@/lib/auth/server-auth"
 import {
   requestElevation,
   approveElevation,
@@ -37,7 +37,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true })
       }
       case "revoke": {
-        const result = await revokeElevation(body.userId, body.organizationId)
+        // Defaults to revoking the caller's own active elevation; an explicit
+        // userId/organizationId lets a platform owner revoke someone else's.
+        const targetUserId = body.userId || user.id
+        const organizationId = body.organizationId || await getOrganizationId(user.id)
+        const result = await revokeElevation(targetUserId, organizationId)
         if (!result.success) {
           return NextResponse.json({ error: result.error }, { status: 400 })
         }
@@ -54,8 +58,11 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     await getAuthenticatedUser()
-    const status = await getMyElevationStatus()
-    return NextResponse.json(status)
+    const [status, requests] = await Promise.all([
+      getMyElevationStatus(),
+      listElevationRequests(),
+    ])
+    return NextResponse.json({ ...status, requests })
   } catch (error) {
     return handleAuthError(error as Error)
   }
