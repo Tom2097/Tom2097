@@ -85,6 +85,10 @@ export default function SecureOnboardingPage() {
   const [passcodeVerified, setPasscodeVerified] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
+  // Stages 0-2 need *some* id to correlate audit events before the user is
+  // verified via passcode at stage 3 -- a stable per-session draft id, not
+  // the real (server-verified) userId, which only exists from stage 3 on.
+  const [draftId] = useState<string>(() => (typeof crypto !== "undefined" ? crypto.randomUUID() : `draft-${Date.now()}`))
 
   const stage = ONBOARDING_STAGES[currentStage]
 
@@ -122,43 +126,31 @@ export default function SecureOnboardingPage() {
     }
 
     if (currentStage === 0) { // Identity stage
-      if (!userId) {
-        toast.error("User ID is required for verification")
-        return
-      }
-      await logAuditEvent(userId, "onboarding", "stage_1_started", { stage: "identity_verification" })
+      await logAuditEvent(userId || draftId, "onboarding", "stage_1_started", { stage: "identity_verification" })
     }
 
     if (currentStage === 1) { // Company stage
-      if (!userId) {
-        toast.error("User ID is required for verification")
-        return
-      }
-      await logAuditEvent(userId, "onboarding", "stage_2_started", { stage: "company_verification" })
+      await logAuditEvent(userId || draftId, "onboarding", "stage_2_started", { stage: "company_verification" })
     }
 
     if (currentStage === 2) { // Role stage
-      if (!userId) {
-        toast.error("User ID is required for role assignment")
-        return
-      }
-      await logAuditEvent(userId, "onboarding", "stage_3_started", { stage: "role_selection" })
-      
+      await logAuditEvent(userId || draftId, "onboarding", "stage_3_started", { stage: "role_selection" })
+
       // Check if role requires approval
       if (data.role !== "member") {
         const requiresApproval = await roleRequiresApproval(
-          userId,
+          userId || draftId,
           "", // companyId will be set during onboarding completion
           data.role
         )
-        
+
         if (requiresApproval) {
           const approvalResult = await requestRoleApproval(
-            userId,
+            userId || draftId,
             "", // companyId will be set during onboarding completion
             data.role
           )
-          
+
           if (approvalResult.success) {
             toast.info("Your role request has been submitted for approval")
           }
@@ -227,6 +219,10 @@ export default function SecureOnboardingPage() {
   }
 
   const registerDevice = async () => {
+    if (!userId) {
+      setError("Please verify your passcode first.")
+      return
+    }
     setIsRegisteringDevice(true)
     setError(null)
     try {
@@ -234,7 +230,7 @@ export default function SecureOnboardingPage() {
       const response = await fetch("/api/v1/auth/webauthn/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: data.email }),
+        body: JSON.stringify({ email: data.email, userId }),
       })
       if (!response.ok) throw new Error("Failed to start device registration")
 
@@ -245,15 +241,15 @@ export default function SecureOnboardingPage() {
       const verifyResponse = await fetch("/api/v1/auth/webauthn/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential, email: data.email }),
+        body: JSON.stringify({ credential, email: data.email, userId }),
       })
       if (!verifyResponse.ok) throw new Error("Failed to verify device")
 
-      await verifyResponse.json()
+      const verifyResult = await verifyResponse.json()
       updateData("deviceCredential", {
         id: credential.id,
         publicKey: credential.response.attestationObject,
-        counter: 0, // Counter will be updated by server
+        counter: verifyResult.counter ?? 0,
         deviceType: credential.type,
         transports: credential.response.transports || [],
       })
