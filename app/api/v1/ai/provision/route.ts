@@ -82,10 +82,10 @@ export async function POST(request: Request) {
       }
       case "6": {
         await db
-          .from("integrations")
+          .from("crm_integration_status")
           .upsert(
-            { organization_id: ctx.organizationId, type: `crm_customer_${deal.company_id}`, status: "active", config: { provisioned_from_deal: deal.id } },
-            { onConflict: "organization_id,type" },
+            { organization_id: ctx.organizationId, provider: `crm_customer_${deal.company_id}`, status: "active", config: { provisioned_from_deal: deal.id } },
+            { onConflict: "organization_id,provider" },
           )
         await db
           .from("customer_accounts")

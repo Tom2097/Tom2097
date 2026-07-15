@@ -662,10 +662,10 @@ export async function getPipelineSummaryRealtime(organizationId: string): Promis
   
   // Check WhatsApp integration status
   const { data: whatsappData } = await db
-    .from("integrations")
+    .from("crm_integration_status")
     .select("status")
     .eq("organization_id", organizationId)
-    .eq("type", "whatsapp")
+    .eq("provider", "whatsapp")
     .maybeSingle()
   
   const whatsappConnected = whatsappData?.status === "active"

@@ -19,6 +19,10 @@ ALTER TABLE crm_companies ADD COLUMN IF NOT EXISTS tags TEXT[] NOT NULL DEFAULT 
 ALTER TABLE crm_companies ADD COLUMN IF NOT EXISTS owner_id UUID;
 ALTER TABLE crm_companies ADD COLUMN IF NOT EXISTS created_by UUID;
 ALTER TABLE crm_companies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+-- lib/documents/populate-crm.ts (auto-populate CRM from document extraction,
+-- an earlier commit) writes source/metadata on crm_companies too.
+ALTER TABLE crm_companies ADD COLUMN IF NOT EXISTS source TEXT;
+ALTER TABLE crm_companies ADD COLUMN IF NOT EXISTS metadata JSONB NOT NULL DEFAULT '{}';
 CREATE INDEX IF NOT EXISTS idx_crm_companies_parent ON crm_companies(parent_id);
 
 CREATE TABLE IF NOT EXISTS crm_contacts (
@@ -27,6 +31,10 @@ CREATE TABLE IF NOT EXISTS crm_contacts (
   company_id UUID REFERENCES crm_companies(id) ON DELETE SET NULL,
   first_name TEXT NOT NULL DEFAULT '',
   last_name TEXT NOT NULL DEFAULT '',
+  -- lib/documents/populate-crm.ts inserts a single "name" field rather than
+  -- first_name/last_name; kept as an extra nullable column so both that
+  -- caller and lib/crm/engine.ts's CRUD can coexist against this one table.
+  name TEXT,
   email TEXT,
   phone TEXT,
   title TEXT,
@@ -34,6 +42,7 @@ CREATE TABLE IF NOT EXISTS crm_contacts (
   notes TEXT,
   tags TEXT[] NOT NULL DEFAULT '{}',
   source TEXT,
+  metadata JSONB NOT NULL DEFAULT '{}',
   lead_score NUMERIC,
   owner_id UUID,
   created_by UUID,
@@ -259,19 +268,22 @@ CREATE TABLE IF NOT EXISTS whatsapp_messages (
 CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_org ON whatsapp_messages(organization_id);
 CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_deal ON whatsapp_messages(deal_id);
 
--- Minimal tables queried by engine.ts's getPipelineSummaryRealtime (already
--- live on the CRM page header) -- whatsapp connection status and pending AI
--- recommendation count.
-CREATE TABLE IF NOT EXISTS integrations (
+-- Minimal table queried by engine.ts's getPipelineSummaryRealtime (already
+-- live on the CRM page header) -- whatsapp connection status, plus a marker
+-- for auto-provision's step 6. NOT the same as the real "integrations" table
+-- (Module #19's webhook Integration Hub -- provider/target_url/secret_hash,
+-- no "type" column), which already exists in production; this is a
+-- separate, differently-scoped table so it doesn't collide with that one.
+CREATE TABLE IF NOT EXISTS crm_integration_status (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL,
-  type TEXT NOT NULL,
+  provider TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'inactive',
   config JSONB NOT NULL DEFAULT '{}',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE UNIQUE INDEX IF NOT EXISTS idx_integrations_org_type ON integrations(organization_id, type);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_crm_integration_status_org_provider ON crm_integration_status(organization_id, provider);
 
 CREATE TABLE IF NOT EXISTS ai_recommendations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -299,7 +311,7 @@ ALTER TABLE support_tickets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE crm_lead_scores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE crm_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE whatsapp_messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE crm_integration_status ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_recommendations ENABLE ROW LEVEL SECURITY;
 
 -- Org-scoped RLS, defense-in-depth only (all app access uses the
@@ -357,8 +369,8 @@ DROP POLICY IF EXISTS "Users can view their org whatsapp messages" ON whatsapp_m
 CREATE POLICY "Users can view their org whatsapp messages" ON whatsapp_messages FOR SELECT
   USING (organization_id = (SELECT organization_id FROM profiles WHERE id = auth.uid()));
 
-DROP POLICY IF EXISTS "Users can view their org integrations" ON integrations;
-CREATE POLICY "Users can view their org integrations" ON integrations FOR SELECT
+DROP POLICY IF EXISTS "Users can view their org crm integration status" ON crm_integration_status;
+CREATE POLICY "Users can view their org crm integration status" ON crm_integration_status FOR SELECT
   USING (organization_id = (SELECT organization_id FROM profiles WHERE id = auth.uid()));
 
 DROP POLICY IF EXISTS "Users can view their org ai recommendations" ON ai_recommendations;
