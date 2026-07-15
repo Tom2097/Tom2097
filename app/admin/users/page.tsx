@@ -103,7 +103,11 @@ export default function UsersPage() {
         body: JSON.stringify({ action: "suspend", userId }),
       })
       if (res.ok) {
+        setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status: "suspended" } : u)))
         toast.success("User suspended")
+      } else {
+        const data = await res.json()
+        toast.error(data.error || "Failed to suspend user")
       }
     } catch {
       toast.error("Failed to suspend user")
