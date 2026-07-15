@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search, Plus, Eye, CheckCircle2, XCircle, AlertTriangle, ArrowRight, Trash2, FlaskConical, Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,16 +12,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
 import { useI18n } from "@/components/providers/i18n-provider"
-import {
-  createSimulation,
-  compareSimulation,
-  commitSimulation,
-  discardSimulation,
-  listSimulations,
-  updateSimulationStatus,
-  type Simulation,
-  type SimulationChange,
-  type SimulationDiff,
+import type {
+  Simulation,
+  SimulationChange,
+  SimulationDiff,
 } from "@/lib/simulation/workspace-simulator"
 
 const STATUS_ICONS: Record<string, typeof FlaskConical> = {
@@ -109,7 +103,8 @@ export default function SimulatePage() {
   const { t } = useI18n()
   const [workspaceId, setWorkspaceId] = useState("workspace-1")
   const [searchInput, setSearchInput] = useState("")
-  const [simulations, setSimulations] = useState<Simulation[]>(() => listSimulations("workspace-1"))
+  const [simulations, setSimulations] = useState<Simulation[]>([])
+  const [loading, setLoading] = useState(true)
   const [newDialogOpen, setNewDialogOpen] = useState(false)
   const [diffDialogOpen, setDiffDialogOpen] = useState(false)
   const [selectedDiff, setSelectedDiff] = useState<SimulationDiff | null>(null)
@@ -119,12 +114,33 @@ export default function SimulatePage() {
   const [newOldValue, setNewOldValue] = useState("")
   const [newNewValue, setNewNewValue] = useState("")
   const [pendingChanges, setPendingChanges] = useState<SimulationChange[]>([])
+  const [submitting, setSubmitting] = useState(false)
+
+  const fetchSimulations = async (wid: string) => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/v1/simulations?workspaceId=${encodeURIComponent(wid)}`)
+      const data = await res.json()
+      setSimulations(res.ok ? data.simulations ?? [] : [])
+    } catch {
+      setSimulations([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    fetchSimulations(workspaceId)
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSearch = () => {
     if (searchInput.trim()) {
       const wid = searchInput.trim()
       setWorkspaceId(wid)
-      setSimulations(listSimulations(wid))
+      fetchSimulations(wid)
       toast.success(t('simulate.page.success.loaded', { workspaceId: wid }))
     }
   }
@@ -141,30 +157,43 @@ export default function SimulatePage() {
     setPendingChanges(prev => prev.filter((_, i) => i !== index))
   }
 
-  const handleCreateSimulation = () => {
+  const handleCreateSimulation = async () => {
     if (pendingChanges.length === 0) {
       toast.error(t('simulate.page.errors.addOneChange'))
       return
     }
-    const sim = createSimulation(workspaceId, pendingChanges)
-    setSimulations(prev => [sim, ...prev])
-    setPendingChanges([])
-    setNewDialogOpen(false)
-    toast.success(t('simulate.page.success.created'))
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/v1/simulations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId, changes: pendingChanges }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || t('simulate.page.errors.createFailed'))
+      setSimulations(prev => [data.simulation, ...prev])
+      setPendingChanges([])
+      setNewDialogOpen(false)
+      toast.success(t('simulate.page.success.created'))
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('simulate.page.errors.createFailed'))
+    } finally {
+      setSubmitting(false)
+    }
   }
 
-  const handleViewDiff = (simId: string) => {
+  const handleViewDiff = async (simId: string) => {
     try {
-      const diff = compareSimulation(simId)
-      setSelectedDiff(diff)
+      const res = await fetch(`/api/v1/simulations/${simId}/diff`)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || t('simulate.page.errors.compareFailed'))
+      setSelectedDiff(data.diff)
       setSelectedSimId(simId)
       setDiffDialogOpen(true)
     } catch (error) {
        toast.error(error instanceof Error ? error.message : t('simulate.page.errors.compareFailed'))
     }
   }
-
-  const [submitting, setSubmitting] = useState(false)
 
   const handleCommit = async (simId: string) => {
     setSubmitting(true)
@@ -206,10 +235,20 @@ export default function SimulatePage() {
     }
   }
 
-  const handleMarkReady = (simId: string) => {
-    const updated = updateSimulationStatus(simId, 'ready')
-    setSimulations(prev => prev.map(s => s.id === simId ? updated : s))
-    toast.success(t('simulate.page.success.markedReady'))
+  const handleMarkReady = async (simId: string) => {
+    try {
+      const res = await fetch(`/api/v1/simulations/${simId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: 'ready' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || t('simulate.page.errors.markReadyFailed'))
+      setSimulations(prev => prev.map(s => s.id === simId ? data.simulation : s))
+      toast.success(t('simulate.page.success.markedReady'))
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('simulate.page.errors.markReadyFailed'))
+    }
   }
 
   return (
@@ -303,7 +342,13 @@ export default function SimulatePage() {
         </Dialog>
       </div>
 
-      {simulations.length === 0 ? (
+      {loading ? (
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </CardContent>
+        </Card>
+      ) : simulations.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <FlaskConical className="h-12 w-12 text-muted-foreground/40 mb-4" />

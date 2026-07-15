@@ -1,13 +1,15 @@
-import { NextResponse } from 'next/server'
-import { discardSimulation } from '@/lib/simulation/workspace-simulator'
+"use server"
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+import { type NextRequest, NextResponse } from "next/server"
+import { withAuth } from "@/lib/auth/with-auth"
+import { discardSimulation } from "@/lib/simulation/workspace-simulator"
+
+export const POST = withAuth(async (_req: NextRequest, { params, organizationId }) => {
   try {
-    const { id } = await params
-    await discardSimulation(id)
+    await discardSimulation(organizationId, params.id)
     return NextResponse.json({ success: true })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to discard simulation'
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 404 })
   }
-}
+})

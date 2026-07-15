@@ -1,4 +1,5 @@
-import { generateId } from '@/lib/utils/id'
+import "server-only"
+import { createServiceClient } from "@/lib/supabase/service"
 
 export interface SimulationChange {
   field: string
@@ -12,7 +13,7 @@ export interface Simulation {
   changes: SimulationChange[]
   status: 'draft' | 'ready' | 'committed' | 'discarded'
   createdAt: string
-  committedAt?: string
+  committedAt?: string | null
 }
 
 export interface SimulationDiff {
@@ -23,29 +24,58 @@ export interface SimulationDiff {
   riskLevel: 'low' | 'medium' | 'high'
 }
 
-const simulations = new Map<string, Simulation>()
-
-export function createSimulation(workspaceId: string, changes: SimulationChange[]): Simulation {
-  const simulation: Simulation = {
-    id: generateId(),
-    workspaceId,
-    changes,
-    status: 'draft',
-    createdAt: new Date().toISOString(),
-  }
-  simulations.set(simulation.id, simulation)
-  return simulation
+interface SimulationRow {
+  id: string
+  workspace_id: string
+  changes: SimulationChange[]
+  status: Simulation['status']
+  created_at: string
+  committed_at: string | null
 }
 
-export function compareSimulation(simulationId: string): SimulationDiff {
-  const simulation = simulations.get(simulationId)
-  if (!simulation) throw new Error('Simulation not found')
+function toSimulation(row: SimulationRow): Simulation {
+  return {
+    id: row.id,
+    workspaceId: row.workspace_id,
+    changes: row.changes ?? [],
+    status: row.status,
+    createdAt: row.created_at,
+    committedAt: row.committed_at,
+  }
+}
 
+export async function createSimulation(
+  organizationId: string,
+  workspaceId: string,
+  changes: SimulationChange[],
+  createdBy: string,
+): Promise<Simulation | null> {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("simulations")
+    .insert({ organization_id: organizationId, workspace_id: workspaceId, changes, status: "draft", created_by: createdBy })
+    .select("*")
+    .single()
+  if (error) return null
+  return toSimulation(data as SimulationRow)
+}
+
+export async function compareSimulation(organizationId: string, simulationId: string): Promise<SimulationDiff> {
+  const db = createServiceClient()
+  const { data } = await db
+    .from("simulations")
+    .select("changes")
+    .eq("id", simulationId)
+    .eq("organization_id", organizationId)
+    .maybeSingle()
+  if (!data) throw new Error("Simulation not found")
+
+  const changes = (data.changes as SimulationChange[]) ?? []
   const additions: string[] = []
   const modifications: { field: string; from: unknown; to: unknown }[] = []
   const deletions: string[] = []
 
-  for (const change of simulation.changes) {
+  for (const change of changes) {
     if (change.oldValue === null || change.oldValue === undefined) {
       additions.push(change.field)
     } else if (change.newValue === null || change.newValue === undefined) {
@@ -55,37 +85,64 @@ export function compareSimulation(simulationId: string): SimulationDiff {
     }
   }
 
-  const changeCount = simulation.changes.length
-  const scoreImpact = changeCount > 0 ? Math.round((changeCount + Math.random() * 10) * 10) / 10 : undefined
+  const changeCount = changes.length
+  const scoreImpact = changeCount > 0 ? Math.round(changeCount * 10) / 10 : undefined
   const riskLevel: 'low' | 'medium' | 'high' =
     deletions.length > 3 ? 'high' : deletions.length > 0 ? 'medium' : 'low'
 
   return { additions, modifications, deletions, scoreImpact, riskLevel }
 }
 
-export async function commitSimulation(simulationId: string): Promise<void> {
-  const simulation = simulations.get(simulationId)
-  if (!simulation) throw new Error('Simulation not found')
-  simulation.status = 'committed'
-  simulation.committedAt = new Date().toISOString()
+export async function commitSimulation(organizationId: string, simulationId: string): Promise<void> {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("simulations")
+    .update({ status: "committed", committed_at: new Date().toISOString() })
+    .eq("id", simulationId)
+    .eq("organization_id", organizationId)
+    .select("id")
+    .maybeSingle()
+  if (error || !data) throw new Error("Simulation not found")
 }
 
-export async function discardSimulation(simulationId: string): Promise<void> {
-  const simulation = simulations.get(simulationId)
-  if (!simulation) throw new Error('Simulation not found')
-  simulation.status = 'discarded'
+export async function discardSimulation(organizationId: string, simulationId: string): Promise<void> {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("simulations")
+    .update({ status: "discarded" })
+    .eq("id", simulationId)
+    .eq("organization_id", organizationId)
+    .select("id")
+    .maybeSingle()
+  if (error || !data) throw new Error("Simulation not found")
 }
 
-export function listSimulations(workspaceId: string): Simulation[] {
-  return Array.from(simulations.values())
-    .filter(s => s.workspaceId === workspaceId)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+export async function listSimulations(organizationId: string, workspaceId: string): Promise<Simulation[]> {
+  const db = createServiceClient()
+  const { data } = await db
+    .from("simulations")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .eq("workspace_id", workspaceId)
+    .order("created_at", { ascending: false })
+  return ((data ?? []) as SimulationRow[]).map(toSimulation)
 }
 
-export function updateSimulationStatus(simulationId: string, status: Simulation['status']): Simulation {
-  const simulation = simulations.get(simulationId)
-  if (!simulation) throw new Error('Simulation not found')
-  simulation.status = status
-  if (status === 'committed') simulation.committedAt = new Date().toISOString()
-  return simulation
+export async function updateSimulationStatus(
+  organizationId: string,
+  simulationId: string,
+  status: Simulation['status'],
+): Promise<Simulation | null> {
+  const db = createServiceClient()
+  const patch: Record<string, unknown> = { status }
+  if (status === 'committed') patch.committed_at = new Date().toISOString()
+  const { data, error } = await db
+    .from("simulations")
+    .update(patch)
+    .eq("id", simulationId)
+    .eq("organization_id", organizationId)
+    .select("*")
+    .maybeSingle()
+  if (error || !data) return null
+  return toSimulation(data as SimulationRow)
 }

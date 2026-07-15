@@ -1519,7 +1519,8 @@
         "createFailed": "Failed to create simulation",
         "compareFailed": "Failed to compare simulation",
         "commitFailed": "Failed to commit simulation",
-        "discardFailed": "Failed to discard simulation"
+        "discardFailed": "Failed to discard simulation",
+        "markReadyFailed": "Failed to mark simulation as ready"
       },
       "success": {
         "loaded": "Loaded workspace: {workspaceId}",
