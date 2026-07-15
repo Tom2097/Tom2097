@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { SetupWizard } from "@/components/digit/setup-wizard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Settings, Plus, LayoutDashboard, Shield, Boxes, Activity, Wifi } from "lucide-react"
+import { Settings, Plus, LayoutDashboard, Shield, Boxes, Activity, Wifi, HeartPulse, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { RoutingRules } from "@/components/digit/routing-rules"
 import { useI18n } from "@/components/providers/i18n-provider"
@@ -18,19 +18,50 @@ const existingWorkspaces = [
   { id: "comp", name: "Compliance Workspace", vertical: "compliance", href: "/compliance", color: "text-teal-500", bg: "bg-teal-500/10" },
 ]
 
-const verticalIcons: Record<string, React.ReactNode> = {
-  operational: <Wifi className="h-5 w-5" />,
-  performance: <Activity className="h-5 w-5" />,
-  resources: <Boxes className="h-5 w-5" />,
-  compliance: <Shield className="h-5 w-5" />,
+const verticalMeta: Record<string, { href: string | null; color: string; bg: string; icon: React.ReactNode }> = {
+  operational: { href: "/operations", color: "text-indigo-500", bg: "bg-indigo-500/10", icon: <Wifi className="h-5 w-5" /> },
+  performance: { href: "/performance", color: "text-amber-500", bg: "bg-amber-500/10", icon: <Activity className="h-5 w-5" /> },
+  resources: { href: "/resources", color: "text-blue-500", bg: "bg-blue-500/10", icon: <Boxes className="h-5 w-5" /> },
+  compliance: { href: "/compliance", color: "text-teal-500", bg: "bg-teal-500/10", icon: <Shield className="h-5 w-5" /> },
+  healthcare: { href: "/healthcare", color: "text-rose-500", bg: "bg-rose-500/10", icon: <HeartPulse className="h-5 w-5" /> },
 }
+const defaultVerticalMeta = { href: null, color: "text-slate-500", bg: "bg-slate-500/10", icon: <Boxes className="h-5 w-5" /> }
+const verticalIcons = Object.fromEntries(Object.entries(verticalMeta).map(([k, v]) => [k, v.icon])) as Record<string, React.ReactNode>
 
 export default function ConfigurePage() {
   const { t } = useI18n()
   const [showWizard, setShowWizard] = useState(false)
+  const [createdWorkspaces, setCreatedWorkspaces] = useState<Array<{ id: string; name: string; vertical: string }>>([])
+  const [loadingWorkspaces, setLoadingWorkspaces] = useState(true)
+
+  const fetchWorkspaces = useCallback(async () => {
+    try {
+      const res = await fetch('/api/v1/workspaces')
+      const data = await res.json()
+      if (res.ok) setCreatedWorkspaces(data.workspaces ?? [])
+    } catch (error) {
+      console.error('Error fetching workspaces:', error)
+    } finally {
+      setLoadingWorkspaces(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    fetchWorkspaces()
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [fetchWorkspaces])
 
   if (showWizard) {
-    return <SetupWizard onComplete={() => setShowWizard(false)} onCancel={() => setShowWizard(false)} />
+    return (
+      <SetupWizard
+        onComplete={() => {
+          setShowWizard(false)
+          fetchWorkspaces()
+        }}
+        onCancel={() => setShowWizard(false)}
+      />
+    )
   }
 
   return (
@@ -85,6 +116,45 @@ export default function ConfigurePage() {
                 </CardContent>
               </Card>
             ))}
+
+            {createdWorkspaces.map((ws) => {
+              const meta = verticalMeta[ws.vertical?.toLowerCase()] ?? defaultVerticalMeta
+              return (
+                <Card key={ws.id} className="hover:border-primary/50 transition-colors group">
+                  <CardHeader className="p-5 pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className={`p-2.5 rounded-xl ${meta.bg} ${meta.color}`}>
+                        {meta.icon}
+                      </div>
+                      <Badge variant="secondary" className="text-[10px]">{ws.vertical}</Badge>
+                    </div>
+                    <CardTitle className="text-base mt-3">{ws.name}</CardTitle>
+                    <CardDescription className="text-xs">
+                      {t('configure.page.workspaceDesc')}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-5 pt-0 flex items-center gap-2">
+                    {meta.href && (
+                      <Button size="sm" variant="outline" className="text-xs" asChild>
+                        <Link href={meta.href}>
+                          <LayoutDashboard className="h-3 w-3 mr-1" />{t('configure.page.open')}
+                        </Link>
+                      </Button>
+                    )}
+                    <Button size="sm" variant="ghost" className="text-xs" onClick={() => setShowWizard(true)}>
+                      <Settings className="h-3 w-3 mr-1" />{t('configure.page.reconfigure')}
+                    </Button>
+                  </CardContent>
+                </Card>
+              )
+            })}
+
+            {loadingWorkspaces && (
+              <div className="flex items-center justify-center p-8 text-muted-foreground text-sm gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading your workspaces...
+              </div>
+            )}
 
             <Card className="border-dashed hover:border-primary/50 transition-colors cursor-pointer group" onClick={() => setShowWizard(true)}>
               <CardContent className="p-8 flex flex-col items-center justify-center text-center">
