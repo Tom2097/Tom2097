@@ -1,4 +1,4 @@
-import { generateId } from '@/lib/utils/id'
+import { createServiceClient } from "@/lib/supabase/service"
 
 export type DesignPartnerStage = "awareness" | "evaluation" | "pilot" | "launch" | "advocate"
 
@@ -14,44 +14,87 @@ export interface DesignPartner {
   notes: string
 }
 
-const INITIAL_PARTNERS: DesignPartner[] = [
-  { id: "1", name: "Rajesh Kumar", company: "TechCorp India", email: "rajesh@techcorp.in", stage: "pilot", vertical: "Healthcare", feedbackScore: 88, lastTouchpoint: "2026-07-01", notes: "Testing compliance workspace" },
-  { id: "2", name: "Sarah Chen", company: "FinServe Asia", email: "sarah@finserve.sg", stage: "evaluation", vertical: "Banking", feedbackScore: 72, lastTouchpoint: "2026-06-28", notes: "Interested in AI Intelligence" },
-  { id: "3", name: "Michael Okafor", company: "Lagos Manufacturing", email: "michael@lagosmfg.ng", stage: "awareness", vertical: "Manufacturing", feedbackScore: 45, lastTouchpoint: "2026-06-25", notes: "Initial demo completed" },
-  { id: "4", name: "Ananya Patel", company: "MediChain Health", email: "ananya@medichain.in", stage: "launch", vertical: "Healthcare", feedbackScore: 95, lastTouchpoint: "2026-07-03", notes: "Going live next week" },
-  { id: "5", name: "James Wilson", company: "EduTech Global", email: "james@edutech.io", stage: "advocate", vertical: "Education", feedbackScore: 92, lastTouchpoint: "2026-07-02", notes: "Provided testimonial, referring 2 more" },
-]
-
-const partners = new Map<string, DesignPartner>(INITIAL_PARTNERS.map(p => [p.id, p]))
-
-export function listPartners(): DesignPartner[] {
-  return Array.from(partners.values()).sort((a, b) =>
-    new Date(b.lastTouchpoint).getTime() - new Date(a.lastTouchpoint).getTime()
-  )
+interface DesignPartnerRow {
+  id: string
+  name: string
+  company: string
+  email: string
+  stage: DesignPartnerStage
+  vertical: string | null
+  feedback_score: number
+  last_touchpoint: string
+  notes: string | null
 }
 
-export function getPartner(id: string): DesignPartner | undefined {
-  return partners.get(id)
+function toDesignPartner(row: DesignPartnerRow): DesignPartner {
+  return {
+    id: row.id,
+    name: row.name,
+    company: row.company,
+    email: row.email,
+    stage: row.stage,
+    vertical: row.vertical ?? "",
+    feedbackScore: row.feedback_score,
+    lastTouchpoint: row.last_touchpoint,
+    notes: row.notes ?? "",
+  }
 }
 
-export function updatePartnerStage(id: string, stage: DesignPartnerStage): DesignPartner | undefined {
-  const partner = partners.get(id)
-  if (!partner) return undefined
-  partner.stage = stage
-  partner.lastTouchpoint = new Date().toISOString().split('T')[0]
-  return partner
+export async function listPartners(): Promise<DesignPartner[]> {
+  const db = createServiceClient()
+  const { data } = await db
+    .from("design_partners")
+    .select("*")
+    .order("last_touchpoint", { ascending: false })
+  return ((data ?? []) as DesignPartnerRow[]).map(toDesignPartner)
 }
 
-export function updatePartnerNotes(id: string, notes: string): DesignPartner | undefined {
-  const partner = partners.get(id)
-  if (!partner) return undefined
-  partner.notes = notes
-  partner.lastTouchpoint = new Date().toISOString().split('T')[0]
-  return partner
+export async function getPartner(id: string): Promise<DesignPartner | null> {
+  const db = createServiceClient()
+  const { data } = await db.from("design_partners").select("*").eq("id", id).maybeSingle()
+  return data ? toDesignPartner(data as DesignPartnerRow) : null
 }
 
-export function createPartner(input: Omit<DesignPartner, 'id'>): DesignPartner {
-  const partner: DesignPartner = { ...input, id: generateId() }
-  partners.set(partner.id, partner)
-  return partner
+export async function updatePartnerStage(id: string, stage: DesignPartnerStage): Promise<DesignPartner | null> {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("design_partners")
+    .update({ stage, last_touchpoint: new Date().toISOString().split("T")[0] })
+    .eq("id", id)
+    .select("*")
+    .maybeSingle()
+  if (error || !data) return null
+  return toDesignPartner(data as DesignPartnerRow)
+}
+
+export async function updatePartnerNotes(id: string, notes: string): Promise<DesignPartner | null> {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("design_partners")
+    .update({ notes, last_touchpoint: new Date().toISOString().split("T")[0] })
+    .eq("id", id)
+    .select("*")
+    .maybeSingle()
+  if (error || !data) return null
+  return toDesignPartner(data as DesignPartnerRow)
+}
+
+export async function createPartner(input: Omit<DesignPartner, "id">): Promise<DesignPartner | null> {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("design_partners")
+    .insert({
+      name: input.name,
+      company: input.company,
+      email: input.email,
+      stage: input.stage,
+      vertical: input.vertical,
+      feedback_score: input.feedbackScore,
+      last_touchpoint: input.lastTouchpoint || new Date().toISOString().split("T")[0],
+      notes: input.notes,
+    })
+    .select("*")
+    .single()
+  if (error || !data) return null
+  return toDesignPartner(data as DesignPartnerRow)
 }
