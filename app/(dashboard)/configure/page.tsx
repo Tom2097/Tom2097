@@ -11,13 +11,6 @@ import Link from "next/link"
 import { RoutingRules } from "@/components/digit/routing-rules"
 import { useI18n } from "@/components/providers/i18n-provider"
 
-const existingWorkspaces = [
-  { id: "ops", name: "Operations Workspace", vertical: "operational", href: "/operations", color: "text-indigo-500", bg: "bg-indigo-500/10" },
-  { id: "perf", name: "Performance Workspace", vertical: "performance", href: "/performance", color: "text-amber-500", bg: "bg-amber-500/10" },
-  { id: "res", name: "Resource Workspace", vertical: "resources", href: "/resources", color: "text-blue-500", bg: "bg-blue-500/10" },
-  { id: "comp", name: "Compliance Workspace", vertical: "compliance", href: "/compliance", color: "text-teal-500", bg: "bg-teal-500/10" },
-]
-
 const verticalMeta: Record<string, { href: string | null; color: string; bg: string; icon: React.ReactNode }> = {
   operational: { href: "/operations", color: "text-indigo-500", bg: "bg-indigo-500/10", icon: <Wifi className="h-5 w-5" /> },
   performance: { href: "/performance", color: "text-amber-500", bg: "bg-amber-500/10", icon: <Activity className="h-5 w-5" /> },
@@ -26,19 +19,18 @@ const verticalMeta: Record<string, { href: string | null; color: string; bg: str
   healthcare: { href: "/healthcare", color: "text-rose-500", bg: "bg-rose-500/10", icon: <HeartPulse className="h-5 w-5" /> },
 }
 const defaultVerticalMeta = { href: null, color: "text-slate-500", bg: "bg-slate-500/10", icon: <Boxes className="h-5 w-5" /> }
-const verticalIcons = Object.fromEntries(Object.entries(verticalMeta).map(([k, v]) => [k, v.icon])) as Record<string, React.ReactNode>
 
 export default function ConfigurePage() {
   const { t } = useI18n()
   const [showWizard, setShowWizard] = useState(false)
-  const [createdWorkspaces, setCreatedWorkspaces] = useState<Array<{ id: string; name: string; vertical: string }>>([])
+  const [workspaces, setWorkspaces] = useState<Array<{ id: string; name: string; vertical: string }>>([])
   const [loadingWorkspaces, setLoadingWorkspaces] = useState(true)
 
   const fetchWorkspaces = useCallback(async () => {
     try {
       const res = await fetch('/api/v1/workspaces')
       const data = await res.json()
-      if (res.ok) setCreatedWorkspaces(data.workspaces ?? [])
+      if (res.ok) setWorkspaces(data.workspaces ?? [])
     } catch (error) {
       console.error('Error fetching workspaces:', error)
     } finally {
@@ -90,34 +82,7 @@ export default function ConfigurePage() {
         {/* Workspaces Tab */}
         <TabsContent value="workspaces">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {existingWorkspaces.map((ws) => (
-              <Card key={ws.id} className="hover:border-primary/50 transition-colors group">
-                <CardHeader className="p-5 pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className={`p-2.5 rounded-xl ${ws.bg} ${ws.color}`}>
-                      {verticalIcons[ws.vertical]}
-                    </div>
-                    <Badge variant="secondary" className="text-[10px]">{ws.vertical}</Badge>
-                  </div>
-                  <CardTitle className="text-base mt-3">{ws.name}</CardTitle>
-                  <CardDescription className="text-xs">
-                    {t('configure.page.workspaceDesc')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-5 pt-0 flex items-center gap-2">
-                  <Button size="sm" variant="outline" className="text-xs" asChild>
-                    <Link href={ws.href}>
-                      <LayoutDashboard className="h-3 w-3 mr-1" />{t('configure.page.open')}
-                    </Link>
-                  </Button>
-                  <Button size="sm" variant="ghost" className="text-xs" onClick={() => setShowWizard(true)}>
-                    <Settings className="h-3 w-3 mr-1" />{t('configure.page.reconfigure')}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-
-            {createdWorkspaces.map((ws) => {
+            {workspaces.map((ws) => {
               const meta = verticalMeta[ws.vertical?.toLowerCase()] ?? defaultVerticalMeta
               return (
                 <Card key={ws.id} className="hover:border-primary/50 transition-colors group">
