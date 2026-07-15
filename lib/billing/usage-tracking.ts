@@ -238,9 +238,15 @@ export async function getUsageStatistics(
     usage: number
   }>
 }> {
+  const empty = {
+    totalUsage: 0,
+    usageByType: Object.fromEntries(Object.keys(USAGE_LIMITS.free).map(key => [key, 0])) as Record<UsageType, number>,
+    usageOverTime: [] as Array<{ date: string; usage: number }>,
+  }
+
   try {
     const supabase = await createServiceClient()
-    
+
     // Get usage by type
     const { data: usageByTypeData, error: typeError } = await supabase
       .from('usage_records')
@@ -248,12 +254,12 @@ export async function getUsageStatistics(
       .eq('organization_id', organizationId)
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())
-    
+
     if (typeError) {
       console.error('[UsageTracking] Error fetching usage by type:', typeError)
-      throw new Error('Failed to fetch usage statistics')
+      return empty
     }
-    
+
     // Get usage over time
     const { data: usageOverTimeData, error: timeError } = await supabase
       .from('usage_records')
@@ -262,12 +268,12 @@ export async function getUsageStatistics(
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())
       .order('created_at', { ascending: true })
-    
+
     if (timeError) {
       console.error('[UsageTracking] Error fetching usage over time:', timeError)
-      throw new Error('Failed to fetch usage statistics')
+      return empty
     }
-    
+
     // Calculate usage by type
     const usageByType: Record<UsageType, number> = Object.fromEntries(
       Object.keys(USAGE_LIMITS.free).map(key => [key, 0])
@@ -301,7 +307,7 @@ export async function getUsageStatistics(
     }
   } catch (err) {
     console.error('[UsageTracking] Unexpected error getting usage statistics:', err)
-    throw new Error('Failed to get usage statistics')
+    return empty
   }
 }
 
