@@ -19,8 +19,8 @@ export async function GET(_req: NextRequest) {
       success: true,
       hasExceeded,
       exceededLimits,
-      usage,
-      statistics
+      currentUsage: usage,
+      usageStatistics: statistics
     })
   } catch (error) {
     return handleAuthError(error as Error)
