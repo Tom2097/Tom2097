@@ -67,6 +67,7 @@ export interface Contact {
   status: ContactStatus
   notes: string | null
   tags: string[]
+  source: string | null
   owner_id: string | null
   created_by: string | null
   created_at: string
@@ -83,6 +84,7 @@ export interface ContactInput {
   status?: ContactStatus
   notes?: string | null
   tags?: string[]
+  source?: string | null
   owner_id?: string | null
 }
 export type ContactUpdateInput = Partial<ContactInput>
@@ -103,6 +105,8 @@ export interface Deal {
   expected_close_date: string | null
   closed_at: string | null
   tags: string[]
+  source: string | null
+  lost_reason: string | null
   owner_id: string | null
   created_by: string | null
   created_at: string
@@ -120,9 +124,10 @@ export interface DealInput {
   probability?: number
   expected_close_date?: string | null
   tags?: string[]
+  source?: string | null
   owner_id?: string | null
 }
-export type DealUpdateInput = Partial<DealInput>
+export type DealUpdateInput = Partial<DealInput> & { lost_reason?: string | null }
 
 // ── Activities ─────────────────────────────────────────────────────────────────
 

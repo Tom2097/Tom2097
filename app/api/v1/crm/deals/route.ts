@@ -1,67 +1,61 @@
-"use server";
+import { NextResponse, type NextRequest } from 'next/server'
+import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
+import { createDeal, listDeals, updateDeal, getDeal, validateDeal } from '@/lib/crm/engine'
+import { recordCrmEvent } from '@/lib/crm/smart-layer'
+import type { DealStage } from '@/lib/crm/types'
 
-import { NextResponse } from "next/server";
-import { z } from "zod";
+export async function GET(request: NextRequest) {
+  try {
+    const user = await getAuthenticatedUser()
+    const organizationId = await getOrganizationId(user.id)
 
-// Schemas
-const DealSchema = z.object({
-  id: z.string().optional(),
-  name: z.string(),
-  value: z.number().min(0),
-  probability: z.number().min(0).max(100),
-  expectedCloseDate: z.string().datetime(),
-  contacts: z.array(z.string()),
-  stage: z.enum(["Lead", "Contacted", "Proposal", "Negotiation", "Won", "Lost"]),
-});
-
-const DealStageUpdateSchema = z.object({
-  dealId: z.string(),
-  newStage: z.enum(["Lead", "Contacted", "Proposal", "Negotiation", "Won", "Lost"]),
-});
-
-// Mock database (replace with real database)
-let deals: z.infer<typeof DealSchema>[] = [];
-
-// Helper to generate ID
-const generateId = () => Math.random().toString(36).substring(2, 9);
-
-// GET /api/v1/crm/deals - List all deals
-export async function GET() {
-  return NextResponse.json(deals);
+    const { searchParams } = new URL(request.url)
+    const { deals, total } = await listDeals(organizationId, {
+      stage: (searchParams.get('stage') as DealStage) || undefined,
+      companyId: searchParams.get('companyId') || undefined,
+      contactId: searchParams.get('contactId') || undefined,
+      limit: Number(searchParams.get('limit')) || 200,
+      offset: Number(searchParams.get('offset')) || 0,
+    })
+    return NextResponse.json({ deals, total })
+  } catch (error) {
+    return handleAuthError(error as Error)
+  }
 }
 
-// POST /api/v1/crm/deals - Create a new deal
-export async function POST(request: Request) {
-  const data = await request.json();
-  const parsed = DealSchema.safeParse(data);
+export async function POST(request: NextRequest) {
+  try {
+    const user = await getAuthenticatedUser()
+    const organizationId = await getOrganizationId(user.id)
 
-  if (!parsed.success) {
-    return NextResponse.json(parsed.error, { status: 400 });
+    const input = await request.json()
+    const validationError = validateDeal(input)
+    if (validationError) return NextResponse.json({ error: validationError }, { status: 400 })
+
+    const deal = await createDeal(organizationId, user.id, input)
+    await recordCrmEvent(organizationId, 'deal_created', { dealId: deal.id })
+    return NextResponse.json({ deal }, { status: 201 })
+  } catch (error) {
+    return handleAuthError(error as Error)
   }
-
-  const deal = { ...parsed.data, id: generateId() };
-  deals.push(deal);
-
-  return NextResponse.json(deal, { status: 201 });
 }
 
-// PATCH /api/v1/crm/deals - Update deal stage
-export async function PATCH(request: Request) {
-  const data = await request.json();
-  const parsed = DealStageUpdateSchema.safeParse(data);
+export async function PATCH(request: NextRequest) {
+  try {
+    const user = await getAuthenticatedUser()
+    const organizationId = await getOrganizationId(user.id)
 
-  if (!parsed.success) {
-    return NextResponse.json(parsed.error, { status: 400 });
+    const { id, ...patch } = await request.json()
+    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
+
+    const before = patch.stage ? await getDeal(organizationId, id) : null
+    const deal = await updateDeal(organizationId, id, patch)
+    if (!deal) return NextResponse.json({ error: 'Deal not found' }, { status: 404 })
+    if (patch.stage === 'won' && before?.stage !== 'won') {
+      await recordCrmEvent(organizationId, 'deal_won', { dealId: deal.id })
+    }
+    return NextResponse.json({ deal })
+  } catch (error) {
+    return handleAuthError(error as Error)
   }
-
-  const { dealId, newStage } = parsed.data;
-  const dealIndex = deals.findIndex(d => d.id === dealId);
-
-  if (dealIndex === -1) {
-    return NextResponse.json({ error: "Deal not found" }, { status: 404 });
-  }
-
-  deals[dealIndex] = { ...deals[dealIndex], stage: newStage };
-
-  return NextResponse.json(deals[dealIndex]);
 }

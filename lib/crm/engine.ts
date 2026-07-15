@@ -129,6 +129,84 @@ export async function listCompanies(
   return { companies: (data ?? []) as Company[], total: count ?? 0 }
 }
 
+/** Companies nested under their parent (via parent_id), each with its contacts -- backs the Accounts Hierarchy tab. */
+export async function getCompanyHierarchy(
+  organizationId: string,
+  opts: { search?: string; limit?: number } = {},
+): Promise<
+  Array<{
+    id: string
+    name: string
+    domain: string | null
+    industry: string | null
+    contacts: Array<{ id: string; name: string; email: string | null; phone: string | null; title: string | null }>
+    children: unknown[]
+  }>
+> {
+  const db = createServiceClient()
+  let companyQuery = db
+    .from("crm_companies")
+    .select("id,name,domain,industry,parent_id")
+    .eq("organization_id", organizationId)
+  if (opts.search?.trim()) companyQuery = companyQuery.ilike("name", `%${opts.search.trim()}%`)
+  companyQuery = companyQuery.order("created_at", { ascending: false }).limit(opts.limit ?? 50)
+
+  const { data: companies, error: companyError } = await companyQuery
+  if (companyError) {
+    console.log("[v0] getCompanyHierarchy companies failed:", companyError.message)
+    throw new Error("failed to list accounts")
+  }
+  const companyIds = (companies ?? []).map((c) => c.id)
+  if (companyIds.length === 0) return []
+
+  const { data: contacts } = await db
+    .from("crm_contacts")
+    .select("id,company_id,first_name,last_name,email,phone,title")
+    .eq("organization_id", organizationId)
+    .in("company_id", companyIds)
+
+  const contactsByCompany = new Map<string, typeof contacts>()
+  for (const c of contacts ?? []) {
+    const list = contactsByCompany.get(c.company_id as string) ?? []
+    list.push(c)
+    contactsByCompany.set(c.company_id as string, list)
+  }
+
+  type Node = {
+    id: string; name: string; domain: string | null; industry: string | null
+    contacts: Array<{ id: string; name: string; email: string | null; phone: string | null; title: string | null }>
+    children: Node[]
+  }
+  const nodes = new Map<string, Node>()
+  for (const c of companies ?? []) {
+    nodes.set(c.id, {
+      id: c.id,
+      name: c.name,
+      domain: c.domain,
+      industry: c.industry,
+      contacts: (contactsByCompany.get(c.id) ?? []).map((p) => ({
+        id: p!.id,
+        name: [p!.first_name, p!.last_name].filter(Boolean).join(" ").trim() || p!.email || "Unnamed contact",
+        email: p!.email,
+        phone: p!.phone,
+        title: p!.title,
+      })),
+      children: [],
+    })
+  }
+
+  const roots: Node[] = []
+  for (const c of companies ?? []) {
+    const node = nodes.get(c.id)!
+    if (c.parent_id && nodes.has(c.parent_id)) {
+      nodes.get(c.parent_id)!.children.push(node)
+    } else {
+      roots.push(node)
+    }
+  }
+  return roots
+}
+
 export async function getCompany(organizationId: string, id: string): Promise<Company | null> {
   const db = createServiceClient()
   const { data, error } = await db
@@ -231,6 +309,7 @@ export async function createContact(
       status: pick(CONTACT_STATUSES, input.status, "lead"),
       notes: clampStr(input.notes, 5000),
       tags: sanitizeTags(input.tags),
+      source: clampStr(input.source, 60),
     })
     .select("*")
     .single()
@@ -301,6 +380,7 @@ export async function updateContact(
   if (input.status) patch.status = pick(CONTACT_STATUSES, input.status, "lead")
   if (input.notes !== undefined) patch.notes = clampStr(input.notes, 5000)
   if (input.tags !== undefined) patch.tags = sanitizeTags(input.tags)
+  if (input.source !== undefined) patch.source = clampStr(input.source, 60)
   if (input.owner_id !== undefined) patch.owner_id = input.owner_id
   if (Object.keys(patch).length === 0) return getContact(organizationId, id)
 
@@ -389,6 +469,7 @@ export async function createDeal(organizationId: string, createdBy: string, inpu
       expected_close_date: input.expected_close_date ?? null,
       closed_at: closed ? new Date().toISOString() : null,
       tags: sanitizeTags(input.tags),
+      source: clampStr(input.source, 60),
     })
     .select("*")
     .single()
@@ -472,6 +553,8 @@ export async function updateDeal(
   }
   if (input.expected_close_date !== undefined) patch.expected_close_date = input.expected_close_date
   if (input.tags !== undefined) patch.tags = sanitizeTags(input.tags)
+  if (input.source !== undefined) patch.source = clampStr(input.source, 60)
+  if (input.lost_reason !== undefined) patch.lost_reason = clampStr(input.lost_reason, 200)
   if (input.owner_id !== undefined) patch.owner_id = input.owner_id
   if (Object.keys(patch).length === 0) return getDeal(organizationId, id)
 
