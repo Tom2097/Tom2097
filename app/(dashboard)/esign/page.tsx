@@ -47,7 +47,7 @@ import { useI18n } from '@/components/providers/i18n-provider'
 
 interface SignatureAuditEntry {
   timestamp: string
-  action: 'sent' | 'viewed' | 'signed' | 'declined' | 'expired'
+  action: string
   user: string
   ipAddress: string
   details: string
@@ -55,29 +55,35 @@ interface SignatureAuditEntry {
 
 interface SignatureRequest {
   id: string
-  documentId: string
-  documentName: string
-  signerEmail: string
-  signerName: string
-  status: 'pending' | 'signed' | 'declined' | 'expired'
-  sentAt: string
-  signedAt?: string
-  ipAddress?: string
+  document_id: string
+  document_name: string
+  signer_email: string
+  signer_name: string | null
+  status: 'pending' | 'sent' | 'viewed' | 'signed' | 'rejected' | 'expired'
+  created_at: string
+  signed_at?: string | null
+  signed_ip?: string | null
   auditTrail: SignatureAuditEntry[]
 }
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-yellow-500/10 text-yellow-500',
+  sent: 'bg-blue-500/10 text-blue-500',
+  viewed: 'bg-purple-500/10 text-purple-500',
   signed: 'bg-green-500/10 text-green-500',
-  declined: 'bg-red-500/10 text-red-500',
+  rejected: 'bg-red-500/10 text-red-500',
   expired: 'bg-muted text-muted-foreground',
 }
 
 const ACTION_COLORS: Record<string, string> = {
+  create: 'text-blue-500',
   sent: 'text-blue-500',
   viewed: 'text-purple-500',
+  sign: 'text-green-500',
   signed: 'text-green-500',
-  declined: 'text-red-500',
+  update: 'text-red-500',
+  rejected: 'text-red-500',
+  verify: 'text-cyan-500',
   expired: 'text-muted-foreground',
 }
 
@@ -91,6 +97,7 @@ export default function EsignPage() {
   const [submitting, setSubmitting] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [verifyResult, setVerifyResult] = useState<boolean | null>(null)
+  const [signatureName, setSignatureName] = useState('')
   const [form, setForm] = useState({
     documentId: '',
     documentName: '',
@@ -100,13 +107,19 @@ export default function EsignPage() {
 
   useEffect(() => {
     let cancelled = false
-    fetch('/api/v1/compliance/signatures')
+    fetch('/api/v1/compliance/esignatures')
       .then((r) => r.ok ? r.json() : Promise.reject())
       .then((data) => { if (!cancelled) setRequests(data.requests ?? []) })
       .catch(() => { if (!cancelled) toast.error(t('esign.page.errors.loadFailed')) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [t])
+
+  const refreshList = async () => {
+    const refresh = await fetch('/api/v1/compliance/esignatures')
+    const refData = await refresh.json()
+    if (refData.requests) setRequests(refData.requests)
+  }
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -116,7 +129,7 @@ export default function EsignPage() {
     }
     setSubmitting(true)
     try {
-      const res = await fetch('/api/v1/compliance/signatures', {
+      const res = await fetch('/api/v1/compliance/esignatures', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -126,9 +139,7 @@ export default function EsignPage() {
       toast.success(t('esign.page.success.created'))
       setNewDialogOpen(false)
       setForm({ documentId: '', documentName: '', signerEmail: '', signerName: '' })
-      const refresh = await fetch('/api/v1/compliance/signatures')
-      const refData = await refresh.json()
-      if (refData.requests) setRequests(refData.requests)
+      await refreshList()
     } catch {
       toast.error(t('esign.page.errors.createFailed'))
     } finally {
@@ -140,8 +151,9 @@ export default function EsignPage() {
     setSelectedRequest(request)
     setDetailOpen(true)
     setVerifyResult(null)
+    setSignatureName('')
     try {
-      const res = await fetch(`/api/v1/compliance/signatures/${request.id}`)
+      const res = await fetch(`/api/v1/compliance/esignatures/${request.id}`)
       const data = await res.json()
       if (data.request) setSelectedRequest(data.request)
     } catch {
@@ -153,13 +165,13 @@ export default function EsignPage() {
     if (!selectedRequest) return
     setVerifying(true)
     try {
-      const res = await fetch(`/api/v1/compliance/signatures/${selectedRequest.id}`, {
+      const res = await fetch(`/api/v1/compliance/esignatures/${selectedRequest.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'verify', userId: 'current' }),
+        body: JSON.stringify({ action: 'verify' }),
       })
       const data = await res.json()
-      setVerifyResult(data.verified?.length > 0 ? data.verified[0].valid : false)
+      setVerifyResult(Boolean(data.valid))
     } catch {
       toast.error(t('esign.page.errors.verifyFailed'))
     } finally {
@@ -168,21 +180,19 @@ export default function EsignPage() {
   }
 
   const handleSign = async () => {
-    if (!selectedRequest) return
+    if (!selectedRequest || !signatureName.trim()) return
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/v1/compliance/signatures/${selectedRequest.id}`, {
+      const res = await fetch(`/api/v1/compliance/esignatures/${selectedRequest.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'sign', userId: 'current', ipAddress: '127.0.0.1' }),
+        body: JSON.stringify({ action: 'sign', signatureData: signatureName.trim() }),
       })
       const data = await res.json()
       if (!res.ok) { toast.error(data.error ?? t('esign.page.errors.signFailed')); return }
       toast.success(t('esign.page.success.signed'))
       setDetailOpen(false)
-      const refresh = await fetch('/api/v1/compliance/signatures')
-      const refData = await refresh.json()
-      if (refData.requests) setRequests(refData.requests)
+      await refreshList()
     } catch {
       toast.error(t('esign.page.errors.signFailed'))
     } finally {
@@ -194,18 +204,16 @@ export default function EsignPage() {
     if (!selectedRequest) return
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/v1/compliance/signatures/${selectedRequest.id}`, {
+      const res = await fetch(`/api/v1/compliance/esignatures/${selectedRequest.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'decline', userId: 'current', reason: 'Declined by signer' }),
+        body: JSON.stringify({ action: 'reject', reason: 'Declined by signer' }),
       })
       const data = await res.json()
       if (!res.ok) { toast.error(data.error ?? t('esign.page.errors.declineFailed')); return }
       toast.success(t('esign.page.success.declined'))
       setDetailOpen(false)
-      const refresh = await fetch('/api/v1/compliance/signatures')
-      const refData = await refresh.json()
-      if (refData.requests) setRequests(refData.requests)
+      await refreshList()
     } catch {
       toast.error(t('esign.page.errors.declineFailed'))
     } finally {
@@ -373,14 +381,14 @@ export default function EsignPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{req.documentName}</span>
+                        <span className="font-medium">{req.document_name}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground">{req.documentId}</p>
+                      <p className="text-xs text-muted-foreground">{req.document_id}</p>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span>{req.signerEmail}</span>
+                        <span>{req.signer_email}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -389,10 +397,10 @@ export default function EsignPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(req.sentAt).toLocaleDateString()}
+                      {new Date(req.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {req.signedAt ? new Date(req.signedAt).toLocaleDateString() : '-'}
+                      {req.signed_at ? new Date(req.signed_at).toLocaleDateString() : '-'}
                     </TableCell>
                   </TableRow>
                 ))
@@ -415,8 +423,8 @@ export default function EsignPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-muted-foreground text-xs">{t('esign.page.document')}</Label>
-                  <p className="text-sm font-medium">{selectedRequest.documentName}</p>
-                  <p className="text-xs text-muted-foreground">{selectedRequest.documentId}</p>
+                  <p className="text-sm font-medium">{selectedRequest.document_name}</p>
+                  <p className="text-xs text-muted-foreground">{selectedRequest.document_id}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground text-xs">{t('esign.page.status')}</Label>
@@ -430,9 +438,9 @@ export default function EsignPage() {
                   <Label className="text-muted-foreground text-xs">{t('esign.page.signer')}</Label>
                   <div className="flex items-center gap-2 mt-1">
                     <User className="h-3.5 w-3.5 text-muted-foreground" />
-                    <p className="text-sm">{selectedRequest.signerName}</p>
+                    <p className="text-sm">{selectedRequest.signer_name}</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">{selectedRequest.signerEmail}</p>
+                  <p className="text-xs text-muted-foreground">{selectedRequest.signer_email}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground text-xs">{t('esign.page.part11Status')}</Label>
@@ -523,16 +531,26 @@ export default function EsignPage() {
                 </div>
               </div>
 
-              {selectedRequest.status === 'pending' && (
-                <div className="flex justify-end gap-2 border-t pt-4">
-                  <Button variant="outline" onClick={handleDecline} disabled={submitting}>
-                    {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {t('esign.page.decline')}
-                  </Button>
-                  <Button onClick={handleSign} disabled={submitting}>
-                    {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {t('esign.page.signDocument')}
-                  </Button>
+              {['pending', 'sent', 'viewed'].includes(selectedRequest.status) && (
+                <div className="space-y-3 border-t pt-4">
+                  <div className="flex flex-col gap-1.5">
+                    <Label className="text-xs">Type your full name to sign</Label>
+                    <Input
+                      placeholder={selectedRequest.signer_name ?? 'Your full name'}
+                      value={signatureName}
+                      onChange={(e) => setSignatureName(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={handleDecline} disabled={submitting}>
+                      {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {t('esign.page.decline')}
+                    </Button>
+                    <Button onClick={handleSign} disabled={submitting || !signatureName.trim()}>
+                      {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {t('esign.page.signDocument')}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

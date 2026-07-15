@@ -173,3 +173,68 @@ export async function listSignatureRequests(
   const { data } = await q
   return (data ?? []) as SignatureRequest[]
 }
+
+export async function getSignatureRequest(
+  organizationId: string,
+  requestId: string,
+): Promise<SignatureRequest | null> {
+  const db = createServiceClient()
+  const { data } = await db
+    .from("esignature_requests")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .eq("id", requestId)
+    .maybeSingle()
+  return (data as SignatureRequest) ?? null
+}
+
+export async function rejectSignatureRequest(
+  organizationId: string,
+  requestId: string,
+  reason: string | null = null,
+): Promise<SignatureRequest | null> {
+  const db = createServiceClient()
+  const { data: request } = await db
+    .from("esignature_requests")
+    .select("*")
+    .eq("id", requestId)
+    .eq("organization_id", organizationId)
+    .single()
+
+  if (!request) return null
+  const req = request as SignatureRequest
+  if (req.status === "signed" || req.status === "rejected" || req.status === "expired") return null
+
+  const { data, error } = await db
+    .from("esignature_requests")
+    .update({ status: "rejected", message: reason ?? req.message })
+    .eq("id", requestId)
+    .select("*")
+    .single()
+
+  if (error) return null
+
+  await publish({
+    type: "compliance.signature_rejected",
+    organization_id: organizationId,
+    data: { signature_request_id: requestId, reason },
+  })
+
+  return data as SignatureRequest
+}
+
+export async function getSignatureRecordForDocument(
+  organizationId: string,
+  documentId: string,
+): Promise<SignedDocument | null> {
+  const db = createServiceClient()
+  const { data } = await db
+    .from("esignature_records")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .eq("document_id", documentId)
+    .order("signed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  return (data as SignedDocument) ?? null
+}

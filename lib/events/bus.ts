@@ -18,6 +18,7 @@ export type DomainEvent =
   | { type: "document.version_created"; organization_id: string; data: { document_id: string; version: number; change_summary: string | null } }
   | { type: "compliance.signature_requested"; organization_id: string; data: { signature_request_id: string; document_id: string; signer_email: string } }
   | { type: "compliance.document_signed"; organization_id: string; data: { document_id: string; signer_email: string; signature_hash: string } }
+  | { type: "compliance.signature_rejected"; organization_id: string; data: { signature_request_id: string; reason: string | null } }
   | { type: "compliance.audit_appended"; organization_id: string; data: { record_type: string; record_id: string; action: string; hash: string } }
   | { type: "resources.asset_tagged"; organization_id: string; data: { asset_id: string; tag_type: string; tag_id: string } }
   | { type: "resources.asset_scanned"; organization_id: string; data: { asset_id: string } }

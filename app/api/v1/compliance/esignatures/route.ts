@@ -3,6 +3,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
 import { createSignatureRequest, listSignatureRequests, type SignatureRequest } from "@/lib/compliance/esignatures"
+import { appendComplianceAudit } from "@/lib/compliance/audit-trail"
+import { getClientIp } from "@/lib/auth/audit"
 
 // GET /api/v1/compliance/esignatures
 export const GET = withAuth(async (req: NextRequest, { organizationId }) => {
@@ -34,6 +36,16 @@ export const POST = withAuth(async (req: NextRequest, { organizationId, userId }
   if (!request) {
     return NextResponse.json({ error: "Failed to create signature request" }, { status: 400 })
   }
+
+  await appendComplianceAudit(
+    organizationId,
+    "esignature_requests",
+    request.id,
+    "CREATE",
+    request as unknown as Record<string, unknown>,
+    userId,
+    getClientIp(req.headers)
+  )
 
   return NextResponse.json({ request })
 })
