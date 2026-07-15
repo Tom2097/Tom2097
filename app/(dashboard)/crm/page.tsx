@@ -285,33 +285,51 @@ export default async function CRMPage() {
 
       {/* All CRM Tabs */}
       <Tabs defaultValue="ai-sdr" className="w-full">
-        <div className="relative">
-          <TabsList className="w-full justify-start overflow-x-auto flex-nowrap gap-0.5 [&>button]:px-2 [&>button]:py-1 [&>button]:text-[11px]">
-            <TabsTrigger value="ai-sdr" className="gap-0.5"><Sparkles className="w-3 h-3" /> {t("crm.tabs.ai")}</TabsTrigger>
-            <TabsTrigger value="next-best-action" className="gap-0.5"><Zap className="w-3 h-3" /> {t("crm.tabs.actions")}</TabsTrigger>
-            <TabsTrigger value="deal-health" className="gap-0.5"><AlertTriangle className="w-3 h-3" /> {t("crm.tabs.health")}</TabsTrigger>
-            <TabsTrigger value="conversations" className="gap-0.5"><MessageSquare className="w-3 h-3" /> {t("crm.tabs.talk")}</TabsTrigger>
-            <TabsTrigger value="duplicates" className="gap-0.5"><Copy className="w-3 h-3" /> {t("crm.tabs.duplicates")}</TabsTrigger>
-            <TabsTrigger value="leads" className="gap-0.5"><BarChart3 className="w-3 h-3" /> {t("crm.tabs.leads")}</TabsTrigger>
-            <TabsTrigger value="pipeline" className="gap-0.5"><Target className="w-3 h-3" /> {t("crm.tabs.pipeline")}</TabsTrigger>
-            <TabsTrigger value="quotes" className="gap-0.5"><FileText className="w-3 h-3" /> {t("crm.tabs.quotes")}</TabsTrigger>
-            <TabsTrigger value="contacts" className="gap-0.5"><Users className="w-3 h-3" /> {t("crm.tabs.people")}</TabsTrigger>
-            <TabsTrigger value="hierarchy" className="gap-0.5"><Users className="w-3 h-3" /> {t("crm.tabs.organizations")}</TabsTrigger>
-            <TabsTrigger value="nurture" className="gap-0.5"><MessageSquare className="w-3 h-3" /> {t("crm.tabs.nurture")}</TabsTrigger>
-            <TabsTrigger value="forecast" className="gap-0.5"><BarChart3 className="w-3 h-3" /> {t("crm.tabs.forecast")}</TabsTrigger>
-            <TabsTrigger value="events" className="gap-0.5"><Layers className="w-3 h-3" /> {t("crm.tabs.events")}</TabsTrigger>
-            <TabsTrigger value="briefing" className="gap-0.5"><Sun className="w-3 h-3" /> {t("crm.tabs.daily")}</TabsTrigger>
-            <TabsTrigger value="vertical-signals" className="gap-0.5"><TrendingUpIcon className="w-3 h-3" /> {t("crm.tabs.markets")}</TabsTrigger>
-            <TabsTrigger value="lead-roi" className="gap-0.5"><DollarSign className="w-3 h-3" /> {t("crm.tabs.roi")}</TabsTrigger>
-            <TabsTrigger value="communications" className="gap-0.5"><Mail className="w-3 h-3" /> {t("crm.tabs.communications")}</TabsTrigger>
-            <TabsTrigger value="tasks" className="gap-0.5"><Target className="w-3 h-3" /> {t("crm.tabs.tasks")}</TabsTrigger>
-            <TabsTrigger value="timeline" className="gap-0.5"><Phone className="w-3 h-3" /> {t("crm.tabs.timeline")}</TabsTrigger>
-            <TabsTrigger value="success" className="gap-0.5"><Heart className="w-3 h-3" /> {t("crm.tabs.customerSuccess")}</TabsTrigger>
-            <TabsTrigger value="support" className="gap-0.5"><Ticket className="w-3 h-3" /> {t("crm.tabs.tickets")}</TabsTrigger>
-            <TabsTrigger value="analytics" className="gap-0.5"><Target className="w-3 h-3" /> {t("crm.tabs.analytics")}</TabsTrigger>
-          </TabsList>
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
-        </div>
+        <TabsList className="h-auto w-full flex-col items-stretch gap-3 rounded-2xl border border-border/50 bg-card p-4">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">{t("crm.tabGroups.pipeline")}</span>
+            <TabsTrigger value="leads" className="flex-none gap-1.5 text-xs"><BarChart3 className="h-3.5 w-3.5" /> {t("crm.tabs.leads")}</TabsTrigger>
+            <TabsTrigger value="pipeline" className="flex-none gap-1.5 text-xs"><Target className="h-3.5 w-3.5" /> {t("crm.tabs.pipeline")}</TabsTrigger>
+            <TabsTrigger value="quotes" className="flex-none gap-1.5 text-xs"><FileText className="h-3.5 w-3.5" /> {t("crm.tabs.quotes")}</TabsTrigger>
+            <TabsTrigger value="forecast" className="flex-none gap-1.5 text-xs"><BarChart3 className="h-3.5 w-3.5" /> {t("crm.tabs.forecast")}</TabsTrigger>
+            <TabsTrigger value="contacts" className="flex-none gap-1.5 text-xs"><Users className="h-3.5 w-3.5" /> {t("crm.tabs.people")}</TabsTrigger>
+            <TabsTrigger value="hierarchy" className="flex-none gap-1.5 text-xs"><Users className="h-3.5 w-3.5" /> {t("crm.tabs.organizations")}</TabsTrigger>
+          </div>
+
+          <div className="h-px w-full bg-border/50" />
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">{t("crm.tabGroups.engagement")}</span>
+            <TabsTrigger value="communications" className="flex-none gap-1.5 text-xs"><Mail className="h-3.5 w-3.5" /> {t("crm.tabs.communications")}</TabsTrigger>
+            <TabsTrigger value="nurture" className="flex-none gap-1.5 text-xs"><MessageSquare className="h-3.5 w-3.5" /> {t("crm.tabs.nurture")}</TabsTrigger>
+            <TabsTrigger value="tasks" className="flex-none gap-1.5 text-xs"><Target className="h-3.5 w-3.5" /> {t("crm.tabs.tasks")}</TabsTrigger>
+            <TabsTrigger value="timeline" className="flex-none gap-1.5 text-xs"><Phone className="h-3.5 w-3.5" /> {t("crm.tabs.timeline")}</TabsTrigger>
+            <TabsTrigger value="conversations" className="flex-none gap-1.5 text-xs"><MessageSquare className="h-3.5 w-3.5" /> {t("crm.tabs.talk")}</TabsTrigger>
+          </div>
+
+          <div className="h-px w-full bg-border/50" />
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">{t("crm.tabGroups.intelligence")}</span>
+            <TabsTrigger value="ai-sdr" className="flex-none gap-1.5 text-xs"><Sparkles className="h-3.5 w-3.5" /> {t("crm.tabs.ai")}</TabsTrigger>
+            <TabsTrigger value="next-best-action" className="flex-none gap-1.5 text-xs"><Zap className="h-3.5 w-3.5" /> {t("crm.tabs.actions")}</TabsTrigger>
+            <TabsTrigger value="deal-health" className="flex-none gap-1.5 text-xs"><AlertTriangle className="h-3.5 w-3.5" /> {t("crm.tabs.health")}</TabsTrigger>
+            <TabsTrigger value="duplicates" className="flex-none gap-1.5 text-xs"><Copy className="h-3.5 w-3.5" /> {t("crm.tabs.duplicates")}</TabsTrigger>
+            <TabsTrigger value="briefing" className="flex-none gap-1.5 text-xs"><Sun className="h-3.5 w-3.5" /> {t("crm.tabs.daily")}</TabsTrigger>
+            <TabsTrigger value="vertical-signals" className="flex-none gap-1.5 text-xs"><TrendingUpIcon className="h-3.5 w-3.5" /> {t("crm.tabs.markets")}</TabsTrigger>
+            <TabsTrigger value="lead-roi" className="flex-none gap-1.5 text-xs"><DollarSign className="h-3.5 w-3.5" /> {t("crm.tabs.roi")}</TabsTrigger>
+          </div>
+
+          <div className="h-px w-full bg-border/50" />
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">{t("crm.tabGroups.support")}</span>
+            <TabsTrigger value="events" className="flex-none gap-1.5 text-xs"><Layers className="h-3.5 w-3.5" /> {t("crm.tabs.events")}</TabsTrigger>
+            <TabsTrigger value="success" className="flex-none gap-1.5 text-xs"><Heart className="h-3.5 w-3.5" /> {t("crm.tabs.customerSuccess")}</TabsTrigger>
+            <TabsTrigger value="support" className="flex-none gap-1.5 text-xs"><Ticket className="h-3.5 w-3.5" /> {t("crm.tabs.tickets")}</TabsTrigger>
+            <TabsTrigger value="analytics" className="flex-none gap-1.5 text-xs"><Target className="h-3.5 w-3.5" /> {t("crm.tabs.analytics")}</TabsTrigger>
+          </div>
+        </TabsList>
 
         <TabsContent value="ai-sdr" className="mt-4">
           <div className="rounded-2xl border border-border/50 bg-card p-6">
