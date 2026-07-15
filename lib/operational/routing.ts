@@ -207,6 +207,23 @@ export async function getRoutingSuggestions(
 }
 
 /**
+ * Get the currently saved custom routing rules for an organization.
+ */
+export async function getRoutingRules(
+  organizationId: string
+): Promise<{ categories: Record<string, string>; intent: Record<string, string> }> {
+  const db = createServiceClient()
+  const { data } = await db
+    .from("organization_settings")
+    .select("routing_rules")
+    .eq("id", organizationId)
+    .maybeSingle()
+
+  const rules = (data?.routing_rules as { categories?: Record<string, string>; intent?: Record<string, string> }) || {}
+  return { categories: rules.categories || {}, intent: rules.intent || {} }
+}
+
+/**
  * Save custom routing rules for an organization
  */
 export async function saveRoutingRules(

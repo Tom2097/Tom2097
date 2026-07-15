@@ -100,7 +100,7 @@ export default function ConfigurePage() {
         
         {/* Routing Tab */}
         <TabsContent value="routing">
-          <RoutingRules workspaces={existingWorkspaces} />
+          <RoutingRules />
         </TabsContent>
       </Tabs>
     </div>
