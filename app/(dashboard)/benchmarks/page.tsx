@@ -43,7 +43,7 @@ export default async function BenchmarksPage() {
   if (!ctx) redirect('/auth/login')
 
   const orgId = ctx.organizationId
-  const comparisons = await getPeerComparison(orgId)
+  const comparisons = await getPeerComparison(orgId).catch(() => [])
 
   return (
     <div className="space-y-6">

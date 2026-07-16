@@ -52,8 +52,8 @@ export default async function DriverAnalysisPage() {
   const orgId = ctx.organizationId
 
   const [decomposition, impacts] = await Promise.all([
-    analyzeDriverDecomposition(orgId),
-    getCrossWorkspaceImpact(orgId),
+    analyzeDriverDecomposition(orgId).catch(() => null),
+    getCrossWorkspaceImpact(orgId).catch(() => []),
   ])
 
   return (
