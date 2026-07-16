@@ -117,9 +117,9 @@ export default async function ResourcesPage() {
                 <div key={i} className="flex items-center justify-between rounded-xl bg-secondary/30 p-3">
                   <span className="text-sm font-medium">{v.vendor}</span>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className={v.on_time_delivery >= 80 ? "text-green-500" : "text-red-500"}>OTD {v.on_time_delivery}%</span>
-                    <span className={v.quality >= 80 ? "text-green-500" : "text-red-500"}>Q {v.quality}%</span>
-                    <span className="font-semibold text-foreground">{v.overall}/100</span>
+                    <span>{v.dealCount} {t("resources.page.deals")}</span>
+                    <span className="font-semibold text-foreground">${v.totalValue.toLocaleString()}</span>
+                    <span>{v.lastActivityDaysAgo != null ? t("resources.page.lastActivityDaysAgo", { days: v.lastActivityDaysAgo }) : t("resources.page.noActivity")}</span>
                   </div>
                 </div>
               ))}
