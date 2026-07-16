@@ -227,15 +227,21 @@ export default function IntelligencePage() {
         </TabsContent>
 
         <TabsContent value="industry" className="mt-4">
-           <div className="p-8 text-center text-muted-foreground">{t("intelligence.page.comingSoon", { feature: t("intelligence.page.industryIntelligence") })}</div>
+          <ErrorBoundary>
+            <IndustryIntelligenceHub />
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="causal-chains" className="mt-4">
-           <div className="p-8 text-center text-muted-foreground">{t("intelligence.page.comingSoon", { feature: t("intelligence.page.causalChain") })}</div>
+          <ErrorBoundary>
+            <CausalChainView />
+          </ErrorBoundary>
         </TabsContent>
-          
+
         <TabsContent value="predictive" className="mt-4">
-           <div className="p-8 text-center text-muted-foreground">{t("intelligence.page.comingSoon", { feature: t("intelligence.page.predictiveModeling") })}</div>
+          <ErrorBoundary>
+            <PredictiveModeling />
+          </ErrorBoundary>
         </TabsContent>
       </Tabs>
     </div>
