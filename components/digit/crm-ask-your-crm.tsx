@@ -10,9 +10,15 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { MessageSquare, Send, Loader2, Bot, User } from "lucide-react"
 import { LiveChart } from "@/components/digit/live-chart"
 
+const SUGGESTIONS = [
+  "Which deals close this month?",
+  "What's my pipeline value?",
+  "Show me conversion by stage.",
+]
+
 export function CrmAskYourCrm() {
   const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string; chart?: { data: Array<Record<string, string | number>>; dataKey: string; type: "area" | "line" | "bar"; title: string } }>>([
-    { role: "assistant", content: "Hi! Ask me anything about your CRM data. Try: \"Which deals close this month?\", \"What's my pipeline value?\", or \"Show me conversion by stage.\"" },
+    { role: "assistant", content: "Hi! Ask me anything about your CRM data — try one of the suggestions below, or type your own question." },
   ])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
@@ -33,9 +39,9 @@ export function CrmAskYourCrm() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
   })
 
-  const sendMessage = async () => {
-    if (!input.trim() || loading) return
-    const question = input.trim()
+  const sendMessage = async (override?: string) => {
+    const question = (override ?? input).trim()
+    if (!question || loading) return
     setInput("")
     setMessages((prev) => [...prev, { role: "user", content: question }])
     setLoading(true)
@@ -107,6 +113,21 @@ export function CrmAskYourCrm() {
             )}
           </div>
         </ScrollArea>
+        {messages.length === 1 && (
+          <div className="flex flex-wrap gap-1.5 px-4 pb-3 shrink-0">
+            {SUGGESTIONS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                disabled={loading}
+                onClick={() => sendMessage(s)}
+                className="rounded-full border border-border/70 bg-secondary/40 px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground disabled:opacity-50"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="p-3 border-t border-border shrink-0">
           <form onSubmit={(e) => { e.preventDefault(); sendMessage() }} className="flex gap-2">
             <Input placeholder="Ask about your CRM data..." value={input} onChange={(e) => setInput(e.target.value)} className="text-sm" />
