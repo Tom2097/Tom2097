@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { getRequestOrigin } from "@/lib/http/request-origin"
 
 export async function POST(request: Request) {
+  const origin = getRequestOrigin(request)
   const contentType = request.headers.get("content-type") || ""
 
   let email: string
@@ -22,7 +24,7 @@ export async function POST(request: Request) {
 
   if (!email || !password) {
     return NextResponse.redirect(
-      new URL(`/auth/login?error=${encodeURIComponent("Email and password required")}`, request.url)
+      new URL(`/auth/login?error=${encodeURIComponent("Email and password required")}`, origin)
     )
   }
 
@@ -32,20 +34,20 @@ export async function POST(request: Request) {
 
     if (error) {
       return NextResponse.redirect(
-        new URL(`/auth/login?error=${encodeURIComponent(error.message)}`, request.url)
+        new URL(`/auth/login?error=${encodeURIComponent(error.message)}`, origin)
       )
     }
 
     if (!data?.session) {
       return NextResponse.redirect(
-        new URL(`/auth/login?error=no_session`, request.url)
+        new URL(`/auth/login?error=no_session`, origin)
       )
     }
 
-    return NextResponse.redirect(new URL(redirectTo, request.url))
+    return NextResponse.redirect(new URL(redirectTo, origin))
   } catch (err) {
     return NextResponse.redirect(
-      new URL(`/auth/login?error=${encodeURIComponent(err instanceof Error ? err.message : "Login failed")}`, request.url)
+      new URL(`/auth/login?error=${encodeURIComponent(err instanceof Error ? err.message : "Login failed")}`, origin)
     )
   }
 }

@@ -2,12 +2,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getAuthenticatedUser, getOrganizationId } from '@/lib/auth/server-auth'
 import { getPlanById } from '@/lib/products'
 import { createRazorpaySession } from '@/lib/billing/razorpay'
+import { getRequestOrigin } from '@/lib/http/request-origin'
 
 // Browser-navigated (window.location.href), not fetch()'d -- responds with
 // a redirect rather than JSON, either to the Razorpay hosted checkout page
 // or back to pricing with an error flag.
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = request.nextUrl
+  const { searchParams } = request.nextUrl
+  const origin = getRequestOrigin(request)
   const planId = searchParams.get('plan')
   const redirectPath = searchParams.get('redirect') || '/settings'
 
