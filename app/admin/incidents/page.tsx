@@ -13,9 +13,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
-import { AlertTriangle, AlertCircle, Shield, BookOpen, Plus, UserCheck, ArrowUpCircle, CheckCircle2 } from "lucide-react"
-import type { Incident, Runbook } from "@/lib/incident/response"
-import { DEFAULT_RUNBOOKS } from "@/lib/incident/response"
+import { AlertTriangle, AlertCircle, Shield, BookOpen, Plus, ArrowUpCircle, CheckCircle2 } from "lucide-react"
+import type { Incident } from "@/lib/monitoring/types"
+import { DEFAULT_RUNBOOKS, type Runbook } from "@/lib/incident/response"
 
 export default function IncidentsPage() {
   const { t } = useI18n()
@@ -36,25 +36,18 @@ export default function IncidentsPage() {
       try {
         setLoading(true)
         const res = await fetch("/api/v1/admin/incidents")
+        if (!res.ok) throw new Error("Failed to load incidents")
         const data = await res.json()
-        if (res.ok && !cancelled) setIncidents(data.incidents || [])
+        if (!cancelled) setIncidents(data.incidents || [])
       } catch {
-        if (!cancelled) {
-          try {
-            const { getIncidents } = await import("@/lib/incident/response")
-            const data = await getIncidents("default")
-            if (!cancelled) setIncidents(data)
-          } catch {
-            toast.error(t("admin.incidents.loadFailed"))
-          }
-        }
+        if (!cancelled) toast.error(t("admin.incidents.loadFailed"))
       } finally {
         if (!cancelled) setLoading(false)
       }
     }
     load()
     return () => { cancelled = true }
-  }, [])
+  }, [t])
 
   const fetchIncidents = useCallback(async () => {
     try {
@@ -96,7 +89,7 @@ export default function IncidentsPage() {
     }
   }
 
-  const handleQuickAction = async (incidentId: string, action: "assign" | "escalate" | "resolve") => {
+  const handleQuickAction = async (incidentId: string, action: "escalate" | "resolve") => {
     try {
       const res = await fetch("/api/v1/admin/incidents", {
         method: "POST",
@@ -136,9 +129,10 @@ export default function IncidentsPage() {
 
   const getStatusBadge = (status: Incident["status"]) => {
     const map: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      detected: "destructive",
+      open: "destructive",
       investigating: "secondary",
-      mitigated: "outline",
+      identified: "secondary",
+      monitoring: "outline",
       resolved: "default",
     }
     return <Badge variant={map[status]}>{status}</Badge>
@@ -285,7 +279,7 @@ export default function IncidentsPage() {
                         <TableHead>{t("admin.incidents.title")}</TableHead>
                         <TableHead>{t("admin.incidents.severityLabel")}</TableHead>
                         <TableHead>{t("admin.incidents.status")}</TableHead>
-                        <TableHead>{t("admin.incidents.assignedTo")}</TableHead>
+                        <TableHead>{t("admin.incidents.organization")}</TableHead>
                         <TableHead>{t("admin.incidents.detected")}</TableHead>
                         <TableHead>{t("admin.incidents.actions")}</TableHead>
                       </TableRow>
@@ -308,15 +302,12 @@ export default function IncidentsPage() {
                               </TableCell>
                               <TableCell>{getSeverityBadge(inc.severity)}</TableCell>
                               <TableCell>{getStatusBadge(inc.status)}</TableCell>
-                              <TableCell className="text-sm">{inc.assignedTo || <span className="text-muted-foreground">{t("admin.incidents.unassigned")}</span>}</TableCell>
-                              <TableCell className="text-xs">{new Date(inc.detectedAt).toLocaleString()}</TableCell>
+                              <TableCell className="text-xs font-mono text-muted-foreground">{inc.organization_id.slice(0, 8)}</TableCell>
+                              <TableCell className="text-xs">{new Date(inc.started_at).toLocaleString()}</TableCell>
                               <TableCell>
                                 <div className="flex gap-1">
                                   {inc.status !== "resolved" && (
                                     <>
-                                      <Button size="sm" variant="outline" onClick={() => handleQuickAction(inc.id, "assign")} title={t("admin.incidents.assignToMe")}>
-                                        <UserCheck className="h-3 w-3" />
-                                      </Button>
                                       <Button size="sm" variant="outline" onClick={() => handleQuickAction(inc.id, "escalate")} title={t("admin.incidents.escalate")}>
                                         <ArrowUpCircle className="h-3 w-3" />
                                       </Button>

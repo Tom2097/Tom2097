@@ -526,6 +526,37 @@ export async function listIncidents(
   return { incidents: (data ?? []) as Incident[], total: count ?? 0 }
 }
 
+/** Platform-admin only: lists incidents across every organization, not scoped to one tenant. */
+export async function listAllIncidents(opts: { status?: IncidentStatus; openOnly?: boolean; limit?: number; offset?: number } = {}): Promise<{ incidents: Incident[]; total: number }> {
+  const db = createServiceClient()
+  let query = db.from("incidents").select("*", { count: "exact" })
+
+  if (opts.status) query = query.eq("status", opts.status)
+  if (opts.openOnly) query = query.neq("status", "resolved")
+
+  query = query
+    .order("created_at", { ascending: false })
+    .range(opts.offset ?? 0, (opts.offset ?? 0) + (opts.limit ?? 100) - 1)
+
+  const { data, error, count } = await query
+  if (error) {
+    logger.logError("[v0] listAllIncidents failed:", { error: error.message })
+    throw new Error("failed to list incidents")
+  }
+  return { incidents: (data ?? []) as Incident[], total: count ?? 0 }
+}
+
+/** Platform-admin only: fetches an incident regardless of which organization owns it. */
+export async function getIncidentAnyOrg(incidentId: string): Promise<Incident | null> {
+  const db = createServiceClient()
+  const { data, error } = await db.from("incidents").select("*").eq("id", incidentId).maybeSingle()
+  if (error) {
+    logger.logError("[v0] getIncidentAnyOrg failed:", { error: error.message })
+    throw new Error("failed to fetch incident")
+  }
+  return (data as Incident) ?? null
+}
+
 export async function getIncident(organizationId: string, incidentId: string): Promise<Incident | null> {
   const db = createServiceClient()
   const { data, error } = await db
