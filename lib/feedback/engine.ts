@@ -167,59 +167,64 @@ export async function createComment(
   return data
 }
 
-/** Get feedback statistics for dashboard. */
+/**
+ * Get feedback statistics for dashboard.
+ *
+ * Previously queried a "sentiment_score" column that doesn't exist anywhere
+ * in this schema -- that query always errored, so the function always fell
+ * into an all-zero fallback (not just responseTime/categorizationAccuracy,
+ * everything). There's no sentiment-analysis or AI auto-categorization
+ * feature in this codebase either, so rather than fabricate those, this
+ * derives real signals from what's actually collected: the 1-5 star
+ * `rating` field for sentiment, and real created_at/updated_at deltas for
+ * response time.
+ */
 export async function getFeedbackStats(organizationId: string) {
   const db = createServiceClient()
-  
-  // Get sentiment score (average sentiment)
-  const { data: sentimentData, error: sentimentError } = await db
+
+  const { data: items, error } = await db
     .from("feedback")
-    .select("sentiment_score")
+    .select("rating, category, status, created_at, updated_at")
     .eq("organization_id", organizationId)
-    .not("sentiment_score", "is", null)
-    
-  // Get response metrics
-  const { count: totalItems, error: countError } = await db
-    .from("feedback")
-    .select("*", { count: "exact", head: true })
-    .eq("organization_id", organizationId)
-    
-  // Get open items count
-  const { count: openItems, error: openError } = await db
-    .from("feedback")
-    .select("*", { count: "exact", head: true })
-    .eq("organization_id", organizationId)
-    .in("status", ["new", "in_progress"])
-    
-  if (sentimentError || countError || openError) {
-    console.log("[v0] getFeedbackStats failed:", sentimentError?.message, countError?.message, openError?.message)
+
+  if (error) {
+    console.log("[v0] getFeedbackStats failed:", error.message)
     return {
       sentimentScore: 0,
       responseTime: 0,
-      categorizationAccuracy: 0,
+      categorizationRate: 0,
       responseRate: 0,
       openItems: 0,
       totalItems: 0
     }
   }
-  
-  // Calculate metrics
-  const sentimentScore = sentimentData && sentimentData.length > 0
-    ? Math.round(sentimentData.reduce((sum, item) => sum + (item.sentiment_score || 0), 0) / sentimentData.length)
+
+  const rows = items ?? []
+  const totalItemsNum = rows.length
+
+  const rated = rows.filter((r) => r.rating != null)
+  const sentimentScore = rated.length > 0
+    ? Math.round((rated.filter((r) => (r.rating ?? 0) >= 4).length / rated.length) * 100)
     : 0
-  
-  const totalItemsNum = totalItems || 0
-  const openItemsNum = openItems || 0
+
+  const openItemsNum = rows.filter((r) => ["new", "in_progress"].includes(r.status)).length
   const responseRate = totalItemsNum > 0 ? Math.round(((totalItemsNum - openItemsNum) / totalItemsNum) * 100) : 0
-  
-  // Default values for metrics not available in current schema
-  const responseTime = 0
-  const categorizationAccuracy = 0
-  
+
+  const actedOn = rows.filter((r) => r.status !== "new")
+  const responseTime = actedOn.length > 0
+    ? Math.round(
+        actedOn.reduce((sum, r) => sum + (new Date(r.updated_at).getTime() - new Date(r.created_at).getTime()), 0)
+          / actedOn.length / 3_600_000,
+      )
+    : 0
+
+  const categorized = rows.filter((r) => r.category && r.category !== "general").length
+  const categorizationRate = totalItemsNum > 0 ? Math.round((categorized / totalItemsNum) * 100) : 0
+
   return {
     sentimentScore,
     responseTime,
-    categorizationAccuracy,
+    categorizationRate,
     responseRate,
     openItems: openItemsNum,
     totalItems: totalItemsNum

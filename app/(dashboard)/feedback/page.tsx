@@ -68,7 +68,7 @@ type FeedbackItem = {
 type FeedbackMetrics = {
   sentimentScore: number
   responseTime: number
-  categorizationAccuracy: number
+  categorizationRate: number
   responseRate: number
   openItems: number
   totalItems: number
@@ -77,7 +77,7 @@ type FeedbackMetrics = {
 export default function FeedbackPage() {
   const { t } = useI18n()
   const [feedback, setFeedback] = useState<FeedbackItem[]>([])
-  const [metrics, setMetrics] = useState<FeedbackMetrics>({ sentimentScore: 0, responseTime: 0, categorizationAccuracy: 0, responseRate: 0, openItems: 0, totalItems: 0 })
+  const [metrics, setMetrics] = useState<FeedbackMetrics>({ sentimentScore: 0, responseTime: 0, categorizationRate: 0, responseRate: 0, openItems: 0, totalItems: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [open, setOpen] = useState(false)
@@ -115,7 +115,7 @@ export default function FeedbackPage() {
       setMetrics({
         sentimentScore: stats.sentimentScore,
         responseTime: stats.responseTime,
-        categorizationAccuracy: stats.categorizationAccuracy,
+        categorizationRate: stats.categorizationRate,
         responseRate: stats.responseRate,
         openItems: stats.openItems,
         totalItems: stats.totalItems
@@ -347,8 +347,8 @@ export default function FeedbackPage() {
             <Brain className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.categorizationAccuracy}%</div>
-             <p className="text-xs text-muted-foreground">{t("feedback.page.accuracy")}</p>
+            <div className="text-2xl font-bold">{metrics.categorizationRate}%</div>
+             <p className="text-xs text-muted-foreground">{t("feedback.page.categorized")}</p>
           </CardContent>
         </Card>
         <Card>

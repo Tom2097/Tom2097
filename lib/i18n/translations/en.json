@@ -276,6 +276,7 @@
       "avgResponseTime": "Avg response time",
       "categorization": "Categorization",
       "accuracy": "Accuracy",
+      "categorized": "Categorized",
       "tryAgain": "Try Again",
       "beFirst": "Be the first to submit a bug report, feature request, or idea.",
       "submitFeedback": "Submit Feedback",

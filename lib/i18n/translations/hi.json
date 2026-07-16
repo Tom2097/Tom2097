@@ -276,6 +276,7 @@
       "avgResponseTime": "औसत प्रतिक्रिया समय",
       "categorization": "वर्गीकरण",
       "accuracy": "सटीकता",
+      "categorized": "वर्गीकृत",
       "tryAgain": "फिर कोशिश करें",
       "beFirst": "पहले बनें और बग रिपोर्ट, फीचर अनुरोध या विचार सबमिट करें।",
       "submitFeedback": "फीडबैक सबमिट करें",
