@@ -11,12 +11,12 @@ import { mistralModel } from "@/lib/ai/mistral"
 // {headquarters, global_presence}, recent_news items as {headline, summary}).
 // Preprocess normalizes those shape variants into the flat strings this
 // route actually returns, instead of failing validation outright.
-function flattenToString(value: unknown): string {
+function flattenToString(value: unknown, separator = "; "): string {
   if (typeof value === "string") return value
   if (value && typeof value === "object") {
     return Object.values(value as Record<string, unknown>)
       .filter((v) => typeof v === "string" && v.trim())
-      .join("; ")
+      .join(separator)
   }
   return value == null ? "" : String(value)
 }
@@ -27,10 +27,10 @@ const EnrichmentSchema = z.object({
   industry: z.string(),
   size: z.string().describe("Estimated employee count range, e.g. '50-200'"),
   revenue: z.string().describe("Estimated annual revenue range, e.g. '$10M-$50M'"),
-  location: z.preprocess(flattenToString, z.string()).describe("Likely HQ city and country"),
+  location: z.preprocess((value) => flattenToString(value), z.string()).describe("Likely HQ city and country"),
   description: z.string().describe("1-2 sentence summary of what the company does"),
   recent_news: z.preprocess(
-    (value) => (Array.isArray(value) ? value.map(flattenToString) : []),
+    (value) => (Array.isArray(value) ? value.map((item) => flattenToString(item, " — ")) : []),
     z.array(z.string()),
   ).describe("Up to 3 plausible recent developments or talking points for outreach"),
 })

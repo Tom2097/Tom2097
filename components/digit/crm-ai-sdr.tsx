@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Sparkles, Building2, Globe, Users, Briefcase, TrendingUp, Loader2, Search } from "lucide-react"
+import { Sparkles, Building2, Globe, Users, TrendingUp, Loader2, Search } from "lucide-react"
 
 interface EnrichmentResult {
   company_name: string; domain: string; industry: string; size: string
@@ -112,22 +112,18 @@ export function CrmAiSdr() {
                 </p>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                  <Users className="h-4 w-4 text-blue-500" />
-                  <div><p className="text-[10px] text-muted-foreground">Size</p><p className="text-xs font-medium">{result.size} employees</p></div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 min-w-0">
+                  <Users className="h-4 w-4 text-blue-500 shrink-0" />
+                  <div className="min-w-0"><p className="text-[10px] text-muted-foreground">Size</p><p className="text-xs font-medium truncate" title={result.size}>{result.size}</p></div>
                 </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                  <TrendingUp className="h-4 w-4 text-green-500" />
-                  <div><p className="text-[10px] text-muted-foreground">Revenue</p><p className="text-xs font-medium">{result.revenue}</p></div>
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 min-w-0">
+                  <TrendingUp className="h-4 w-4 text-green-500 shrink-0" />
+                  <div className="min-w-0"><p className="text-[10px] text-muted-foreground">Revenue</p><p className="text-xs font-medium truncate" title={result.revenue}>{result.revenue}</p></div>
                 </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                  <Globe className="h-4 w-4 text-cyan-500" />
-                  <div><p className="text-[10px] text-muted-foreground">Location</p><p className="text-xs font-medium">{result.location}</p></div>
-                </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                  <Briefcase className="h-4 w-4 text-amber-500" />
-                  <div><p className="text-[10px] text-muted-foreground">Industry</p><p className="text-xs font-medium">{result.industry}</p></div>
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 min-w-0">
+                  <Globe className="h-4 w-4 text-cyan-500 shrink-0" />
+                  <div className="min-w-0"><p className="text-[10px] text-muted-foreground">Location</p><p className="text-xs font-medium truncate" title={result.location}>{result.location}</p></div>
                 </div>
               </div>
 
@@ -140,13 +136,20 @@ export function CrmAiSdr() {
                 <p className="text-xs font-medium mb-2 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3 text-green-500" />Recent News
                 </p>
-                <ul className="space-y-1">
-                  {result.recent_news.map((news, i) => (
-                    <li key={i} className="text-xs flex gap-2">
-                      <span className="text-primary mt-0.5">•</span>
-                      <span className="text-muted-foreground">{news}</span>
-                    </li>
-                  ))}
+                <ul className="space-y-2">
+                  {result.recent_news.map((news, i) => {
+                    const [headline, ...rest] = news.split(" — ")
+                    const summary = rest.join(" — ")
+                    return (
+                      <li key={i} className="text-xs flex gap-2">
+                        <span className="text-primary mt-0.5 shrink-0">•</span>
+                        <span className="min-w-0">
+                          <span className="font-medium text-foreground">{headline}</span>
+                          {summary && <span className="text-muted-foreground">{" — "}{summary}</span>}
+                        </span>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
 
