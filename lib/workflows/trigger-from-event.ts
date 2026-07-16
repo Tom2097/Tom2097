@@ -1,5 +1,5 @@
-import { createServiceClient } from "@/lib/supabase/service"
-import { listWorkflowsForEvent, createExecution } from "./store"
+import { listWorkflowsForEvent } from "./store"
+import { triggerWorkflow } from "./trigger"
 import type { DocumentEventType } from "@/lib/documents/events"
 
 /**
@@ -16,7 +16,7 @@ export async function triggerWorkflowsFromDocumentEvent(
   let triggered = 0
 
   for (const wf of workflows) {
-    const result = await createExecution(organizationId, wf.id, "event", input, startedBy)
+    const result = await triggerWorkflow(wf, "event", input, startedBy)
     if (result) triggered++
   }
 

@@ -57,7 +57,6 @@
     "@upstash/redis": "^1.38.0",
     "@upstash/search": "^0.1.7",
     "@vercel/analytics": "1.6.1",
-    "@workflow/ai": "^6.0.0",
     "ai": "^6.0.189",
     "autoprefixer": "^10.4.20",
     "axios": "^1.17.0",
@@ -89,7 +88,6 @@
     "unpdf": "^1.6.2",
     "uuid": "^14.0.0",
     "vaul": "^1.1.2",
-    "workflow": "^4.4.0",
     "xlsx": "^0.18.5",
     "zod": "^3.24.1"
   },

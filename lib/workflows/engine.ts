@@ -2,16 +2,13 @@ import { executeStep, markRunning, finalizeExecution } from "./steps"
 import type { StepContext, StepResult, WorkflowStep } from "./types"
 
 /**
- * Module #6: Durable workflow engine.
+ * Module #6: Workflow engine.
  *
- * `runWorkflow` is a `"use workflow"` orchestrator: it walks the step graph
- * deterministically and delegates all I/O to durable `"use step"` functions
- * (in steps.ts) so the run is resumable and retryable.
- *
- * IMPORTANT: this module is bundled into the Workflow sandbox VM, so it may
- * only import other workflow/step modules (steps.ts, types.ts). It must NOT
- * import the store (cron-parser / node:crypto) or anything that pulls in
- * Node-only modules. Triggering from Node context lives in trigger.ts.
+ * `runWorkflow` walks the step graph deterministically, in-process, calling
+ * `executeStep` for each node and persisting progress via steps.ts. Runs
+ * synchronously within the triggering request/cron invocation — steps are
+ * fast (DB writes, notifications, a single AI call, an HTTP request), so no
+ * external queue is needed.
  *
  * Graph traversal:
  *  - linear steps advance via `next`, or fall through to the next step in
@@ -31,7 +28,6 @@ export interface RunWorkflowParams {
 }
 
 export async function runWorkflow(params: RunWorkflowParams) {
-  "use workflow"
   const { executionId, organizationId, workflowId, steps, input } = params
 
   await markRunning(executionId)

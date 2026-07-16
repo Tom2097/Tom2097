@@ -9,16 +9,11 @@ import type { ExecutionStatus, StepContext, StepResult, WorkflowStep } from "./t
 /* ─────────────────────────── persistence steps ─────────────────────────── */
 
 /**
- * Durable persistence helpers used by the workflow orchestrator.
- *
- * These are `"use step"` functions so their bodies (and the service-role
- * client they use) are stripped from the workflow sandbox bundle. They write
- * directly via the Supabase client rather than importing the store module,
- * keeping Node-only dependencies (cron-parser, node:crypto) out of the
- * workflow bundle entirely.
+ * Persistence helpers used by the workflow orchestrator. Write directly via
+ * the Supabase client rather than importing the store module, keeping the
+ * engine's dependency surface small and self-contained.
  */
 export async function markRunning(executionId: string) {
-  "use step"
   const db = createServiceClient()
   await db.from("workflow_executions").update({ status: "running" }).eq("id", executionId)
 }
@@ -29,7 +24,6 @@ export async function finalizeExecution(
   stepResults: StepResult[],
   error: string | null,
 ) {
-  "use step"
   const db = createServiceClient()
   await db
     .from("workflow_executions")
@@ -45,17 +39,10 @@ export async function finalizeExecution(
 /**
  * Module #6: Step actions.
  *
- * The single durable boundary is `executeStep` (a `"use step"`): the engine
- * (engine.ts, a `"use workflow"`) calls it once per workflow step, so each
- * workflow step maps to exactly one durable, retryable SDK step. The action
- * helpers below are plain functions invoked *inside* that step — they have
- * full Node.js access via the step, and keeping them out of `"use step"`
- * avoids nested steps and keeps the heavy `ai`/Supabase/search imports out of
- * the workflow sandbox bundle (which only sees the stripped step stubs).
- *
- * `executeStep` never throws — failures are captured into the returned
- * StepResult so the engine can record them and decide whether to continue.
- * All actions are tenant-scoped via `context.organizationId`.
+ * `executeStep` dispatches to one action helper per step type and never
+ * throws — failures are captured into the returned StepResult so the engine
+ * can record them and decide whether to continue. All actions are
+ * tenant-scoped via `context.organizationId`.
  */
 
 /* ───────────────────────── template resolution ───────────────────────── */
@@ -219,7 +206,6 @@ function evaluateCondition(cfg: Record<string, unknown>): { matched: boolean } {
  * For `condition` steps, `output` is `{ matched: boolean }`.
  */
 export async function executeStep(step: WorkflowStep, context: StepContext): Promise<StepResult> {
-  "use step"
   const cfg = resolve(step.config, context) as Record<string, unknown>
   try {
     let output: unknown
