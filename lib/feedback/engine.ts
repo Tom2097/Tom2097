@@ -207,10 +207,10 @@ export async function getFeedbackStats(organizationId: string) {
     ? Math.round((rated.filter((r) => (r.rating ?? 0) >= 4).length / rated.length) * 100)
     : 0
 
-  const openItemsNum = rows.filter((r) => ["new", "in_progress"].includes(r.status)).length
+  const openItemsNum = rows.filter((r) => ["open", "triaged", "in_progress"].includes(r.status)).length
   const responseRate = totalItemsNum > 0 ? Math.round(((totalItemsNum - openItemsNum) / totalItemsNum) * 100) : 0
 
-  const actedOn = rows.filter((r) => r.status !== "new")
+  const actedOn = rows.filter((r) => r.status !== "open")
   const responseTime = actedOn.length > 0
     ? Math.round(
         actedOn.reduce((sum, r) => sum + (new Date(r.updated_at).getTime() - new Date(r.created_at).getTime()), 0)

@@ -14,29 +14,39 @@ import { Loader2, RefreshCw, MessageSquare, Smile, MessageSquarePlus, ThumbsUp, 
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer, Cell } from "recharts"
 import { ChartContainer } from "@/components/digit/live-chart"
 
-// Feedback types
-const FEEDBACK_TYPES = ["bug", "feature", "general"] as const
-const FEEDBACK_STATUSES = ["new", "in_progress", "resolved", "closed"] as const
-const FEEDBACK_PRIORITIES = ["low", "medium", "high", "critical"] as const
+// Feedback types -- must match lib/feedback/types.ts's real enums (and the
+// feedback table's CHECK constraints); a mismatch here means submissions
+// with the "wrong" value get silently rejected by the database.
+const FEEDBACK_TYPES = ["bug", "feature", "improvement", "question", "general"] as const
+const FEEDBACK_STATUSES = ["open", "triaged", "in_progress", "resolved", "closed", "wont_fix"] as const
+const FEEDBACK_PRIORITIES = ["low", "normal", "high", "urgent"] as const
 
 const STATUS_COLORS: Record<string, string> = {
-  new: "bg-blue-500/20 text-blue-600",
+  open: "bg-blue-500/20 text-blue-600",
+  triaged: "bg-indigo-500/20 text-indigo-600",
   in_progress: "bg-yellow-500/20 text-yellow-600",
   resolved: "bg-green-500/20 text-green-600",
   closed: "bg-gray-500/20 text-gray-600",
+  wont_fix: "bg-gray-500/20 text-gray-600",
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
   low: "bg-green-500/20 text-green-600",
-  medium: "bg-yellow-500/20 text-yellow-600",
+  normal: "bg-yellow-500/20 text-yellow-600",
   high: "bg-orange-500/20 text-orange-600",
-  critical: "bg-red-500/20 text-red-600",
+  urgent: "bg-red-500/20 text-red-600",
 }
 
 const TYPE_ICONS = {
   bug: AlertTriangle,
   feature: Sparkles,
+  improvement: Sparkles,
+  question: MessageSquare,
   general: MessageSquare,
+}
+
+function toI18nKey(value: string): string {
+  return value.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase())
 }
 
 type FeedbackType = typeof FEEDBACK_TYPES[number]
@@ -82,7 +92,7 @@ export default function FeedbackPage() {
   const [error, setError] = useState("")
   const [open, setOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [form, setForm] = useState<FeedbackForm>({ title: "", body: "", type: "general", category: "", priority: "medium" })
+  const [form, setForm] = useState<FeedbackForm>({ title: "", body: "", type: "general", category: "", priority: "normal" })
   const [formError, setFormError] = useState("")
   const [search, setSearch] = useState("")
   const [filterStatus, setFilterStatus] = useState<FeedbackStatus | 'all'>('all')
@@ -164,7 +174,7 @@ export default function FeedbackPage() {
       if (!response.ok) throw new Error('Failed to submit feedback')
       
       setOpen(false)
-      setForm({ title: "", body: "", type: "general", category: "", priority: "medium" })
+      setForm({ title: "", body: "", type: "general", category: "", priority: "normal" })
       await fetchFeedback()
     } catch (error) {
       setFormError("Failed to submit feedback")
@@ -379,7 +389,7 @@ export default function FeedbackPage() {
           <SelectContent>
              <SelectItem value="all">{t("feedback.page.all")} {t("feedback.page.status").toLowerCase()}</SelectItem>
             {FEEDBACK_STATUSES.map((status) => (
-              <SelectItem key={status} value={status}>{t(`feedback.page.${status}`)}</SelectItem>
+              <SelectItem key={status} value={status}>{t(`feedback.page.${toI18nKey(status)}`)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -455,7 +465,7 @@ export default function FeedbackPage() {
                 <CardContent className="pb-3 pt-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary" className={`text-xs ${STATUS_COLORS[item.status]}`}>
-                       {t(`feedback.page.${item.status}`)}
+                       {t(`feedback.page.${toI18nKey(item.status)}`)}
                     </Badge>
                     <Badge variant="secondary" className={`text-xs ${PRIORITY_COLORS[item.priority]}`}>
                        {t(`feedback.page.${item.priority}`)}
