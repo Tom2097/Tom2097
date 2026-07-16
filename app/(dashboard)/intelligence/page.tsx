@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useI18n } from "@/components/providers/i18n-provider"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { Button } from "@/components/ui/button"
@@ -28,56 +28,36 @@ export default function IntelligencePage() {
     activeAgents: 8,
     insightsGenerated: 142,
   })
-  const [chartData, setChartData] = useState<Array<{ name: string; value: number; insights: number }>>(() =>
-    Array.from({ length: 10 }, (_, i) => ({
-      name: `T-${10 - i}`,
-      value: Math.floor(Math.random() * 30) + 40,
-      insights: Math.floor(Math.random() * 5) + 3,
-    }))
-  )
+  const [chartData, setChartData] = useState<Array<{ name: string; value: number; insights: number }>>([])
   const [anomalies, setAnomalies] = useState<Array<{ id: string; type: string; severity: string; timestamp: string }>>([])
+  const [refreshing, setRefreshing] = useState(false)
+
+  const fetchAggregate = useCallback(async () => {
+    try {
+      const res = await fetch("/api/v1/intelligence/aggregate")
+      if (!res.ok) return
+      const data = await res.json()
+      if (data.metrics) setMetrics(data.metrics)
+      if (data.chartData) setChartData(data.chartData)
+      if (data.anomalies) setAnomalies(data.anomalies)
+    } catch {
+      // Non-fatal -- tiles just keep their last known values.
+    }
+  }, [])
 
   useEffect(() => {
-    // Simulate real-time data updates
-    const interval = setInterval(() => {
-      setMetrics(prev => ({
-        ...prev,
-        reasoningAccuracy: Math.floor(Math.random() * 15) + 85,
-        systemLoad: Number((Math.random() * 0.5 + 0.5).toFixed(2)),
-        memoryUsage: Number((Math.random() * 0.3 + 0.6).toFixed(2)),
-        activeAgents: Math.floor(Math.random() * 5) + 6,
-        insightsGenerated: Math.floor(Math.random() * 50) + 120,
-        anomalyDetection: Math.floor(Math.random() * 5),
-      }))
-      
-      // Update chart data
-      setChartData(prev => {
-        const now = new Date()
-        const newPoint = {
-          name: now.toLocaleTimeString(),
-          value: Math.floor(Math.random() * 50) + 50,
-          insights: Math.floor(Math.random() * 10) + 5,
-        }
-        return [...prev.slice(-9), newPoint]
-      })
-      
-      // Update anomalies
-      if (Math.random() > 0.6) {
-        setAnomalies(prev => {
-          const now = new Date()
-          const newAnomaly = {
-            id: `anomaly-${Date.now()}`,
-            type: ['reasoning_error', 'graph_fragmentation', 'agent_failure'][Math.floor(Math.random() * 3)],
-            severity: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
-            timestamp: now.toISOString(),
-          }
-          return [...prev.slice(-4), newAnomaly]
-        })
-      }
-    }, 3000)
-    
+    /* eslint-disable react-hooks/set-state-in-effect */
+    fetchAggregate()
+    /* eslint-enable react-hooks/set-state-in-effect */
+    const interval = setInterval(fetchAggregate, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchAggregate])
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    await fetchAggregate()
+    setRefreshing(false)
+  }
 
   return (
     <ErrorBoundary>
@@ -89,8 +69,8 @@ export default function IntelligencePage() {
              {t("intelligence.page.subtitle")}
            </p>
         </div>
-         <Button variant="ghost" size="sm" className="gap-1 text-sm">
-           <RefreshCw className="h-3 w-3" />
+         <Button variant="ghost" size="sm" className="gap-1 text-sm" disabled={refreshing} onClick={handleRefresh}>
+           <RefreshCw className={`h-3 w-3 ${refreshing ? "animate-spin" : ""}`} />
            {t("intelligence.page.refresh")}
          </Button>
       </div>

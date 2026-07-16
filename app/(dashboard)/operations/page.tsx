@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useI18n } from "@/components/providers/i18n-provider"
 import { UniversalIntake } from "@/components/digit/universal-intake"
 import { DocumentFeed } from "@/components/digit/document-feed"
@@ -41,6 +41,7 @@ export default function OperationsPage() {
   })
   const [chartData, setChartData] = useState<Array<{ name: string; value: number }>>([])
   const [anomalies, setAnomalies] = useState<Array<{ id: string; type: string; severity: string; timestamp: string }>>([])
+  const [refreshing, setRefreshing] = useState(false)
 
   const handleSelectDoc = (doc: { id: string; name: string; content?: string; extracted_entities?: Record<string, unknown> }) => {
     setSelectedDoc(doc)
@@ -50,34 +51,40 @@ export default function OperationsPage() {
     })
   }
 
-  useEffect(() => {
-    let mounted = true
-
-    const fetchMetrics = async () => {
-      try {
-        const res = await fetch('/api/v1/operations/metrics')
-        if (!res.ok || !mounted) return
-        const data = await res.json()
-        setMetrics({
-          ingestionRate: data.ingestionRate ?? 0,
-          processingTime: data.processingTime ?? 0,
-          analysisSuccessRate: data.analysisSuccessRate ?? 0,
-          autoActionRate: data.autoActionRate ?? 0,
-          openCapas: data.openCapas ?? 0,
-          whatsappMessages: data.whatsappMessages ?? 0,
-          emailMessages: data.emailMessages ?? 0,
-        })
-        setChartData(data.chartData ?? [])
-        setAnomalies(data.anomalies ?? [])
-      } catch {
-        // Non-fatal -- tiles just keep their last known values.
-      }
+  const fetchMetrics = useCallback(async () => {
+    try {
+      const res = await fetch('/api/v1/operations/metrics')
+      if (!res.ok) return
+      const data = await res.json()
+      setMetrics({
+        ingestionRate: data.ingestionRate ?? 0,
+        processingTime: data.processingTime ?? 0,
+        analysisSuccessRate: data.analysisSuccessRate ?? 0,
+        autoActionRate: data.autoActionRate ?? 0,
+        openCapas: data.openCapas ?? 0,
+        whatsappMessages: data.whatsappMessages ?? 0,
+        emailMessages: data.emailMessages ?? 0,
+      })
+      setChartData(data.chartData ?? [])
+      setAnomalies(data.anomalies ?? [])
+    } catch {
+      // Non-fatal -- tiles just keep their last known values.
     }
-
-    fetchMetrics()
-    const interval = setInterval(fetchMetrics, 15000)
-    return () => { mounted = false; clearInterval(interval) }
   }, [])
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    fetchMetrics()
+    /* eslint-enable react-hooks/set-state-in-effect */
+    const interval = setInterval(fetchMetrics, 15000)
+    return () => { clearInterval(interval) }
+  }, [fetchMetrics])
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    await fetchMetrics()
+    setRefreshing(false)
+  }
 
   return (
     <div className="space-y-6">
@@ -92,8 +99,8 @@ export default function OperationsPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="gap-1 text-sm">
-            <RefreshCw className="h-3 w-3" />
+          <Button variant="ghost" size="sm" className="gap-1 text-sm" disabled={refreshing} onClick={handleRefresh}>
+            <RefreshCw className={`h-3 w-3 ${refreshing ? "animate-spin" : ""}`} />
             {t("operations.page.refresh")}
           </Button>
           <CommandPalette />
