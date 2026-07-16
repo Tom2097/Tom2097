@@ -6,11 +6,8 @@ export async function GET() {
   try {
     const user = await getAuthenticatedUser()
     await requirePlatformAdmin(user.id)
-    const [metrics, churnAnalysis, forecast] = await Promise.all([
-      Promise.resolve(getRevenueMetrics()),
-      Promise.resolve(getChurnAnalysis()),
-      Promise.resolve(getRevenueForecast()),
-    ])
+    const [metrics, churnAnalysis] = await Promise.all([getRevenueMetrics(), getChurnAnalysis()])
+    const forecast = await getRevenueForecast(metrics)
     return NextResponse.json({ metrics, churnAnalysis, forecast })
   } catch (error) {
     return handleAuthError(error as Error)

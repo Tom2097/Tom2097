@@ -1,3 +1,7 @@
+import "server-only"
+import { createServiceClient } from "@/lib/supabase/service"
+import { getPlanById } from "@/lib/products"
+
 interface RevenueMetrics {
   mrr: number
   arr: number
@@ -21,7 +25,7 @@ interface ChurnAnalysis {
   involuntaryChurn: number
   churnByReason: { reason: string; count: number }[]
   churnByPlan: { planName: string; count: number }[]
-  atRiskAccounts: { name: string; email: string; plan: string; risk: 'low' | 'medium' | 'high' }[]
+  atRiskAccounts: { name: string; email: string; plan: string; risk: "low" | "medium" | "high" }[]
 }
 
 interface RevenueForecast {
@@ -29,45 +33,129 @@ interface RevenueForecast {
   forecastNextMonth: number
   forecastNextQuarter: number
   forecastNextYear: number
-  confidence: 'low' | 'medium' | 'high'
+  confidence: "low" | "medium" | "high"
   growthRate: number
 }
 
-function generateMonthlyTrend(months: number): { month: string; mrr: number; churn: number; newBusiness: number }[] {
-  const now = new Date()
-  const trend: { month: string; mrr: number; churn: number; newBusiness: number }[] = []
-  for (let i = months - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const month = d.toLocaleString('default', { month: 'short', year: '2-digit' })
-    const baseMrr = 1250000 + (months - i) * 85000 + Math.floor(Math.random() * 50000)
-    trend.push({
-      month,
-      mrr: baseMrr,
-      churn: Number((2.5 + Math.random() * 1.5).toFixed(1)),
-      newBusiness: Math.floor(8 + Math.random() * 6),
-    })
-  }
-  return trend
+interface SubscriptionRow {
+  id: string
+  organization_id: string
+  plan_id: string
+  status: string
+  cancel_at_period_end: boolean
+  created_at: string
+  updated_at: string
 }
 
-export function getRevenueMetrics(): RevenueMetrics {
-  const currentMrr = 1850000
-  const previousMrr = 1620000
-  const mrrChange = Number((((currentMrr - previousMrr) / previousMrr) * 100).toFixed(1))
-  const arr = currentMrr * 12
-  const previousArr = previousMrr * 12
-  const arrChange = Number((((arr - previousArr) / previousArr) * 100).toFixed(1))
-  const churnRate = 2.8
-  const previousChurnRate = 3.5
-  const churnChange = Number(((previousChurnRate - churnRate) / previousChurnRate * 100).toFixed(1))
-  const activeSubscriptions = 342
-  const averageRevenuePerUser = Math.round(currentMrr / activeSubscriptions)
-  const lifetimeValue = Math.round(averageRevenuePerUser * (1 / (churnRate / 100)))
+function monthlyPriceOf(planId: string): number {
+  const plan = getPlanById(planId)
+  return plan ? plan.priceInCents / 100 : 0
+}
+
+const ACTIVE_STATUSES = ["active"]
+const CHURNED_STATUSES = ["cancelled", "expired"]
+
+async function fetchSubscriptions(db: ReturnType<typeof createServiceClient>): Promise<SubscriptionRow[]> {
+  const { data } = await db
+    .from("subscriptions")
+    .select("id, organization_id, plan_id, status, cancel_at_period_end, created_at, updated_at")
+  return data ?? []
+}
+
+function regionFor(country: string | null): string {
+  if (!country) return "Unknown"
+  const c = country.toUpperCase()
+  if (c === "IN" || c === "INDIA") return "India"
+  if (["US", "CA", "USA", "CANADA"].includes(c)) return "North America"
+  if (["GB", "UK", "DE", "FR", "ES", "IT", "NL"].includes(c)) return "Europe"
+  return "Other"
+}
+
+export async function getRevenueMetrics(): Promise<RevenueMetrics> {
+  const db = createServiceClient()
+  const subs = await fetchSubscriptions(db)
+
+  const active = subs.filter((s) => ACTIVE_STATUSES.includes(s.status))
+  const mrr = active.reduce((sum, s) => sum + monthlyPriceOf(s.plan_id), 0)
+  const arr = mrr * 12
+
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000)
+  const previouslyActive = subs.filter(
+    (s) => new Date(s.created_at) <= thirtyDaysAgo && (ACTIVE_STATUSES.includes(s.status) || (CHURNED_STATUSES.includes(s.status) && new Date(s.updated_at) > thirtyDaysAgo)),
+  )
+  const previousMrr = previouslyActive.reduce((sum, s) => sum + monthlyPriceOf(s.plan_id), 0)
+  const mrrChange = previousMrr > 0 ? Number((((mrr - previousMrr) / previousMrr) * 100).toFixed(1)) : 0
+  const arrChange = mrrChange
+
+  const churnedLast30Days = subs.filter((s) => CHURNED_STATUSES.includes(s.status) && new Date(s.updated_at) >= thirtyDaysAgo)
+  const denominatorNow = active.length + churnedLast30Days.length
+  const churnRate = denominatorNow > 0 ? Number(((churnedLast30Days.length / denominatorNow) * 100).toFixed(1)) : 0
+
+  const sixtyDaysAgo = new Date(Date.now() - 60 * 86400000)
+  const churnedPrior30Days = subs.filter(
+    (s) => CHURNED_STATUSES.includes(s.status) && new Date(s.updated_at) >= sixtyDaysAgo && new Date(s.updated_at) < thirtyDaysAgo,
+  )
+  const denominatorPrior = previouslyActive.length + churnedPrior30Days.length
+  const previousChurnRate = denominatorPrior > 0 ? Number(((churnedPrior30Days.length / denominatorPrior) * 100).toFixed(1)) : 0
+  const churnChange = previousChurnRate > 0 ? Number((((previousChurnRate - churnRate) / previousChurnRate) * 100).toFixed(1)) : 0
+
+  const activeSubscriptions = active.length
+  const averageRevenuePerUser = activeSubscriptions > 0 ? Math.round(mrr / activeSubscriptions) : 0
+  const lifetimeValue = churnRate > 0 ? Math.round(averageRevenuePerUser * (100 / churnRate)) : 0
+
+  const byPlan = new Map<string, { amount: number; subscribers: number }>()
+  for (const s of active) {
+    const entry = byPlan.get(s.plan_id) ?? { amount: 0, subscribers: 0 }
+    entry.amount += monthlyPriceOf(s.plan_id)
+    entry.subscribers += 1
+    byPlan.set(s.plan_id, entry)
+  }
+  const revenueByPlan = Array.from(byPlan.entries()).map(([planId, v]) => ({
+    planName: getPlanById(planId)?.name ?? planId,
+    amount: Math.round(v.amount),
+    subscribers: v.subscribers,
+  }))
+
+  const orgIds = [...new Set(active.map((s) => s.organization_id))]
+  const { data: orgs } = orgIds.length > 0
+    ? await db.from("organizations").select("id, country").in("id", orgIds)
+    : { data: [] as { id: string; country: string | null }[] }
+  const countryByOrg = new Map((orgs ?? []).map((o) => [o.id, o.country]))
+
+  const byRegion = new Map<string, number>()
+  for (const s of active) {
+    const region = regionFor(countryByOrg.get(s.organization_id) ?? null)
+    byRegion.set(region, (byRegion.get(region) ?? 0) + monthlyPriceOf(s.plan_id))
+  }
+  const revenueByRegion = Array.from(byRegion.entries()).map(([region, amount]) => ({
+    region,
+    amount: Math.round(amount),
+    percentage: mrr > 0 ? Math.round((amount / mrr) * 100) : 0,
+  }))
+
+  const monthlyTrend: { month: string; mrr: number; churn: number; newBusiness: number }[] = []
+  const now = new Date()
+  for (let i = 5; i >= 0; i--) {
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59)
+    const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const activeAtMonthEnd = subs.filter(
+      (s) => new Date(s.created_at) <= monthEnd && (ACTIVE_STATUSES.includes(s.status) || new Date(s.updated_at) > monthEnd),
+    )
+    const monthMrr = activeAtMonthEnd.reduce((sum, s) => sum + monthlyPriceOf(s.plan_id), 0)
+    const churnedInMonth = subs.filter((s) => CHURNED_STATUSES.includes(s.status) && new Date(s.updated_at) >= monthStart && new Date(s.updated_at) <= monthEnd)
+    const newInMonth = subs.filter((s) => new Date(s.created_at) >= monthStart && new Date(s.created_at) <= monthEnd)
+    monthlyTrend.push({
+      month: monthStart.toLocaleString("default", { month: "short", year: "2-digit" }),
+      mrr: Math.round(monthMrr),
+      churn: activeAtMonthEnd.length > 0 ? Number(((churnedInMonth.length / activeAtMonthEnd.length) * 100).toFixed(1)) : 0,
+      newBusiness: newInMonth.length,
+    })
+  }
 
   return {
-    mrr: currentMrr,
-    arr,
-    previousMrr,
+    mrr: Math.round(mrr),
+    arr: Math.round(arr),
+    previousMrr: Math.round(previousMrr),
     mrrChange,
     arrChange,
     activeSubscriptions,
@@ -76,62 +164,83 @@ export function getRevenueMetrics(): RevenueMetrics {
     churnChange,
     averageRevenuePerUser,
     lifetimeValue,
-    revenueByPlan: [
-      { planName: 'Starter', amount: 280000, subscribers: 140 },
-      { planName: 'Professional', amount: 720000, subscribers: 120 },
-      { planName: 'Enterprise', amount: 850000, subscribers: 82 },
-    ],
-    revenueByRegion: [
-      { region: 'North India', amount: 740000, percentage: 40 },
-      { region: 'South India', amount: 555000, percentage: 30 },
-      { region: 'West India', amount: 370000, percentage: 20 },
-      { region: 'East India', amount: 185000, percentage: 10 },
-    ],
-    monthlyTrend: generateMonthlyTrend(6),
+    revenueByPlan,
+    revenueByRegion,
+    monthlyTrend,
   }
 }
 
-export function getChurnAnalysis(): ChurnAnalysis {
+export async function getChurnAnalysis(): Promise<ChurnAnalysis> {
+  const db = createServiceClient()
+  const subs = await fetchSubscriptions(db)
+
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000)
+  const churned = subs.filter((s) => CHURNED_STATUSES.includes(s.status) && new Date(s.updated_at) >= ninetyDaysAgo)
+
+  const churnedIds = churned.map((s) => s.id)
+  const { data: failedPayments } = churnedIds.length > 0
+    ? await db.from("billing_events").select("subscription_id").eq("status", "failed").in("subscription_id", churnedIds)
+    : { data: [] as { subscription_id: string }[] }
+  const involuntaryIds = new Set((failedPayments ?? []).map((e) => e.subscription_id))
+
+  const voluntaryChurn = churned.filter((s) => !involuntaryIds.has(s.id)).length
+  const involuntaryChurn = churned.filter((s) => involuntaryIds.has(s.id)).length
+
+  const byPlan = new Map<string, number>()
+  for (const s of churned) byPlan.set(s.plan_id, (byPlan.get(s.plan_id) ?? 0) + 1)
+  const churnByPlan = Array.from(byPlan.entries()).map(([planId, count]) => ({
+    planName: getPlanById(planId)?.name ?? planId,
+    count,
+  }))
+
+  // "At risk" = active subscriptions already scheduled to cancel, or trialing
+  // subscriptions whose trial has nearly run out with no upgrade yet.
+  const atRisk = subs.filter((s) => s.status === "active" && s.cancel_at_period_end)
+  const orgIds = [...new Set(atRisk.map((s) => s.organization_id))]
+  const { data: orgs } = orgIds.length > 0
+    ? await db.from("organizations").select("id, name").in("id", orgIds)
+    : { data: [] as { id: string; name: string }[] }
+  const { data: profiles } = orgIds.length > 0
+    ? await db.from("profiles").select("organization_id, email").in("organization_id", orgIds)
+    : { data: [] as { organization_id: string; email: string }[] }
+  const nameByOrg = new Map((orgs ?? []).map((o) => [o.id, o.name]))
+  const emailByOrg = new Map((profiles ?? []).map((p) => [p.organization_id, p.email]))
+
+  const atRiskAccounts = atRisk.map((s) => ({
+    name: nameByOrg.get(s.organization_id) ?? "Unknown organization",
+    email: emailByOrg.get(s.organization_id) ?? "",
+    plan: getPlanById(s.plan_id)?.name ?? s.plan_id,
+    risk: "high" as const,
+  }))
+
   return {
-    totalChurned: 28,
-    voluntaryChurn: 19,
-    involuntaryChurn: 9,
-    churnByReason: [
-      { reason: 'High pricing', count: 8 },
-      { reason: 'Missing features', count: 6 },
-      { reason: 'Poor integration', count: 5 },
-      { reason: 'Payment failure', count: 4 },
-      { reason: 'Switched to competitor', count: 3 },
-      { reason: 'Business closed', count: 2 },
-    ],
-    churnByPlan: [
-      { planName: 'Starter', count: 15 },
-      { planName: 'Professional', count: 9 },
-      { planName: 'Enterprise', count: 4 },
-    ],
-    atRiskAccounts: [
-      { name: 'TechSolve India', email: 'admin@techsolve.in', plan: 'Starter', risk: 'high' },
-      { name: 'GreenField Analytics', email: 'contact@greenfield.in', plan: 'Professional', risk: 'high' },
-      { name: 'Pinnacle Corp', email: 'it@pinnacle.in', plan: 'Enterprise', risk: 'medium' },
-      { name: 'Sapphire Solutions', email: 'ops@sapphire.in', plan: 'Starter', risk: 'medium' },
-      { name: 'Velox Logistics', email: 'support@velox.in', plan: 'Professional', risk: 'low' },
-    ],
+    totalChurned: churned.length,
+    voluntaryChurn,
+    involuntaryChurn,
+    // No reason-tracking exists anywhere in this schema (no cancellation-reason
+    // field) -- reporting an honest empty list instead of inventing reasons.
+    churnByReason: [],
+    churnByPlan,
+    atRiskAccounts,
   }
 }
 
-export function getRevenueForecast(): RevenueForecast {
-  const currentMrr = 1850000
-  const growthRate = 8.5
+export async function getRevenueForecast(metrics?: RevenueMetrics): Promise<RevenueForecast> {
+  metrics ??= await getRevenueMetrics()
+  const growthRate = metrics.mrrChange
+  const confidence: RevenueForecast["confidence"] = metrics.activeSubscriptions >= 20 ? "high" : metrics.activeSubscriptions >= 5 ? "medium" : "low"
+
   return {
-    currentMrr,
-    forecastNextMonth: Math.round(currentMrr * (1 + growthRate / 100 / 12)),
-    forecastNextQuarter: Math.round(currentMrr * (1 + growthRate / 100 / 4)),
-    forecastNextYear: Math.round(currentMrr * (1 + growthRate / 100)),
-    confidence: 'medium',
+    currentMrr: metrics.mrr,
+    forecastNextMonth: Math.round(metrics.mrr * (1 + growthRate / 100 / 12)),
+    forecastNextQuarter: Math.round(metrics.mrr * (1 + growthRate / 100 / 4)),
+    forecastNextYear: Math.round(metrics.mrr * (1 + growthRate / 100)),
+    confidence,
     growthRate,
   }
 }
 
-export function getMonthlyMrrHistory(months: number = 12): { month: string; mrr: number }[] {
-  return generateMonthlyTrend(months).map(({ month, mrr }) => ({ month, mrr }))
+export async function getMonthlyMrrHistory(): Promise<{ month: string; mrr: number }[]> {
+  const metrics = await getRevenueMetrics()
+  return metrics.monthlyTrend.map(({ month, mrr }) => ({ month, mrr }))
 }
