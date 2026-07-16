@@ -266,7 +266,7 @@ export default function OperationsPage() {
 
             <TabsContent value="split" className="mt-4">
               <div className="h-[60vh]">
-                <SplitView document={selectedDoc} />
+                <SplitView document={selectedDoc} onSelectDocument={handleSelectDoc} />
               </div>
             </TabsContent>
 

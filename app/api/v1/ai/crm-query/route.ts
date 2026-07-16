@@ -38,7 +38,7 @@ async function respond(payload: unknown) {
 async function groundedText(prompt: string, facts: string): Promise<string> {
   const result = await generateText({
     model: DEFAULT_CHAT_MODEL,
-    system: `${BASE_SYSTEM_PROMPT}\nYou answer strictly from the real data provided. Never invent deals, contacts, or numbers that are not in the data. If the data is empty, say so plainly rather than making something up.`,
+    system: `${BASE_SYSTEM_PROMPT}\nYou answer strictly from the real data provided. Never invent deals, contacts, or numbers that are not in the data. If the data is empty, say so plainly rather than making something up. If the user's message is small talk or unrelated to the CRM data, respond briefly and naturally instead of reporting on the data.`,
     prompt: `${prompt}\n\nReal data:\n${facts}`,
     temperature: 0.4,
     maxOutputTokens: 1500,
@@ -146,6 +146,11 @@ export async function POST(request: Request) {
         facts,
       )
       return NextResponse.json({ response: text })
+    }
+
+    // ---- Small talk / greetings: respond naturally, don't force a pipeline dump ----
+    if (/^\s*(hi|hey|hello|yo|sup|good\s*(morning|afternoon|evening)|thanks|thank you|thx)[\s!.,]*$/i.test(q)) {
+      return NextResponse.json({ response: "Hi! Ask me anything about your CRM data — for example \"which deals close this month?\", \"what's my pipeline value?\", or \"show me conversion by stage.\"" })
     }
 
     // ---- Fallback: ask-your-CRM free-form question ----

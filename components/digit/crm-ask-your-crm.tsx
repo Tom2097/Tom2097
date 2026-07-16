@@ -80,12 +80,12 @@ export function CrmAskYourCrm() {
                     <Bot className="h-3 w-3 text-primary" />
                   </div>
                 )}
-                <div className={`max-w-[85%] ${msg.role === "user" ? "order-first" : ""}`}>
-                  <div className={`p-2.5 rounded-lg text-sm whitespace-pre-wrap ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                <div className={`max-w-[85%] min-w-0 ${msg.role === "user" ? "order-first" : ""}`}>
+                  <div className={`p-2.5 rounded-lg text-sm whitespace-pre-wrap break-words ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                     {msg.content}
                   </div>
                   {msg.chart && (
-                    <div className="mt-2 p-2 rounded-lg border border-border/50 bg-card">
+                    <div className="mt-2 p-2 rounded-lg border border-border/50 bg-card min-w-0">
                       <div className="h-[200px]">
                         <LiveChart data={msg.chart.data} dataKey={msg.chart.dataKey} type={msg.chart.type} height={200} color="hsl(var(--chart-2))" />
                       </div>

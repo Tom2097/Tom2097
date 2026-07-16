@@ -75,7 +75,7 @@ export function OperationalReports() {
       const data = await response.json()
       
       if (response.ok) {
-        setReports(data)
+        setReports(data.reports ?? [])
       } else {
         toast.error(data.error || 'Failed to load reports')
       }
@@ -105,7 +105,16 @@ export function OperationalReports() {
       const response = await fetch('/api/v1/operations/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newReport)
+        body: JSON.stringify({
+          name: newReport.name,
+          description: newReport.description,
+          type: newReport.type,
+          config: {
+            data_source: newReport.data_source,
+            visualization_type: newReport.visualization_type,
+            filters: newReport.filters,
+          },
+        })
       })
       
       const result = await response.json()
@@ -144,14 +153,7 @@ export function OperationalReports() {
       if (response.ok) {
         toast.success('Report generated successfully')
         fetchReports()
-        
-        // Fetch the generated report data
-        const dataResponse = await fetch(`/api/v1/operations/reports/${reportId}/data`)
-        const dataResult = await dataResponse.json()
-        
-        if (dataResponse.ok) {
-          setReportData(dataResult)
-        }
+        setReportData(result.data ?? null)
       } else {
         toast.error(result.error || 'Failed to generate report')
       }

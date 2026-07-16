@@ -3,7 +3,7 @@ import { generateObject } from "ai"
 import { z } from "zod"
 import { extractTenantContext } from "@/lib/multitenant/context.server"
 import { checkTenantRateLimit } from "@/lib/multitenant/rate-limit"
-import { mistralFastModel } from "@/lib/ai/mistral"
+import { mistralModel } from "@/lib/ai/mistral"
 
 const EnrichmentSchema = z.object({
   company_name: z.string(),
@@ -36,9 +36,9 @@ export async function POST(request: Request) {
 
   try {
     const { object } = await generateObject({
-      model: mistralFastModel,
+      model: mistralModel,
       schema: EnrichmentSchema,
-      prompt: `Research and infer a plausible business profile for this company/domain based on its name, industry conventions, and general public knowledge. If you don't have specific knowledge of this exact company, make a reasonable, clearly-labeled estimate rather than inventing overly specific false facts (e.g. prefer a size/revenue range over a fabricated exact figure).\n\nInput: "${query}"\nDomain: ${domain ?? "unknown"}`,
+      prompt: `Research and infer a plausible business profile for this company/domain based on its name, industry conventions, and general public knowledge. If you don't have specific knowledge of this exact company, make a reasonable, clearly-labeled estimate rather than inventing overly specific false facts (e.g. prefer a size/revenue range over a fabricated exact figure).\n\nInput: "${query}"\nDomain: ${domain ?? "unknown"}\n\nRespond with a single flat JSON object using exactly these top-level keys and nothing else: company_name, domain, industry, size, revenue, location, description, recent_news. Do not nest the data under any wrapper key (e.g. no "company_profile" object) and do not add extra keys.`,
     })
 
     return NextResponse.json({ ...object, ai_generated: true })
