@@ -163,7 +163,6 @@ export default function MaterializedViewsPage() {
       const data = await res.json()
       if (!res.ok) { toast.error(data.error ?? t('materializedViews.page.errors.invalidateFailed')); return }
       toast.success(data.message ?? t('materializedViews.page.errors.invalidateFailed'))
-      if (cache) setCache({ ...cache, stale: true })
      } catch (error) {
        toast.error(error instanceof Error ? error.message : t('materializedViews.page.errors.invalidateFailed'))
      }

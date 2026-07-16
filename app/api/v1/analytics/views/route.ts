@@ -1,13 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
+import { getAuthenticatedUser, requirePlatformAdmin, handleAuthError } from '@/lib/auth/server-auth'
 import { getMaterializedViews, refreshView, refreshAllViews } from '@/lib/analytics/materialized-views'
 
+// These views aggregate digit_scores across every organization, so refreshing
+// or listing them is a platform-wide operation, not a per-tenant one.
 export async function GET() {
   try {
     const user = await getAuthenticatedUser()
-    await getOrganizationId(user.id)
+    await requirePlatformAdmin(user.id)
 
-    const views = getMaterializedViews()
+    const views = await getMaterializedViews()
     return NextResponse.json({ success: true, views })
   } catch (error) {
     return handleAuthError(error as Error)
@@ -17,12 +19,12 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
-    await getOrganizationId(user.id)
+    await requirePlatformAdmin(user.id)
 
     const { name } = await request.json()
 
     if (name === 'all') {
-      const results = refreshAllViews()
+      const results = await refreshAllViews()
       return NextResponse.json({ success: true, results })
     }
 
@@ -33,7 +35,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const result = refreshView(name)
+    const result = await refreshView(name)
     return NextResponse.json({ success: true, result })
   } catch (error) {
     return handleAuthError(error as Error)

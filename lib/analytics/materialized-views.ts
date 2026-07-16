@@ -1,9 +1,12 @@
+import "server-only"
+import { createServiceClient } from "@/lib/supabase/service"
+
 export interface MaterializedView {
   name: string
   query: string
   lastRefreshed: string | null
   rowCount: number
-  status: 'stale' | 'refreshing' | 'fresh'
+  status: "stale" | "refreshing" | "fresh"
   refreshInterval: number
 }
 
@@ -23,101 +26,105 @@ export interface ScoringCache {
   stale: boolean
 }
 
-const VIEW_DEFINITIONS: MaterializedView[] = [
-  {
-    name: 'digit_scores_summary',
-    query: `SELECT category, AVG(score) as avg_score, COUNT(*) as count
+const VIEW_QUERIES: Record<string, string> = {
+  digit_scores_summary: `SELECT organization_id, metric, AVG(score) AS avg_score, COUNT(*) AS row_count
 FROM digit_scores
-GROUP BY category`,
-    lastRefreshed: '2026-07-05T22:00:00Z',
-    rowCount: 1240,
-    status: 'fresh',
-    refreshInterval: 60,
-  },
-  {
-    name: 'workspace_benchmarks',
-    query: `SELECT workspace_id, PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY score) as median_score
+GROUP BY organization_id, metric`,
+  organization_score_benchmarks: `SELECT organization_id,
+  PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY overall_score) AS median_overall_score,
+  AVG(overall_score) AS avg_overall_score
 FROM digit_scores
-GROUP BY workspace_id`,
-    lastRefreshed: '2026-07-05T06:00:00Z',
-    rowCount: 89,
-    status: 'stale',
-    refreshInterval: 240,
-  },
-  {
-    name: 'driver_impact',
-    query: `SELECT driver_id, AVG(impact_score) as avg_impact, COUNT(DISTINCT workspace_id) as affected_workspaces
-FROM driver_events
-GROUP BY driver_id`,
-    lastRefreshed: '2026-07-06T00:00:00Z',
-    rowCount: 456,
-    status: 'fresh',
-    refreshInterval: 120,
-  },
-  {
-    name: 'cohort_percentiles',
-    query: `SELECT cohort, PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY score) as p25,
-PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY score) as p50,
-PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY score) as p75
-FROM digit_scores
-GROUP BY cohort`,
-    lastRefreshed: null,
-    rowCount: 0,
-    status: 'stale',
-    refreshInterval: 360,
-  },
-]
-
-const SCORING_CACHES = new Map<string, ScoringCache>()
-
-export function getMaterializedViews(): MaterializedView[] {
-  return VIEW_DEFINITIONS
+GROUP BY organization_id`,
 }
 
-export function refreshView(name: string): ViewRefreshResult {
-  const view = VIEW_DEFINITIONS.find((v) => v.name === name)
-  if (!view) throw new Error(`View "${name}" not found`)
-  view.status = 'refreshing'
+function isStale(lastRefreshedAt: string | null, refreshIntervalMinutes: number): boolean {
+  if (!lastRefreshedAt) return true
+  return Date.now() - new Date(lastRefreshedAt).getTime() > refreshIntervalMinutes * 60_000
+}
+
+export async function getMaterializedViews(): Promise<MaterializedView[]> {
+  const db = createServiceClient()
+  const { data: registry } = await db.from("materialized_view_registry").select("*")
+
+  const views = await Promise.all(
+    (registry ?? []).map(async (row) => {
+      const { data: rowCount } = await db.rpc("count_materialized_view_rows", { view_name: row.name })
+      return {
+        name: row.name,
+        query: VIEW_QUERIES[row.name] ?? "",
+        lastRefreshed: row.last_refreshed_at,
+        rowCount: Number(rowCount ?? 0),
+        status: (isStale(row.last_refreshed_at, row.refresh_interval_minutes) ? "stale" : "fresh") as MaterializedView["status"],
+        refreshInterval: row.refresh_interval_minutes,
+      }
+    }),
+  )
+  return views
+}
+
+export async function refreshView(name: string): Promise<ViewRefreshResult> {
+  const db = createServiceClient()
+  const { data: registryRow } = await db.from("materialized_view_registry").select("name").eq("name", name).maybeSingle()
+  if (!registryRow) throw new Error(`View "${name}" not found`)
+
   const start = Date.now()
-  const rowsInserted = Math.floor(Math.random() * 500) + view.rowCount
-  const durationMs = Date.now() - start + Math.floor(Math.random() * 200) + 50
-  view.status = 'fresh'
-  view.lastRefreshed = new Date().toISOString()
-  view.rowCount = rowsInserted
-  return { name, rowsInserted, durationMs, success: true }
+  const { error } = await db.rpc("refresh_known_materialized_view", { view_name: name })
+  if (error) return { name, rowsInserted: 0, durationMs: Date.now() - start, success: false }
+
+  const { data: rowCount } = await db.rpc("count_materialized_view_rows", { view_name: name })
+  await db.from("materialized_view_registry").update({ last_refreshed_at: new Date().toISOString() }).eq("name", name)
+
+  return { name, rowsInserted: Number(rowCount ?? 0), durationMs: Date.now() - start, success: true }
 }
 
-export function refreshAllViews(): ViewRefreshResult[] {
-  return VIEW_DEFINITIONS.map((v) => refreshView(v.name))
-}
-
-export function getScoringCache(workspaceId: string): ScoringCache {
-  const existing = SCORING_CACHES.get(workspaceId)
-  if (existing) return existing
-
-  const cache: ScoringCache = {
-    workspaceId,
-    totalScore: Math.floor(Math.random() * 400) + 600,
-    categoryScores: {
-      operational: Math.floor(Math.random() * 200) + 400,
-      financial: Math.floor(Math.random() * 150) + 300,
-      compliance: Math.floor(Math.random() * 100) + 200,
-      innovation: Math.floor(Math.random() * 80) + 100,
-    },
-    benchmarks: {
-      percentile: Math.floor(Math.random() * 40) + 30,
-      peerAvg: Math.floor(Math.random() * 300) + 500,
-    },
-    lastCalculated: new Date().toISOString(),
-    stale: false,
+export async function refreshAllViews(): Promise<ViewRefreshResult[]> {
+  const db = createServiceClient()
+  const { data: registry } = await db.from("materialized_view_registry").select("name")
+  const results: ViewRefreshResult[] = []
+  for (const row of registry ?? []) {
+    results.push(await refreshView(row.name))
   }
-  SCORING_CACHES.set(workspaceId, cache)
-  return cache
+  return results
 }
 
-export function invalidateScoringCache(workspaceId: string): void {
-  const cache = SCORING_CACHES.get(workspaceId)
-  if (cache) {
-    cache.stale = true
+/** Real, per-organization scoring derived from digit_scores + organization_score_benchmarks. */
+export async function getScoringCache(organizationId: string): Promise<ScoringCache | null> {
+  const db = createServiceClient()
+
+  const { data: latest } = await db
+    .from("digit_scores")
+    .select("overall_score, compliance_score, resources_score, performance_score, created_at")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (!latest) return null
+
+  const { data: benchmark } = await db
+    .from("organization_score_benchmarks")
+    .select("median_overall_score, avg_overall_score")
+    .eq("organization_id", organizationId)
+    .maybeSingle()
+
+  const { data: allBenchmarks } = await db.from("organization_score_benchmarks").select("organization_id, avg_overall_score")
+  const rows = allBenchmarks ?? []
+  const sorted = rows.map((r) => Number(r.avg_overall_score ?? 0)).sort((a, b) => a - b)
+  const myAvg = Number(benchmark?.avg_overall_score ?? latest.overall_score ?? 0)
+  const rank = sorted.findIndex((v) => v >= myAvg)
+  const percentile = sorted.length > 0 ? Math.round(((rank === -1 ? sorted.length : rank) / sorted.length) * 100) : 0
+  const peerAvg = sorted.length > 0 ? Math.round(sorted.reduce((s, v) => s + v, 0) / sorted.length) : 0
+
+  return {
+    workspaceId: organizationId,
+    totalScore: Math.round(Number(latest.overall_score ?? 0)),
+    categoryScores: {
+      compliance: Math.round(Number(latest.compliance_score ?? 0)),
+      resources: Math.round(Number(latest.resources_score ?? 0)),
+      performance: Math.round(Number(latest.performance_score ?? 0)),
+    },
+    benchmarks: { percentile, peerAvg },
+    lastCalculated: latest.created_at,
+    stale: false,
   }
 }

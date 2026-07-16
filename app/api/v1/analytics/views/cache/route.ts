@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
-import { getScoringCache, invalidateScoringCache } from '@/lib/analytics/materialized-views'
+import { getAuthenticatedUser, requirePlatformAdmin, handleAuthError } from '@/lib/auth/server-auth'
+import { getScoringCache } from '@/lib/analytics/materialized-views'
 
+// Looking up another organization's score by ID is a cross-tenant read,
+// so this is platform-admin only, same as the views list/refresh above.
 export async function GET(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
-    await getOrganizationId(user.id)
+    await requirePlatformAdmin(user.id)
     const { searchParams } = new URL(request.url)
     const workspaceId = searchParams.get('workspaceId')
 
@@ -16,7 +18,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const cache = getScoringCache(workspaceId)
+    const cache = await getScoringCache(workspaceId)
+    if (!cache) {
+      return NextResponse.json({ error: 'No scores found for that organization' }, { status: 404 })
+    }
     return NextResponse.json({ success: true, cache })
   } catch (error) {
     return handleAuthError(error as Error)
@@ -26,7 +31,7 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
-    await getOrganizationId(user.id)
+    await requirePlatformAdmin(user.id)
     const { searchParams } = new URL(request.url)
     const workspaceId = searchParams.get('workspaceId')
 
@@ -37,8 +42,9 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    invalidateScoringCache(workspaceId)
-    return NextResponse.json({ success: true, message: `Cache invalidated for workspace ${workspaceId}` })
+    // Scores are now computed live from digit_scores on every lookup --
+    // there is no cache layer left to invalidate.
+    return NextResponse.json({ success: true, message: 'Scores are computed live; there is no cache to invalidate.' })
   } catch (error) {
     return handleAuthError(error as Error)
   }
