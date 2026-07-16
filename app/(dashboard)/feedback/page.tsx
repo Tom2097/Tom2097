@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog"
 import { Loader2, RefreshCw, MessageSquare, Smile, MessageSquarePlus, ThumbsUp, AlertTriangle, Brain, Search, Sparkles } from "lucide-react"
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer, Cell } from "recharts"
 import { ChartContainer } from "@/components/digit/live-chart"
 
 // Feedback types -- must match lib/feedback/types.ts's real enums (and the
@@ -200,21 +200,19 @@ export default function FeedbackPage() {
     }
   }
 
-  const filteredItems = feedback
   const total = feedback.length
 
-  // Sample chart data
+  const rated = feedback.filter((f) => f.rating != null)
   const sentimentData = [
-    { name: t("feedback.page.positive"), value: metrics.sentimentScore, sentiment: 1 },
-    { name: t("feedback.page.neutral"), value: 100 - metrics.sentimentScore - 10, sentiment: 0 },
-    { name: t("feedback.page.negative"), value: 10, sentiment: -1 }
+    { name: t("feedback.page.positive"), value: rated.filter((f) => (f.rating ?? 0) >= 4).length },
+    { name: t("feedback.page.neutral"), value: rated.filter((f) => f.rating === 3).length },
+    { name: t("feedback.page.negative"), value: rated.filter((f) => (f.rating ?? 0) <= 2).length },
   ]
 
-  const categorizationData = [
-    { name: t("feedback.page.bugReports"), value: 45 },
-    { name: t("feedback.page.featureRequests"), value: 30 },
-    { name: t("feedback.page.general"), value: 25 }
-  ]
+  const categorizationData = FEEDBACK_TYPES.map((type) => ({
+    name: t(`feedback.page.${type}`),
+    value: feedback.filter((f) => f.type === type).length,
+  })).filter((d) => d.value > 0)
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -372,6 +370,37 @@ export default function FeedbackPage() {
           </CardContent>
         </Card>
       </div>
+
+      {feedback.length > 0 && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <ChartContainer title={t("feedback.page.sentimentAnalysis")}>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={sentimentData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis dataKey="name" fontSize={12} />
+                <YAxis fontSize={12} allowDecimals={false} />
+                <ChartTooltip />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {sentimentData.map((entry, i) => (
+                    <Cell key={i} fill={["#22c55e", "#94a3b8", "#ef4444"][i]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+          <ChartContainer title={t("feedback.page.categorization")}>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={categorizationData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis dataKey="name" fontSize={12} />
+                <YAxis fontSize={12} allowDecimals={false} />
+                <ChartTooltip />
+                <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
