@@ -1999,6 +1999,7 @@
       "no_team_members": "कोई टीम सदस्य नहीं",
       "no_workspace_configuration": "कोई कार्यस्थान कॉन्फ़िगरेशन नहीं",
       "middot": "&middot;",
+      "no_activity_yet": "अभी तक कोई गतिविधि दर्ज नहीं की गई",
       "this_will_suspend_the_tenant_and_mark_their": "यह किरायेदार को निलंबित कर देगा और उनकी सदस्यता को पिछले देय के रूप में चिह्नित करेगा। उपयोगकर्ता पहुंच खो देंगे.",
       "reason": "कारण",
       "send_an_email_notification_to_all_tenant_admins": "सभी किरायेदार व्यवस्थापकों को एक ईमेल सूचना भेजें।",

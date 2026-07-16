@@ -1999,6 +1999,7 @@
       "no_team_members": "No team members",
       "no_workspace_configuration": "No workspace configuration",
       "middot": "&middot;",
+      "no_activity_yet": "No activity recorded yet",
       "this_will_suspend_the_tenant_and_mark_their": "This will suspend the tenant and mark their subscription as past due. Users will lose access.",
       "reason": "Reason",
       "send_an_email_notification_to_all_tenant_admins": "Send an email notification to all tenant admins.",

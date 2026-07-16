@@ -1999,6 +1999,7 @@
       "no_team_members": "ਕੋਈ ਟੀਮ ਮੈਂਬਰ ਨਹੀਂ",
       "no_workspace_configuration": "ਕੋਈ ਵਰਕਸਪੇਸ ਸੰਰਚਨਾ ਨਹੀਂ ਹੈ",
       "middot": "&middot;",
+      "no_activity_yet": "ਹਾਲੇ ਤੱਕ ਕੋਈ ਗਤੀਵਿਧੀ ਦਰਜ ਨਹੀਂ ਕੀਤੀ ਗਈ",
       "this_will_suspend_the_tenant_and_mark_their": "ਇਹ ਕਿਰਾਏਦਾਰ ਨੂੰ ਮੁਅੱਤਲ ਕਰ ਦੇਵੇਗਾ ਅਤੇ ਉਸਦੀ ਗਾਹਕੀ ਨੂੰ ਪਿਛਲੇ ਬਕਾਇਆ ਵਜੋਂ ਚਿੰਨ੍ਹਿਤ ਕਰੇਗਾ। ਉਪਭੋਗਤਾ ਪਹੁੰਚ ਗੁਆ ਦੇਣਗੇ।",
       "reason": "ਕਾਰਨ",
       "send_an_email_notification_to_all_tenant_admins": "ਸਾਰੇ ਕਿਰਾਏਦਾਰ ਪ੍ਰਸ਼ਾਸਕਾਂ ਨੂੰ ਇੱਕ ਈਮੇਲ ਸੂਚਨਾ ਭੇਜੋ।",

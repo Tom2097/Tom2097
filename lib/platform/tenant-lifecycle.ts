@@ -99,6 +99,37 @@ export async function deprovisionTenant(tenantId: string): Promise<{ success: bo
   return { success: true }
 }
 
+function describeAuditEntry(entry: { action: string; table_name: string; new_data: Record<string, unknown> | null }): string {
+  const table = entry.table_name.replace(/_/g, " ")
+  if (entry.action === "INSERT") return `Created ${table}`
+  if (entry.action === "DELETE") return `Deleted ${table}`
+  const status = entry.new_data?.status
+  if (status) return `${table} updated: status → ${status}`
+  return `${table} updated`
+}
+
+async function getTenantActivity(supabase: ReturnType<typeof createServiceClient>, tenantId: string, limit = 20) {
+  const { data: entries } = await supabase
+    .from("audit_log_entries")
+    .select("action, table_name, new_data, changed_by, changed_at")
+    .eq("organization_id", tenantId)
+    .order("changed_at", { ascending: false })
+    .limit(limit)
+
+  const rows = entries ?? []
+  const actorIds = [...new Set(rows.map((r) => r.changed_by).filter(Boolean))]
+  const { data: actors } = actorIds.length > 0
+    ? await supabase.from("profiles").select("id, email, full_name").in("id", actorIds)
+    : { data: [] as { id: string; email: string; full_name: string | null }[] }
+  const actorById = new Map((actors ?? []).map((a) => [a.id, a.full_name || a.email]))
+
+  return rows.map((r) => ({
+    action: describeAuditEntry(r),
+    date: r.changed_at,
+    user: (r.changed_by && actorById.get(r.changed_by)) || "System",
+  }))
+}
+
 export async function getTenantDetail(tenantId: string): Promise<Record<string, unknown> | null> {
   const supabase = await createServiceClient()
   const { data } = await supabase
@@ -110,5 +141,8 @@ export async function getTenantDetail(tenantId: string): Promise<Record<string, 
     `)
     .eq("id", tenantId)
     .single()
-  return data as Record<string, unknown> | null
+  if (!data) return null
+
+  const activity = await getTenantActivity(supabase, tenantId)
+  return { ...data, activity } as Record<string, unknown>
 }

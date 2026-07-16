@@ -70,14 +70,8 @@ interface TenantDetail {
     created_at: string
   }>
   workspace_config?: Record<string, unknown>
+  activity?: Array<{ action: string; date: string; user: string }>
 }
-
-const activityTimeline = [
-  { action: "Tenant created", date: new Date(Date.now() - 86400000 * 30).toISOString(), user: "System" },
-  { action: "Subscription upgraded to Pro", date: new Date(Date.now() - 86400000 * 20).toISOString(), user: "Admin" },
-  { action: "User invited: john@example.com", date: new Date(Date.now() - 86400000 * 15).toISOString(), user: "Admin" },
-  { action: "Payment processed - $299.00", date: new Date(Date.now() - 86400000 * 5).toISOString(), user: "Stripe" },
-]
 
 export default function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { t } = useI18n()
@@ -313,21 +307,25 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {activityTimeline.map((event, i) => (
-              <div key={i} className="flex items-start gap-4">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 mt-0.5">
-                  <Clock className="h-4 w-4 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{event.action}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{event.user}</span>
-                    <span>{t("admin.tenantDetail.middot")}</span>
-                    <span>{new Date(event.date).toLocaleString()}</span>
+            {!tenant.activity || tenant.activity.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("admin.tenantDetail.no_activity_yet")}</p>
+            ) : (
+              tenant.activity.map((event, i) => (
+                <div key={i} className="flex items-start gap-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 mt-0.5">
+                    <Clock className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{event.action}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{event.user}</span>
+                      <span>{t("admin.tenantDetail.middot")}</span>
+                      <span>{new Date(event.date).toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
