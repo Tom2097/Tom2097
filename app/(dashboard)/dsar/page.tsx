@@ -15,8 +15,8 @@ interface DsarRequest {
   id: string
   organization_id: string
   requester_email: string
-  request_type: "export" | "delete" | "rectify" | "restrict"
-  status: "pending" | "in_progress" | "completed" | "rejected"
+  request_type: "access" | "erasure" | "rectification" | "portability" | "restriction"
+  status: "open" | "in_progress" | "awaiting_verification" | "completed" | "rejected"
   created_at: string
   completed_at: string | null
 }
@@ -157,8 +157,9 @@ export default function DsarPage() {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
-      pending: "secondary",
+      open: "secondary",
       in_progress: "default",
+      awaiting_verification: "secondary",
       completed: "outline",
       rejected: "destructive",
     }
@@ -167,10 +168,11 @@ export default function DsarPage() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "export": return <Download className="h-4 w-4" />
-      case "delete": return <Trash2 className="h-4 w-4" />
-      case "rectify": return <FileText className="h-4 w-4" />
-      case "restrict": return <ShieldCheck className="h-4 w-4" />
+      case "access": return <ShieldCheck className="h-4 w-4" />
+      case "portability": return <Download className="h-4 w-4" />
+      case "erasure": return <Trash2 className="h-4 w-4" />
+      case "rectification": return <FileText className="h-4 w-4" />
+      case "restriction": return <ShieldCheck className="h-4 w-4" />
       default: return <FileText className="h-4 w-4" />
     }
   }
@@ -351,7 +353,7 @@ export default function DsarPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="secondary" onClick={() => createRequest("rectify")} className="w-full">
+                <Button variant="secondary" onClick={() => createRequest("rectification")} className="w-full">
                   {t('dsar.page.requestRectification')}
                 </Button>
               </CardContent>
@@ -368,7 +370,7 @@ export default function DsarPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="secondary" onClick={() => createRequest("restrict")} className="w-full">
+                <Button variant="secondary" onClick={() => createRequest("restriction")} className="w-full">
                   {t('dsar.page.requestRestriction')}
                 </Button>
               </CardContent>
