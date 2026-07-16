@@ -6,7 +6,7 @@ WORKDIR /app
 
 # ---- deps: install with full lockfile, cached across builds ----
 FROM base AS deps
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # ---- build: compile the standalone Next.js output ----
