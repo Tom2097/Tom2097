@@ -8,11 +8,12 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bot, Send, Loader2, User, Sparkles } from "lucide-react"
+import { toast } from "sonner"
 
 interface Message {
   role: "user" | "assistant"
   content: string
-  action?: { type: string; label: string }
+  action?: { type: string; label: string; details?: string }
 }
 
 export function OperationalCopilot() {
@@ -21,6 +22,8 @@ export function OperationalCopilot() {
   ])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
+  const [executingAction, setExecutingAction] = useState<number | null>(null)
+  const [doneActions, setDoneActions] = useState<Set<number>>(new Set())
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -44,7 +47,7 @@ export function OperationalCopilot() {
       setMessages((prev) => [...prev, {
         role: "assistant",
         content: data.response ?? "I couldn't process that. Could you rephrase?",
-        action: data.action ? { type: data.action.type, label: data.action.label } : undefined,
+        action: data.action ? { type: data.action.type, label: data.action.label, details: data.action.details } : undefined,
       }])
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I encountered an error. Please try again." }])
@@ -82,14 +85,35 @@ export function OperationalCopilot() {
                     {msg.content}
                   </div>
                   {msg.action && (
-                    <Button size="sm" variant="outline" className="mt-1 text-xs h-7" onClick={() => {
-                      fetch("/api/v1/operations/execute-action", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ action: msg.action }),
-                      }).catch(() => {})
-                    }}>
-                      <Sparkles className="h-3 w-3 mr-1" />{msg.action.label}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-1 text-xs h-7"
+                      disabled={executingAction === i || doneActions.has(i)}
+                      onClick={async () => {
+                        setExecutingAction(i)
+                        try {
+                          const res = await fetch("/api/v1/operations/execute-action", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ action: msg.action }),
+                          })
+                          const data = await res.json()
+                          if (res.ok) {
+                            toast.success(`${msg.action!.label} done`)
+                            setDoneActions((prev) => new Set(prev).add(i))
+                          } else {
+                            toast.error(data.error || "Action failed")
+                          }
+                        } catch {
+                          toast.error("Action failed")
+                        } finally {
+                          setExecutingAction(null)
+                        }
+                      }}
+                    >
+                      {executingAction === i ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                      {doneActions.has(i) ? "Done" : msg.action.label}
                     </Button>
                   )}
                 </div>

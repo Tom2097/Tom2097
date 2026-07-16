@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Pill, Wind, Truck, FlaskConical, FileText, Activity, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 const verticalRecipes = [
   {
@@ -76,15 +77,25 @@ export function VerticalRecipes() {
                 <CardDescription className="text-xs mt-1">{recipe.description}</CardDescription>
               </CardHeader>
               <CardContent className="p-4 pt-2">
-                <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => {
+                <Button variant="ghost" size="sm" className="text-xs h-7" onClick={async () => {
                   setRunningRecipe(recipe.name)
-                  setTimeout(() => {
-                    fetch("/api/v1/operations/run-recipe", {
+                  try {
+                    const res = await fetch("/api/v1/operations/run-recipe", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ recipe: recipe.name, vertical: current.vertical }),
-                    }).catch(() => {}).finally(() => setRunningRecipe(null))
-                  }, 500)
+                    })
+                    const data = await res.json()
+                    if (res.ok) {
+                      toast.success(`${recipe.name} queued`)
+                    } else {
+                      toast.error(data.error || "Failed to queue recipe")
+                    }
+                  } catch {
+                    toast.error("Failed to queue recipe")
+                  } finally {
+                    setRunningRecipe(null)
+                  }
                 }} disabled={runningRecipe === recipe.name}>
                   {runningRecipe === recipe.name ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Activity className="h-3 w-3 mr-1" />}
                   {runningRecipe === recipe.name ? "Running..." : "Run Recipe"}

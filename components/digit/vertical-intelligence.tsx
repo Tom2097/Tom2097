@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Beaker, FileSearch, AlertTriangle, TrendingUp } from "lucide-react"
+import { Beaker, FileSearch, AlertTriangle, TrendingUp, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 const extractors = {
   pharma: [
@@ -30,7 +31,30 @@ const extractors = {
 
 export function VerticalIntelligence() {
   const [vertical, setVertical] = useState("pharma")
+  const [testing, setTesting] = useState<string | null>(null)
   const currentExtractors = extractors[vertical as keyof typeof extractors]
+
+  const handleTest = async (ext: { name: string; fields: string }) => {
+    setTesting(ext.name)
+    try {
+      const res = await fetch("/api/v1/operations/test-extractor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ extractor: ext.name, vertical, fields: ext.fields }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error || "Test failed")
+        return
+      }
+      const count = data.results?.length ?? 0
+      toast.success(count > 0 ? `Extracted ${count} field${count === 1 ? "" : "s"} from sample document` : "No fields extracted from sample")
+    } catch {
+      toast.error("Test failed")
+    } finally {
+      setTesting(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -55,16 +79,10 @@ export function VerticalIntelligence() {
                   <CardContent className="p-4 pt-2">
                     <p className="text-xs text-muted-foreground mb-2">Extracts: {ext.fields}</p>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => {
-                        fetch("/api/v1/operations/test-extractor", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ extractor: ext.name, vertical: key }),
-                        }).catch(() => {})
-                      }}>Test</Button>
-                      <Button size="sm" className="text-xs h-7" onClick={() => {
-                        window.location.href = `/operations/configure?extractor=${encodeURIComponent(ext.name)}`
-                      }}>Configure</Button>
+                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => handleTest(ext)} disabled={testing === ext.name}>
+                        {testing === ext.name ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
+                        Test
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
