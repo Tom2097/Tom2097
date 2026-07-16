@@ -176,20 +176,22 @@ async function simulateRegistryLookup(
 /**
  * Verify domain ownership by checking if the company name appears on the website
  */
-async function verifyDomainOwnership(companyName: string | undefined, website: string | undefined): Promise<boolean> {
+export async function verifyDomainOwnership(companyName: string | undefined, website: string | undefined): Promise<boolean> {
   if (!companyName || !website) return false
 
   try {
-    // In a real implementation, this would fetch the website and check for company name
-    // For now, we'll simulate the behavior
-    
-    // Extract domain from website URL
-    const domain = new URL(website).hostname
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const companyNameForCheck = companyName // Used in real implementation
-    
-    // Simulate 80% chance of verification for demo purposes
-    return Math.random() > 0.2
+    const url = website.startsWith("http") ? website : `https://${website}`
+    new URL(url) // throws on malformed input before we fetch
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5000)
+    const res = await fetch(url, { signal: controller.signal, redirect: "follow" })
+    clearTimeout(timeout)
+    if (!res.ok) return false
+
+    const html = (await res.text()).toLowerCase()
+    const normalizedName = companyName.toLowerCase().replace(/\s+(inc|llc|ltd|pvt|private|limited|corp|corporation)\.?$/i, "").trim()
+    return normalizedName.length > 0 && html.includes(normalizedName)
   } catch {
     return false
   }

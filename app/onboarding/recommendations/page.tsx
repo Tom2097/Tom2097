@@ -99,7 +99,11 @@ export default function RecommendationsPage() {
       ...prev,
       [moduleId]: isHelpful ? "helpful" : "not-helpful"
     }))
-    // In production, this would send feedback to the AI learning system
+    fetch("/api/v1/onboarding/recommendations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "feedback", moduleId, helpful: isHelpful }),
+    }).catch(() => {})
   }
 
   const handleContinue = () => {
@@ -110,9 +114,14 @@ export default function RecommendationsPage() {
   }
 
   const handleFinish = () => {
-    // Save selections and redirect to dashboard
     localStorage.setItem("digit_onboarding_complete", "true")
-    router.push("/")
+    fetch("/api/v1/onboarding/recommendations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "complete", selectedModules }),
+    }).catch(() => {}).finally(() => {
+      router.push("/")
+    })
   }
 
   if (isLoading || !analysisResult || !questionnaireData) {

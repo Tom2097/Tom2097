@@ -4,6 +4,7 @@ import { useI18n } from "@/components/providers/i18n-provider"
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { 
   Brain, 
   ArrowRight, 
@@ -686,12 +687,21 @@ export default function OnboardingPage() {
                         <Input value={data.verifiedDomain} onChange={(e) => updateData("verifiedDomain", e.target.value)} placeholder={t("onboarding.page.verifiedDomainPlaceholder")} className="bg-background/50" />
                         <Button type="button" variant="outline" onClick={async () => {
                           if (!data.verifiedDomain) return
-                          const res = await fetch("/api/v1/enterprise/verify-domain", {
-                            method: "POST", headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ domain: data.verifiedDomain }),
-                          })
-                          const result = await res.json()
-                          if (result.verified) updateData("verifiedDomain", data.verifiedDomain)
+                          try {
+                            const res = await fetch("/api/v1/enterprise/verify-domain", {
+                              method: "POST", headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ domain: data.verifiedDomain }),
+                            })
+                            const result = await res.json()
+                            if (result.verified) {
+                              updateData("verifiedDomain", data.verifiedDomain)
+                              toast.success("Domain verified")
+                            } else {
+                              toast.error(result.reason || "Domain could not be verified")
+                            }
+                          } catch {
+                            toast.error("Failed to verify domain")
+                          }
                         }}>{t("onboarding.page.verify")}</Button>
                       </div>
                     </div>
