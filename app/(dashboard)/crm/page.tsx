@@ -270,19 +270,6 @@ export default async function CRMPage() {
          )}
        </div>
 
-      {/* Smart CRM Intelligence Section */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="p-4 rounded-2xl border border-border/50 bg-card">
-          <CrmAiSdr />
-        </div>
-        <div className="p-4 rounded-2xl border border-border/50 bg-card">
-          <CrmNextBestAction />
-        </div>
-        <div className="p-4 rounded-2xl border border-border/50 bg-card">
-          <CrmDealHealthRadar />
-        </div>
-      </div>
-
       <div className="grid gap-4 lg:grid-cols-2">
         <CrmAskYourCrm />
         <CrmAutoProvision />
