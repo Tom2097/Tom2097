@@ -1,26 +1,16 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Upload, File, X, Trash2, CheckCircle2, AlertCircle, Loader2, Layers, Eye, Plus } from "lucide-react"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { Upload, File, X, Trash2, CheckCircle2, AlertCircle, Loader2, Layers, Eye } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import { useI18n } from "@/components/providers/i18n-provider"
-import {
-  processBatch,
-  getBatchStatus,
-  getBatchResults,
-  listBatches,
-  type BatchFile,
-  type BatchJob,
-  type BatchResult,
-} from "@/lib/bulk/processor"
+import type { BatchJob, BatchResult } from "@/lib/bulk/processor"
 
 const STATUS_BADGES: Record<string, string> = {
   pending: "bg-gray-500/20 text-gray-500 border-gray-500/30",
@@ -37,33 +27,41 @@ function formatSize(bytes: number): string {
 
 export default function BulkPage() {
   const { t } = useI18n()
-  const [batches, setBatches] = useState<BatchJob[]>(() => listBatches('default'))
-  const [addFileDialogOpen, setAddFileDialogOpen] = useState(false)
+  const [batches, setBatches] = useState<BatchJob[]>([])
   const [resultsDialogOpen, setResultsDialogOpen] = useState(false)
   const [selectedResults, setSelectedResults] = useState<BatchResult[]>([])
   const [selectedJob, setSelectedJob] = useState<BatchJob | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [files, setFiles] = useState<BatchFile[]>([])
+  const [files, setFiles] = useState<File[]>([])
   const [processing, setProcessing] = useState(false)
 
-  const [newFileName, setNewFileName] = useState("")
-  const [newFileSize, setNewFileSize] = useState("")
-  const [newFileType, setNewFileType] = useState("text/csv")
-
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const dropRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBatches(prev => prev.map(b => {
-        if (b.status === 'pending' || b.status === 'processing') {
-          const updated = getBatchStatus(b.id)
-          return updated || b
-        }
-        return b
-      }))
-    }, 500)
-    return () => clearInterval(interval)
+  const refreshBatches = useCallback(async () => {
+    try {
+      const res = await fetch("/api/v1/bulk")
+      if (!res.ok) return
+      const data = await res.json()
+      setBatches(data.batches ?? [])
+    } catch {
+      // Non-fatal -- list just keeps its last known values.
+    }
   }, [])
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    refreshBatches()
+    /* eslint-enable react-hooks/set-state-in-effect */
+    const interval = setInterval(refreshBatches, 3000)
+    return () => clearInterval(interval)
+  }, [refreshBatches])
+
+  const addFiles = (newFiles: File[]) => {
+    if (newFiles.length === 0) return
+    setFiles(prev => [...prev, ...newFiles])
+    toast.success(t('bulk.page.filesAdded', { count: newFiles.length }))
+  }
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -78,50 +76,60 @@ export default function BulkPage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    const droppedFiles = Array.from(e.dataTransfer.files)
-    const newFiles: BatchFile[] = droppedFiles.map(f => ({
-      name: f.name,
-      size: f.size,
-      type: f.type || 'application/octet-stream',
-    }))
-    setFiles(prev => [...prev, ...newFiles])
-    toast.success(t('bulk.page.filesAdded', { count: droppedFiles.length }))
-  }
-
-  const handleAddFile = () => {
-    if (!newFileName.trim() || !newFileSize.trim()) {
-      toast.error(t('bulk.page.errors.nameSizeRequired'))
-      return
-    }
-    setFiles(prev => [...prev, { name: newFileName.trim(), size: Number(newFileSize), type: newFileType }])
-    setNewFileName("")
-    setNewFileSize("")
-    setAddFileDialogOpen(false)
-    toast.success(t('bulk.page.success.fileAdded'))
+    addFiles(Array.from(e.dataTransfer.files))
   }
 
   const handleRemoveFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index))
   }
 
-  const handleProcessBatch = () => {
+  const handleProcessBatch = async () => {
     if (files.length === 0) {
       toast.error(t('bulk.page.errors.addOneFile'))
       return
     }
     setProcessing(true)
-    const job = processBatch(files, 'default')
-    setBatches(prev => [job, ...prev])
-    setFiles([])
-    toast.success(t('bulk.page.success.batchStarted', { jobId: job.id.slice(0, 8) }))
-    setProcessing(false)
+    try {
+      const fileList = files
+      const createRes = await fetch("/api/v1/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ files: fileList.map(f => ({ name: f.name, size: f.size, type: f.type || "application/octet-stream" })) }),
+      })
+      if (!createRes.ok) throw new Error("Failed to start batch")
+      const { job, uploads } = await createRes.json()
+
+      const remaining = [...fileList]
+      for (const upload of uploads as Array<{ fileId: string; name: string; signedUrl: string }>) {
+        const idx = remaining.findIndex(f => f.name === upload.name)
+        const file = idx >= 0 ? remaining.splice(idx, 1)[0] : undefined
+        if (!file) continue
+        await fetch(upload.signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type || "application/octet-stream" } })
+        await fetch(`/api/v1/bulk/${job.id}/files/${upload.fileId}/confirm`, { method: "POST" })
+      }
+
+      toast.success(t('bulk.page.success.batchStarted', { jobId: job.id.slice(0, 8) }))
+      setFiles([])
+      await refreshBatches()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('bulk.page.errors.addOneFile'))
+    } finally {
+      setProcessing(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
   }
 
-  const handleViewResults = (job: BatchJob) => {
-    const results = getBatchResults(job.id)
-    setSelectedJob(job)
-    setSelectedResults(results)
-    setResultsDialogOpen(true)
+  const handleViewResults = async (job: BatchJob) => {
+    try {
+      const res = await fetch(`/api/v1/bulk/${job.id}`)
+      if (!res.ok) throw new Error("Failed to load results")
+      const { results } = await res.json()
+      setSelectedJob(job)
+      setSelectedResults(results ?? [])
+      setResultsDialogOpen(true)
+    } catch {
+      toast.error(t('bulk.page.noResults'))
+    }
   }
 
   return (
@@ -162,38 +170,17 @@ export default function BulkPage() {
               {isDragging ? t('bulk.page.dropHere') : t('bulk.page.dragDrop')}
             </p>
             <p className="text-xs text-muted-foreground mb-4">{t('bulk.page.or')}</p>
-            <Dialog open={addFileDialogOpen} onOpenChange={setAddFileDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('bulk.page.addFilesManually')}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{t('bulk.page.addFile')}</DialogTitle>
-                  <DialogDescription>{t('bulk.page.addFileDesc')}</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>{t('bulk.page.fileName')}</Label>
-                    <Input placeholder={t('bulk.page.fileNamePlaceholder')} value={newFileName} onChange={e => setNewFileName(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t('bulk.page.sizeBytes')}</Label>
-                    <Input type="number" placeholder={t('bulk.page.sizePlaceholder')} value={newFileSize} onChange={e => setNewFileSize(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t('bulk.page.fileType')}</Label>
-                    <Input value={newFileType} onChange={e => setNewFileType(e.target.value)} />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setAddFileDialogOpen(false)}>{t('bulk.page.cancel')}</Button>
-                  <Button onClick={handleAddFile}>{t('bulk.page.add')}</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={(e) => { addFiles(Array.from(e.target.files ?? [])); e.target.value = "" }}
+            />
+            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="h-4 w-4 mr-2" />
+              {t('bulk.page.addFilesManually')}
+            </Button>
           </div>
 
           {files.length > 0 && (
