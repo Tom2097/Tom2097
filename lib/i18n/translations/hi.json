@@ -1096,6 +1096,7 @@
       "durationLabel": "अवधि: {duration}",
       "processing": "प्रसंस्करण हो रहा है...",
       "processingTranscription": "ट्रांसक्रिप्शन प्रसंस्करण हो रहा है...",
+      "simulatedTranscriptNotice": "यह ट्रांसक्रिप्ट सिम्युलेटेड डेमो डेटा है — अभी तक कोई स्पीच-टू-टेक्स्ट प्रदाता कॉन्फ़िगर नहीं किया गया है।",
       "segmentsTimeline": "सेगमेंट्स टाइमलाइन",
       "confidence": "{confidence}% आत्मविश्वास",
       "fullTranscription": "पूर्ण ट्रांसक्रिप्शन",

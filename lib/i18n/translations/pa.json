@@ -1096,6 +1096,7 @@
       "durationLabel": "ਅਵਧੀ: {duration}",
       "processing": "ਪ੍ਰੋਸੈਸਿੰਗ ਹੋ ਰਹੀ ਹੈ...",
       "processingTranscription": "ਟ੍ਰਾਂਸਕ੍ਰਿਪਸ਼ਨ ਪ੍ਰੋਸੈਸ ਹੋ ਰਹੀ ਹੈ...",
+      "simulatedTranscriptNotice": "ਇਹ ਟ੍ਰਾਂਸਕ੍ਰਿਪਟ ਸਿਮੂਲੇਟਿਡ ਡੈਮੋ ਡਾਟਾ ਹੈ — ਹਾਲੇ ਤੱਕ ਕੋਈ ਸਪੀਚ-ਟੂ-ਟੈਕਸਟ ਪ੍ਰਦਾਤਾ ਕੌਂਫਿਗਰ ਨਹੀਂ ਕੀਤਾ ਗਿਆ।",
       "segmentsTimeline": "ਸੈਗਮੈਂਟਸ ਟਾਈਮਲਾਈਨ",
       "confidence": "{confidence}% ਭਰੋਸਾ",
       "fullTranscription": "ਪੂਰੀ ਟ੍ਰਾਂਸਕ੍ਰਿਪਸ਼ਨ",

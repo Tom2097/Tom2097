@@ -1096,6 +1096,7 @@
       "durationLabel": "Duration: {duration}",
       "processing": "Processing...",
       "processingTranscription": "Processing transcription...",
+      "simulatedTranscriptNotice": "This transcript is simulated demo data — no speech-to-text provider is configured yet.",
       "segmentsTimeline": "Segments Timeline",
       "confidence": "{confidence}% confidence",
       "fullTranscription": "Full Transcription",

@@ -1,34 +1,34 @@
 "use client"
 
-import { useState } from "react"
-import { Mic, Upload, FileAudio, Clock, CheckCircle2, Loader2, Play, User, Calendar, ListChecks } from "lucide-react"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { Mic, Upload, FileAudio, Clock, CheckCircle2, Loader2, Play, User, Calendar, ListChecks, Sparkles } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import { useI18n } from "@/components/providers/i18n-provider"
-import {
-  uploadRecording,
-  processTranscription,
-  extractActionItems,
-  getRecording,
-  listRecordings,
-  updateActionItemStatus,
-  updateActionItemAssignee,
-  type RecordingUpload,
-  type TranscriptionResult,
-  type ActionItem,
-} from "@/lib/audio/ingestion"
+import type { RecordingUpload, TranscriptionResult, ActionItem } from "@/lib/audio/ingestion"
+
+function readAudioDuration(file: File): Promise<number | undefined> {
+  return new Promise((resolve) => {
+    const audio = document.createElement("audio")
+    audio.preload = "metadata"
+    audio.onloadedmetadata = () => {
+      resolve(Number.isFinite(audio.duration) ? Math.round(audio.duration) : undefined)
+      URL.revokeObjectURL(audio.src)
+    }
+    audio.onerror = () => resolve(undefined)
+    audio.src = URL.createObjectURL(file)
+  })
+}
 
 const STATUS_BADGES: Record<string, string> = {
-  uploading: "bg-blue-500/20 text-blue-500 border-blue-500/30",
+  pending: "bg-blue-500/20 text-blue-500 border-blue-500/30",
   uploaded: "bg-gray-500/20 text-gray-500 border-gray-500/30",
   processing: "bg-amber-500/20 text-amber-500 border-amber-500/30",
   ready: "bg-emerald-500/20 text-emerald-500 border-emerald-500/30",
@@ -50,73 +50,115 @@ function formatSize(bytes: number): string {
 
 export default function RecordingsPage() {
   const { t } = useI18n()
-  const [recordings, setRecordings] = useState<RecordingUpload[]>(() => listRecordings('default'))
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
+  const [recordings, setRecordings] = useState<RecordingUpload[]>([])
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
-
-  const [uploadName, setUploadName] = useState("")
-  const [uploadSize, setUploadSize] = useState("")
-  const [uploadType, setUploadType] = useState("audio/mp3")
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [selectedRecording, setSelectedRecording] = useState<RecordingUpload | null>(null)
   const [transcription, setTranscription] = useState<TranscriptionResult | null>(null)
   const [actionItems, setActionItems] = useState<ActionItem[]>([])
   const [processing, setProcessing] = useState(false)
 
-  const refreshRecordings = () => {
-    setRecordings(listRecordings('default'))
-  }
-
-  const handleUpload = () => {
-    if (!uploadName.trim() || !uploadSize.trim()) {
-      toast.error(t('recordings.page.errors.nameSizeRequired'))
-      return
+  const refreshRecordings = useCallback(async () => {
+    try {
+      const res = await fetch("/api/v1/recordings")
+      if (!res.ok) return
+      const data = await res.json()
+      setRecordings(data.recordings ?? [])
+    } catch {
+      // Non-fatal -- list just keeps its last known values.
     }
-    const recording = uploadRecording('default', { name: uploadName.trim(), size: Number(uploadSize), type: uploadType })
-    setRecordings(prev => [recording, ...prev])
-    setUploadDialogOpen(false)
-    setUploadName("")
-    setUploadSize("")
-    toast.success(t('recordings.page.success.uploaded'))
+  }, [])
 
-    setTimeout(refreshRecordings, 600)
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    refreshRecordings()
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [refreshRecordings])
+
+  const handleFileSelect = async (file: File | undefined) => {
+    if (!file) return
+    setUploading(true)
+    try {
+      const createRes = await fetch("/api/v1/recordings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: file.name, size: file.size, type: file.type }),
+      })
+      if (!createRes.ok) throw new Error("Failed to start upload")
+      const { recording, signedUrl } = await createRes.json()
+
+      const putRes = await fetch(signedUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type || "application/octet-stream" } })
+      if (!putRes.ok) throw new Error("Failed to upload file")
+
+      const durationSeconds = await readAudioDuration(file)
+      await fetch(`/api/v1/recordings/${recording.id}/confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ durationSeconds }),
+      })
+
+      toast.success(t('recordings.page.success.uploaded'))
+      await refreshRecordings()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('recordings.page.errors.processFailed'))
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
   }
 
-  const handleViewDetails = (recording: RecordingUpload) => {
+  const handleViewDetails = async (recording: RecordingUpload) => {
     setSelectedRecording(recording)
     setProcessing(true)
     setDetailDialogOpen(true)
     setTranscription(null)
     setActionItems([])
 
-    const fetched = getRecording(recording.id)
-    if (fetched) setSelectedRecording(fetched)
+    try {
+      const detailRes = await fetch(`/api/v1/recordings/${recording.id}`)
+      if (detailRes.ok) {
+        const { recording: fetched } = await detailRes.json()
+        setSelectedRecording(fetched)
+      }
 
-    setTimeout(() => {
-       try {
-         const result = processTranscription(recording.id)
-         const items = extractActionItems(recording.id)
-         setTranscription(result)
-         setActionItems(items)
-         setProcessing(false)
-         refreshRecordings()
-       } catch (error) {
-         setProcessing(false)
-         toast.error(error instanceof Error ? error.message : t('recordings.page.errors.processFailed'))
-       }
-    }, 800)
+      const res = await fetch(`/api/v1/recordings/${recording.id}/transcribe`, { method: "POST" })
+      if (!res.ok) throw new Error(t('recordings.page.errors.processFailed'))
+      const { transcription: result, actionItems: items } = await res.json()
+      setTranscription(result)
+      setActionItems(items)
+      refreshRecordings()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('recordings.page.errors.processFailed'))
+    } finally {
+      setProcessing(false)
+    }
   }
 
-  const handleToggleActionItem = (itemId: string, current: string) => {
+  const handleToggleActionItem = async (itemId: string, current: string) => {
     const next: ActionItem['status'] = current === 'completed' ? 'open' : 'completed'
-    updateActionItemStatus(itemId, next)
     setActionItems(prev => prev.map(i => i.id === itemId ? { ...i, status: next } : i))
-    toast.success(next === 'completed' ? t('recordings.page.success.actionItemCompleted') : t('recordings.page.success.actionItemReopened'))
+    const res = await fetch(`/api/v1/recordings/action-items/${itemId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: next }),
+    })
+    if (res.ok) {
+      toast.success(next === 'completed' ? t('recordings.page.success.actionItemCompleted') : t('recordings.page.success.actionItemReopened'))
+    } else {
+      setActionItems(prev => prev.map(i => i.id === itemId ? { ...i, status: current as ActionItem['status'] } : i))
+      toast.error(t('recordings.page.errors.processFailed'))
+    }
   }
 
-  const handleAssigneeChange = (itemId: string, assignee: string) => {
-    updateActionItemAssignee(itemId, assignee)
+  const handleAssigneeChange = async (itemId: string, assignee: string) => {
     setActionItems(prev => prev.map(i => i.id === itemId ? { ...i, assignee } : i))
+    await fetch(`/api/v1/recordings/action-items/${itemId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assignee }),
+    })
   }
 
   return (
@@ -131,38 +173,17 @@ export default function RecordingsPage() {
             <p className="text-sm text-muted-foreground">{t('recordings.page.subtitle')}</p>
           </div>
         </div>
-        <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Upload className="h-4 w-4 mr-2" />
-              {t('recordings.page.uploadRecording')}
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t('recordings.page.dialogTitle')}</DialogTitle>
-              <DialogDescription>{t('recordings.page.dialogDescription')}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>{t('recordings.page.fileName')}</Label>
-                <Input placeholder={t('recordings.page.fileNamePlaceholder')} value={uploadName} onChange={e => setUploadName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('recordings.page.sizeBytes')}</Label>
-                <Input type="number" placeholder={t('recordings.page.sizePlaceholder')} value={uploadSize} onChange={e => setUploadSize(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('recordings.page.fileType')}</Label>
-                <Input value={uploadType} onChange={e => setUploadType(e.target.value)} />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>{t('recordings.page.cancel')}</Button>
-              <Button onClick={handleUpload}>{t('recordings.page.upload')}</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={(e) => handleFileSelect(e.target.files?.[0])}
+        />
+        <Button disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+          {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+          {t('recordings.page.uploadRecording')}
+        </Button>
       </div>
 
       <Card>
@@ -197,7 +218,7 @@ export default function RecordingsPage() {
                     <TableCell className="text-sm">{formatSize(rec.size)}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={STATUS_BADGES[rec.status]}>
-                        {rec.status === 'processing' || rec.status === 'uploading' ? (
+                        {rec.status === 'processing' || rec.status === 'pending' ? (
                           <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                         ) : rec.status === 'ready' ? (
                           <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -236,6 +257,12 @@ export default function RecordingsPage() {
             </div>
           ) : (
             <div className="space-y-6">
+              {transcription?.isSimulated && (
+                <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                  {t('recordings.page.simulatedTranscriptNotice')}
+                </div>
+              )}
               {transcription && (
                 <div>
                   <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
