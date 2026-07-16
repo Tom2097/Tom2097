@@ -101,10 +101,10 @@ export default async function PerformancePage() {
                   <div className="flex items-center gap-2">
                     <div className="w-20 h-2 bg-secondary rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${d.direction === "up" ? "bg-green-500" : "bg-red-500"}`}
-                        style={{ width: `${Math.abs(d.contribution) * 100}%` }} />
+                        style={{ width: `${Math.min(Math.abs(d.contribution), 100)}%` }} />
                     </div>
                     <span className={`text-xs font-medium ${d.direction === "up" ? "text-green-500" : "text-red-500"}`}>
-                      {d.direction === "up" ? "+" : ""}{(d.contribution * 100).toFixed(0)}%
+                      {d.direction === "up" ? "+" : ""}{d.contribution.toFixed(0)}%
                     </span>
                   </div>
                 </div>
