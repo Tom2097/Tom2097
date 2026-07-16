@@ -1078,6 +1078,11 @@
       "viewPlans": "View Plans"
     }
   },
+  "training": {
+    "page": {
+      "noResourceYet": "No training resource is linked to this skill yet -- talk to your manager about arranging training."
+    }
+  },
   "recordings": {
     "page": {
       "title": "Audio Recordings",

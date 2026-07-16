@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
-import { getSkillCatalog, getTeamAssessments, assessSkill } from '@/lib/hr/skill-matrix'
+import { getSkillCatalog, getTeamAssessments, getTeamMembers, assessSkill } from '@/lib/hr/skill-matrix'
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,11 +10,11 @@ export async function GET(request: NextRequest) {
     const include = searchParams.get('include')
 
     const catalog = getSkillCatalog(organizationId)
-    const assessments = getTeamAssessments(organizationId)
 
     const result: Record<string, unknown> = { catalog }
     if (include === 'assessments') {
-      result.assessments = assessments
+      result.assessments = getTeamAssessments(organizationId)
+      result.teamMembers = getTeamMembers(organizationId)
     }
 
     return NextResponse.json({ success: true, ...result })

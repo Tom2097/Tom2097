@@ -130,13 +130,12 @@ export default function SkillMatrixPage() {
 
   const levelOptions = ['beginner', 'intermediate', 'advanced', 'expert']
 
-  const handleNavigateToTraining = async (skillName: string) => {
+  const handleNavigateToTraining = async (skillId: string) => {
     setNavigating(true)
     try {
-      const skill = catalog.find(s => s.name === skillName.split(" ")[1])
+      const skill = catalog.find(s => s.id === skillId)
       if (!skill) throw new Error(t('skillMatrix.page.errors.skillNotFound'))
-      await new Promise(resolve => setTimeout(resolve, 800))
-      toast.success(t('skillMatrix.page.success.navigating', { skillName }))
+      toast.success(t('skillMatrix.page.success.navigating', { skillName: skill.name }))
       window.open(`/training/${skill.id}`, "_blank")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('skillMatrix.page.errors.skillNotFound'))
@@ -154,11 +153,7 @@ export default function SkillMatrixPage() {
         if (!cancelled) {
           setCatalog(data.catalog ?? [])
           setAssessments(data.assessments ?? [])
-          if (data.assessments) {
-            const teamAssessments: SkillAssessment[] = data.assessments
-            const userIds = [...new Set(teamAssessments.map((a) => a.userId))]
-            setTeamMembers(userIds.map((id) => ({ id, name: `User ${id.slice(1)}` })))
-          }
+          setTeamMembers(data.teamMembers ?? [])
         }
       } catch {
         if (!cancelled) toast.error(t('skillMatrix.page.errors.loadFailed'))
@@ -193,17 +188,17 @@ export default function SkillMatrixPage() {
     return result
   }, [catalog, assessments])
 
-  const recommendations = useMemo((): string[] => {
+  const recommendations = useMemo((): Array<{ text: string; skillId: string | null }> => {
     if (gaps.length === 0) return []
-    const recs: string[] = []
+    const recs: Array<{ text: string; skillId: string | null }> = []
     for (const g of gaps) {
       if (g.priority === 'critical' || g.priority === 'high') {
-        recs.push(t('skillMatrix.page.advancedCertification', { skillName: g.skillName, gap: g.gap }))
+        recs.push({ text: t('skillMatrix.page.advancedCertification', { skillName: g.skillName, gap: g.gap }), skillId: g.skillId })
       } else if (g.priority === 'medium') {
-        recs.push(t('skillMatrix.page.intermediateWorkshop', { skillName: g.skillName, gap: g.gap }))
+        recs.push({ text: t('skillMatrix.page.intermediateWorkshop', { skillName: g.skillName, gap: g.gap }), skillId: g.skillId })
       }
     }
-    if (recs.length === 0) recs.push(t('skillMatrix.page.noCriticalGaps'))
+    if (recs.length === 0) recs.push({ text: t('skillMatrix.page.noCriticalGaps'), skillId: null })
     return recs
   }, [gaps, t])
 
@@ -537,16 +532,18 @@ export default function SkillMatrixPage() {
                {recommendations.map((rec, i) => (
                  <div key={i} className="flex items-start gap-3 rounded-lg bg-secondary/30 p-3">
                    <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-indigo-500" />
-                   <span className="text-sm flex-1">{rec}</span>
-                   <Button
-                     variant="ghost"
-                     size="sm"
-                     className="h-7 w-7 p-1 text-indigo-500 hover:text-indigo-600"
-                     onClick={() => handleNavigateToTraining(rec)}
-                     disabled={navigating}
-                   >
-                     <ExternalLink className="h-3.5 w-3.5" />
-                   </Button>
+                   <span className="text-sm flex-1">{rec.text}</span>
+                   {rec.skillId && (
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       className="h-7 w-7 p-1 text-indigo-500 hover:text-indigo-600"
+                       onClick={() => handleNavigateToTraining(rec.skillId as string)}
+                       disabled={navigating}
+                     >
+                       <ExternalLink className="h-3.5 w-3.5" />
+                     </Button>
+                   )}
                  </div>
                ))}
              </div>

@@ -100,9 +100,26 @@ function getOrgKey(orgId: string): string {
   return `org_${orgId.slice(0, 8)}`
 }
 
-export function getSkillCatalog(orgId: string): Skill[] {
+/**
+ * Every org's key falls back to the shared demo catalog/assessments (this
+ * whole module is a single shared in-memory dataset, not real per-tenant
+ * data). The bug this fixed: getTeamAssessments/assessSkill used
+ * `ASSESSMENTS[key] ?? []` -- for any real org that `[]` was a brand-new
+ * array never written back to ASSESSMENTS, so assessSkill() mutated a copy
+ * that vanished immediately and every subsequent read saw an empty list.
+ * This ensures the org's entry actually exists in the dict before anyone
+ * reads or mutates it, so the same array reference is reused.
+ */
+function ensureOrgData(orgId: string): string {
   const key = getOrgKey(orgId)
-  return CATALOGS[key] ?? CATALOGS['org_default']
+  if (!CATALOGS[key]) CATALOGS[key] = CATALOGS['org_default']
+  if (!ASSESSMENTS[key]) ASSESSMENTS[key] = []
+  return key
+}
+
+export function getSkillCatalog(orgId: string): Skill[] {
+  const key = ensureOrgData(orgId)
+  return CATALOGS[key]
 }
 
 export function getTeamMembers(_orgId: string): { id: string; name: string }[] {
@@ -110,8 +127,8 @@ export function getTeamMembers(_orgId: string): { id: string; name: string }[] {
 }
 
 export function assessSkill(orgId: string, userId: string, skillId: string, level: string): SkillAssessment {
-  const key = getOrgKey(orgId)
-  const existing = ASSESSMENTS[key] ?? []
+  const key = ensureOrgData(orgId)
+  const existing = ASSESSMENTS[key]
   const idx = existing.findIndex((a) => a.userId === userId && a.skillId === skillId)
   const assessment: SkillAssessment = {
     userId,
@@ -128,8 +145,8 @@ export function assessSkill(orgId: string, userId: string, skillId: string, leve
 }
 
 export function getTeamAssessments(orgId: string): SkillAssessment[] {
-  const key = getOrgKey(orgId)
-  return ASSESSMENTS[key] ?? []
+  const key = ensureOrgData(orgId)
+  return ASSESSMENTS[key]
 }
 
 export function analyzeGaps(orgId: string): GapAnalysis[] {
