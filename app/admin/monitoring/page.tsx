@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Activity, Clock, AlertTriangle, AlertCircle, ArrowUp, ArrowDown, Minus, Server } from "lucide-react"
+import { toast } from "sonner"
 import type { ObservabilitySummary, ServiceLevelIndicator } from "@/lib/observability/dashboard"
 
 export default function MonitoringPage() {
@@ -26,45 +27,30 @@ export default function MonitoringPage() {
       try {
         setLoading(true)
         const res = await fetch("/api/v1/admin/monitoring")
+        if (!res.ok) throw new Error("Failed to load monitoring summary")
         const data = await res.json()
-        if (res.ok && !cancelled) {
-          setSummary(data)
-        }
+        if (!cancelled) setSummary(data)
       } catch {
-        if (!cancelled) {
-          // Fallback: try server action directly
-          try {
-            const { getObservabilitySummary } = await import("@/lib/observability/dashboard")
-            const data = await getObservabilitySummary()
-            if (!cancelled) setSummary(data)
-          } catch {
-            // Silent fail
-          }
-        }
+        if (!cancelled) toast.error(t("admin.monitoring.loadSummaryFailed"))
       } finally {
         if (!cancelled) setLoading(false)
       }
     }
     load()
     return () => { cancelled = true }
-  }, [])
+  }, [t])
 
   const loadServiceMetrics = useCallback(async (serviceName: string) => {
     setSelectedService(serviceName)
     try {
       const res = await fetch(`/api/v1/admin/monitoring/metrics?service=${encodeURIComponent(serviceName)}`)
+      if (!res.ok) throw new Error("Failed to load service metrics")
       const data = await res.json()
-      if (res.ok) setServiceMetrics(data)
+      setServiceMetrics(data)
     } catch {
-      try {
-        const { getServiceMetrics } = await import("@/lib/observability/dashboard")
-        const data = await getServiceMetrics(serviceName, "24h")
-        setServiceMetrics(data)
-      } catch {
-        // Silent fail
-      }
+      toast.error(t("admin.monitoring.loadMetricsFailed"))
     }
-  }, [])
+  }, [t])
 
   const getStatusColor = (status: ServiceLevelIndicator["status"]) => {
     switch (status) {
