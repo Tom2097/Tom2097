@@ -34,30 +34,69 @@ interface TenantReg {
 interface SystemHealth {
   status: "healthy" | "degraded" | "outage"
   uptime: number
-  activeNodes: number
+  activeAlerts: number
+  monitoredServices: number
   lastIncident: string | null
+}
+
+function monthsAgo(n: number): Date {
+  const d = new Date()
+  d.setMonth(d.getMonth() - n)
+  return d
 }
 
 export default function AdminDashboardPage() {
   const { t } = useI18n()
-  const [stats, setStats] = useState({ tenants: 0, users: 0, pendingInvitations: 0, revenue: 0 })
+  const [stats, setStats] = useState({ tenants: 0, users: 0, revenue: 0, tenantChange: 0, userChange: 0, revenueChange: 0 })
   const [recentTenants, setRecentTenants] = useState<TenantReg[]>([])
   const [loading, setLoading] = useState(true)
-  const [health, setHealth] = useState<SystemHealth>({ status: "healthy", uptime: 99.9, activeNodes: 4, lastIncident: null })
+  const [health, setHealth] = useState<SystemHealth>({ status: "healthy", uptime: 100, activeAlerts: 0, monitoredServices: 0, lastIncident: null })
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/v1/admin/tenants")
-        if (res.ok) {
-          const data = await res.json()
+        const [tenantsRes, revenueRes, monitoringRes] = await Promise.all([
+          fetch("/api/v1/admin/tenants"),
+          fetch("/api/v1/admin/revenue"),
+          fetch("/api/v1/admin/monitoring"),
+        ])
+
+        if (tenantsRes.ok) {
+          const data = await tenantsRes.json()
           const tenants: TenantReg[] = data.tenants || []
-          setRecentTenants(tenants.slice(0, 5))
-          setStats({
-            tenants: tenants.length,
-            users: tenants.reduce((sum: number, t: TenantReg) => sum + (t.userCount || 0), 0),
-            pendingInvitations: Math.floor(tenants.length * 0.3),
-            revenue: tenants.filter((t: TenantReg) => t.plan !== "free").length * 299,
+          setRecentTenants(
+            [...tenants].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5),
+          )
+
+          const thisMonth = monthsAgo(1)
+          const lastMonth = monthsAgo(2)
+          const tenantsThisMonth = tenants.filter((tn) => new Date(tn.createdAt) >= thisMonth).length
+          const tenantsLastMonth = tenants.filter((tn) => new Date(tn.createdAt) >= lastMonth && new Date(tn.createdAt) < thisMonth).length
+          const tenantChange = tenantsLastMonth > 0 ? Math.round(((tenantsThisMonth - tenantsLastMonth) / tenantsLastMonth) * 100) : 0
+
+          const users = tenants.reduce((sum, tn) => sum + (tn.userCount || 0), 0)
+          const usersThisMonth = tenants.filter((tn) => new Date(tn.createdAt) >= thisMonth).reduce((sum, tn) => sum + (tn.userCount || 0), 0)
+          const usersLastMonth = tenants.filter((tn) => new Date(tn.createdAt) >= lastMonth && new Date(tn.createdAt) < thisMonth).reduce((sum, tn) => sum + (tn.userCount || 0), 0)
+          const userChange = usersLastMonth > 0 ? Math.round(((usersThisMonth - usersLastMonth) / usersLastMonth) * 100) : 0
+
+          setStats((prev) => ({ ...prev, tenants: tenants.length, users, tenantChange, userChange }))
+        }
+
+        if (revenueRes.ok) {
+          const data = await revenueRes.json()
+          setStats((prev) => ({ ...prev, revenue: data.metrics?.mrr ?? 0, revenueChange: data.metrics?.mrrChange ?? 0 }))
+        }
+
+        if (monitoringRes.ok) {
+          const data = await monitoringRes.json()
+          const worst = data.services?.find((s: { status: string }) => s.status === "critical")
+            ?? data.services?.find((s: { status: string }) => s.status === "warning")
+          setHealth({
+            status: worst ? (worst.status === "critical" ? "outage" : "degraded") : "healthy",
+            uptime: data.uptime ?? 100,
+            activeAlerts: data.activeAlerts ?? 0,
+            monitoredServices: data.services?.length ?? 0,
+            lastIncident: data.recentErrors?.[0]?.timestamp ? new Date(data.recentErrors[0].timestamp).toLocaleDateString() : null,
           })
         }
       } catch {
@@ -67,6 +106,8 @@ export default function AdminDashboardPage() {
     }
     load()
   }, [])
+
+  const trendOf = (change: number): "up" | "down" | "stable" => (change > 0 ? "up" : change < 0 ? "down" : "stable")
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -88,10 +129,10 @@ export default function AdminDashboardPage() {
       </div>
 
       <MetricGrid>
-        <MetricCard label="Total Tenants" value={loading ? "..." : stats.tenants} trend="up" change={12} />
-        <MetricCard label="Active Users" value={loading ? "..." : stats.users} trend="up" change={8} />
-        <MetricCard label="Pending Invitations" value={loading ? "..." : stats.pendingInvitations} trend="stable" />
-        <MetricCard label="Revenue (MTD)" value={loading ? "..." : `$${stats.revenue.toLocaleString()}`} trend="up" change={15} />
+        <MetricCard label="Total Tenants" value={loading ? "..." : stats.tenants} trend={trendOf(stats.tenantChange)} change={stats.tenantChange} />
+        <MetricCard label="Active Users" value={loading ? "..." : stats.users} trend={trendOf(stats.userChange)} change={stats.userChange} />
+        <MetricCard label="Active Alerts" value={loading ? "..." : health.activeAlerts} trend={health.activeAlerts > 0 ? "down" : "stable"} />
+        <MetricCard label="Revenue (MTD)" value={loading ? "..." : `$${stats.revenue.toLocaleString()}`} trend={trendOf(stats.revenueChange)} change={stats.revenueChange} />
       </MetricGrid>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -166,8 +207,8 @@ export default function AdminDashboardPage() {
               </div>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{t("admin.page.active_nodes")}</span>
-                  <span className="font-medium">{health.activeNodes}</span>
+                  <span className="text-muted-foreground">{t("admin.page.monitored_services")}</span>
+                  <span className="font-medium">{health.monitoredServices}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("admin.page.last_incident")}</span>

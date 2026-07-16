@@ -1956,6 +1956,7 @@
       "organization": "संगठन",
       "users": "उपयोगकर्ताओं",
       "active_nodes": "सक्रिय नोड्स",
+      "monitored_services": "मॉनिटर की गई सेवाएँ",
       "last_incident": "आखिरी घटना"
     },
     "revenue": {

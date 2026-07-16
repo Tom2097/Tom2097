@@ -1956,6 +1956,7 @@
       "organization": "ਸੰਗਠਨ",
       "users": "ਉਪਭੋਗਤਾ",
       "active_nodes": "ਕਿਰਿਆਸ਼ੀਲ ਨੋਡਸ",
+      "monitored_services": "ਨਿਗਰਾਨੀ ਅਧੀਨ ਸੇਵਾਵਾਂ",
       "last_incident": "ਆਖਰੀ ਘਟਨਾ"
     },
     "revenue": {

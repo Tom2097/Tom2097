@@ -1956,6 +1956,7 @@
       "organization": "Organization",
       "users": "Users",
       "active_nodes": "Active Nodes",
+      "monitored_services": "Monitored Services",
       "last_incident": "Last Incident"
     },
     "revenue": {
