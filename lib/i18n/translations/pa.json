@@ -1971,7 +1971,10 @@
     "security": {
       "insert": "INSERT",
       "update": "ਅੱਪਡੇਟ ਕਰੋ",
-      "delete": "ਮਿਟਾਓ"
+      "delete": "ਮਿਟਾਓ",
+      "addFailed": "ਐਂਟਰੀ ਜੋੜਨ ਵਿੱਚ ਅਸਫ਼ਲ",
+      "removeFailed": "ਐਂਟਰੀ ਹਟਾਉਣ ਵਿੱਚ ਅਸਫ਼ਲ",
+      "updateFailed": "ਸੈਟਿੰਗ ਅੱਪਡੇਟ ਕਰਨ ਵਿੱਚ ਅਸਫ਼ਲ"
     },
     "users": {
       "mfa_enabled": "MFA ਸਮਰਥਿਤ"

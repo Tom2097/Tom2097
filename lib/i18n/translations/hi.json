@@ -1971,7 +1971,10 @@
     "security": {
       "insert": "डालना",
       "update": "अद्यतन",
-      "delete": "मिटाना"
+      "delete": "मिटाना",
+      "addFailed": "प्रविष्टि जोड़ने में विफल",
+      "removeFailed": "प्रविष्टि हटाने में विफल",
+      "updateFailed": "सेटिंग अपडेट करने में विफल"
     },
     "users": {
       "mfa_enabled": "एमएफए सक्षम"

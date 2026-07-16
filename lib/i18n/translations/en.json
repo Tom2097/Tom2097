@@ -1971,7 +1971,10 @@
     "security": {
       "insert": "INSERT",
       "update": "UPDATE",
-      "delete": "DELETE"
+      "delete": "DELETE",
+      "addFailed": "Failed to add entry",
+      "removeFailed": "Failed to remove entry",
+      "updateFailed": "Failed to update setting"
     },
     "users": {
       "mfa_enabled": "MFA Enabled"

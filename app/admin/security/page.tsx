@@ -74,10 +74,7 @@ export default function SecurityPage() {
   const [auditSearch, setAuditSearch] = useState("")
   const [auditAction, setAuditAction] = useState("all")
 
-  const [allowlist, setAllowlist] = useState<IpAllowlistEntry[]>([
-    { id: "1", cidr: "10.0.0.0/8", description: "Corporate VPN", created_at: new Date().toISOString() },
-    { id: "2", cidr: "192.168.1.0/24", description: "Office Network", created_at: new Date().toISOString() },
-  ])
+  const [allowlist, setAllowlist] = useState<IpAllowlistEntry[]>([])
   const [newCidr, setNewCidr] = useState("")
   const [newDesc, setNewDesc] = useState("")
 
@@ -93,6 +90,9 @@ export default function SecurityPage() {
         await Promise.all([
           fetch("/api/v1/admin/audit").then(r => r.json()).then(d => { if (!cancelled) setAuditEvents(d.entries || []); }),
           fetch("/api/v1/admin/sessions").then(r => r.json()).then(d => { if (!cancelled) setSessions(d.sessions || []); }),
+          fetch("/api/v1/admin/ip-allowlist").then(r => r.json()).then(d => {
+            if (!cancelled) { setAllowlist(d.entries || []); setAllowlistEnabled(Boolean(d.enabled)) }
+          }),
         ])
       } catch {
         // silent
@@ -140,23 +140,58 @@ export default function SecurityPage() {
     return matchesSearch && matchesAction
   })
 
-  const addAllowlistEntry = () => {
+  const addAllowlistEntry = async () => {
     if (!newCidr) return
-    const entry: IpAllowlistEntry = {
-      id: `ip-${Date.now()}`,
-      cidr: newCidr,
-      description: newDesc,
-      created_at: new Date().toISOString(),
+    try {
+      const res = await fetch("/api/v1/admin/ip-allowlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cidr: newCidr, description: newDesc }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error || t("admin.security.addFailed"))
+        return
+      }
+      setAllowlist((prev) => [data.entry, ...prev])
+      setNewCidr("")
+      setNewDesc("")
+      toast.success(t("admin.security.addedSuccess"))
+    } catch {
+      toast.error(t("admin.security.addFailed"))
     }
-    setAllowlist([...allowlist, entry])
-    setNewCidr("")
-    setNewDesc("")
-    toast.success(t("admin.security.addedSuccess"))
   }
 
-  const removeAllowlistEntry = (id: string) => {
-    setAllowlist(allowlist.filter((e) => e.id !== id))
-    toast.success(t("admin.security.removedSuccess"))
+  const removeAllowlistEntry = async (id: string) => {
+    try {
+      const res = await fetch(`/api/v1/admin/ip-allowlist?id=${id}`, { method: "DELETE" })
+      if (!res.ok) {
+        toast.error(t("admin.security.removeFailed"))
+        return
+      }
+      setAllowlist((prev) => prev.filter((e) => e.id !== id))
+      toast.success(t("admin.security.removedSuccess"))
+    } catch {
+      toast.error(t("admin.security.removeFailed"))
+    }
+  }
+
+  const handleAllowlistToggle = async (enabled: boolean) => {
+    setAllowlistEnabled(enabled)
+    try {
+      const res = await fetch("/api/v1/admin/ip-allowlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "setEnabled", enabled }),
+      })
+      if (!res.ok) {
+        setAllowlistEnabled(!enabled)
+        toast.error(t("admin.security.updateFailed"))
+      }
+    } catch {
+      setAllowlistEnabled(!enabled)
+      toast.error(t("admin.security.updateFailed"))
+    }
   }
 
   const revokeSession = async (sessionId: string) => {
@@ -219,9 +254,9 @@ export default function SecurityPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("admin.security.allActions")}</SelectItem>
-                    <SelectItem value="INSERT">{t("admin.security.insert")}</SelectItem>
-                    <SelectItem value="UPDATE">{t("admin.security.update")}</SelectItem>
-                    <SelectItem value="DELETE">{t("admin.security.delete")}</SelectItem>
+                    {[...new Set(auditEvents.map((e) => e.action))].sort().map((action) => (
+                      <SelectItem key={action} value={action}>{action}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -250,9 +285,9 @@ export default function SecurityPage() {
                       <TableRow key={event.id}>
                         <TableCell>
                           <Badge variant={
-                            event.action === "INSERT" ? "default" :
-                            event.action === "UPDATE" ? "secondary" :
-                            "destructive"
+                            /fail|denied|delet|revok/i.test(event.action) ? "destructive" :
+                            /creat|grant|assign|login\b/i.test(event.action) ? "default" :
+                            "secondary"
                           }>
                             {event.action}
                           </Badge>
@@ -282,7 +317,7 @@ export default function SecurityPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Label>{t("admin.security.enabled")}</Label>
-                  <Switch checked={allowlistEnabled} onCheckedChange={setAllowlistEnabled} />
+                  <Switch checked={allowlistEnabled} onCheckedChange={handleAllowlistToggle} />
                 </div>
               </div>
             </CardHeader>
