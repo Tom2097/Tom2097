@@ -103,15 +103,15 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
       {!isMinimized && (
         <>
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4">
             <div className="space-y-4">
               {messages.length === 0 && (
                 <div className="flex gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
                     <Bot className="h-4 w-4" />
                   </div>
-                  <div className="max-w-[280px] rounded-2xl bg-secondary px-4 py-2.5 text-sm text-secondary-foreground">
-                    <div className="whitespace-pre-wrap">
+                  <div className="max-w-[280px] min-w-0 rounded-2xl bg-secondary px-4 py-2.5 text-sm text-secondary-foreground">
+                    <div className="whitespace-pre-wrap break-words">
                       {"Hello! I'm your DigiT AI Assistant powered by Mistral Large. I can help you analyze data, generate insights, and answer questions about your enterprise operations. How can I assist you today?"}
                     </div>
                   </div>
@@ -120,7 +120,7 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
               {messages.map((message) => {
                 const text = getMessageText(message)
                 if (!text) return null
-                
+
                 return (
                   <div
                     key={message.id}
@@ -140,23 +140,23 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
                       )}
                     </div>
                     <div className={cn(
-                      "max-w-[280px] rounded-2xl px-4 py-2.5 text-sm",
-                      message.role === 'assistant' 
-                        ? "bg-secondary text-secondary-foreground" 
+                      "max-w-[280px] min-w-0 rounded-2xl px-4 py-2.5 text-sm",
+                      message.role === 'assistant'
+                        ? "bg-secondary text-secondary-foreground"
                         : "bg-primary text-primary-foreground"
                     )}>
-                      <div className="whitespace-pre-wrap">{text}</div>
+                      <div className="whitespace-pre-wrap break-words">{text}</div>
                     </div>
                   </div>
                 )
               })}
-              
+
               {isLoading && messages[messages.length - 1]?.role === 'user' && (
                 <div className="flex gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
                     <Bot className="h-4 w-4" />
                   </div>
-                  <div className="max-w-[280px] rounded-2xl bg-secondary px-4 py-2.5 text-sm text-secondary-foreground">
+                  <div className="max-w-[280px] min-w-0 rounded-2xl bg-secondary px-4 py-2.5 text-sm text-secondary-foreground">
                     <div className="flex gap-1">
                       <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
                       <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />

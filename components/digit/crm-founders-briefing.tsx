@@ -70,7 +70,7 @@ export function CrmFoundersBriefing() {
   }
 
   return (
-    <Card className="h-[500px] flex flex-col">
+    <Card className="h-[500px] flex flex-col overflow-hidden">
       <CardHeader className="p-4 pb-2 shrink-0">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
@@ -86,7 +86,7 @@ export function CrmFoundersBriefing() {
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0 flex-1 flex flex-col">
+      <CardContent className="p-0 flex-1 flex flex-col min-h-0">
         {!briefing && !loading && !error && (
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
             <Sparkles className="h-10 w-10 text-primary/30 mb-3" />
@@ -110,7 +110,7 @@ export function CrmFoundersBriefing() {
           </div>
         )}
         {briefing && !loading && (
-          <ScrollArea className="flex-1 px-4 py-2">
+          <ScrollArea className="flex-1 min-h-0 px-4 py-2">
             <div className="space-y-2">
               {briefing.map((section, i) => (
                 <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
@@ -127,7 +127,7 @@ export function CrmFoundersBriefing() {
                     </div>
                     <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedSection === i ? "rotate-90" : ""}`} />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">{section.content}</p>
+                  <p className="text-xs text-muted-foreground mt-2 break-words">{section.content}</p>
                   {selectedSection === i && section.actionItems.length > 0 && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-2 space-y-1">
                       <p className="text-[10px] font-medium text-muted-foreground uppercase">Action Items</p>

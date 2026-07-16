@@ -119,24 +119,24 @@ export function SplitView({ document, onSelectDocument }: SplitViewProps) {
     <div className="flex flex-col border border-border rounded-lg overflow-hidden h-full">
       {picker}
       <div className="grid grid-cols-2 flex-1 min-h-0">
-        <div className="border-r border-border flex flex-col min-w-0">
+        <div className="border-r border-border flex flex-col min-w-0 min-h-0">
           <div className="p-3 border-b border-border bg-muted/20 shrink-0">
             <p className="text-sm font-medium truncate">{document.name}</p>
           </div>
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 min-h-0">
             <pre className="p-4 text-xs font-mono whitespace-pre-wrap break-words">{document.content ?? "(no content)"}</pre>
           </ScrollArea>
         </div>
 
-        <div className="flex flex-col min-w-0">
-          <Tabs value={activeView} onValueChange={setActiveView} className="flex-1 flex flex-col">
+        <div className="flex flex-col min-w-0 min-h-0">
+          <Tabs value={activeView} onValueChange={setActiveView} className="flex-1 flex flex-col min-h-0">
             <TabsList className="grid grid-cols-3 mx-2 mt-2 shrink-0">
               <TabsTrigger value="extracted" className="text-xs"><Database className="h-3 w-3 mr-1" />Data</TabsTrigger>
               <TabsTrigger value="chat" className="text-xs"><MessageSquare className="h-3 w-3 mr-1" />AI Chat</TabsTrigger>
               <TabsTrigger value="document" className="text-xs"><FileText className="h-3 w-3 mr-1" />Raw</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="extracted" className="flex-1 p-4 mt-0 overflow-auto">
+            <TabsContent value="extracted" className="flex-1 min-h-0 p-4 mt-0 overflow-auto">
               {extractedContent ? (
                 <pre className="text-xs font-mono whitespace-pre-wrap break-words">{extractedContent}</pre>
               ) : (
@@ -149,7 +149,7 @@ export function SplitView({ document, onSelectDocument }: SplitViewProps) {
             </TabsContent>
 
             <TabsContent value="chat" className="flex-1 mt-0 flex flex-col min-h-0">
-               <ScrollArea ref={chatScrollRef as React.RefObject<HTMLDivElement>} className="flex-1 p-4">
+               <ScrollArea ref={chatScrollRef as React.RefObject<HTMLDivElement>} className="flex-1 min-h-0 p-4">
                 <div className="space-y-3">
                   {chatMessages.map((msg, i) => (
                     <motion.div
@@ -197,7 +197,7 @@ export function SplitView({ document, onSelectDocument }: SplitViewProps) {
               </div>
             </TabsContent>
 
-            <TabsContent value="document" className="flex-1 p-4 mt-0 overflow-auto">
+            <TabsContent value="document" className="flex-1 min-h-0 p-4 mt-0 overflow-auto">
               <pre className="text-xs font-mono whitespace-pre-wrap break-words">{document.content ?? "(no content)"}</pre>
             </TabsContent>
           </Tabs>

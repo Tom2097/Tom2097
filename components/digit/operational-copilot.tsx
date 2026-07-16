@@ -55,7 +55,7 @@ export function OperationalCopilot() {
   }
 
   return (
-    <Card className="h-[500px] flex flex-col">
+    <Card className="h-[500px] flex flex-col overflow-hidden">
       <CardHeader className="p-4 pb-2 shrink-0">
         <CardTitle className="flex items-center gap-2 text-sm">
           <div className="p-1.5 rounded-lg bg-primary/10">
@@ -65,8 +65,8 @@ export function OperationalCopilot() {
           <Badge variant="secondary" className="text-[10px] ml-auto">AI-powered</Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0 flex-1 flex flex-col">
-        <ScrollArea ref={scrollRef as React.RefObject<HTMLDivElement>} className="flex-1 px-4 py-2">
+      <CardContent className="p-0 flex-1 flex flex-col min-h-0">
+        <ScrollArea ref={scrollRef as React.RefObject<HTMLDivElement>} className="flex-1 min-h-0 px-4 py-2">
           <div className="space-y-3">
             {messages.map((msg, i) => (
               <motion.div
@@ -80,8 +80,8 @@ export function OperationalCopilot() {
                     <Bot className="h-3 w-3 text-primary" />
                   </div>
                 )}
-                <div className={`max-w-[80%] ${msg.role === "user" ? "order-first" : ""}`}>
-                  <div className={`p-2.5 rounded-lg text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                <div className={`max-w-[80%] min-w-0 ${msg.role === "user" ? "order-first" : ""}`}>
+                  <div className={`p-2.5 rounded-lg text-sm whitespace-pre-wrap break-words ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                     {msg.content}
                   </div>
                   {msg.action && (
