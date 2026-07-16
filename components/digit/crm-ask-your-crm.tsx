@@ -66,7 +66,7 @@ export function CrmAskYourCrm() {
   }
 
   return (
-    <Card className="h-[500px] flex flex-col">
+    <Card className="h-[500px] flex flex-col overflow-hidden">
       <CardHeader className="p-4 pb-2 shrink-0">
         <CardTitle className="flex items-center gap-2 text-sm">
           <MessageSquare className="h-4 w-4 text-primary" />
@@ -74,8 +74,8 @@ export function CrmAskYourCrm() {
           <Badge variant="secondary" className="text-[10px] ml-auto">Natural Language</Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0 flex-1 flex flex-col">
-        <ScrollArea ref={scrollRef} className="flex-1 px-4 py-2">
+      <CardContent className="p-0 flex-1 flex flex-col min-h-0">
+        <ScrollArea ref={scrollRef} className="flex-1 min-h-0 px-4 py-2">
           <div className="space-y-3">
             {messages.map((msg, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
