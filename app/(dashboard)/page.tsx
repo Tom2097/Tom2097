@@ -87,6 +87,7 @@ export default async function DashboardPage() {
       anomalies={anomalies}
       subscription={subscription}
       operations={monitorsResult.monitors}
+      activeOperationsCount={monitorsResult.total}
     />
   )
 }

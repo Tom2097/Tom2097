@@ -1192,6 +1192,7 @@
       "teamMember": "ਟੀਮ ਮੈਂਬਰ",
       "selectMember": "ਮੈਂਬਰ ਚੁਣੋ",
       "skill": "ਸਕਿੱਲ",
+      "category": "ਸ਼੍ਰੇਣੀ",
       "selectSkill": "ਸਕਿੱਲ ਚੁਣੋ",
       "level": "ਪੱਧਰ",
       "selectLevel": "ਪੱਧਰ ਚੁਣੋ",
@@ -1486,7 +1487,7 @@
         "updateConsentFailed": "ਸਹਿਮਤੀ ਅਪਡੇਟ ਕਰਨ ਵਿੱਚ ਅਸਫ਼ਲ"
       },
       "success": {
-        "exportScheduled": "ਤੁਹਾਡਾ ਡੇਟਾ ਹਟਾਉਣ ਲਈ ਨਿਰਧਾਰਤ ਕੀਤਾ ਗਿਆ ਹੈ",
+        "deletionScheduled": "ਤੁਹਾਡਾ ਡੇਟਾ ਹਟਾਉਣ ਲਈ ਨਿਰਧਾਰਤ ਕੀਤਾ ਗਿਆ ਹੈ",
         "requestSubmitted": "{type} ਬੇਨਤੀ ਸਬਮਿਟ ਕੀਤੀ ਗਈ",
         "consentUpdated": "ਸਹਿਮਤੀ {action}"
       }

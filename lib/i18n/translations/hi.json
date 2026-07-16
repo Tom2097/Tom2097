@@ -1192,6 +1192,7 @@
       "teamMember": "टीम सदस्य",
       "selectMember": "सदस्य चुनें",
       "skill": "स्किल",
+      "category": "श्रेणी",
       "selectSkill": "स्किल चुनें",
       "level": "स्तर",
       "selectLevel": "स्तर चुनें",
@@ -1486,7 +1487,7 @@
         "updateConsentFailed": "सहमति अपडेट करने में विफल"
       },
       "success": {
-        "exportScheduled": "आपका डेटा हटाने के लिए निर्धारित किया गया है",
+        "deletionScheduled": "आपका डेटा हटाने के लिए निर्धारित किया गया है",
         "requestSubmitted": "{type} अनुरोध सबमिट किया गया",
         "consentUpdated": "सहमति {action}"
       }

@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, Activity, Zap, Shield, Globe, Crown, Lock, ChevronRight, RefreshCw, AlertTriangle, BarChart2, TrendingUp, MessageSquare, Users, FileText } from 'lucide-react'
+import { ArrowRight, Activity, Zap, Shield, Crown, Lock, ChevronRight, RefreshCw, AlertTriangle, BarChart2, TrendingUp, MessageSquare, Users, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -25,6 +25,7 @@ interface DashboardContentProps {
   anomalies: { anomalies: any[] }
   subscription: { plan_id: string; status: string; current_period_end: string | null } | null
   operations: any[]
+  activeOperationsCount: number
 }
 
 export default function DashboardContent({
@@ -36,6 +37,7 @@ export default function DashboardContent({
   anomalies,
   subscription,
   operations,
+  activeOperationsCount,
 }: DashboardContentProps) {
   const { t } = useI18n()
   const router = useRouter()
@@ -186,13 +188,7 @@ export default function DashboardContent({
 
          {stats ? (
            <MetricGrid columns={4}>
-              <MetricCard label={t("dashboard.metrics.aiAccuracy")} value={`${stats.ai_accuracy}%`} variant="highlight" />
-              <MetricCard label={t("dashboard.metrics.enterpriseClients")} value={`${stats.enterprise_clients}+`} />
-              <MetricCard
-                label={t("dashboard.metrics.dataStreams")}
-                value={stats.data_streams >= 1_000_000 ? `${(stats.data_streams / 1_000_000).toFixed(0)}M+` : stats.data_streams.toLocaleString()}
-              />
-              <MetricCard label={t("dashboard.metrics.activeOperations")} value={stats.active_operations} subtitle={t("dashboard.metrics.runningWorkflows")} />
+              <MetricCard label={t("dashboard.metrics.activeOperations")} value={activeOperationsCount} subtitle={t("dashboard.metrics.runningWorkflows")} />
               <MetricCard label={t("dashboard.metrics.riskScore")} value={riskData.length > 0 ? `${Math.round(riskData[riskData.length - 1].value)}` : '0'} subtitle={t("dashboard.metrics.currentRiskLevel")} />
               <MetricCard label={t("dashboard.metrics.anomaliesDetected")} value={anomalies.anomalies.length} subtitle={t("dashboard.metrics.last30Days")} />
               <MetricCard label={t("dashboard.metrics.forecastGrowth")} value={forecastData && forecastData.length >= 2 ? `${Math.round(((forecastData[forecastData.length - 1].forecast - (forecastData[0].actual || 0)) / ((forecastData[0].actual || 1))) * 100)}%` : '0%'} subtitle={t("dashboard.metrics.next6Months")} />
@@ -395,10 +391,6 @@ export default function DashboardContent({
                  : t("dashboard.modules.fallbackDescription")}
              </p>
            </div>
-           <Button variant="outline" size="sm" className="gap-2">
-             <Globe className="h-4 w-4" />
-             {t("dashboard.modules.viewAll")}
-           </Button>
         </div>
 
         <ModuleGrid>
@@ -435,20 +427,6 @@ export default function DashboardContent({
           ))}
         </ModuleGrid>
       </section>
-
-      <section>
-          <ChartContainer title={t("dashboard.charts.operationalPerformance.title")}>
-           {operationalData.length > 0 ? (
-             <LiveChart data={operationalData} dataKey="value" type="line" height={250} />
-           ) : (
-              <div className="flex h-[250px] items-center justify-center text-sm text-muted-foreground">
-                {t("dashboard.charts.operationalPerformance.fallbackNoData")}
-              </div>
-           )}
-          </ChartContainer>
-      </section>
-
-
     </div>
   )
 }

@@ -476,7 +476,7 @@ export default function SkillMatrixPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>{t('skillMatrix.page.skill')}</TableHead>
-                <TableHead>{t('skillMatrix.page.gap')}</TableHead>
+                <TableHead>{t('skillMatrix.page.category')}</TableHead>
                 <TableHead>{t('skillMatrix.page.expected')}</TableHead>
                 <TableHead>{t('skillMatrix.page.actual')}</TableHead>
                 <TableHead>{t('skillMatrix.page.gap')}</TableHead>

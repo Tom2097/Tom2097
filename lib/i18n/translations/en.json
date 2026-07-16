@@ -1192,6 +1192,7 @@
       "teamMember": "Team Member",
       "selectMember": "Select member",
       "skill": "Skill",
+      "category": "Category",
       "selectSkill": "Select skill",
       "level": "Level",
       "selectLevel": "Select level",
@@ -1486,7 +1487,7 @@
         "updateConsentFailed": "Failed to update consent"
       },
       "success": {
-        "exportScheduled": "Your data has been scheduled for deletion",
+        "deletionScheduled": "Your data has been scheduled for deletion",
         "requestSubmitted": "{type} request submitted",
         "consentUpdated": "Consent {action}"
       }

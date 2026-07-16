@@ -122,7 +122,7 @@ export default function DsarPage() {
         throw new Error(errorData.error || t('dsar.page.errors.deleteFailed'));
       }
       
-      toast.success(t('dsar.page.success.exportScheduled'));
+      toast.success(t('dsar.page.success.deletionScheduled'));
       setDeleteDialogOpen(false);
       fetchData();
     } catch (error) {
