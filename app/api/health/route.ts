@@ -29,16 +29,16 @@ async function checkDatabase(): Promise<{ healthy: boolean; latency?: number }> 
     // Import Supabase client
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
-    
+
     const start = Date.now()
-    const { data, error } = await supabase.rpc('version')
+    const { error } = await supabase.from('profiles').select('id').limit(1)
     const latency = Date.now() - start
-    
+
     if (error) {
       console.error('[Health] Database error:', error)
       return { healthy: false }
     }
-    
+
     return { healthy: true, latency }
   } catch {
     return { healthy: false }
@@ -52,8 +52,8 @@ async function checkRedis(): Promise<{ healthy: boolean; latency?: number }> {
   try {
     const { Redis } = await import('@upstash/redis')
     const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
     })
     
     const start = Date.now()

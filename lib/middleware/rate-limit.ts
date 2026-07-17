@@ -69,8 +69,8 @@ let redis: Redis | null = null
 function getRedis(): Redis {
   if (!redis) {
     redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
     })
   }
   return redis
@@ -96,7 +96,7 @@ export function getClientIP(request: NextRequest): string {
   const xRealIP = request.headers.get('x-real-ip')
   const cfConnectingIP = request.headers.get('cf-connecting-ip')
   
-  // Vercel adds x-forwarded-for and x-real-ip headers
+  // Reverse proxies (Traefik, etc.) set x-forwarded-for and x-real-ip
   if (xForwardedFor) {
     // Take the first IP in the chain (original client)
     return xForwardedFor.split(',')[0].trim()
