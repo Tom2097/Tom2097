@@ -26,23 +26,24 @@ function isIndianIP(ip: string): boolean {
 
 export async function detectGeoLocation(): Promise<GeoLocation> {
   const headersList = await headers()
-  
-  // Try cloud provider headers first
-  const vercelCountry = headersList.get("x-vercel-ip-country")
+
+  // No edge-provided geo-IP headers when self-hosted (Vercel's x-vercel-ip-*
+  // headers only exist on Vercel's own edge network). Cloudflare's
+  // cf-ipcountry still works if it's ever put in front; otherwise fall back
+  // to the IP-range heuristic below.
   const cfCountry = headersList.get("cf-ipcountry")
   const xff = headersList.get("x-forwarded-for")
   const realIp = headersList.get("x-real-ip")
-  
-  const countryCode = vercelCountry || cfCountry || "US"
   const ip = xff?.split(",")[0]?.trim() || realIp || ""
-  
-  const isIndia = countryCode === "IN" || isIndianIP(ip)
-  
+
+  const isIndia = cfCountry === "IN" || (!cfCountry && isIndianIP(ip))
+  const countryCode = cfCountry || (isIndia ? "IN" : "US")
+
   return {
     countryCode,
     countryName: getCountryName(countryCode),
-    region: headersList.get("x-vercel-ip-country-region") || "",
-    city: headersList.get("x-vercel-ip-city") || "",
+    region: "",
+    city: "",
     isIndia,
   }
 }

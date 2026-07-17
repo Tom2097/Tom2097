@@ -30,7 +30,9 @@ function parseAcceptLanguage(header: string | null): string[] {
 }
 
 export function middleware(request: NextRequest) {
-  const country = request.headers.get('x-vercel-ip-country') || null
+  // Vercel's x-vercel-ip-country only exists on Vercel's edge network; self-hosted
+  // behind Coolify there's no equivalent unless Cloudflare is put in front.
+  const country = request.headers.get('cf-ipcountry') || null
   const acceptLanguage = request.headers.get('accept-language')
   const browserLanguages = parseAcceptLanguage(acceptLanguage)
   const existingRegion = request.cookies.get(REGION_COOKIE)?.value

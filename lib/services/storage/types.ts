@@ -56,7 +56,7 @@ export interface StorageProvider {
 }
 
 export interface StorageConfig {
-  provider: 'local' | 's3' | 'r2' | 'vercel'
+  provider: 'local' | 's3' | 'r2'
   options: Record<string, string>
 }
 

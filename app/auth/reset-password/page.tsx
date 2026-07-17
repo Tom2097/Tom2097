@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { AlertCircle, Loader2, Check } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 
-const PRODUCTION_URL = process.env.NEXT_PUBLIC_APP_URL || "https://v0-digit-git-main-offtrackdanny01-4714s-projects.vercel.app"
+const PRODUCTION_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://digit-ai.org"
 
 function ResetPasswordForm() {
   const { t } = useI18n()
