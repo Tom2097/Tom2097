@@ -1,7 +1,6 @@
 import { getTranslator } from "@/lib/i18n/server"
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { I18nProvider } from '@/components/providers/i18n-provider'
@@ -51,7 +50,6 @@ export default async function RootLayout({
              {children}
            </ErrorBoundary>
          </I18nProvider>
-         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   )
