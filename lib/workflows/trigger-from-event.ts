@@ -16,8 +16,12 @@ export async function triggerWorkflowsFromDocumentEvent(
   let triggered = 0
 
   for (const wf of workflows) {
-    const result = await triggerWorkflow(wf, "event", input, startedBy)
-    if (result) triggered++
+    try {
+      const result = await triggerWorkflow(wf, "event", input, startedBy)
+      if (result) triggered++
+    } catch (err) {
+      console.error(`[workflows] event-triggered run failed for ${wf.id}:`, err)
+    }
   }
 
   return triggered

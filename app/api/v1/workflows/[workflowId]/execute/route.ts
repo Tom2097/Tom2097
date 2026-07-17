@@ -18,7 +18,13 @@ const post = withAuth(
       // no body is fine — manual runs may not need input
     }
 
-    const run = await triggerWorkflow(workflow, "manual", input, userId)
+    let run
+    try {
+      run = await triggerWorkflow(workflow, "manual", input, userId)
+    } catch (err) {
+      console.error(`[workflows] manual execute failed for ${workflow.id}:`, err)
+      return NextResponse.json({ error: "Execution failed" }, { status: 500 })
+    }
     if (!run) return NextResponse.json({ error: "Failed to start execution" }, { status: 500 })
 
     await logAuthEvent({
@@ -31,7 +37,7 @@ const post = withAuth(
       ipAddress: getClientIp(req.headers),
     })
 
-    return NextResponse.json(run, { status: 202 })
+    return NextResponse.json(run)
   },
   { requireAll: ["workflows:write"] },
 )

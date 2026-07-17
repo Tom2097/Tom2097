@@ -10,12 +10,23 @@ export async function GET(req: NextRequest) {
   }
 
   const due = await listDueScheduledWorkflows()
-  const results: Array<{ workflowId: string; executionId: string | null }> = []
+  const results: Array<{ workflowId: string; executionId: string | null; error?: string }> = []
 
   for (const workflow of due) {
-    const run = await triggerWorkflow(workflow, "schedule", {}, null)
-    await advanceSchedule(workflow)
-    results.push({ workflowId: workflow.id, executionId: run?.executionId ?? null })
+    try {
+      // Advance first so a failing/throwing workflow doesn't get stuck
+      // re-triggering every tick -- a missed run is safer than a duplicate one.
+      await advanceSchedule(workflow)
+      const run = await triggerWorkflow(workflow, "schedule", {}, null)
+      results.push({ workflowId: workflow.id, executionId: run?.executionId ?? null })
+    } catch (err) {
+      console.error(`[workflows] scheduled run failed for ${workflow.id}:`, err)
+      results.push({
+        workflowId: workflow.id,
+        executionId: null,
+        error: err instanceof Error ? err.message : "Unknown error",
+      })
+    }
   }
 
   return NextResponse.json({ triggered: results.length, results })

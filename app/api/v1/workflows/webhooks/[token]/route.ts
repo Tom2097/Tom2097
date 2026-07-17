@@ -23,8 +23,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     // empty body is fine for webhook pings
   }
 
-  const run = await triggerWorkflow(workflow, "webhook", input, null)
+  let run
+  try {
+    run = await triggerWorkflow(workflow, "webhook", input, null)
+  } catch (err) {
+    console.error(`[workflows] webhook execute failed for ${workflow.id}:`, err)
+    return NextResponse.json({ error: "Execution failed" }, { status: 500 })
+  }
   if (!run) return NextResponse.json({ error: "Failed to start execution" }, { status: 500 })
 
-  return NextResponse.json(run, { status: 202 })
+  return NextResponse.json(run)
 }
