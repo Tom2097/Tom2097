@@ -127,6 +127,19 @@ describe("Subscription Lifecycle", () => {
       const result = await isWithinRefundWindow("org_123")
       expect(result).toBe(false)
     })
+
+    it("should return false for a future billing start date", async () => {
+      const futureDate = new Date()
+      futureDate.setDate(futureDate.getDate() + 1)
+      mockSupabase.single.mockResolvedValueOnce({
+        data: {
+          current_period_start: futureDate.toISOString(),
+          billing_interval: "month",
+        },
+      })
+
+      await expect(isWithinRefundWindow("org_123")).resolves.toBe(false)
+    })
   })
   
   describe("processRefund", () => {
