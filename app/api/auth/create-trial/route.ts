@@ -6,6 +6,7 @@ import { startTrial } from "@/lib/billing/subscription-lifecycle"
 import { logAuthEvent } from "@/lib/auth/audit"
 import { v4 as uuidv4 } from "uuid"
 import { createHash } from "node:crypto"
+import { getAuthenticatedUser, handleAuthError } from "@/lib/auth/server-auth"
 
 function generateSlug(name: string): string {
   return name
@@ -19,16 +20,41 @@ function generateSlug(name: string): string {
 // Creates an organization, profile, and trial subscription for a new user.
 export async function POST(request: Request) {
   try {
-    const { userId, email, fullName, companyName } = await request.json()
+    const user = await getAuthenticatedUser()
+    const { fullName, companyName } = await request.json()
+    const userId = user.id
+    const email = user.email
 
-    if (!userId || !email) {
+    if (!email) {
       return NextResponse.json(
-        { error: "Missing required fields: userId, email" },
+        { error: "The authenticated account does not have an email address" },
         { status: 400 }
       )
     }
 
     const db = createServiceClient()
+
+    // Trial provisioning is a one-time signup operation. Never upsert here:
+    // overwriting an existing profile could move an account to another tenant
+    // and grant it an administrator role.
+    const { data: existingProfile, error: profileLookupError } = await db
+      .from("profiles")
+      .select("id")
+      .eq("id", userId)
+      .maybeSingle()
+
+    if (profileLookupError) {
+      console.error("[v0] Error checking existing profile:", profileLookupError)
+      return NextResponse.json({ error: "Failed to verify account state" }, { status: 500 })
+    }
+
+    if (existingProfile) {
+      return NextResponse.json(
+        { error: "A profile already exists for this account" },
+        { status: 409 }
+      )
+    }
+
     const organizationId = uuidv4()
     const slug = generateSlug(companyName || email.split("@")[0])
 
@@ -48,8 +74,8 @@ export async function POST(request: Request) {
       )
     }
 
-    // 2. Create or update profile
-    const { error: profileError } = await db.from("profiles").upsert({
+    // 2. Create the profile. A concurrent retry fails instead of overwriting it.
+    const { error: profileError } = await db.from("profiles").insert({
       id: userId,
       email,
       full_name: fullName || email.split("@")[0],
@@ -57,7 +83,7 @@ export async function POST(request: Request) {
       role: "admin",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    }, { onConflict: "id" })
+    })
 
     if (profileError) {
       console.error("[v0] Error creating profile:", profileError)
@@ -144,6 +170,9 @@ export async function POST(request: Request) {
       message: "Trial created successfully",
     })
   } catch (error) {
+    if (error instanceof Error && ["Unauthorized", "Suspended"].includes(error.message)) {
+      return handleAuthError(error)
+    }
     console.error("[v0] Error creating trial:", error)
     return NextResponse.json(
       { error: "An unexpected error occurred while creating your trial" },
