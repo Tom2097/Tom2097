@@ -32,11 +32,16 @@ export async function createWebAuthnRegistrationOptions(userId: string, email: s
   })
 
   const db = createServiceClient()
-  await db.from("webauthn_challenges").insert({
+  const { error } = await db.from("webauthn_challenges").insert({
     email: email.toLowerCase(),
     challenge: options.challenge,
     expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
   })
+
+  if (error) {
+    logger.logError("[webauthn] Failed to persist registration challenge", { error })
+    throw new Error("Failed to persist registration challenge")
+  }
 
   return options
 }
@@ -88,16 +93,6 @@ export async function verifyWebAuthnRegistrationResponse(
   }
 }
 
-interface WebAuthnCredential {
-  id: string
-  publicKey: string
-  counter: number
-  deviceType: string
-  transports?: string[]
-  createdAt: string
-  lastUsedAt?: string
-}
-
 interface RegisterWebAuthnOptions {
   userId: string
   credential: {
@@ -119,7 +114,7 @@ export async function registerWebAuthnCredential(options: RegisterWebAuthnOption
   const db = createServiceClient()
 
   try {
-    await db.from("user_devices").insert({
+    const { error } = await db.from("user_devices").insert({
       user_id: options.userId,
       credential_id: options.credential.id,
       public_key: options.credential.publicKey,
@@ -129,6 +124,11 @@ export async function registerWebAuthnCredential(options: RegisterWebAuthnOption
       device_name: options.deviceName || `Device ${new Date().toLocaleString()}`,
       last_used_at: new Date().toISOString(),
     })
+
+    if (error) {
+      logger.logError("[webauthn] Failed to save credential", { error })
+      return { success: false, error: "Failed to register device" }
+    }
     return { success: true }
   } catch (error) {
     logger.logError("[webauthn] Registration failed:", { error })

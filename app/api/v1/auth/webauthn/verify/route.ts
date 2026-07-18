@@ -1,20 +1,25 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { verifyWebAuthnRegistrationResponse, registerWebAuthnCredential } from '@/lib/auth/webauthn/service'
+import { getAuthenticatedUser, handleAuthError } from '@/lib/auth/server-auth'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, userId, credential, deviceName } = await request.json()
-    if (!email || !userId || !credential) {
-      return NextResponse.json({ error: 'email, userId, and credential are required' }, { status: 400 })
+    const user = await getAuthenticatedUser()
+    const { credential, deviceName } = await request.json()
+    if (!user.email) {
+      return NextResponse.json({ error: 'The authenticated account does not have an email address' }, { status: 400 })
+    }
+    if (!credential) {
+      return NextResponse.json({ error: 'credential is required' }, { status: 400 })
     }
 
-    const result = await verifyWebAuthnRegistrationResponse(email, credential)
+    const result = await verifyWebAuthnRegistrationResponse(user.email, credential)
     if (!result.verified || !result.credential) {
       return NextResponse.json({ error: result.error || 'Verification failed' }, { status: 400 })
     }
 
     const saved = await registerWebAuthnCredential({
-      userId,
+      userId: user.id,
       credential: {
         id: result.credential.id,
         publicKey: result.credential.publicKey,
@@ -30,7 +35,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, counter: result.credential.counter })
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && ['Unauthorized', 'Suspended'].includes(error.message)) {
+      return handleAuthError(error)
+    }
     return NextResponse.json({ error: 'Failed to verify device' }, { status: 500 })
   }
 }
