@@ -1,0 +1,16 @@
+stages:
+  - verify
+
+runner-verification:
+  stage: verify
+  tags:
+    - hetzner
+    - docker
+    - tom2097
+  image: node:22-alpine
+  script:
+    - node --version
+    - corepack enable
+    - pnpm --version
+    - test -f package.json
+    - echo "Hetzner GitLab Runner is operational"
