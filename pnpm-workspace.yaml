@@ -8,3 +8,6 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - unrs-resolver
+overrides:
+  lodash: 4.18.1
+  postcss: 8.5.19
