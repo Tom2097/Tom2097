@@ -2,6 +2,7 @@
 
 import { createServiceClient } from "@/lib/supabase/service"
 import { logger } from "@/lib/logging"
+import { getAuthenticatedUser } from "@/lib/auth/server-auth"
 import {
   getActiveKycProvider,
   getKycProviderConfig,
@@ -29,6 +30,7 @@ interface KYCVerificationResult {
   verificationMethod?: "automated" | "manual"
   requiresManualReview?: boolean
   manualReviewNotes?: string
+  simulated?: boolean
 }
 
 interface KYCVerificationOptions {
@@ -49,7 +51,8 @@ interface KYCVerificationOptions {
 export async function verifyIdentityWithKYC(
   options: KYCVerificationOptions
 ): Promise<KYCVerificationResult> {
-  const { userId, selfieImage, idType, idNumber, idFrontImage, fullName } = options
+  const user = await getAuthenticatedUser()
+  const { selfieImage, idType } = options
 
   // Validate required fields
   if (!selfieImage || !idType) {
@@ -67,14 +70,25 @@ export async function verifyIdentityWithKYC(
     const config = getKycProviderConfig(providerName)
     if (config) {
       const result = await performProviderKycCheck(config, options)
-      await storeKYCVerificationResult(userId, result)
+      await storeKYCVerificationResult(user.id, result)
       return result
     }
   }
 
-  // Fall back to simulated verification
+  if (process.env.NODE_ENV === "production") {
+    const result: KYCVerificationResult = {
+      verified: false,
+      confidenceScore: 0,
+      requiresManualReview: true,
+      manualReviewNotes: "KYC provider is not configured",
+    }
+    await storeKYCVerificationResult(user.id, result)
+    return result
+  }
+
+  // Explicit development-only demo verification.
   const result = await simulateKYCVerification(options)
-  await storeKYCVerificationResult(userId, result)
+  await storeKYCVerificationResult(user.id, result)
   return result
 }
 
@@ -178,7 +192,8 @@ async function simulateKYCVerification(
     nameOnId: options.fullName,
     verificationMethod: requiresManualReview ? undefined : "automated",
     requiresManualReview,
-    manualReviewNotes: requiresManualReview ? "Confidence score below threshold" : undefined
+    manualReviewNotes: "SIMULATED DEVELOPMENT RESULT — not a KYC decision",
+    simulated: true,
   }
 }
 
@@ -238,17 +253,18 @@ async function storeKYCVerificationResult(
  * Request manual review for KYC verification
  */
 export async function requestKYCManualReview(
-  userId: string,
+  _userId: string,
   options: KYCVerificationOptions,
   notes?: string
 ): Promise<{ success: boolean; reviewId?: string }> {
+  const user = await getAuthenticatedUser()
   const db = createServiceClient()
 
   try {
     const { data: review, error } = await db
       .from("kyc_verification_reviews")
       .insert({
-        user_id: userId,
+        user_id: user.id,
         selfie_image: options.selfieImage,
         id_type: options.idType,
         id_number: options.idNumber,
@@ -278,6 +294,8 @@ export async function requestKYCManualReview(
  * Get KYC verification status for a user
  */
 export async function getKYCVerificationStatus(userId: string): Promise<KYCVerificationResult | null> {
+  const user = await getAuthenticatedUser()
+  if (user.id !== userId) throw new Error("Forbidden")
   const db = createServiceClient()
 
   try {
