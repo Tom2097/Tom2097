@@ -36,7 +36,6 @@ deploy-to-github:
     - apk add --no-cache git openssh-client
     - install -d -m 700 "$HOME/.ssh"
     - ssh-keyscan github.com > "$HOME/.ssh/known_hosts"
-    - chmod 600 /run/secrets/github_mirror_key
   script:
     - git remote remove github 2>/dev/null || true
     - git remote add github git@github.com:Tom2097/Tom2097.git
