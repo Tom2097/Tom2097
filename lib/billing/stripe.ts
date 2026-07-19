@@ -1,6 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { logAuthEvent } from "@/lib/auth/audit"
-import { claimWebhookEvent } from "./idempotency"
+import { claimWebhookEvent, completeWebhookEvent, failWebhookEvent } from "./idempotency"
 import type { BillingPlan } from "./types"
 import type Stripe from "stripe"
 import { logger } from "@/lib/logging"
@@ -238,7 +238,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
           const isTrialing = subscription.status === "trialing"
           const status = isTrialing ? "trialing" : "active"
 
-          await supabase
+          const { error: subscriptionError } = await supabase
             .from("subscriptions")
             .update({
               stripe_subscription_id: subscription.id,
@@ -248,8 +248,9 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
                 : null,
             })
             .eq("organization_id", orgId)
+          if (subscriptionError) throw subscriptionError
 
-          await supabase.from("billing_events").insert({
+          const { error: eventError } = await supabase.from("billing_events").insert({
             organization_id: orgId,
             event_type: isTrialing ? "subscription.trial_started" : "subscription.created",
             provider: "stripe",
@@ -257,6 +258,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
             status: "completed",
             metadata: { plan: (subscription.metadata as Record<string, string>)?.plan },
           })
+          if (eventError) throw eventError
         }
         break
       }
@@ -274,7 +276,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
           else if (isPastDue) status = "past_due"
           else if (subscription.cancel_at_period_end) status = "cancelled"
 
-          await supabase
+          const { error: subscriptionError } = await supabase
             .from("subscriptions")
             .update({
               status,
@@ -284,8 +286,9 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
               cancel_at_period_end: subscription.cancel_at_period_end,
             })
             .eq("organization_id", orgId)
+          if (subscriptionError) throw subscriptionError
 
-          await supabase.from("billing_events").insert({
+          const { error: eventError } = await supabase.from("billing_events").insert({
             organization_id: orgId,
             event_type: "subscription.updated",
             provider: "stripe",
@@ -293,6 +296,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
             status: "completed",
             metadata: { plan: (subscription.metadata as Record<string, string>)?.plan, status },
           })
+          if (eventError) throw eventError
         }
         break
       }
@@ -310,8 +314,9 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
               .select("id")
               .eq("stripe_subscription_id", subscription.id)
               .single()
+            if (subRecord.error) throw subRecord.error
 
-            await supabase.from("billing_events").insert({
+            const { error: eventError } = await supabase.from("billing_events").insert({
               organization_id: orgId,
               subscription_id: subRecord.data?.id,
               event_type: "payment.completed",
@@ -320,6 +325,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
               amount: invoice.amount_paid / 100,
               status: "completed",
             })
+            if (eventError) throw eventError
           }
         }
         break
@@ -333,7 +339,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
           const orgId = (subscription.metadata as Record<string, string>)?.organization_id
 
           if (orgId) {
-            await supabase.from("billing_events").insert({
+            const { error: eventError } = await supabase.from("billing_events").insert({
               organization_id: orgId,
               event_type: "payment.failed",
               provider: "stripe",
@@ -341,6 +347,7 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
               status: "failed",
               error_message: invoice.last_finalization_error?.code || "Payment failed",
             })
+            if (eventError) throw eventError
           }
         }
         break
@@ -351,23 +358,27 @@ export async function handleStripeWebhook(event: Stripe.Event): Promise<void> {
         const orgId = (subscription.metadata as Record<string, string>)?.organization_id
 
         if (orgId) {
-          await supabase
+          const { error: subscriptionError } = await supabase
             .from("subscriptions")
             .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
             .eq("organization_id", orgId)
+          if (subscriptionError) throw subscriptionError
 
-          await supabase.from("billing_events").insert({
+          const { error: eventError } = await supabase.from("billing_events").insert({
             organization_id: orgId,
             event_type: "subscription.cancelled",
             provider: "stripe",
             external_id: subscription.id,
             status: "completed",
           })
+          if (eventError) throw eventError
         }
         break
       }
     }
+    await completeWebhookEvent("stripe", event.id)
   } catch (err) {
+    await failWebhookEvent("stripe", event.id, err)
     console.error("[v0] Failed to handle Stripe webhook:", err)
     throw err
   }
