@@ -12,7 +12,6 @@ interface Account {
   health: "healthy" | "at_risk" | "churned"
   score: number
   renewal: string | null
-  plan: string
   lastActivity: string
 }
 
@@ -49,10 +48,7 @@ export function CrmCustomerSuccess() {
             health_score?: number;
             renewal?: string;
             renewal_date?: string;
-            plan?: string;
-            plan_name?: string;
-            last_activity?: string;
-            lastActivity?: string;
+            last_activity_at?: string;
           };
           return {
             id: account.id,
@@ -60,8 +56,7 @@ export function CrmCustomerSuccess() {
             health: account.health || account.health_status || "healthy",
             score: account.score || account.health_score || 0,
             renewal: account.renewal || account.renewal_date || null,
-            plan: account.plan || account.plan_name || "",
-            lastActivity: account.last_activity || account.lastActivity || "",
+            lastActivity: account.last_activity_at || "",
           };
       })
         setAccounts(items)
@@ -126,11 +121,10 @@ export function CrmCustomerSuccess() {
                       <p className="font-medium text-foreground text-sm">{account.company}</p>
                       <Badge className={cn("text-[10px] px-1.5 h-4 capitalize font-normal border", healthStyles[account.health])}>{account.health}</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{account.plan} plan</p>
                     <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
                       <span className="flex items-center gap-1"><Heart className="w-3 h-3" />Score: {account.score}%</span>
                       {account.renewal && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Renewal: {new Date(account.renewal).toLocaleDateString()}</span>}
-                      <span>Last activity: {account.lastActivity}</span>
+                      {account.lastActivity && <span>Last activity: {new Date(account.lastActivity).toLocaleDateString()}</span>}
                     </div>
                   </div>
                 </div>

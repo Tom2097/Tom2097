@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
 import { createServiceClient } from '@/lib/supabase/service'
+import { withAuth, type AuthContext } from '@/lib/auth/with-auth'
 
 export async function GET(_req: NextRequest) {
   try {
@@ -29,13 +30,12 @@ export async function GET(_req: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function createRoleHandler(request: NextRequest, ctx: AuthContext) {
   try {
-    const user = await getAuthenticatedUser()
-    const organizationId = await getOrganizationId(user.id)
+    const organizationId = ctx.organizationId
 
     const { name, description, permissions } = await request.json()
-    
+
     if (!name || !permissions) {
       return NextResponse.json(
         { error: 'Name and permissions are required' },
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createServiceClient()
-    
+
     const { data, error } = await supabase
       .from('roles')
       .insert({
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       })
       .select()
       .single()
-    
+
     if (error) {
       console.error('[Roles] Error creating role:', error)
       return NextResponse.json(
@@ -64,20 +64,19 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
-    
+
     return NextResponse.json({ success: true, role: data })
   } catch (error) {
     return handleAuthError(error as Error)
   }
 }
 
-export async function PUT(request: NextRequest) {
+async function updateRoleHandler(request: NextRequest, ctx: AuthContext) {
   try {
-    const user = await getAuthenticatedUser()
-    const organizationId = await getOrganizationId(user.id)
+    const organizationId = ctx.organizationId
 
     const { id, name, description, permissions } = await request.json()
-    
+
     if (!id || !name || !permissions) {
       return NextResponse.json(
         { error: 'ID, name, and permissions are required' },
@@ -86,7 +85,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const supabase = await createServiceClient()
-    
+
     const { data, error } = await supabase
       .from('roles')
       .update({
@@ -98,7 +97,7 @@ export async function PUT(request: NextRequest) {
       .eq('organization_id', organizationId)
       .select()
       .single()
-    
+
     if (error) {
       console.error('[Roles] Error updating role:', error)
       return NextResponse.json(
@@ -106,20 +105,19 @@ export async function PUT(request: NextRequest) {
         { status: 500 }
       )
     }
-    
+
     return NextResponse.json({ success: true, role: data })
   } catch (error) {
     return handleAuthError(error as Error)
   }
 }
 
-export async function DELETE(request: NextRequest) {
+async function deleteRoleHandler(request: NextRequest, ctx: AuthContext) {
   try {
-    const user = await getAuthenticatedUser()
-    const organizationId = await getOrganizationId(user.id)
+    const organizationId = ctx.organizationId
 
     const { id } = await request.json()
-    
+
     if (!id) {
       return NextResponse.json(
         { error: 'Role ID is required' },
@@ -128,13 +126,13 @@ export async function DELETE(request: NextRequest) {
     }
 
     const supabase = await createServiceClient()
-    
+
     const { error } = await supabase
       .from('roles')
       .delete()
       .eq('id', id)
       .eq('organization_id', organizationId)
-    
+
     if (error) {
       console.error('[Roles] Error deleting role:', error)
       return NextResponse.json(
@@ -142,9 +140,13 @@ export async function DELETE(request: NextRequest) {
         { status: 500 }
       )
     }
-    
+
     return NextResponse.json({ success: true })
   } catch (error) {
     return handleAuthError(error as Error)
   }
 }
+
+export const POST = withAuth(createRoleHandler, { requireAll: ['roles:write'] })
+export const PUT = withAuth(updateRoleHandler, { requireAll: ['roles:write'] })
+export const DELETE = withAuth(deleteRoleHandler, { requireAll: ['roles:write'] })

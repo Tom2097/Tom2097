@@ -303,6 +303,12 @@ export default function RecordingsPage() {
                   <ListChecks className="h-4 w-4 text-muted-foreground" />
                   {t('recordings.page.actionItems')}
                 </h3>
+                {actionItems.some(item => item.isSimulated) && (
+                  <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400 mb-3">
+                    <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                    {t('recordings.page.simulatedActionItemsNotice')}
+                  </div>
+                )}
                 {actionItems.length === 0 ? (
                   <p className="text-sm text-muted-foreground">{t('recordings.page.noActionItems')}</p>
                 ) : (

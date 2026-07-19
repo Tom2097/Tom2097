@@ -100,7 +100,7 @@ export async function computeDuplicates(organizationId: string) {
 
   const results: Array<{
     id: string; type: "contact"; name: string; email?: string; phone?: string; matchScore: number
-    existing: { name: string; email?: string; phone?: string }
+    existing: { id: string; name: string; email?: string; phone?: string }
     fields: Array<{ field: string; value1: string; value2: string; match: boolean }>
   }> = []
   const claimed = new Set<string>()
@@ -125,7 +125,7 @@ export async function computeDuplicates(organizationId: string) {
         email: b.email ?? undefined,
         phone: b.phone ?? undefined,
         matchScore,
-        existing: { name: `${a.first_name} ${a.last_name}`.trim(), email: a.email ?? undefined, phone: a.phone ?? undefined },
+        existing: { id: a.id, name: `${a.first_name} ${a.last_name}`.trim(), email: a.email ?? undefined, phone: a.phone ?? undefined },
         fields: [
           { field: "Name", value1: `${a.first_name} ${a.last_name}`.trim(), value2: `${b.first_name} ${b.last_name}`.trim(), match: nameMatch },
           { field: "Email", value1: a.email ?? "", value2: b.email ?? "", match: Boolean(emailMatch) },
@@ -145,16 +145,8 @@ export async function mergeDuplicateContact(organizationId: string, duplicateCon
   const match = duplicates.find((d) => d.id === duplicateContactId)
   if (!match) return false
 
-  const { data: primary } = await db
-    .from("crm_contacts")
-    .select("id")
-    .eq("organization_id", organizationId)
-    .eq("email", match.existing.email ?? "__none__")
-    .neq("id", duplicateContactId)
-    .limit(1)
-    .maybeSingle()
-  const primaryId = primary?.id
-  if (!primaryId) return false
+  const primaryId = match.existing.id
+  if (!primaryId || primaryId === duplicateContactId) return false
 
   await db.from("crm_deals").update({ contact_id: primaryId }).eq("contact_id", duplicateContactId).eq("organization_id", organizationId)
   await db.from("crm_activities").update({ entity_id: primaryId }).eq("entity_id", duplicateContactId).eq("entity_type", "contact").eq("organization_id", organizationId)

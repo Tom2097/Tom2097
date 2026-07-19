@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { getAuthenticatedUser, getOrganizationId, requirePlatformAdmin, handleAuthError } from "@/lib/auth/server-auth"
+import { requireIpAllowlisted } from "@/lib/auth/ip-allowlist"
 import { listAllIncidents, getIncidentAnyOrg, createIncident, updateIncident } from "@/lib/monitoring/engine"
 import type { IncidentSeverity, IncidentStatus } from "@/lib/monitoring/types"
 
@@ -13,6 +14,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
     await requirePlatformAdmin(user.id)
+    await requireIpAllowlisted(request)
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status") as IncidentStatus | null
     const { incidents, total } = await listAllIncidents({ status: status ?? undefined, limit: 200 })
@@ -26,6 +28,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
     await requirePlatformAdmin(user.id)
+    await requireIpAllowlisted(request)
     const body = await request.json()
     const { action } = body as { action?: string }
 

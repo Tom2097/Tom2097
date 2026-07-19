@@ -17,7 +17,7 @@ export const GET = withAuth(async (req: NextRequest, { params, organizationId, u
   }
 
   return NextResponse.json(capa)
-})
+}, { requireAny: ["capas:read", "compliance:read"] })
 
 // PATCH /api/v1/compliance/capas/[id]
 export const PATCH = withAuth(async (req: NextRequest, { params, organizationId, userId }) => {
@@ -40,4 +40,4 @@ export const PATCH = withAuth(async (req: NextRequest, { params, organizationId,
   )
 
   return NextResponse.json(updatedCapa)
-})
+}, { requireAny: ["capas:write", "compliance:write"] })

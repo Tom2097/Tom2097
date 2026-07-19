@@ -11,6 +11,22 @@ export async function getAuthenticatedUser() {
     throw new Error('Unauthorized')
   }
 
+  // A valid Supabase JWT alone isn't enough -- admin "suspend user" (see
+  // app/api/v1/admin/users/route.ts) only ever wrote profiles.status, which
+  // nothing on the request path checked. Reject suspended profiles here so
+  // suspension actually blocks access instead of just flipping a flag that
+  // nothing reads.
+  const serviceDb = createServiceClient()
+  const { data: profile } = await serviceDb
+    .from('profiles')
+    .select('status')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (profile?.status === 'suspended') {
+    throw new Error('Suspended')
+  }
+
   return user
 }
 
@@ -53,6 +69,12 @@ export function handleAuthError(error: Error) {
   if (error.message === 'Forbidden') {
     return NextResponse.json(
       { error: 'Forbidden' },
+      { status: 403 }
+    )
+  }
+  if (error.message === 'Suspended') {
+    return NextResponse.json(
+      { error: 'Account suspended' },
       { status: 403 }
     )
   }

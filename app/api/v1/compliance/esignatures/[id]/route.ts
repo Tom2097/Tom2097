@@ -32,10 +32,10 @@ export const GET = withAuth(async (_req: NextRequest, { params, organizationId }
     }))
 
   return NextResponse.json({ request: { ...request, auditTrail } })
-})
+}, { requireAny: ["esignatures:read", "compliance:read"] })
 
 // PATCH /api/v1/compliance/esignatures/[id]
-export const PATCH = withAuth(async (req: NextRequest, { params, organizationId, userId }) => {
+export const PATCH = withAuth(async (req: NextRequest, { params, organizationId, userId, email }) => {
   const { id } = params
   const body = await req.json()
   const ip = getClientIp(req.headers)
@@ -43,6 +43,15 @@ export const PATCH = withAuth(async (req: NextRequest, { params, organizationId,
   if (body.action === "sign") {
     const request = await getSignatureRequest(organizationId, id)
     if (!request) return NextResponse.json({ error: "Signature request not found" }, { status: 404 })
+
+    // The signer must be the authenticated caller — never trust that whoever
+    // is invoking this endpoint is actually the person named in signer_email.
+    if (request.signer_email.toLowerCase() !== (email ?? "").toLowerCase()) {
+      return NextResponse.json(
+        { error: "You are not the designated signer for this document" },
+        { status: 403 },
+      )
+    }
 
     const signatureData = typeof body.signatureData === "string" && body.signatureData.trim()
       ? body.signatureData.trim()
@@ -82,4 +91,4 @@ export const PATCH = withAuth(async (req: NextRequest, { params, organizationId,
   }
 
   return NextResponse.json({ error: "Invalid action" }, { status: 400 })
-})
+}, { requireAny: ["esignatures:write", "compliance:write"] })

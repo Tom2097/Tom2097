@@ -32,6 +32,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, capaId: capa.id })
     }
 
+    if (action.type === 'create_task') {
+      // The real Auto-Act flow (lib/operational/auto-create.ts) writes
+      // document_tasks rows for classification-driven tasks; this mirrors
+      // that for copilot-suggested ones, which have no source document, so
+      // document_id is left null (document_tasks.document_id was made
+      // nullable for exactly this case -- see migration
+      // 20260816000000_operations_module_fixes.sql).
+      const { data: task, error: taskError } = await db
+        .from('document_tasks')
+        .insert({
+          organization_id: organizationId,
+          document_id: null,
+          task_type: 'copilot',
+          task_id: null,
+          auto_created: false,
+          status: 'pending',
+          title: action.label || 'Copilot-suggested task',
+          description: action.details ?? null,
+          assignee_id: null,
+          due_date: null,
+        })
+        .select('id')
+        .single()
+
+      if (taskError || !task) {
+        return NextResponse.json({ error: 'Failed to create task' }, { status: 500 })
+      }
+      return NextResponse.json({ success: true, taskId: task.id })
+    }
+
     const { error } = await db.from('notifications').insert({
       organization_id: organizationId,
       type: NOTIFICATION_TYPE[action.type],

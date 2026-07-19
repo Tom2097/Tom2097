@@ -118,7 +118,7 @@ export default function RecommendationsPage() {
     fetch("/api/v1/onboarding/recommendations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "complete", selectedModules }),
+      body: JSON.stringify({ action: "complete", selectedModules, questionnaire: questionnaireData }),
     }).catch(() => {}).finally(() => {
       router.push("/")
     })

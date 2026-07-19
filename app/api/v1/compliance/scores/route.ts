@@ -8,4 +8,4 @@ import { computeComplianceScore } from "@/lib/compliance/scoring"
 export const GET = withAuth(async (req: NextRequest, { organizationId }) => {
   const scores = await computeComplianceScore(organizationId)
   return NextResponse.json(scores)
-})
+}, { requireAny: ["compliance:read"] })

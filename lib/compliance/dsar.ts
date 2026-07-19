@@ -120,6 +120,7 @@ export async function listConsentRecords(
 }
 
 export async function updateDsarStatus(
+  organizationId: string,
   requestId: string,
   status: DsarRequest["status"]
 ): Promise<boolean> {
@@ -128,8 +129,15 @@ export async function updateDsarStatus(
   if (status === "completed") {
     update.completed_at = new Date().toISOString()
   }
-  const { error } = await db.from("dsar_requests").update(update).eq("id", requestId)
-  return !error
+  const { data, error } = await db
+    .from("dsar_requests")
+    .update(update)
+    .eq("id", requestId)
+    .eq("organization_id", organizationId)
+    .select("id")
+  if (error) return false
+  // No row matched (either it doesn't exist or belongs to another org) — treat as not found.
+  return (data?.length ?? 0) > 0
 }
 
 export async function getDsarExportData(
@@ -139,12 +147,25 @@ export async function getDsarExportData(
   return executeDsarExport(organizationId, userId)
 }
 
+// Fields a data subject is legitimately entitled to correct about themselves
+// under a DSAR "rectification" request. Deliberately excludes privilege/tenant
+// identity columns such as `organization_id` and `role` — those must never be
+// mass-assignable from a client-supplied field name.
+export const DSAR_RECTIFIABLE_FIELDS = ["full_name", "phone"] as const
+export type DsarRectifiableField = (typeof DSAR_RECTIFIABLE_FIELDS)[number]
+
+export function isDsarRectifiableField(field: string): field is DsarRectifiableField {
+  return (DSAR_RECTIFIABLE_FIELDS as readonly string[]).includes(field)
+}
+
 export async function executeDsarRectify(
   organizationId: string,
   userId: string,
   field: string,
   value: string
 ): Promise<boolean> {
+  if (!isDsarRectifiableField(field)) return false
+
   const db = createServiceClient()
   const { error } = await db
     .from("profiles")

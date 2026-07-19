@@ -1,4 +1,4 @@
-import { validateDiscountCode as validateDiscount, applyDiscount, recordDiscountUse } from './discounts'
+import { validateDiscountCode as validateDiscount } from './discounts'
 
 interface TrialPlan {
   id: string
@@ -183,8 +183,8 @@ export function claimFoundingPlan(orgId: string, planId: string): void {
   claimedPlans.set(orgId, planId)
 }
 
-export function validateDiscountCode(code: string, plan: string): { valid: boolean; discount?: number; reason?: string } {
-  const result = validateDiscount(code, plan)
+export async function validateDiscountCode(code: string, plan: string): Promise<{ valid: boolean; discount?: number; reason?: string }> {
+  const result = await validateDiscount(code, plan)
   if (!result.valid) {
     return { valid: false, reason: result.error }
   }
@@ -208,7 +208,6 @@ export function applyDiscountCode(orgId: string, code: string): number {
   if (new Date(codeEntry.expiresAt) < new Date()) throw new Error('Discount code has expired')
   const discountValue = codeEntry.type === 'percentage' ? codeEntry.value : codeEntry.value
   codeEntry.currentUses++
-  recordDiscountUse(code)
   return discountValue
 }
 

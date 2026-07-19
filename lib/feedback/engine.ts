@@ -145,6 +145,22 @@ export async function updateFeedback(
   return data
 }
 
+/** Delete feedback. Returns false if the id doesn't exist (or isn't in this org). */
+export async function deleteFeedback(
+  organizationId: string,
+  feedbackId: string,
+): Promise<boolean> {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("feedback")
+    .delete()
+    .eq("organization_id", organizationId)
+    .eq("id", feedbackId)
+    .select("id")
+  if (error) throw error
+  return (data?.length ?? 0) > 0
+}
+
 /** Create a comment on feedback. */
 export async function createComment(
   organizationId: string,

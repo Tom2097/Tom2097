@@ -1,45 +1,44 @@
 import { NextResponse } from "next/server"
-import { createServiceClient } from "@/lib/supabase/service"
+import { getAuthenticatedUser, getOrganizationId, handleAuthError } from "@/lib/auth/server-auth"
+import { createConversation, listConversations, saveMessages } from "@/lib/ai/conversation-store"
+import type { UIMessage } from "ai"
+
+/**
+ * List/create AI assistant conversations, always scoped to the caller's own
+ * organization + user id (lib/ai/conversation-store.ts -- Module #5).
+ */
 
 export async function GET() {
   try {
-    const db = createServiceClient()
-    const { data } = await db
-      .from("ai_conversations")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(20)
+    const user = await getAuthenticatedUser()
+    const organizationId = await getOrganizationId(user.id)
 
-    return NextResponse.json(data || [])
-  } catch {
-    return NextResponse.json([])
+    const conversations = await listConversations(organizationId, user.id)
+    return NextResponse.json(conversations)
+  } catch (error) {
+    return handleAuthError(error as Error)
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const db = createServiceClient()
+    const user = await getAuthenticatedUser()
+    const organizationId = await getOrganizationId(user.id)
 
-    const { data, error } = await db
-      .from("ai_conversations")
-      .insert({
-        id: body.id || crypto.randomUUID(),
-        title: body.title || "New conversation",
-        messages: body.messages || [],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single()
+    const body = await request.json().catch(() => ({}))
+    const title = typeof body.title === "string" && body.title.trim() ? body.title : "New conversation"
 
-    if (error) throw error
+    const conversationId = await createConversation(organizationId, user.id, title)
+    if (!conversationId) {
+      return NextResponse.json({ error: "Failed to create conversation" }, { status: 500 })
+    }
 
-    return NextResponse.json(data, { status: 201 })
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed" },
-      { status: 500 }
-    )
+    if (Array.isArray(body.messages) && body.messages.length > 0) {
+      await saveMessages(conversationId, organizationId, body.messages as UIMessage[])
+    }
+
+    return NextResponse.json({ id: conversationId, title }, { status: 201 })
+  } catch (error) {
+    return handleAuthError(error as Error)
   }
 }

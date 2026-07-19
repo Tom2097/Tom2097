@@ -55,7 +55,9 @@
     "admin": "एडमिन",
     "platformCapacity": "प्लेटफॉर्म क्षमता",
     "pricing": "मूल्य निर्धारण और योजनाएं",
-    "configureWorkspace": "वर्कस्पेस कॉन्फ़िगर करें"
+    "configureWorkspace": "वर्कस्पेस कॉन्फ़िगर करें",
+    "recommendedForYou": "आपके लिए अनुशंसित",
+    "allModules": "सभी मॉड्यूल"
   },
   "benchmarks": {
     "page": {
@@ -1117,6 +1119,7 @@
       "confidence": "{confidence}% आत्मविश्वास",
       "fullTranscription": "पूर्ण ट्रांसक्रिप्शन",
       "actionItems": "एक्शन आइटम्स",
+      "simulatedActionItemsNotice": "ये एक्शन आइटम सिम्युलेटेड प्लेसहोल्डर हैं — ट्रांसक्रिप्ट पर अभी तक कोई AI एक्सट्रैक्शन नहीं चला है।",
       "noActionItems": "कोई एक्शन आइटम नहीं निकाला गया।",
       "assignTo": "सौंपें...",
       "close": "बंद करें",
@@ -1258,7 +1261,8 @@
       "open": "खोलें",
       "reconfigure": "पुनः कॉन्फ़िगर करें",
       "createNewWorkspace": "नया वर्कस्पेस बनाएँ",
-      "createWorkspaceDesc": "एक नए वर्टिकल के लिए वर्कस्पेस सेट अप करें"
+      "createWorkspaceDesc": "एक नए वर्टिकल के लिए वर्कस्पेस सेट अप करें",
+      "comingSoon": "डैशबोर्ड जल्द आ रहा है"
     }
   },
   "bulk": {

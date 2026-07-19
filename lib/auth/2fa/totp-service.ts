@@ -5,6 +5,7 @@
  */
 import speakeasy from 'speakeasy'
 import qrcode from 'qrcode'
+import { timingSafeEqual } from 'crypto'
 import {
   TOTPSecret,
   TOTPVerification,
@@ -110,7 +111,16 @@ export function hashBackupCode(code: string): string {
  * Verify backup code
  */
 export function verifyBackupCode(code: string, hashedCode: string): boolean {
-  return hashBackupCode(code) === hashedCode
+  const computed = Buffer.from(hashBackupCode(code), 'hex')
+  const stored = Buffer.from(hashedCode, 'hex')
+
+  // Buffers of different lengths would make timingSafeEqual throw; treat
+  // that as "not a match" rather than leaking length info via an exception.
+  if (computed.length !== stored.length) {
+    return false
+  }
+
+  return timingSafeEqual(computed, stored)
 }
 
 /**

@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { getAuthenticatedUser, requirePlatformAdmin, handleAuthError } from "@/lib/auth/server-auth"
+import { requireIpAllowlisted } from "@/lib/auth/ip-allowlist"
 import { getServiceMetrics } from "@/lib/observability/dashboard"
 
 export async function GET(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
     await requirePlatformAdmin(user.id)
+    await requireIpAllowlisted(request)
     const { searchParams } = new URL(request.url)
     const service = searchParams.get("service")
     if (!service) {

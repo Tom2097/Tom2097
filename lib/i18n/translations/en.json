@@ -55,7 +55,9 @@
     "admin": "Admin",
     "platformCapacity": "Platform Capacity",
     "pricing": "Pricing & Plans",
-    "configureWorkspace": "Configure Workspace"
+    "configureWorkspace": "Configure Workspace",
+    "recommendedForYou": "Recommended for you",
+    "allModules": "All modules"
   },
   "benchmarks": {
     "page": {
@@ -1117,6 +1119,7 @@
       "confidence": "{confidence}% confidence",
       "fullTranscription": "Full Transcription",
       "actionItems": "Action Items",
+      "simulatedActionItemsNotice": "These action items are simulated placeholders — no AI extraction has run over the transcript yet.",
       "noActionItems": "No action items extracted.",
       "assignTo": "Assign to...",
       "close": "Close",
@@ -1258,7 +1261,8 @@
       "open": "Open",
       "reconfigure": "Reconfigure",
       "createNewWorkspace": "Create New Workspace",
-      "createWorkspaceDesc": "Set up a workspace for a new vertical"
+      "createWorkspaceDesc": "Set up a workspace for a new vertical",
+      "comingSoon": "Dashboard coming soon"
     }
   },
   "bulk": {

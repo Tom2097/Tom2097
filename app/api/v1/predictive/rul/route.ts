@@ -11,11 +11,18 @@ export async function GET(request: NextRequest) {
     const assetId = searchParams.get("assetId")
 
     if (assetId) {
-      const [rul, alerts] = await Promise.all([
-        calculateRUL(assetId),
-        detectAnomalies(assetId),
-      ])
-      return NextResponse.json({ rul, alerts })
+      try {
+        const [rul, alerts] = await Promise.all([
+          calculateRUL(assetId, organizationId),
+          detectAnomalies(assetId, organizationId),
+        ])
+        return NextResponse.json({ rul, alerts })
+      } catch (error) {
+        if (error instanceof Error && error.message.startsWith("Asset not found")) {
+          return NextResponse.json({ error: "Asset not found" }, { status: 404 })
+        }
+        throw error
+      }
     }
 
     const schedule = await getMaintenanceSchedule(organizationId)

@@ -248,7 +248,7 @@ export function CrmSupportTickets() {
     const matchesSearch =
       ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (ticket.category ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (ticket.contact_name && ticket.contact_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (ticket.company_name && ticket.company_name.toLowerCase().includes(searchTerm.toLowerCase()))
     

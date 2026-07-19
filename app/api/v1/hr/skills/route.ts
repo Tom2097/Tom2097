@@ -9,12 +9,16 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const include = searchParams.get('include')
 
-    const catalog = getSkillCatalog(organizationId)
+    const catalog = await getSkillCatalog(organizationId)
 
     const result: Record<string, unknown> = { catalog }
     if (include === 'assessments') {
-      result.assessments = getTeamAssessments(organizationId)
-      result.teamMembers = getTeamMembers(organizationId)
+      const [assessments, teamMembers] = await Promise.all([
+        getTeamAssessments(organizationId),
+        getTeamMembers(organizationId),
+      ])
+      result.assessments = assessments
+      result.teamMembers = teamMembers
     }
 
     return NextResponse.json({ success: true, ...result })
@@ -45,7 +49,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const assessment = assessSkill(organizationId, userId, skillId, level)
+    const assessment = await assessSkill(organizationId, userId, skillId, level)
     return NextResponse.json({ success: true, assessment })
   } catch (error) {
     return handleAuthError(error as Error)

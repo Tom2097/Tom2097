@@ -81,14 +81,14 @@ export async function computeBenchmark(
 
   const anonymized = !satisfiesKAnonymity(cohortSize, DEFAULT_BENCHMARK_CONFIG.kAnonymityThreshold)
 
-  let metricValues: number[] = []
+  let scoreEntries: Array<{ organizationId: string; score: number }> = []
 
   const { data: scores } = await supabase
     .from("digit_scores")
     .select("score, organization_id")
     .in("organization_id", [organizationId, ...peerIds])
     .eq("metric", metric)
-  
+
   if (!scores || scores.length === 0) {
     const { data: fallbackScores } = await supabase
       .from("digit_scores")
@@ -96,17 +96,17 @@ export async function computeBenchmark(
       .eq("organization_id", organizationId)
       .eq("metric", metric)
       .single()
-    
+
     if (!fallbackScores) {
       throw new Error(`No data available for metric: ${metric}`)
     }
-    
-    metricValues = [fallbackScores.score]
+
+    scoreEntries = [{ organizationId, score: fallbackScores.score }]
   } else {
-    metricValues = scores.map(s => s.score)
+    scoreEntries = scores.map(s => ({ organizationId: s.organization_id, score: s.score }))
   }
 
-  if (metricValues.length === 0) {
+  if (scoreEntries.length === 0) {
     return {
       cohort: dimensionValue || "unknown",
       metric,
@@ -119,12 +119,22 @@ export async function computeBenchmark(
     }
   }
 
-  metricValues.sort((a, b) => a - b)
+  const selfEntry = scoreEntries.find(e => e.organizationId === organizationId)
+  if (!selfEntry) {
+    throw new Error(`No data available for metric: ${metric}`)
+  }
+  const selfValue = selfEntry.score
 
-  const selfValue = metricValues[0]
-  const p25 = metricValues[Math.floor(metricValues.length * 0.25)]
-  const p50 = metricValues[Math.floor(metricValues.length * 0.5)]
-  const p75 = metricValues[Math.floor(metricValues.length * 0.75)]
+  // Percentiles are computed from the peer cohort only (excluding the
+  // caller's own score) so "your value" can be compared against them,
+  // rather than being read back out of the same sorted array it was found
+  // in (which is what silently made selfValue the cohort minimum before).
+  const peerValues = scoreEntries.filter(e => e.organizationId !== organizationId).map(e => e.score)
+  const comparisonValues = (peerValues.length > 0 ? peerValues : scoreEntries.map(e => e.score)).sort((a, b) => a - b)
+
+  const p25 = comparisonValues[Math.floor(comparisonValues.length * 0.25)]
+  const p50 = comparisonValues[Math.floor(comparisonValues.length * 0.5)]
+  const p75 = comparisonValues[Math.floor(comparisonValues.length * 0.75)]
 
   const finalValue = anonymized ? addLaplaceNoise(selfValue, epsilon) : selfValue
 

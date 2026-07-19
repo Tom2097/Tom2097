@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { updateSession } from '@/lib/supabase/middleware'
 
 export const config = {
   matcher: [
@@ -29,7 +30,20 @@ function parseAcceptLanguage(header: string | null): string[] {
     .map((item) => item.lang)
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  // Auth/session handling runs first: it fail-closed redirects unauthenticated
+  // requests away from protected pages (see lib/supabase/middleware.ts) and
+  // refreshes the Supabase session cookie. Previously this function existed
+  // but was never wired into middleware.ts, so protected routes were only
+  // ever gated by client-side (bypassable) checks.
+  const sessionResponse = await updateSession(request)
+
+  // A redirect (e.g. to /auth/login, or away from /auth/* when already
+  // signed in) takes priority -- don't layer locale/region cookies onto it.
+  if (sessionResponse.headers.get('location')) {
+    return sessionResponse
+  }
+
   // Vercel's x-vercel-ip-country only exists on Vercel's edge network; self-hosted
   // behind Coolify there's no equivalent unless Cloudflare is put in front.
   const country = request.headers.get('cf-ipcountry') || null
@@ -37,16 +51,12 @@ export function middleware(request: NextRequest) {
   const browserLanguages = parseAcceptLanguage(acceptLanguage)
   const existingRegion = request.cookies.get(REGION_COOKIE)?.value
 
-  // Add detection headers for downstream use (pricing, data residency, etc.)
-  const requestHeaders = new Headers(request.headers)
-  if (country) requestHeaders.set('x-detected-country', country)
-  if (browserLanguages[0]) requestHeaders.set('x-detected-language', browserLanguages[0])
-
-  // Set/refresh region cookie. Language is never auto-switched silently;
-  // the client banner asks the user before setting NEXT_LOCALE.
-  const response = NextResponse.next({ request: { headers: requestHeaders } })
+  // Set/refresh region cookie directly on the response updateSession produced,
+  // so any refreshed Supabase auth cookies it attached are preserved. Language
+  // is never auto-switched silently; the client banner asks the user before
+  // setting NEXT_LOCALE.
   if (country && existingRegion !== country) {
-    response.cookies.set(REGION_COOKIE, country, { maxAge: 60 * 60 * 24 * 365, path: '/' })
+    sessionResponse.cookies.set(REGION_COOKIE, country, { maxAge: 60 * 60 * 24 * 365, path: '/' })
   }
-  return response
+  return sessionResponse
 }

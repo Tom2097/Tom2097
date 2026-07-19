@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getAuthenticatedUser, requirePlatformAdmin, handleAuthError } from '@/lib/auth/server-auth'
+import { requireIpAllowlisted } from '@/lib/auth/ip-allowlist'
 import { createServiceClient } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
     await requirePlatformAdmin(user.id)
+    await requireIpAllowlisted(request)
 
     const action = request.nextUrl.searchParams.get('action')
     const db = createServiceClient()

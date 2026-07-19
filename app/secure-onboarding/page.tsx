@@ -292,7 +292,7 @@ export default function SecureOnboardingPage() {
       })
       if (!response.ok) throw new Error("Failed to complete onboarding")
       
-      router.push("/dashboard")
+      router.push("/")
     } catch (err) {
       setError("Failed to complete onboarding. Please try again.")
       await logAuditEvent(userId || "", "onboarding", "onboarding_error", { error: err instanceof Error ? err.message : "unknown_error" })

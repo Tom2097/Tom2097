@@ -2,6 +2,7 @@ import { createServiceClient } from "@/lib/supabase/service"
 import { classifyText } from "@/lib/analytics/nlp"
 import { dispatchDocumentEvent } from "@/lib/documents/events"
 import { runOcr } from "@/lib/ocr/engine"
+import { assertPublicHttpUrl } from "@/lib/security/url-guard"
 
 type IntakeSource = "email" | "voice" | "photo" | "audio" | "url" | "bulk" | "manual"
 
@@ -80,7 +81,8 @@ export async function ingestUrl(
   organizationId: string, url: string,
 ): Promise<string | null> {
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(15000) })
+    const safeUrl = await assertPublicHttpUrl(url)
+    const res = await fetch(safeUrl, { signal: AbortSignal.timeout(15000), redirect: "error" })
     const html = await res.text()
     const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 50000)
     const title = html.match(/<title[^>]*>([^<]*)<\/title>/)?.[1] ?? url

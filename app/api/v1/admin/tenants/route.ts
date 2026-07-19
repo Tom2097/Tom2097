@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAuthenticatedUser, handleAuthError } from "@/lib/auth/server-auth"
 import { isCurrentUserPlatformOwner } from "@/lib/platform/owner"
+import { checkIpAllowlist } from "@/lib/auth/ip-allowlist"
 import { listTenants, suspendTenant, activateTenant, deprovisionTenant, getTenantDetail } from "@/lib/platform/tenant-lifecycle"
 
 export async function GET(request: NextRequest) {
@@ -8,7 +9,9 @@ export async function GET(request: NextRequest) {
     await getAuthenticatedUser()
     const isOwner = await isCurrentUserPlatformOwner()
     if (!isOwner) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    
+    const ipCheck = await checkIpAllowlist(request)
+    if (!ipCheck.allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
     const { searchParams } = new URL(request.url)
     const tenantId = searchParams.get("id")
     
@@ -29,7 +32,9 @@ export async function POST(request: NextRequest) {
     await getAuthenticatedUser()
     const isOwner = await isCurrentUserPlatformOwner()
     if (!isOwner) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    
+    const ipCheck = await checkIpAllowlist(request)
+    if (!ipCheck.allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
     const body = await request.json()
     
     switch (body.action) {

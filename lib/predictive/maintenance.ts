@@ -34,8 +34,37 @@ export interface MaintenanceAlert {
   acknowledged: boolean
 }
 
-export async function ingestTelemetry(reading: TelemetryReading): Promise<boolean> {
+/**
+ * assets/asset_telemetry queries used to be scoped by assetId alone, with no
+ * organization_id check anywhere -- any authenticated caller could read or
+ * write another tenant's telemetry/RUL data just by guessing/enumerating
+ * asset ids. Every function below now requires the caller's organizationId
+ * and verifies the asset belongs to it before touching assets or
+ * asset_telemetry (asset_telemetry has no organization_id column of its own,
+ * so it's protected transitively via the asset_id it points at).
+ */
+async function assetBelongsToOrg(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  assetId: string,
+  organizationId: string,
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("assets")
+    .select("id")
+    .eq("id", assetId)
+    .eq("organization_id", organizationId)
+    .maybeSingle()
+  return !!data
+}
+
+export async function ingestTelemetry(reading: TelemetryReading, organizationId: string): Promise<boolean> {
+  if (!organizationId || !reading?.assetId) return false
+
   const supabase = await createServiceClient()
+
+  const belongsToOrg = await assetBelongsToOrg(supabase, reading.assetId, organizationId)
+  if (!belongsToOrg) return false
+
   const { error } = await supabase.from("asset_telemetry").insert({
     asset_id: reading.assetId,
     timestamp: reading.timestamp,
@@ -49,25 +78,29 @@ export async function ingestTelemetry(reading: TelemetryReading): Promise<boolea
   return !error
 }
 
-export async function ingestBatchTelemetry(readings: TelemetryReading[]): Promise<number> {
+export async function ingestBatchTelemetry(readings: TelemetryReading[], organizationId: string): Promise<number> {
   let success = 0
   for (const reading of readings) {
-    if (await ingestTelemetry(reading)) success++
+    if (await ingestTelemetry(reading, organizationId)) success++
   }
   return success
 }
 
-export async function calculateRUL(assetId: string): Promise<RULEstimate> {
+export async function calculateRUL(assetId: string, organizationId: string): Promise<RULEstimate> {
   if (!assetId) {
     throw new Error("Asset ID is required")
   }
-  
+  if (!organizationId) {
+    throw new Error(`Asset not found: ${assetId}`)
+  }
+
   const supabase = await createServiceClient()
 
   const { data: asset, error: assetError } = await supabase
     .from("assets")
     .select("id, name, asset_type, installation_date, expected_lifespan_days")
     .eq("id", assetId)
+    .eq("organization_id", organizationId)
     .single()
 
   if (assetError || !asset) {
@@ -149,13 +182,16 @@ export async function calculateRUL(assetId: string): Promise<RULEstimate> {
   }
 }
 
-export async function detectAnomalies(assetId: string, sinceHours: number = 24): Promise<MaintenanceAlert[]> {
+export async function detectAnomalies(assetId: string, organizationId: string, sinceHours: number = 24): Promise<MaintenanceAlert[]> {
+  if (!organizationId) return []
+
   const supabase = await createServiceClient()
 
   const { data: asset } = await supabase
     .from("assets")
     .select("id, name")
     .eq("id", assetId)
+    .eq("organization_id", organizationId)
     .single()
 
   if (!asset) return []
@@ -232,7 +268,7 @@ export async function getMaintenanceSchedule(organizationId: string): Promise<RU
 
   const estimates: RULEstimate[] = []
   for (const asset of assets as Array<Record<string, unknown>>) {
-    const rul = await calculateRUL(asset.id as string)
+    const rul = await calculateRUL(asset.id as string, organizationId).catch(() => null)
     if (rul) estimates.push(rul)
   }
 

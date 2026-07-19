@@ -5,9 +5,29 @@ import { dispatchDocumentEvent } from "@/lib/documents/events"
 import { autoCreateTasks } from "@/lib/operational/auto-create"
 import { executeRecipe, BUILTIN_RECIPES, type Recipe } from "@/lib/operational/recipes"
 
+/** Thrown by draftResponse when documentId doesn't exist for organizationId, so callers can return a 404 instead of a generic failure. */
+export class DocumentNotFoundError extends Error {}
+
 export async function draftResponse(
   organizationId: string, documentId: string, content: string, context?: string,
 ): Promise<string | null> {
+  const db = createServiceClient()
+
+  // Scoped by organization_id so a document belonging to another tenant
+  // can't be read (metadata) or written to via a guessed/leaked id. Fetched
+  // before calling the model so we don't burn an LLM call on a document
+  // that isn't even visible to this org.
+  const { data: existing, error: fetchError } = await db
+    .from("documents")
+    .select("metadata")
+    .eq("id", documentId)
+    .eq("organization_id", organizationId)
+    .maybeSingle()
+
+  if (fetchError || !existing) {
+    throw new DocumentNotFoundError(`Document ${documentId} not found for organization ${organizationId}`)
+  }
+
   const systemPrompt = `${BASE_SYSTEM_PROMPT}
 You are a business response drafter. Given a document or message, draft an appropriate professional response.
 Keep the response concise and actionable. Return ONLY the response text, no JSON.`
@@ -23,10 +43,22 @@ Keep the response concise and actionable. Return ONLY the response text, no JSON
 
     const response = result.text.trim()
 
-    const db = createServiceClient()
-    await db.from("documents").update({
-      metadata: { draft_response: response, draft_generated_at: new Date().toISOString() },
-    }).eq("id", documentId)
+    // Merge into the metadata read above rather than replacing the column
+    // outright -- draft_response/draft_generated_at previously clobbered
+    // any other metadata (analysis, source, etc.) already stored for this
+    // document.
+    const existingMetadata = (existing.metadata as Record<string, unknown>) ?? {}
+    await db
+      .from("documents")
+      .update({
+        metadata: {
+          ...existingMetadata,
+          draft_response: response,
+          draft_generated_at: new Date().toISOString(),
+        },
+      })
+      .eq("id", documentId)
+      .eq("organization_id", organizationId)
 
     await dispatchDocumentEvent({
       type: "document.created",

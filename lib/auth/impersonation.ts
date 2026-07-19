@@ -20,11 +20,45 @@ export interface ImpersonationSession {
 }
 
 const MAX_IMPERSONATION_MINUTES = 60 // sessions auto-expire after 1 hour
+const CONSENT_WINDOW_MINUTES = 15 // how long a pending consent request stays valid
 
+function toImpersonationSession(session: Record<string, unknown>): ImpersonationSession {
+  return {
+    id: session.id as string,
+    adminUserId: session.admin_user_id as string,
+    targetUserId: session.target_user_id as string,
+    targetEmail: session.target_email as string,
+    targetOrganizationId: session.target_organization_id as string,
+    reason: session.reason as string,
+    startedAt: session.started_at as string,
+    expiresAt: session.expires_at as string,
+    endedAt: session.ended_at as string | null,
+    consentGranted: session.consent_granted as boolean,
+  }
+}
+
+/**
+ * Starts (or requests) an impersonation session.
+ *
+ * Impersonation requires the target user's explicit consent -- the UI
+ * (app/admin/impersonation/page.tsx) has always said "Target user consent is
+ * required before accessing their data", but nothing ever enforced it. This
+ * is now a two-step flow built on the existing `impersonation_sessions`
+ * table (no schema change needed):
+ *
+ *   1. First call: no consented request exists yet for this admin/target
+ *      pair, so one is created with status "pending_consent" and consent
+ *      not granted. The call is rejected -- there is no session to use yet.
+ *   2. The target user calls grantImpersonationConsent(sessionId) to flip
+ *      consent_granted to true on that pending request.
+ *   3. Second call (same admin/target): the now-consented pending request is
+ *      found and activated (status -> "active", timer reset to the normal
+ *      60-minute window) and a real session is returned.
+ */
 export async function startImpersonation(
   targetUserId: string,
   reason: string
-): Promise<{ session?: ImpersonationSession; error?: string }> {
+): Promise<{ session?: ImpersonationSession; error?: string; pendingConsent?: boolean }> {
   // Verify the current user is a platform owner
   const isOwner = await isCurrentUserPlatformOwner()
   if (!isOwner) {
@@ -32,7 +66,7 @@ export async function startImpersonation(
   }
 
   const supabase = await createServiceClient()
-  
+
   // Get admin user
   const { data: { user: adminUser } } = await (await createClient()).auth.getUser()
   if (!adminUser) {
@@ -50,72 +84,108 @@ export async function startImpersonation(
     return { error: "Target user not found" }
   }
 
-  // Check for active impersonation sessions
+  const now = new Date()
+
+  // Only one already-active (consented) impersonation session per admin at a time.
   const { data: activeSession } = await supabase
     .from("impersonation_sessions")
     .select("id")
     .eq("admin_user_id", adminUser.id)
-    .eq("ended_at", null)
-    .gt("expires_at", new Date().toISOString())
-    .single()
+    .eq("status", "active")
+    .is("ended_at", null)
+    .gt("expires_at", now.toISOString())
+    .maybeSingle()
 
   if (activeSession) {
     return { error: "You already have an active impersonation session. End it before starting a new one." }
   }
 
-  const sessionId = randomUUID()
-  const now = new Date()
-  const expiresAt = new Date(now.getTime() + MAX_IMPERSONATION_MINUTES * 60 * 1000)
+  // Look for an outstanding (non-expired, non-ended) consent request between
+  // this admin and target.
+  const { data: existingRequest } = await supabase
+    .from("impersonation_sessions")
+    .select("*")
+    .eq("admin_user_id", adminUser.id)
+    .eq("target_user_id", targetUserId)
+    .eq("status", "pending_consent")
+    .is("ended_at", null)
+    .gt("expires_at", now.toISOString())
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle()
 
-  // Create impersonation session
+  if (!existingRequest || !existingRequest.consent_granted) {
+    if (!existingRequest) {
+      const pendingId = randomUUID()
+      const pendingExpiresAt = new Date(now.getTime() + CONSENT_WINDOW_MINUTES * 60 * 1000)
+
+      const { error: insertError } = await supabase.from("impersonation_sessions").insert({
+        id: pendingId,
+        admin_user_id: adminUser.id,
+        target_user_id: targetProfile.id,
+        target_email: targetProfile.email,
+        target_organization_id: targetProfile.organization_id,
+        reason,
+        started_at: now.toISOString(),
+        expires_at: pendingExpiresAt.toISOString(),
+        consent_granted: false,
+        status: "pending_consent",
+      })
+
+      if (insertError) {
+        return { error: `Failed to create impersonation consent request: ${insertError.message}` }
+      }
+
+      const auditEntry = createAuditEntry(
+        "impersonation_sessions",
+        pendingId,
+        "INSERT",
+        null,
+        { adminUserId: adminUser.id, targetUserId: targetProfile.id, reason, status: "pending_consent" },
+        adminUser.id,
+        targetProfile.organization_id
+      )
+      await supabase.from("audit_log_entries").insert(auditEntry)
+    }
+
+    return {
+      error:
+        "Target user consent is required before impersonation can begin. A consent request has been created and is pending the target user's approval.",
+      pendingConsent: true,
+    }
+  }
+
+  // Consent has been granted -- activate the session for real access.
+  const expiresAt = new Date(now.getTime() + MAX_IMPERSONATION_MINUTES * 60 * 1000)
   const { data: session, error } = await supabase
     .from("impersonation_sessions")
-    .insert({
-      id: sessionId,
-      admin_user_id: adminUser.id,
-      target_user_id: targetProfile.id,
-      target_email: targetProfile.email,
-      target_organization_id: targetProfile.organization_id,
-      reason,
+    .update({
+      status: "active",
       started_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
-      consent_granted: false,
-      status: "active",
     })
+    .eq("id", existingRequest.id)
     .select("*")
     .single()
 
-  if (error) {
-    return { error: `Failed to create impersonation session: ${error.message}` }
+  if (error || !session) {
+    return { error: `Failed to start impersonation session: ${error?.message ?? "unknown error"}` }
   }
 
   // Log audit event
   const auditEntry = createAuditEntry(
     "impersonation_sessions",
-    sessionId,
-    "INSERT",
-    null,
-    { adminUserId: adminUser.id, targetUserId: targetProfile.id, reason },
+    session.id,
+    "UPDATE",
+    { status: "pending_consent" },
+    { status: "active", adminUserId: adminUser.id, targetUserId: targetProfile.id },
     adminUser.id,
     targetProfile.organization_id
   )
-  
+
   await supabase.from("audit_log_entries").insert(auditEntry)
 
-  return {
-    session: {
-      id: session.id,
-      adminUserId: session.admin_user_id,
-      targetUserId: session.target_user_id,
-      targetEmail: session.target_email,
-      targetOrganizationId: session.target_organization_id,
-      reason: session.reason,
-      startedAt: session.started_at,
-      expiresAt: session.expires_at,
-      endedAt: session.ended_at,
-      consentGranted: session.consent_granted,
-    }
-  }
+  return { session: toImpersonationSession(session) }
 }
 
 export async function grantImpersonationConsent(sessionId: string): Promise<{ success: boolean; error?: string }> {
@@ -195,34 +265,26 @@ export async function endImpersonation(sessionId: string): Promise<{ success: bo
 
 export async function getActiveImpersonationSession(): Promise<ImpersonationSession | null> {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  // Only a truly "active" (consented) session counts here -- a pending
+  // consent request must never be treated as a live impersonation session.
   const { data: session } = await supabase
     .from("impersonation_sessions")
     .select("*")
     .eq("admin_user_id", user.id)
-    .eq("ended_at", null)
+    .eq("status", "active")
+    .is("ended_at", null)
     .gt("expires_at", new Date().toISOString())
     .order("started_at", { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
   if (!session) return null
 
-  return {
-    id: session.id,
-    adminUserId: session.admin_user_id,
-    targetUserId: session.target_user_id,
-    targetEmail: session.target_email,
-    targetOrganizationId: session.target_organization_id,
-    reason: session.reason,
-    startedAt: session.started_at,
-    expiresAt: session.expires_at,
-    endedAt: session.ended_at,
-    consentGranted: session.consent_granted,
-  }
+  return toImpersonationSession(session)
 }
 
 export async function isCurrentlyImpersonating(): Promise<boolean> {
@@ -232,27 +294,19 @@ export async function isCurrentlyImpersonating(): Promise<boolean> {
 
 export async function listActiveImpersonations(): Promise<ImpersonationSession[]> {
   const supabase = await createServiceClient()
-  
+
   const isOwner = await isCurrentUserPlatformOwner()
   if (!isOwner) return []
 
+  // Includes both "active" sessions and outstanding "pending_consent"
+  // requests so the admin UI's Pending/Granted consent badge has something
+  // to show while a request is awaiting the target user's approval.
   const { data: sessions } = await supabase
     .from("impersonation_sessions")
     .select("*")
-    .eq("ended_at", null)
+    .is("ended_at", null)
     .gt("expires_at", new Date().toISOString())
     .order("started_at", { ascending: false })
 
-  return (sessions ?? []).map((s: Record<string, unknown>) => ({
-    id: s.id as string,
-    adminUserId: s.admin_user_id as string,
-    targetUserId: s.target_user_id as string,
-    targetEmail: s.target_email as string,
-    targetOrganizationId: s.target_organization_id as string,
-    reason: s.reason as string,
-    startedAt: s.started_at as string,
-    expiresAt: s.expires_at as string,
-    endedAt: s.ended_at as string | null,
-    consentGranted: s.consent_granted as boolean,
-  }))
+  return (sessions ?? []).map((s: Record<string, unknown>) => toImpersonationSession(s))
 }

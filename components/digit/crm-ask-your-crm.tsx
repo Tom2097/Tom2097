@@ -29,8 +29,8 @@ export function CrmAskYourCrm() {
     fetch("/api/v1/crm/pipeline").then((r) => r.ok && r.json()).then((data) => {
       const stages = data?.pipeline?.stages ?? data?.stages ?? []
       if (stages.length > 0) setPipelineData(stages.map((s: unknown) => {
-      const stage = s as { name: string; value: number };
-      return { name: stage.name, value: stage.value };
+      const stage = s as { stage: string; value: number };
+      return { name: stage.stage.charAt(0).toUpperCase() + stage.stage.slice(1), value: stage.value };
     }))
     }).catch(() => {})
   }, [])

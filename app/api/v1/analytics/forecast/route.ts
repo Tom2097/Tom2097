@@ -3,6 +3,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateForecast } from "@/lib/analytics/forecast"
 import { withAuth } from "@/lib/auth/with-auth"
+import { checkTenantRateLimit } from "@/lib/multitenant/rate-limit"
 import { logger } from "@/lib/logging"
 
 /**
@@ -23,6 +24,14 @@ export const GET = withAuth(async (request: NextRequest, context) => {
       { success: false, error: "Missing required parameters: eventName, start, end" },
       { status: 400 }
     )
+  }
+
+  if (useAI) {
+    // useAI routes through generateAIForecast (lib/analytics/forecast.ts), a
+    // real Mistral generateText call -- meter it per tenant like every other
+    // LLM-calling route (app/api/chat, ai/crm-query, ai/enrich).
+    const rateLimited = await checkTenantRateLimit(context.tenantId, 200, 20)
+    if (rateLimited) return rateLimited
   }
 
   try {

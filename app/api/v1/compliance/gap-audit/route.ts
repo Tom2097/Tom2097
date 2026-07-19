@@ -10,4 +10,4 @@ import { runMockAudit } from "@/lib/compliance/regulatory"
 export const POST = withAuth(async (_req: NextRequest, { organizationId }) => {
   const results = await runMockAudit(organizationId)
   return NextResponse.json({ results })
-})
+}, { requireAny: ["compliance:read"] })

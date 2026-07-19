@@ -74,7 +74,7 @@ export default function ConfigurePage() {
       </div>
 
       <Tabs defaultValue="workspaces" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="workspaces">{t('configure.page.tabs.workspaces')}</TabsTrigger>
           <TabsTrigger value="routing">{t('configure.page.tabs.autoRouting')}</TabsTrigger>
         </TabsList>
@@ -99,11 +99,15 @@ export default function ConfigurePage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-5 pt-0 flex items-center gap-2">
-                    {meta.href && (
+                    {meta.href ? (
                       <Button size="sm" variant="outline" className="text-xs" asChild>
                         <Link href={meta.href}>
                           <LayoutDashboard className="h-3 w-3 mr-1" />{t('configure.page.open')}
                         </Link>
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="outline" className="text-xs" disabled title={t('configure.page.comingSoon')}>
+                        <LayoutDashboard className="h-3 w-3 mr-1" />{t('configure.page.comingSoon')}
                       </Button>
                     )}
                     <Button size="sm" variant="ghost" className="text-xs" onClick={() => setShowWizard(true)}>

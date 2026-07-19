@@ -28,6 +28,13 @@ export interface ActionItem {
   assignee?: string
   dueDate?: string
   status: "open" | "in_progress" | "completed"
+  /**
+   * True for the placeholder action items generated when no real NLP-based
+   * extraction has run over the transcript (always true today -- there's no
+   * action-item extraction pipeline in this codebase yet). Mirrors
+   * TranscriptionResult.isSimulated so the UI can disclose it the same way.
+   */
+  isSimulated: boolean
 }
 
 function sanitizeName(name: string): string {
@@ -163,16 +170,23 @@ export async function processTranscription(organizationId: string, recordingId: 
   return { recordingId, text, segments, confidence, isSimulated: true }
 }
 
+/**
+ * No NLP/LLM-based action-item extraction is wired up in this codebase (no
+ * provider reads the transcript text at all) -- these are placeholder items,
+ * same situation as processTranscription()'s demo transcript above. They are
+ * marked isSimulated: true so the UI can disclose that honestly instead of
+ * presenting them as real extracted content.
+ */
 export async function extractActionItems(organizationId: string, recordingId: string): Promise<ActionItem[]> {
   const db = createServiceClient()
 
   const { data: existing } = await db
     .from("recording_action_items")
-    .select("id, text, assignee, due_date, status")
+    .select("id, text, assignee, due_date, status, is_simulated")
     .eq("recording_id", recordingId)
 
   if (existing && existing.length > 0) {
-    return existing.map((i) => ({ id: i.id, recordingId, text: i.text, assignee: i.assignee ?? undefined, dueDate: i.due_date ?? undefined, status: i.status as ActionItem["status"] }))
+    return existing.map((i) => ({ id: i.id, recordingId, text: i.text, assignee: i.assignee ?? undefined, dueDate: i.due_date ?? undefined, status: i.status as ActionItem["status"], isSimulated: i.is_simulated ?? true }))
   }
 
   const defaults = [
@@ -182,11 +196,11 @@ export async function extractActionItems(organizationId: string, recordingId: st
   ]
   const { data: inserted, error } = await db
     .from("recording_action_items")
-    .insert(defaults.map((text, i) => ({ recording_id: recordingId, text, status: i === 2 ? "in_progress" : "open" })))
-    .select("id, text, assignee, due_date, status")
+    .insert(defaults.map((text, i) => ({ recording_id: recordingId, text, status: i === 2 ? "in_progress" : "open", is_simulated: true })))
+    .select("id, text, assignee, due_date, status, is_simulated")
   if (error || !inserted) return []
 
-  return inserted.map((i) => ({ id: i.id, recordingId, text: i.text, assignee: i.assignee ?? undefined, dueDate: i.due_date ?? undefined, status: i.status as ActionItem["status"] }))
+  return inserted.map((i) => ({ id: i.id, recordingId, text: i.text, assignee: i.assignee ?? undefined, dueDate: i.due_date ?? undefined, status: i.status as ActionItem["status"], isSimulated: i.is_simulated ?? true }))
 }
 
 export async function getRecording(organizationId: string, recordingId: string): Promise<RecordingUpload | null> {

@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getAuthenticatedUser, requirePlatformAdmin, handleAuthError } from '@/lib/auth/server-auth'
+import { requireIpAllowlisted } from '@/lib/auth/ip-allowlist'
 import { createServiceClient } from '@/lib/supabase/service'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
     await requirePlatformAdmin(user.id)
+    await requireIpAllowlisted(request)
 
     const db = createServiceClient()
     const [{ data: entries, error }, { data: setting }] = await Promise.all([
@@ -30,6 +32,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
     await requirePlatformAdmin(user.id)
+    await requireIpAllowlisted(request)
 
     const body = await request.json()
     const db = createServiceClient()
@@ -61,6 +64,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
     await requirePlatformAdmin(user.id)
+    await requireIpAllowlisted(request)
 
     const id = request.nextUrl.searchParams.get('id')
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })

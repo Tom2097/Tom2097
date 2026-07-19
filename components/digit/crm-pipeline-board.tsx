@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Plus, GripVertical, DollarSign, Calendar, User, Tag, X, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface Deal {
   id: string; title: string; value: number; stage: string; probability: number
@@ -55,15 +56,20 @@ export function CrmPipelineBoard() {
     const deal = deals.find((d) => d.id === dealId)
     if (!deal || deal.stage === targetStage) return
 
+    const previousStage = deal.stage
     setDeals((prev) => prev.map((d) => d.id === dealId ? { ...d, stage: targetStage } : d))
 
     try {
-      await fetch(`/api/v1/crm/deals`, {
+      const res = await fetch(`/api/v1/crm/deals`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: dealId, stage: targetStage }),
       })
-    } catch {}
+      if (!res.ok) throw new Error("Failed to update deal stage")
+    } catch {
+      setDeals((prev) => prev.map((d) => d.id === dealId ? { ...d, stage: previousStage } : d))
+      toast.error("Failed to move deal — please try again")
+    }
   }
 
   const addDeal = async () => {

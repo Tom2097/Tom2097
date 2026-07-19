@@ -207,8 +207,16 @@ export async function revokeElevation(
   userId: string,
   organizationId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const isOwner = await isCurrentUserPlatformOwner()
-  if (!isOwner) return { success: false, error: "Forbidden" }
+  const client = await createClient()
+  const { data: { user: caller } } = await client.auth.getUser()
+  if (!caller) return { success: false, error: "Not authenticated" }
+
+  // Users may always revoke their own elevation; revoking someone else's
+  // requires platform-owner privileges.
+  if (caller.id !== userId) {
+    const isOwner = await isCurrentUserPlatformOwner()
+    if (!isOwner) return { success: false, error: "Forbidden" }
+  }
 
   const supabase = await createServiceClient()
 

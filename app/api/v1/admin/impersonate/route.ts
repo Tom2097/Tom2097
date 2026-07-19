@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAuthenticatedUser, handleAuthError } from "@/lib/auth/server-auth"
 import { isCurrentUserPlatformOwner } from "@/lib/platform/owner"
+import { checkIpAllowlist } from "@/lib/auth/ip-allowlist"
 import { startImpersonation, endImpersonation, getActiveImpersonationSession, listActiveImpersonations } from "@/lib/auth/impersonation"
 
 export async function POST(request: NextRequest) {
@@ -8,6 +9,10 @@ export async function POST(request: NextRequest) {
     const user = await getAuthenticatedUser()
     const isOwner = await isCurrentUserPlatformOwner()
     if (!isOwner) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+    const ipCheck = await checkIpAllowlist(request)
+    if (!ipCheck.allowed) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
@@ -35,14 +40,18 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
     const isOwner = await isCurrentUserPlatformOwner()
     if (!isOwner) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
-    
+    const ipCheck = await checkIpAllowlist(request)
+    if (!ipCheck.allowed) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
     const sessions = await listActiveImpersonations()
     return NextResponse.json({ sessions })
   } catch (error) {

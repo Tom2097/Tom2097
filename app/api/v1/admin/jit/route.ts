@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAuthenticatedUser, getOrganizationId, handleAuthError } from "@/lib/auth/server-auth"
+import { requireIpAllowlisted } from "@/lib/auth/ip-allowlist"
 import {
   requestElevation,
   approveElevation,
@@ -23,6 +24,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ request: result.request })
       }
       case "approve": {
+        // Owner-only operation (enforced inside approveElevation) -- also gate
+        // on the platform IP allowlist since this grants elevated access.
+        await requireIpAllowlisted(request)
         const result = await approveElevation(body.requestId)
         if (!result.success) {
           return NextResponse.json({ error: result.error }, { status: 400 })
@@ -30,6 +34,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true })
       }
       case "deny": {
+        await requireIpAllowlisted(request)
         const result = await denyElevation(body.requestId, body.reason)
         if (!result.success) {
           return NextResponse.json({ error: result.error }, { status: 400 })
@@ -41,6 +46,10 @@ export async function POST(request: NextRequest) {
         // userId/organizationId lets a platform owner revoke someone else's.
         const targetUserId = body.userId || user.id
         const organizationId = body.organizationId || await getOrganizationId(user.id)
+        if (targetUserId !== user.id) {
+          // Revoking someone else's elevation is an owner-only operation.
+          await requireIpAllowlisted(request)
+        }
         const result = await revokeElevation(targetUserId, organizationId)
         if (!result.success) {
           return NextResponse.json({ error: result.error }, { status: 400 })

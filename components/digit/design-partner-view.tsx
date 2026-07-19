@@ -128,9 +128,15 @@ export function DesignPartnerView() {
     }
   }
 
-  const topVertical = Array.from(new Set(partners.map(p => p.vertical))).sort((a, b) =>
-    partners.filter(p => p.vertical === b).length - partners.filter(p => p.vertical === a).length
-  )[0]
+  const topVertical = partners.length > 0
+    ? Array.from(new Set(partners.map(p => p.vertical))).sort((a, b) =>
+        partners.filter(p => p.vertical === b).length - partners.filter(p => p.vertical === a).length
+      )[0]
+    : undefined
+
+  const avgFeedbackScore = partners.length > 0
+    ? Math.round(partners.reduce((s, p) => s + p.feedbackScore, 0) / partners.length)
+    : undefined
 
   return (
     <div className="space-y-6">
@@ -370,10 +376,16 @@ export function DesignPartnerView() {
                 <CardDescription>{t('designPartner.page.dailyBriefDesc')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-sm">• {t('designPartner.page.bullet.launch', { count: getStagePartners("launch").length })}</p>
-                <p className="text-sm">• {t('designPartner.page.bullet.pilot', { count: getStagePartners("pilot").length })}</p>
-                <p className="text-sm">• {t('designPartner.page.bullet.avgScore', { score: Math.round(partners.reduce((s, p) => s + p.feedbackScore, 0) / partners.length) })}</p>
-                <p className="text-sm">• {t('designPartner.page.bullet.topVertical', { vertical: topVertical })}</p>
+                {partners.length > 0 ? (
+                  <>
+                    <p className="text-sm">• {t('designPartner.page.bullet.launch', { count: getStagePartners("launch").length })}</p>
+                    <p className="text-sm">• {t('designPartner.page.bullet.pilot', { count: getStagePartners("pilot").length })}</p>
+                    <p className="text-sm">• {t('designPartner.page.bullet.avgScore', { score: avgFeedbackScore ?? 0 })}</p>
+                    <p className="text-sm">• {t('designPartner.page.bullet.topVertical', { vertical: topVertical ?? '—' })}</p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t('designPartner.page.noPartners')}</p>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -389,7 +401,7 @@ export function DesignPartnerView() {
           <div className="space-y-4">
             <div>
               <Label>{t('designPartner.page.dialog.currentNotes')}</Label>
-              <p className="text-sm text-muted-foreground mt-1 p-3 bg-muted rounded-md">{selectedPartner?.notes}</p>
+              <p className="text-sm text-muted-foreground mt-1 p-3 bg-muted rounded-md whitespace-pre-wrap max-h-48 overflow-y-auto">{selectedPartner?.notes || '—'}</p>
             </div>
             <div className="space-y-2">
               <Label>{t('designPartner.page.dialog.addNote')}</Label>

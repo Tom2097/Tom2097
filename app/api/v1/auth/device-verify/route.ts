@@ -40,8 +40,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Consume passcode (anti-replay)
+    // Consume passcode (validates against the issued token, then anti-replay)
     const { valid, replayDetected } = await consumePasscode(
+      user.id,
       passcode,
       deviceId
     )

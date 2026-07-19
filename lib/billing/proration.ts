@@ -87,12 +87,20 @@ export async function executePlanChange(
       if (!newPlan) return { success: false, error: "New plan not found" }
 
       const stripePriceId = process.env[`STRIPE_PRICE_${newPlanId.toUpperCase()}`]
-      if (stripePriceId) {
-        await stripe.subscriptions.update(sub.stripe_subscription_id, {
-          items: [{ price: stripePriceId }],
-          proration_behavior: "always_invoice",
-        })
+      if (!stripePriceId) {
+        // Previously this silently skipped the Stripe update and fell
+        // through to unconditionally writing plan_id below -- the org would
+        // end up "on" a plan locally that Stripe never actually switched
+        // them to (wrong price billed, wrong entitlements enforced
+        // server-side vs. what Stripe shows the customer). Fail loudly
+        // instead so plan_id never updates without Stripe confirming it.
+        return { success: false, error: `Stripe price not configured for plan "${newPlanId}"` }
       }
+
+      await stripe.subscriptions.update(sub.stripe_subscription_id, {
+        items: [{ price: stripePriceId }],
+        proration_behavior: "always_invoice",
+      })
     } catch (err) {
       return { success: false, error: `Stripe error: ${err instanceof Error ? err.message : "Unknown"}` }
     }

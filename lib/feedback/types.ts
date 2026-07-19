@@ -36,15 +36,24 @@ export interface Feedback {
   metadata: Record<string, unknown>
   created_at: string
   updated_at: string
+  /** Present when fetched via getFeedback/listFeedback, which embed these joins. */
+  comments?: FeedbackComment[]
+  votes?: FeedbackVote[]
 }
 
 export interface FeedbackComment {
   id: string
   organization_id: string
   feedback_id: string
-  author_id: string | null
-  body: string
-  is_internal: boolean
+  submitted_by: string | null
+  text: string
+  created_at: string
+}
+
+export interface FeedbackVote {
+  organization_id: string
+  feedback_id: string
+  user_id: string
   created_at: string
 }
 

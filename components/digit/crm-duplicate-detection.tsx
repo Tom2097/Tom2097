@@ -61,11 +61,15 @@ export function CrmDuplicateDetection() {
   const handleMerge = async (id: string) => {
     setMerging(id)
     try {
-      await fetch("/api/v1/ai/crm-query", {
+      const res = await fetch("/api/v1/ai/crm-query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: `Merge duplicate record ${id} in CRM.` }),
       })
+      if (!res.ok) throw new Error("Failed")
+      const data = await res.json()
+      const result = JSON.parse(data.response)
+      if (!result?.ok) throw new Error("Merge failed")
       setDuplicates((prev) => prev.filter((d) => d.id !== id))
     } catch {
       setError("Merge failed")

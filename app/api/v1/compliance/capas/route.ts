@@ -12,7 +12,7 @@ export const GET = withAuth(async (req: NextRequest, { organizationId }) => {
   const status = searchParams.get("status") as "open" | "investigation" | "action" | "verification" | "closed" | undefined
   const capas = await listCapa(organizationId, status)
   return NextResponse.json(capas)
-})
+}, { requireAny: ["capas:read", "compliance:read"] })
 
 // POST /api/v1/compliance/capas
 export const POST = withAuth(async (req: NextRequest, { organizationId, userId }) => {
@@ -34,4 +34,4 @@ export const POST = withAuth(async (req: NextRequest, { organizationId, userId }
   )
 
   return NextResponse.json(capa)
-})
+}, { requireAny: ["capas:write", "compliance:write"] })

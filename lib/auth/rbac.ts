@@ -387,11 +387,18 @@ export async function removePermissionFromRole(
 
 /**
  * Checks if a user is a platform admin.
+ *
+ * Reads `profiles.role` (the canonical role source used everywhere else, e.g.
+ * app/api/v1/admin/users/route.ts) rather than the `users` table, which was
+ * only ever one-time-backfilled from `profiles` and is never kept in sync --
+ * see the migration comment in
+ * supabase/migrations/20260724000000_auth_intelligence_reachable.sql. Uses
+ * the service client so this check works regardless of RLS on `profiles`.
  */
 export async function isPlatformAdmin(userId: string): Promise<boolean> {
-  const supabase = await createClient()
+  const supabase = createServiceClient()
   const { data, error } = await supabase
-    .from("users")
+    .from("profiles")
     .select("role")
     .eq("id", userId)
     .single()

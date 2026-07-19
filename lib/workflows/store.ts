@@ -270,14 +270,18 @@ export async function listExecutions(
 export async function getExecution(
   organizationId: string,
   id: string,
+  workflowId?: string,
 ): Promise<ExecutionRecord | null> {
   const db = createServiceClient()
-  const { data, error } = await db
+  let query = db
     .from("workflow_executions")
     .select("*")
     .eq("id", id)
     .eq("organization_id", organizationId)
-    .single()
+
+  if (workflowId) query = query.eq("workflow_id", workflowId)
+
+  const { data, error } = await query.single()
   if (error) return null
   return data as ExecutionRecord
 }

@@ -30,12 +30,20 @@ export async function extractTenantContext(
     //    to bypass RLS policies that may not be configured yet.
     const { data: profile, error: profileError } = await serviceDb
       .from('profiles')
-      .select('organization_id, role')
+      .select('organization_id, role, status')
       .eq('id', user.id)
       .maybeSingle()
 
     if (profileError || !profile) {
       console.error('[v0] extractTenantContext: no profile', { error: profileError?.message, userId: user.id })
+      return null
+    }
+
+    // A suspended profile must not pass through withAuth just because the
+    // underlying Supabase JWT is still valid -- see getAuthenticatedUser()
+    // in lib/auth/server-auth.ts for the matching check on that auth path.
+    if (profile.status === 'suspended') {
+      console.error('[v0] extractTenantContext: suspended user', { userId: user.id })
       return null
     }
 

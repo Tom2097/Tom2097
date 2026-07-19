@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { extractTenantContext } from '@/lib/multitenant/context.server'
-import { draftResponse, triggerAutoActions } from '@/lib/operational/actions'
+import { draftResponse, triggerAutoActions, DocumentNotFoundError } from '@/lib/operational/actions'
 
 export async function POST(request: Request) {
   const ctx = await extractTenantContext()
@@ -35,6 +35,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
   } catch (error) {
+    if (error instanceof DocumentNotFoundError) {
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 })
+    }
     console.error('[v1/operations/actions] error:', error)
     return NextResponse.json({ error: 'Action failed' }, { status: 500 })
   }

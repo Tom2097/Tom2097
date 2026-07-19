@@ -3,7 +3,7 @@
 import { getStripe } from "@/lib/stripe"
 import { SUBSCRIPTION_PLANS, getPlanById } from "@/lib/products"
 import { createClient } from "@/lib/supabase/server"
-import { validateDiscountCode, applyDiscount, recordDiscountUse } from "@/lib/billing/discounts"
+import { validateDiscountCode, applyDiscount } from "@/lib/billing/discounts"
 
 export async function createCheckoutSession(planId: string, discountCode?: string) {
   const stripe = await getStripe()
@@ -31,26 +31,20 @@ export async function createCheckoutSession(planId: string, discountCode?: strin
     throw new Error("No organization found")
   }
 
-  // Validate discount code
+  // Validate discount code (read-only -- does NOT consume a redemption).
+  // The redemption itself is claimed atomically in the Stripe webhook's
+  // checkout.session.completed handler, once payment is actually confirmed,
+  // so an abandoned checkout never burns a use.
   let appliedDiscount: string | undefined
   let finalPriceCents = plan.priceInCents
   if (discountCode) {
-    const result = validateDiscountCode(discountCode, planId)
+    const result = await validateDiscountCode(discountCode, planId)
     if (!result.valid) {
       throw new Error(result.error || "Invalid discount code")
     }
     if (result.discount) {
       finalPriceCents = applyDiscount(plan.priceInCents, result.discount)
       appliedDiscount = `${result.discount.value}% off (${result.discount.code})`
-      recordDiscountUse(result.discount.code)
-
-      // Persist the discount usage to the database
-      await supabase.from("billing_events").insert({
-        organization_id: profile.organization_id,
-        event_type: "discount_applied",
-        provider: "stripe",
-        metadata: { code: result.discount.code, value: result.discount.value, plan_id: planId },
-      })
     }
   }
 
@@ -64,21 +58,44 @@ export async function createCheckoutSession(planId: string, discountCode?: strin
   let customerId = existingSub?.stripe_customer_id
 
   if (!customerId) {
-    // Create new Stripe customer
-    const customer = await stripe.customers.create({
-      email: user.email,
-      metadata: {
-        supabase_user_id: user.id,
-        organization_id: profile.organization_id,
+    // Stable per-org idempotency key: if this action is invoked twice for the
+    // same org in quick succession (double submit, Stripe SDK auto-retry on
+    // a network blip), Stripe returns the SAME customer instead of creating
+    // a duplicate.
+    const customer = await stripe.customers.create(
+      {
+        email: user.email,
+        metadata: {
+          supabase_user_id: user.id,
+          organization_id: profile.organization_id,
+        },
       },
-    })
+      { idempotencyKey: `stripe-customer-${profile.organization_id}` }
+    )
     customerId = customer.id
 
-    // Update subscription with customer ID
-    await supabase
+    // Claim the customer id only if it's still unset, so a concurrent
+    // request that already wrote a (necessarily identical, per the
+    // idempotency key above) customer id isn't clobbered.
+    const { data: claimed } = await supabase
       .from("subscriptions")
       .update({ stripe_customer_id: customerId })
       .eq("organization_id", profile.organization_id)
+      .is("stripe_customer_id", null)
+      .select("stripe_customer_id")
+      .maybeSingle()
+
+    if (!claimed) {
+      // Someone else claimed it first (or the row didn't exist yet) --
+      // re-read whatever is actually stored so we check out with the
+      // customer id the DB agrees on.
+      const { data: refreshed } = await supabase
+        .from("subscriptions")
+        .select("stripe_customer_id")
+        .eq("organization_id", profile.organization_id)
+        .maybeSingle()
+      customerId = refreshed?.stripe_customer_id || customerId
+    }
   }
 
   const isTrial = plan.interval === "month"
@@ -121,7 +138,12 @@ export async function createCheckoutSession(planId: string, discountCode?: strin
     ui_mode: "embedded",
   }
 
-  const session = await stripe.checkout.sessions.create(sessionParams)
+  // Request-scoped nonce: protects against Stripe's SDK-level automatic
+  // retry (e.g. on a network blip) creating two sessions for one click,
+  // without deduping deliberate repeat calls (a user retrying after
+  // cancelling should get a fresh session).
+  const idempotencyKey = `stripe-checkout-${profile.organization_id}-${plan.id}-${crypto.randomUUID()}`
+  const session = await stripe.checkout.sessions.create(sessionParams, { idempotencyKey })
 
   return { clientSecret: session.client_secret }
 }

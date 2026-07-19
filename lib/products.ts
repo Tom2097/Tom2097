@@ -108,6 +108,21 @@ export function getPlanById(id: string): SubscriptionPlan | undefined {
   return SUBSCRIPTION_PLANS.find((plan) => plan.id === id)
 }
 
+/**
+ * Reverse-lookup a plan id from a Stripe price id, using the same
+ * STRIPE_PRICE_<PLAN> env var convention lib/billing/proration.ts uses to go
+ * the other direction (plan id -> price id). Used by the Stripe webhook
+ * handlers to figure out which plan a subscription.items[] price corresponds
+ * to when Stripe itself (e.g. a billing-portal-driven plan change) is the
+ * source of truth for what changed.
+ */
+export function getPlanIdFromStripePriceId(priceId: string | null | undefined): string | undefined {
+  if (!priceId) return undefined
+  return SUBSCRIPTION_PLANS.find(
+    (plan) => process.env[`STRIPE_PRICE_${plan.id.toUpperCase()}`] === priceId
+  )?.id
+}
+
 export function formatPrice(cents: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",

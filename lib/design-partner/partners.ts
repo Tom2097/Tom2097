@@ -67,11 +67,25 @@ export async function updatePartnerStage(id: string, stage: DesignPartnerStage):
   return toDesignPartner(data as DesignPartnerRow)
 }
 
-export async function updatePartnerNotes(id: string, notes: string): Promise<DesignPartner | null> {
+/**
+ * Appends a new note to the partner's notes column rather than replacing it --
+ * the UI presents this as "Current Notes" followed by "Add Note", implying
+ * notes accumulate over time. Each entry is stamped with the date it was
+ * added so a growing note log stays readable.
+ */
+export async function updatePartnerNotes(id: string, note: string): Promise<DesignPartner | null> {
   const db = createServiceClient()
+  const { data: existing } = await db.from("design_partners").select("notes").eq("id", id).maybeSingle()
+  if (!existing) return null
+
+  const stamp = new Date().toISOString().split("T")[0]
+  const entry = `[${stamp}] ${note}`
+  const priorNotes = (existing as { notes: string | null }).notes
+  const combinedNotes = priorNotes ? `${priorNotes}\n\n${entry}` : entry
+
   const { data, error } = await db
     .from("design_partners")
-    .update({ notes, last_touchpoint: new Date().toISOString().split("T")[0] })
+    .update({ notes: combinedNotes, last_touchpoint: stamp })
     .eq("id", id)
     .select("*")
     .maybeSingle()

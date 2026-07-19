@@ -14,7 +14,8 @@ export default async function TrainingPage({ params }: { params: Promise<{ id: s
   if (!ctx) redirect("/auth/login")
   const { t } = await getTranslator()
 
-  const skill = getSkillCatalog(ctx.organizationId).find((s) => s.id === id)
+  const catalog = await getSkillCatalog(ctx.organizationId)
+  const skill = catalog.find((s) => s.id === id)
   if (!skill) notFound()
 
   return (

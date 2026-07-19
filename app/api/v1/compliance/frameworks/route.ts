@@ -16,7 +16,7 @@ export const GET = withAuth(async (req: NextRequest, { organizationId }) => {
     .order("created_at", { ascending: false })
 
   return NextResponse.json(data ?? [])
-})
+}, { requireAny: ["compliance:read", "compliance:write"] })
 
 // POST /api/v1/compliance/frameworks
 export const POST = withAuth(async (req: NextRequest, { organizationId, userId }) => {
@@ -49,4 +49,4 @@ export const POST = withAuth(async (req: NextRequest, { organizationId, userId }
   )
 
   return NextResponse.json(data)
-})
+}, { requireAny: ["compliance:write"] })

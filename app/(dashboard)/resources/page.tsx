@@ -8,8 +8,11 @@ import { getTranslator } from "@/lib/i18n/server"
 import { NewAssetDialog } from "@/components/digit/resources/new-asset-dialog"
 import { ScheduleMaintenanceDialog } from "@/components/digit/resources/schedule-maintenance-dialog"
 
-function flattenAssets(nodes: (AssetNode & { children?: AssetNode[] })[]): AssetNode[] {
-  return nodes.flatMap((n) => [n, ...(n.children ? flattenAssets(n.children as (AssetNode & { children?: AssetNode[] })[]) : [])])
+function flattenAssets(nodes: (AssetNode & { children?: AssetNode[] })[], depth = 0): AssetNode[] {
+  return nodes.flatMap((n) => [
+    { ...n, depth },
+    ...(n.children ? flattenAssets(n.children as (AssetNode & { children?: AssetNode[] })[], depth + 1) : []),
+  ])
 }
 
 export default async function ResourcesPage() {
@@ -50,7 +53,7 @@ export default async function ResourcesPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-2xl border border-border/50 bg-card p-6">
            <p className="text-sm text-muted-foreground">{t("resources.page.assetRegistry")}</p>
-          <p className="text-3xl font-bold text-foreground">{assets.length}</p>
+          <p className="text-3xl font-bold text-foreground">{flatAssets.length}</p>
            <p className="text-xs text-muted-foreground mt-1">{t("resources.page.acrossAllCategories")}</p>
         </div>
         <div className="rounded-2xl border border-border/50 bg-card p-6">
@@ -92,9 +95,9 @@ export default async function ResourcesPage() {
            <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
              <Boxes className="h-5 w-5 text-blue-500" />{t("resources.page.assetRegistry")}
            </h3>
-          {assets.length > 0 ? (
+          {flatAssets.length > 0 ? (
             <div className="space-y-1.5">
-              {assets.map((asset) => (
+              {flatAssets.map((asset) => (
                 <div key={asset.id} className="flex items-center justify-between rounded-xl bg-secondary/30 p-2.5 text-sm"
                   style={{ marginLeft: asset.parent_id ? `${(asset.depth ?? 0) * 16}px` : "0" }}>
                   <span className="font-medium">{asset.name}</span>

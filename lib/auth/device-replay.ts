@@ -25,22 +25,49 @@ export async function generateAntiReplayToken(): Promise<string> {
 }
 
 export async function consumePasscode(
-  passcodeHash: string,
+  userId: string,
+  passcode: string,
   deviceId: string
 ): Promise<{ valid: boolean; replayDetected: boolean }> {
   const supabase = await createServiceClient()
+  const passcodeHash = await hashPasscode(passcode)
 
-  // Check if this passcode hash was already used
+  // Validate against the passcode actually issued to this user (magic_link_tokens,
+  // populated by lib/auth/passwordless/service.ts#sendMagicLink). Without this lookup,
+  // any never-before-seen string would be accepted since the checks below only guard
+  // against *replaying* a previously-consumed value, not against a fabricated one.
+  const { data: issued } = await supabase
+    .from("magic_link_tokens")
+    .select("id, expires_at, used")
+    .eq("user_id", userId)
+    .eq("token_hash", passcodeHash)
+    .maybeSingle()
+
+  if (!issued || issued.used || new Date(issued.expires_at as string) < new Date()) {
+    await logReplayAttempt({
+      deviceId,
+      userId,
+      codeHash: passcodeHash,
+      attemptType: "invalid_passcode",
+      ipAddress: "",
+      userAgent: "",
+      blocked: true,
+    })
+    return { valid: false, replayDetected: false }
+  }
+
+  // Check if this passcode hash was already used (anti-replay)
   const { data: existing } = await supabase
     .from("consumed_passcodes")
     .select("id, consumed_at, device_id")
     .eq("passcode_hash", passcodeHash)
-    .single()
+    .maybeSingle()
 
   if (existing) {
     // Replay attempt detected
     await logReplayAttempt({
       deviceId,
+      userId,
       codeHash: passcodeHash,
       attemptType: "passcode_reuse",
       ipAddress: "",
@@ -61,6 +88,12 @@ export async function consumePasscode(
     // Duplicate insert means it was already consumed (race condition)
     return { valid: false, replayDetected: true }
   }
+
+  // Mark the issued token itself as used so it can't be validated again
+  await supabase
+    .from("magic_link_tokens")
+    .update({ used: true, used_at: new Date().toISOString() })
+    .eq("id", issued.id as string)
 
   return { valid: true, replayDetected: false }
 }

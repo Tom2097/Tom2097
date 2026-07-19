@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     if (!code) {
       return NextResponse.json({ error: 'Discount code is required' }, { status: 400 })
     }
-    const validation = validateDiscountCode(code, plan || '')
+    const validation = await validateDiscountCode(code, plan || '')
     if (!validation.valid) {
       return NextResponse.json({ valid: false, reason: validation.reason }, { status: 400 })
     }

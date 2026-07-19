@@ -67,6 +67,7 @@ export function OperationalReports() {
   })
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all')
+  const [scheduleRecipients, setScheduleRecipients] = useState('')
 
   const fetchReports = useCallback(async () => {
     try {
@@ -192,15 +193,30 @@ export function OperationalReports() {
   }
 
   const handleScheduleReport = async (reportId: string, frequency: 'daily' | 'weekly' | 'monthly') => {
+    const recipients = scheduleRecipients
+      .split(',')
+      .map(r => r.trim())
+      .filter(Boolean)
+
+    if (recipients.length === 0) {
+      toast.error('Add at least one recipient email before scheduling')
+      return
+    }
+    const invalid = recipients.filter(r => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r))
+    if (invalid.length > 0) {
+      toast.error(`Invalid email address: ${invalid[0]}`)
+      return
+    }
+
     try {
       const response = await fetch(`/api/v1/operations/reports/${reportId}/schedule`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ frequency })
+        body: JSON.stringify({ frequency, recipients })
       })
-      
+
       const result = await response.json()
-      
+
       if (response.ok) {
         toast.success('Report scheduled successfully')
         fetchReports()
@@ -210,6 +226,58 @@ export function OperationalReports() {
     } catch (error) {
       toast.error('Error scheduling report')
       console.error('Error:', error)
+    }
+  }
+
+  // No PDF pipeline exists anywhere in this codebase, so Export serializes
+  // the already-generated report data (reportData.columns/rows, the same
+  // shape /reports/[id]/generate returns) to CSV -- consistent with the
+  // download pattern used elsewhere (see components/digit/ocr-results.tsx).
+  const escapeCsvValue = (value: unknown) => {
+    const str = String(value ?? '')
+    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+  }
+
+  const handleExportReport = () => {
+    if (!reportData || !currentReport) {
+      toast.error('Generate the report before exporting')
+      return
+    }
+    const csv = [
+      reportData.columns.map(escapeCsvValue).join(','),
+      ...reportData.rows.map(row => reportData.columns.map(col => escapeCsvValue(row[col])).join(',')),
+    ].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${currentReport.name.replace(/\s+/g, '_') || 'report'}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('Report exported')
+  }
+
+  // No share-link/share-dialog infrastructure exists elsewhere in the app,
+  // so Share copies a plain-text rendering of the report to the clipboard
+  // (same navigator.clipboard.writeText pattern used in ocr-results.tsx).
+  const handleShareReport = async () => {
+    if (!reportData || !currentReport) {
+      toast.error('Generate the report before sharing')
+      return
+    }
+    const lines = [
+      `Report: ${currentReport.name}`,
+      currentReport.description,
+      `Data Source: ${getDataSourceLabel(currentReport.data_source)}`,
+      '',
+      reportData.columns.join('\t'),
+      ...reportData.rows.map(row => reportData.columns.map(col => String(row[col] ?? '')).join('\t')),
+    ]
+    try {
+      await navigator.clipboard.writeText(lines.join('\n'))
+      toast.success('Report content copied to clipboard')
+    } catch {
+      toast.error('Could not copy to clipboard')
     }
   }
 
@@ -567,9 +635,9 @@ export function OperationalReports() {
                                   <Play className="h-4 w-4 mr-1" />
                                   {isGenerating && currentReport?.id === report.id ? 'Generating...' : 'Generate'}
                                 </Button>
-                                <Dialog>
+                                <Dialog onOpenChange={(open) => { if (!open) setScheduleRecipients('') }}>
                                   <DialogTrigger asChild>
-                                    <Button size="sm" variant="ghost" onClick={() => setCurrentReport(report)}>
+                                    <Button size="sm" variant="ghost" onClick={() => { setCurrentReport(report); setScheduleRecipients('') }}>
                                       <Settings className="h-4 w-4" />
                                     </Button>
                                   </DialogTrigger>
@@ -597,6 +665,16 @@ export function OperationalReports() {
                                           onChange={(e) => setCurrentReport(currentReport ? {...currentReport, description: e.target.value} : null)}
                                           rows={3}
                                         />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label htmlFor="schedule-recipients">Recipients</Label>
+                                        <Input
+                                          id="schedule-recipients"
+                                          value={scheduleRecipients}
+                                          onChange={(e) => setScheduleRecipients(e.target.value)}
+                                          placeholder="e.g., alice@company.com, bob@company.com"
+                                        />
+                                        <p className="text-xs text-muted-foreground">Comma-separated emails to receive this report on schedule.</p>
                                       </div>
                                       <div className="space-y-2">
                                         <Label>Schedule</Label>
@@ -673,10 +751,10 @@ export function OperationalReports() {
                     <CardDescription>{currentReport.description}</CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline">
+                    <Button variant="outline" onClick={handleExportReport} disabled={!reportData}>
                       <Download className="h-4 w-4 mr-2" /> Export
                     </Button>
-                    <Button>
+                    <Button onClick={handleShareReport} disabled={!reportData}>
                       <Share2 className="h-4 w-4 mr-2" /> Share
                     </Button>
                   </div>

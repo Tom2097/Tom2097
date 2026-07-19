@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { getAuthenticatedUser, handleAuthError } from "@/lib/auth/server-auth"
 import { isCurrentUserPlatformOwner } from "@/lib/platform/owner"
+import { checkIpAllowlist } from "@/lib/auth/ip-allowlist"
 import { createServiceClient } from "@/lib/supabase/service"
 
 export async function GET(request: NextRequest) {
@@ -8,6 +9,10 @@ export async function GET(request: NextRequest) {
     await getAuthenticatedUser()
     const isOwner = await isCurrentUserPlatformOwner()
     if (!isOwner) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+    const ipCheck = await checkIpAllowlist(request)
+    if (!ipCheck.allowed) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 

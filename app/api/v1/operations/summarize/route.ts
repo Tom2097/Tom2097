@@ -17,18 +17,19 @@ export async function POST(request: Request) {
   try {
     const result = await generateSummary(content.slice(0, 15000))
     const db = createServiceClient()
-    const { data: existing } = await db
-      .from('documents')
-      .select('metadata')
-      .eq('id', documentId)
-      .eq('organization_id', ctx.organizationId)
-      .maybeSingle()
 
-    await db
-      .from('documents')
-      .update({ metadata: { ...(existing?.metadata as Record<string, unknown> ?? {}), summary: result.summary, key_points: result.keyPoints } })
-      .eq('id', documentId)
-      .eq('organization_id', ctx.organizationId)
+    // Atomic jsonb merge (see merge_document_metadata RPC) instead of
+    // read-then-write -- this route and lib/document-processing/pipeline.ts
+    // both write documents.metadata, so a read-modify-write here can lose
+    // concurrent updates from the other path regardless of timing.
+    const { error: mergeError } = await db.rpc('merge_document_metadata', {
+      p_document_id: documentId,
+      p_organization_id: ctx.organizationId,
+      p_patch: { summary: result.summary, key_points: result.keyPoints },
+    })
+    if (mergeError) {
+      console.error('[v1/operations/summarize] metadata merge failed:', mergeError)
+    }
 
     return NextResponse.json({ success: true, data: result })
   } catch (error) {

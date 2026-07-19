@@ -67,20 +67,26 @@ export async function analyzeDriverDecomposition(
 
   for (const ws of workspaceMetrics) {
     const componentChange = (ws.weights.current - ws.weights.baseline)
-    const contribution = (componentChange / (Math.abs(change) || 1)) * 100
+    // overall_score is composed as a weighted sum of the three workspace
+    // scores (weights.weight), so a workspace's actual contribution to the
+    // overall change is its own change scaled by that weight -- not the raw,
+    // unweighted component change (which previously double-counted a
+    // workspace's swing regardless of how much it actually feeds the total).
+    const weightedChange = componentChange * ws.weights.weight
+    const contribution = (weightedChange / (Math.abs(change) || 1)) * 100
 
-    const sameDirection = (componentChange > 0) === (change > 0)
+    const sameDirection = (weightedChange > 0) === (change > 0)
     const correlationScore = sameDirection
-      ? Math.min(1, Math.abs(componentChange) / (Math.abs(change) + 0.01))
-      : Math.max(0, 1 - Math.abs(componentChange) / (Math.abs(change) + 0.01))
+      ? Math.min(1, Math.abs(weightedChange) / (Math.abs(change) + 0.01))
+      : Math.max(0, 1 - Math.abs(weightedChange) / (Math.abs(change) + 0.01))
 
     drivers.push({
       name: ws.name,
       contribution: Math.round(contribution * 10) / 10,
-      direction: componentChange >= 0 ? "positive" : "negative",
+      direction: weightedChange >= 0 ? "positive" : "negative",
       workspace: ws.workspace,
       correlationScore: Math.round(correlationScore * 100) / 100,
-      details: `${ws.name} changed from ${ws.weights.baseline.toFixed(1)} to ${ws.weights.current.toFixed(1)} (${componentChange >= 0 ? "+" : ""}${componentChange.toFixed(1)})`,
+      details: `${ws.name} changed from ${ws.weights.baseline.toFixed(1)} to ${ws.weights.current.toFixed(1)} (${componentChange >= 0 ? "+" : ""}${componentChange.toFixed(1)}), weighted ${Math.round(ws.weights.weight * 100)}% of overall score`,
     })
   }
 

@@ -146,10 +146,10 @@ export async function checkUsageLimits(organizationId: string): Promise<{
     // Get organization subscription
     const { data: subscription, error: subError } = await supabase
       .from('subscriptions')
-      .select('plan_id')
+      .select('plan_id, current_period_start, current_period_end')
       .eq('organization_id', organizationId)
       .single()
-    
+
     if (subError || !subscription) {
       console.error('[UsageTracking] Error fetching subscription:', subError)
       return {
@@ -158,19 +158,28 @@ export async function checkUsageLimits(organizationId: string): Promise<{
         usage: Object.fromEntries(Object.keys(USAGE_LIMITS.free).map(key => [key, 0])) as Record<UsageType, number>
       }
     }
-    
+
     const plan = subscription.plan_id as SubscriptionPlan
     const limits = USAGE_LIMITS[plan] || USAGE_LIMITS.free
-    
-    // Get current usage for this billing period
-    const startOfPeriod = new Date()
-    startOfPeriod.setDate(1) // Start of current month
-    
+
+    // Use the subscription's real billing period (already tracked correctly
+    // elsewhere -- see the Stripe webhook handlers) instead of the calendar
+    // month. A subscription that renews mid-month was previously counting
+    // usage from the 1st, mixing part of the prior billing period into the
+    // current one's limit check.
+    const startOfPeriod = subscription.current_period_start
+      ? new Date(subscription.current_period_start)
+      : (() => { const d = new Date(); d.setDate(1); return d })()
+    const endOfPeriod = subscription.current_period_end
+      ? new Date(subscription.current_period_end)
+      : new Date()
+
     const { data: usageData, error: usageError } = await supabase
       .from('usage_records')
       .select('usage_type, quantity')
       .eq('organization_id', organizationId)
       .gte('created_at', startOfPeriod.toISOString())
+      .lte('created_at', endOfPeriod.toISOString())
     
     if (usageError) {
       console.error('[UsageTracking] Error fetching usage records:', usageError)

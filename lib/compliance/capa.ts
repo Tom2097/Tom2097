@@ -71,7 +71,13 @@ export async function transitionCapa(
   if (toStatus === "verification") patch.verification_notes = notes
   if (toStatus === "closed") { patch.closed_at = new Date().toISOString(); patch.closed_by = userId }
 
-  const { data, error } = await db.from("capa_records").update(patch).eq("id", capaId).select("*").single()
+  const { data, error } = await db
+    .from("capa_records")
+    .update(patch)
+    .eq("id", capaId)
+    .eq("organization_id", organizationId)
+    .select("*")
+    .single()
   if (error) return null
   if (toStatus === "closed") {
     await publish({ type: "compliance.capa_closed", organization_id: organizationId, data: { capa_id: capaId } })

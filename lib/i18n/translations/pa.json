@@ -55,7 +55,9 @@
     "admin": "ਐਡਮਿਨ",
     "platformCapacity": "ਪਲੇਟਫਾਰਮ ਸਮਰੱਥਾ",
     "pricing": "ਕੀਮਤ ਅਤੇ ਯੋਜਨਾਵਾਂ",
-    "configureWorkspace": "ਵਰਕਸਪੇਸ ਕਨਫ਼ਿਗਰ ਕਰੋ"
+    "configureWorkspace": "ਵਰਕਸਪੇਸ ਕਨਫ਼ਿਗਰ ਕਰੋ",
+    "recommendedForYou": "ਤੁਹਾਡੇ ਲਈ ਸਿਫ਼ਾਰਸ਼ੀ",
+    "allModules": "ਸਾਰੇ ਮੋਡੀਊਲ"
   },
   "benchmarks": {
     "page": {
@@ -1117,6 +1119,7 @@
       "confidence": "{confidence}% ਭਰੋਸਾ",
       "fullTranscription": "ਪੂਰੀ ਟ੍ਰਾਂਸਕ੍ਰਿਪਸ਼ਨ",
       "actionItems": "ਐਕਸ਼ਨ ਆਈਟਮਸ",
+      "simulatedActionItemsNotice": "ਇਹ ਐਕਸ਼ਨ ਆਈਟਮਸ ਸਿਮੂਲੇਟਿਡ ਪਲੇਸਹੋਲਡਰ ਹਨ — ਟ੍ਰਾਂਸਕ੍ਰਿਪਟ 'ਤੇ ਹਾਲੇ ਤੱਕ ਕੋਈ AI ਐਕਸਟ੍ਰੈਕਸ਼ਨ ਨਹੀਂ ਚੱਲਿਆ।",
       "noActionItems": "ਕੋਈ ਐਕਸ਼ਨ ਆਈਟਮ ਨਹੀਂ ਕੱਢਿਆ ਗਿਆ।",
       "assignTo": "ਸੌਂਪੋ...",
       "close": "ਬੰਦ ਕਰੋ",
@@ -1258,7 +1261,8 @@
       "open": "ਖੋਲ੍ਹੋ",
       "reconfigure": "ਮੁੜ ਕਨਫ਼ਿਗਰ ਕਰੋ",
       "createNewWorkspace": "ਨਵਾਂ ਵਰਕਸਪੇਸ ਬਣਾਓ",
-      "createWorkspaceDesc": "ਇੱਕ ਨए वरਟੀਕਲ ਲਈ ਵਰਕਸਪੇਸ ਸੈਟ ਅਪ ਕਰੋ"
+      "createWorkspaceDesc": "ਇੱਕ ਨए वरਟੀਕਲ ਲਈ ਵਰਕਸਪੇਸ ਸੈਟ ਅਪ ਕਰੋ",
+      "comingSoon": "ਡੈਸ਼ਬੋਰਡ ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ"
     }
   },
   "bulk": {

@@ -213,7 +213,24 @@ export default function SettingsPage() {
       setLoading(false)
     }
 
+    const fetchNotificationPreferences = async () => {
+      try {
+        const data = await api("/api/v1/notifications/preferences")
+        const preferences = (data.preferences ?? []) as { category: string; channel: string; enabled: boolean }[]
+        const emailPref = preferences.find((p) => p.category === "security" && p.channel === "email")
+        // Opt-out model: absence of a row means the channel is enabled.
+        setEmailNotifications(emailPref ? emailPref.enabled : true)
+      } catch {
+        // silent -- keep the default (enabled)
+      }
+    }
+
     fetchData()
+    // API keys previously only loaded after generating a new one -- visiting
+    // the Organization tab and seeing existing keys never worked because
+    // fetchApiKeys() was never called on mount.
+    fetchApiKeys()
+    fetchNotificationPreferences()
   }, [])
 
   const handleManageBilling = () => {

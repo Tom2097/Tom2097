@@ -22,25 +22,47 @@ export async function forecastMetric(
     p_start: start, p_end: now.toISOString(), p_granularity: "month", p_agg: "count",
   })
 
-  const points = ((data ?? []) as Array<{ bucket: string; value: number }>).map((p) => p.value)
-  if (points.length < 3) return []
+  // Read from a single un-mutated array. The old code derived `points` from
+  // `data` and then called `.pop()` on `data` itself later on -- `.pop()`
+  // mutates in place, so `data` silently lost its last element while
+  // `points` (already extracted) kept its original length, leaving the
+  // final loop iteration reading an out-of-bounds index (blank timestamp).
+  const rows = (data ?? []) as Array<{ bucket: string; value: number }>
+  if (rows.length < 3) return []
 
+  const points = rows.map((p) => p.value)
   const mean = points.reduce((a, b) => a + b, 0) / points.length
   const std = Math.sqrt(points.map((v) => (v - mean) ** 2).reduce((a, b) => a + b, 0) / points.length)
-  const lastBucket = ((data ?? []) as Array<{ bucket: string }>).pop()?.bucket ?? now.toISOString()
+  const lastBucket = rows[rows.length - 1]?.bucket ?? now.toISOString()
 
   const results: ForecastPoint[] = []
   for (let i = 0; i < points.length; i++) {
     results.push({
-      timestamp: (data as Array<{ bucket: string }>)[i]?.bucket ?? "",
+      timestamp: rows[i]?.bucket ?? "",
       actual: points[i], forecast: points[i],
       lower_bound: points[i], upper_bound: points[i],
     })
   }
 
+  // Deterministic trend projection: ordinary-least-squares linear regression
+  // over the historical buckets (index -> value), extrapolated forward.
+  // Replaces the previous `mean + randomNoise` "forecast", which wasn't a
+  // projection at all -- it ignored the actual historical trend and changed
+  // on every call.
+  const n = points.length
+  const xMean = (n - 1) / 2
+  let numerator = 0
+  let denominator = 0
+  for (let i = 0; i < n; i++) {
+    numerator += (i - xMean) * (points[i] - mean)
+    denominator += (i - xMean) ** 2
+  }
+  const slope = denominator !== 0 ? numerator / denominator : 0
+  const intercept = mean - slope * xMean
+
   for (let i = 1; i <= 6; i++) {
     const nextDate = new Date(new Date(lastBucket).getTime() + i * 30 * 86400000)
-    const forecast = mean + (Math.random() - 0.5) * std
+    const forecast = intercept + slope * (n - 1 + i)
     results.push({
       timestamp: nextDate.toISOString(), actual: null,
       forecast: Math.round(forecast * 100) / 100,

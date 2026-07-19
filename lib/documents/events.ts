@@ -2,20 +2,40 @@ import { createServiceClient } from "@/lib/supabase/service"
 import { logAuthEvent, type AuthAuditAction } from "@/lib/auth/audit"
 import { triggerWorkflowsFromDocumentEvent } from "@/lib/workflows/trigger-from-event"
 
-export type DocumentEventType =
-  | "document.created"
-  | "document.uploaded"
-  | "document.classified"
-  | "document.extracted"
-  | "document.routed"
-  | "document.processed"
-  | "document.triggered"
-  | "document.legal_hold_placed"
-  | "document.legal_hold_released"
-  | "document.signature_requested"
-  | "document.signature_completed"
-  | "document.archived"
-  | "document.deleted"
+export const DOCUMENT_EVENT_TYPES = [
+  "document.created",
+  "document.uploaded",
+  "document.classified",
+  "document.extracted",
+  "document.routed",
+  "document.processed",
+  "document.triggered",
+  "document.legal_hold_placed",
+  "document.legal_hold_released",
+  "document.signature_requested",
+  "document.signature_completed",
+  "document.archived",
+  "document.deleted",
+] as const
+
+export type DocumentEventType = (typeof DOCUMENT_EVENT_TYPES)[number]
+
+/** Human-readable descriptions for the workflow-builder's event catalog. */
+export const DOCUMENT_EVENT_DESCRIPTIONS: Record<DocumentEventType, string> = {
+  "document.created": "A document record was created",
+  "document.uploaded": "A document's bytes were uploaded to storage",
+  "document.classified": "A document was assigned a classification/type",
+  "document.extracted": "Data was extracted from a document",
+  "document.routed": "A document was routed to a reviewer or team",
+  "document.processed": "A document finished its processing pipeline",
+  "document.triggered": "A document triggered a downstream workflow",
+  "document.legal_hold_placed": "A legal hold was placed on a document",
+  "document.legal_hold_released": "A legal hold was released from a document",
+  "document.signature_requested": "An e-signature request was sent for a document",
+  "document.signature_completed": "An e-signature was completed for a document",
+  "document.archived": "A document was archived",
+  "document.deleted": "A document was deleted",
+}
 
 export interface DocumentEvent {
   type: DocumentEventType
