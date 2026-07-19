@@ -13,16 +13,18 @@ import { createServiceClient } from "@/lib/supabase/service"
  * atomic across concurrent deliveries — the second insert loses with a 23505
  * unique violation and is treated as a duplicate.
  *
- * If no event id is available we cannot dedupe, so we fail OPEN (process) to
- * preserve at-least-once delivery — better to risk a rare duplicate than to
- * silently drop a billing event.
+ * Missing delivery IDs and ledger failures fail closed. Payment providers
+ * retry non-2xx deliveries, while processing without an atomic claim can
+ * duplicate subscription mutations, event rows, or discount redemption.
  */
 export async function claimWebhookEvent(
   provider: string,
   eventId: string | null | undefined,
   eventType?: string,
 ): Promise<boolean> {
-  if (!eventId) return true
+  if (!eventId) {
+    throw new Error(`Missing ${provider} webhook event ID`)
+  }
 
   const db = createServiceClient()
   const { error } = await db
@@ -34,7 +36,8 @@ export async function claimWebhookEvent(
   // 23505 = unique_violation → this delivery was already claimed.
   if ((error as { code?: string }).code === "23505") return false
 
-  // Unexpected ledger error: log and fail open so we don't drop the event.
+  // An unexpected ledger failure means idempotency cannot be guaranteed.
+  // Throw so the webhook returns a non-2xx response and the provider retries.
   console.error("[v0] claimWebhookEvent ledger error:", error.message)
-  return true
+  throw new Error(`Unable to claim ${provider} webhook event`)
 }
