@@ -73,6 +73,17 @@ export async function POST(request: Request) {
       },
     })
 
+    // Supabase's anti-enumeration behavior: signing up with an email that's
+    // already registered returns { user: null, error: null } instead of a
+    // real error, so it can't be distinguished from a generic failure below
+    // without this explicit check.
+    if (!authError && !authData?.user) {
+      return NextResponse.json(
+        { error: "An account with this email already exists. Try signing in instead." },
+        { status: 409 }
+      )
+    }
+
     if (authError || !authData?.user) {
       console.error("[v0] Error creating auth user:", authError)
       return NextResponse.json(
