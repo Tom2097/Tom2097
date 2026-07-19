@@ -5,6 +5,29 @@ import { isPlatformOwnerEmail } from "@/lib/platform/owner"
 import type { EmailOtpType, User } from "@supabase/supabase-js"
 import { NextResponse } from "next/server"
 
+export function sanitizeCallbackPath(path: string | null): string {
+  if (!path) return "/"
+  const normalized = path.replace(/\\/g, "/")
+  if (!normalized.startsWith("/") || normalized.startsWith("//")) return "/"
+  return normalized
+}
+
+export function getCallbackOrigin(request: Request): string | null {
+  const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL
+  if (configuredOrigin) {
+    try {
+      return new URL(configuredOrigin).origin
+    } catch {
+      return null
+    }
+  }
+
+  // Request origins are acceptable for local development only. In production,
+  // proxy forwarding headers are caller-controlled unless the complete proxy
+  // chain is configured perfectly, so a missing canonical URL must fail closed.
+  return process.env.NODE_ENV === "development" ? new URL(request.url).origin : null
+}
+
 async function ensureUserProfile(
   user: User,
   db: ReturnType<typeof createServiceClient>,
@@ -69,19 +92,20 @@ async function ensureUserProfile(
 }
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get("code")
   const tokenHash = searchParams.get("token_hash")
   const type = searchParams.get("type") as EmailOtpType | null
-  const next = searchParams.get("next") ?? "/"
+  const next = sanitizeCallbackPath(searchParams.get("next"))
+  const callbackOrigin = getCallbackOrigin(request)
+
+  if (!callbackOrigin) {
+    console.error("[auth] Missing or invalid canonical site URL for callback")
+    return NextResponse.json({ error: "Authentication callback is unavailable" }, { status: 503 })
+  }
 
   const buildRedirect = (path: string) => {
-    const forwardedHost = request.headers.get("x-forwarded-host")
-    const isLocalEnv = process.env.NODE_ENV === "development"
-    if (!isLocalEnv && forwardedHost) {
-      return NextResponse.redirect(`https://${forwardedHost}${path}`)
-    }
-    return NextResponse.redirect(`${origin}${path}`)
+    return NextResponse.redirect(new URL(sanitizeCallbackPath(path), callbackOrigin))
   }
 
   const supabase = await createClient()

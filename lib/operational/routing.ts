@@ -97,25 +97,35 @@ export async function classifyAndRoute(
     }
   }
   
-  // Update document with routing information. Merge into existing metadata
-  // rather than replacing it -- this runs after other pipeline steps
-  // (e.g. AI analysis) have already written their own metadata fields.
-  const { data: existing } = await db.from("documents").select("metadata").eq("id", documentId).maybeSingle()
-  const existingMetadata = (existing?.metadata as Record<string, unknown>) ?? {}
+  // The service-role client bypasses RLS, so both mutations must explicitly
+  // scope the document to its tenant. Metadata is merged atomically in
+  // Postgres to avoid clobbering analysis written by a concurrent pipeline.
+  const { error: classificationError } = await db
+    .from("documents")
+    .update({ classification: classification?.primary ?? null })
+    .eq("id", documentId)
+    .eq("organization_id", organizationId)
 
-  await db.from("documents").update({
-    classification: classification?.primary ?? null,
-    metadata: {
-      ...existingMetadata,
+  if (classificationError) throw classificationError
+
+  const { data: mergedMetadata, error: metadataError } = await db.rpc("merge_document_metadata", {
+    p_document_id: documentId,
+    p_organization_id: organizationId,
+    p_patch: {
       routed_to: target,
       intent: intent?.primary ?? null,
       routing_rules_applied: {
         classification: classification?.primary,
         intent: intent?.primary,
-        target_workspace: target
-      }
+        target_workspace: target,
+      },
     },
-  }).eq("id", documentId)
+  })
+
+  if (metadataError) throw metadataError
+  if (!mergedMetadata) {
+    throw new Error("Document not found in organization")
+  }
 
   return target
 }

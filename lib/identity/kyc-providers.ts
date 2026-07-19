@@ -66,6 +66,9 @@ export async function createDocumentCheck(
     case "jumio":
       return jumioDocumentCheck(config, options)
     default:
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(`KYC document checks are not implemented for ${config.name}`)
+      }
       return simulatedCheck("document", options)
   }
 }
@@ -80,6 +83,9 @@ export async function createFaceCheck(
     case "jumio":
       return jumioFaceCheck(config, options)
     default:
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(`KYC face checks are not implemented for ${config.name}`)
+      }
       return simulatedCheck("face", options)
   }
 }
@@ -132,13 +138,14 @@ async function onfidoFaceCheck(
       file: options.selfieImage,
     }),
   })
+  if (!response.ok) throw new Error(`Onfido face check failed (${response.status})`)
   const data = await response.json()
   return {
     checkId: data.id,
     provider: "onfido",
     status: "complete",
-    result: "clear",
-    breakdown: {},
+    result: data.result === "clear" ? "clear" : "consider",
+    breakdown: data.breakdown || {},
     score: data.score || 0,
     completedAt: new Date().toISOString(),
     rawResponse: data,
@@ -147,7 +154,7 @@ async function onfidoFaceCheck(
 
 async function jumioDocumentCheck(
   config: KycProviderConfig,
-  options: DocumentCheckOptions
+  _options: DocumentCheckOptions
 ): Promise<KycCheckResult> {
   const response = await fetch(`${config.apiUrl}/api/v1/accounts/${config.apiKey}/scan`, {
     method: "POST",
@@ -178,25 +185,19 @@ async function jumioDocumentCheck(
 }
 
 async function jumioFaceCheck(
-  config: KycProviderConfig,
-  options: FaceCheckOptions
+  _config: KycProviderConfig,
+  _options: FaceCheckOptions
 ): Promise<KycCheckResult> {
-  return {
-    checkId: `face-${Date.now()}`,
-    provider: "jumio",
-    status: "complete",
-    result: "clear",
-    breakdown: { face_match: true, liveness: options.liveness || false },
-    score: 0.95,
-    completedAt: new Date().toISOString(),
-    rawResponse: {},
-  }
+  throw new Error("Jumio face verification is not implemented")
 }
 
 async function simulatedCheck(
   type: "document" | "face",
   _options: DocumentCheckOptions | FaceCheckOptions
 ): Promise<KycCheckResult> {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Simulated KYC checks are disabled in production")
+  }
   await new Promise((r) => setTimeout(r, 1000))
   const confidence = 0.7 + Math.random() * 0.25
   return {

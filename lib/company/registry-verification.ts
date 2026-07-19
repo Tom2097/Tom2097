@@ -3,6 +3,7 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { logger } from "@/lib/logging"
 import { lookupRegistry } from "@/lib/company/registry-apis"
+import { getAuthenticatedUser } from "@/lib/auth/server-auth"
 
 interface CompanyVerificationResult {
   verified: boolean
@@ -28,6 +29,7 @@ interface RegistryVerificationOptions {
 export async function verifyCompanyAgainstRegistry(
   options: RegistryVerificationOptions
 ): Promise<CompanyVerificationResult> {
+  await getAuthenticatedUser()
   const { registrationNumber, country, companyName, website } = options
 
   // Check if registration number format is valid for the country
@@ -50,12 +52,18 @@ export async function verifyCompanyAgainstRegistry(
       registrationNumber: registryResult.registrationNumber,
       address: registryResult.address,
       status: registryResult.status === "dissolved" ? "inactive" : registryResult.status,
-      verificationMethod: "registry_api"
+      verificationMethod: registryResult.simulated ? undefined : "registry_api",
+      requiresManualReview: registryResult.simulated ? true : undefined,
+      manualReviewNotes: registryResult.simulated
+        ? "SIMULATED DEVELOPMENT RESULT — not a registry verification"
+        : undefined,
     }
   }
 
-  // Fall back to simulated lookup if real API not found
-  const registryData = await simulateRegistryLookup(registrationNumber, country)
+  // Demo data is allowed only outside production and is clearly marked.
+  const registryData = process.env.NODE_ENV === "production"
+    ? { verified: false }
+    : await simulateRegistryLookup(registrationNumber, country)
 
   if (registryData.verified) {
     return {
@@ -64,7 +72,8 @@ export async function verifyCompanyAgainstRegistry(
       registrationNumber: registryData.registrationNumber,
       address: registryData.address,
       status: registryData.status,
-      verificationMethod: "registry_api"
+      requiresManualReview: true,
+      manualReviewNotes: "SIMULATED DEVELOPMENT RESULT — not a registry verification",
     }
   }
 
@@ -219,20 +228,21 @@ function getCityForCountry(country: string): string {
  * Request manual review for company verification
  */
 export async function requestManualReview(
-  userId: string,
+  _userId: string,
   companyData: RegistryVerificationOptions & {
     userProvidedName: string
     userProvidedWebsite?: string
     userProvidedAddress?: string
   }
 ): Promise<{ success: boolean; reviewId?: string }> {
+  const user = await getAuthenticatedUser()
   const db = createServiceClient()
 
   try {
     const { data: review, error } = await db
       .from("company_verification_reviews")
       .insert({
-        user_id: userId,
+        user_id: user.id,
         company_name: companyData.userProvidedName,
         registration_number: companyData.registrationNumber,
         country: companyData.country,

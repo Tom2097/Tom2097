@@ -132,6 +132,13 @@ function LoginForm() {
                  </span>
               </Button>
 
+              {passkeyError && (
+                <div className="flex items-center gap-2 text-sm text-destructive" role="alert">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  {passkeyError}
+                </div>
+              )}
+
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-border/50" />

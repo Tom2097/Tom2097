@@ -170,9 +170,11 @@ export async function isWithinRefundWindow(organizationId: string): Promise<bool
   if (sub.billing_interval === "year") return false
 
   const startDate = new Date(sub.current_period_start)
+  if (Number.isNaN(startDate.getTime())) return false
+
   const daysSinceStart = Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24))
 
-  return daysSinceStart <= REFUND_WINDOW_DAYS
+  return daysSinceStart >= 0 && daysSinceStart <= REFUND_WINDOW_DAYS
 }
 
 export async function processRefund(

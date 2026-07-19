@@ -2,7 +2,7 @@ import axios from "axios"
 import crypto from "crypto"
 import { createServiceClient } from "@/lib/supabase/service"
 import { logAuthEvent } from "@/lib/auth/audit"
-import { claimWebhookEvent } from "./idempotency"
+import { claimWebhookEvent, completeWebhookEvent, failWebhookEvent } from "./idempotency"
 import type { BillingPlan } from "./types"
 import { logger } from "@/lib/logging"
 
@@ -209,7 +209,7 @@ export async function handleRazorpayWebhook(
           const orgId = metadata?.organization_id
 
           if (orgId) {
-            await supabase
+            const { error: subscriptionError } = await supabase
               .from("subscriptions")
               .update({
                 razorpay_subscription_id: subscription.id,
@@ -217,8 +217,9 @@ export async function handleRazorpayWebhook(
                 status: "active",
               })
               .eq("organization_id", orgId)
+            if (subscriptionError) throw subscriptionError
 
-            await supabase.from("billing_events").insert({
+            const { error: eventError } = await supabase.from("billing_events").insert({
               organization_id: orgId,
               event_type: "subscription.created",
               provider: "razorpay",
@@ -226,6 +227,7 @@ export async function handleRazorpayWebhook(
               status: "completed",
               metadata: { plan: metadata?.plan },
             })
+            if (eventError) throw eventError
           }
         }
         break
@@ -237,7 +239,7 @@ export async function handleRazorpayWebhook(
           const orgId = paymentMeta?.organization_id
 
           if (orgId && payment.amount) {
-            await supabase.from("billing_events").insert({
+            const { error: eventError } = await supabase.from("billing_events").insert({
               organization_id: orgId,
               event_type: "payment.completed",
               provider: "razorpay",
@@ -245,6 +247,7 @@ export async function handleRazorpayWebhook(
               amount: (payment.amount as number) / 100,
               status: "completed",
             })
+            if (eventError) throw eventError
           }
         }
         break
@@ -256,7 +259,7 @@ export async function handleRazorpayWebhook(
           const orgId = paymentMeta?.organization_id
 
           if (orgId) {
-            await supabase.from("billing_events").insert({
+            const { error: eventError } = await supabase.from("billing_events").insert({
               organization_id: orgId,
               event_type: "payment.failed",
               provider: "razorpay",
@@ -264,6 +267,7 @@ export async function handleRazorpayWebhook(
               status: "failed",
               error_message: payment.error_description as string,
             })
+            if (eventError) throw eventError
           }
         }
         break
@@ -275,27 +279,32 @@ export async function handleRazorpayWebhook(
           const orgId = metadata?.organization_id
 
           if (orgId) {
-            await supabase
+            const { error: subscriptionError } = await supabase
               .from("subscriptions")
               .update({
                 status: "cancelled",
                 cancelled_at: new Date().toISOString(),
               })
               .eq("organization_id", orgId)
+            if (subscriptionError) throw subscriptionError
 
-            await supabase.from("billing_events").insert({
+            const { error: eventError } = await supabase.from("billing_events").insert({
               organization_id: orgId,
               event_type: "subscription.cancelled",
               provider: "razorpay",
               external_id: subscription.id as string,
               status: "completed",
             })
+            if (eventError) throw eventError
           }
         }
         break
       }
     }
+    if (!eventId) throw new Error("Missing Razorpay webhook event ID")
+    await completeWebhookEvent("razorpay", eventId)
   } catch (err) {
+    if (eventId) await failWebhookEvent("razorpay", eventId, err)
     console.error("[v0] Failed to handle Razorpay webhook:", err)
     throw err
   }

@@ -8,6 +8,7 @@ export interface RegistryConfig {
 
 export interface RegistryLookupResult {
   found: boolean
+  simulated?: boolean
   companyName?: string
   registrationNumber?: string
   address?: string
@@ -48,6 +49,7 @@ export async function lookupRegistry(
 ): Promise<RegistryLookupResult> {
   const config = getRegistryConfig(country)
   if (!config || config.provider === "simulated") {
+    if (process.env.NODE_ENV === "production") return { found: false }
     return simulatedLookup(registrationNumber, country)
   }
 
@@ -59,6 +61,7 @@ export async function lookupRegistry(
     case "acra":
       return acraLookup(config, registrationNumber)
     default:
+      if (process.env.NODE_ENV === "production") return { found: false }
       return simulatedLookup(registrationNumber, country)
   }
 }
@@ -99,6 +102,9 @@ async function companiesHouseLookup(
   config: RegistryConfig,
   companyNumber: string
 ): Promise<RegistryLookupResult> {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Simulated registry lookups are disabled in production")
+  }
   try {
     const response = await fetch(
       `${config.apiUrl}/company/${companyNumber}`,
@@ -158,6 +164,7 @@ async function simulatedLookup(
   if (!found) return { found: false }
   return {
     found: true,
+    simulated: true,
     companyName: `Verified Company ${registrationNumber.slice(0, 6)}`,
     registrationNumber,
     address: "123 Verified Street, Business District",

@@ -9,6 +9,74 @@ import * as xlsx from 'xlsx'
 
 export const maxDuration = 30
 
+const MAX_FILE_BYTES = 10 * 1024 * 1024
+const MAX_JSON_BYTES = 1024 * 1024
+const MAX_MULTIPART_BYTES = MAX_FILE_BYTES + 256 * 1024
+const MAX_SPREADSHEET_ROWS = 10_000
+const MAX_SPREADSHEET_CELLS = 100_000
+
+const ALLOWED_FILE_TYPES: Record<string, readonly string[]> = {
+  '.txt': ['text/plain', 'application/octet-stream'],
+  '.md': ['text/markdown', 'text/plain', 'application/octet-stream'],
+  '.json': ['application/json', 'text/json', 'text/plain', 'application/octet-stream'],
+  '.csv': ['text/csv', 'application/csv', 'application/vnd.ms-excel', 'text/plain', 'application/octet-stream'],
+  '.xlsx': ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/octet-stream'],
+  '.xls': ['application/vnd.ms-excel', 'application/octet-stream'],
+  '.pdf': ['application/pdf', 'application/octet-stream'],
+  '.png': ['image/png', 'application/octet-stream'],
+  '.jpg': ['image/jpeg', 'application/octet-stream'],
+  '.jpeg': ['image/jpeg', 'application/octet-stream'],
+  '.webp': ['image/webp', 'application/octet-stream'],
+}
+
+class UploadError extends Error {
+  constructor(message: string, readonly status: 413 | 415) {
+    super(message)
+  }
+}
+
+function fileExtension(name: string) {
+  const match = name.toLowerCase().match(/\.[a-z0-9]+$/)
+  return match?.[0] ?? ''
+}
+
+function safeFilename(name: string) {
+  const basename = name.replace(/\\/g, '/').split('/').pop() || 'upload'
+  const sanitized = basename
+    .normalize('NFKC')
+    .replace(/[\u0000-\u001f\u007f]/g, '')
+    .replace(/[^a-zA-Z0-9._-]+/g, '_')
+    .replace(/^\.+/, '')
+    .slice(0, 180)
+  return sanitized || 'upload'
+}
+
+function validateFile(file: File) {
+  if (file.size > MAX_FILE_BYTES) {
+    throw new UploadError(`File exceeds the ${MAX_FILE_BYTES / 1024 / 1024} MB limit`, 413)
+  }
+
+  const extension = fileExtension(file.name)
+  const allowedMimeTypes = ALLOWED_FILE_TYPES[extension]
+  const mimeType = (file.type || 'application/octet-stream').toLowerCase()
+  if (!allowedMimeTypes || !allowedMimeTypes.includes(mimeType)) {
+    throw new UploadError('Unsupported file type', 415)
+  }
+}
+
+function validateSpreadsheetSize(sheet: xlsx.WorkSheet | undefined) {
+  if (!sheet?.['!ref']) return
+  const range = xlsx.utils.decode_range(sheet['!ref'])
+  const rows = range.e.r - range.s.r + 1
+  const columns = range.e.c - range.s.c + 1
+  if (rows > MAX_SPREADSHEET_ROWS || rows * columns > MAX_SPREADSHEET_CELLS) {
+    throw new UploadError(
+      `Spreadsheet exceeds ${MAX_SPREADSHEET_ROWS} rows or ${MAX_SPREADSHEET_CELLS} cells`,
+      413
+    )
+  }
+}
+
 async function parseFile(file: File): Promise<{ content: string; rawData: unknown[] | null; mimeType: string; sizeBytes: number }> {
   const mimeType = file.type || 'application/octet-stream'
   const sizeBytes = file.size
@@ -32,15 +100,16 @@ async function parseFile(file: File): Promise<{ content: string; rawData: unknow
   // CSV
   if (name.endsWith('.csv')) {
     const text = await file.text()
-    const rows = text.split(/\r?\n/).filter(Boolean)
-    if (rows.length === 0) return { content: text, rawData: [], mimeType: 'text/csv', sizeBytes }
-    const headers = rows[0].split(',').map(h => h.trim())
-    const data = rows.slice(1).map(row => {
-      const values = row.split(',')
-      const obj: Record<string, string> = {}
-      headers.forEach((h, i) => { obj[h] = values[i]?.trim() ?? '' })
-      return obj
-    })
+    // A naive `row.split(',')` breaks on quoted fields that contain commas
+    // (or embedded newlines/escaped quotes), silently shifting every column
+    // after one and corrupting the stats generate-report computes from
+    // raw_data. xlsx is already a dependency (used for the Excel branch
+    // below) and its CSV reader is quote-aware, so reuse it here instead of
+    // pulling in a new parsing library for this one file.
+    const workbook = xlsx.read(text, { type: 'string' })
+    const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+    validateSpreadsheetSize(firstSheet)
+    const data = firstSheet ? xlsx.utils.sheet_to_json(firstSheet, { defval: '' }) : []
     return { content: text, rawData: data, mimeType: 'text/csv', sizeBytes }
   }
 
@@ -49,7 +118,8 @@ async function parseFile(file: File): Promise<{ content: string; rawData: unknow
     const buffer = await file.arrayBuffer()
     const workbook = xlsx.read(buffer, { type: 'array' })
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
-    const data = xlsx.utils.sheet_to_json(firstSheet)
+    validateSpreadsheetSize(firstSheet)
+    const data = firstSheet ? xlsx.utils.sheet_to_json(firstSheet) : []
     return { content: '', rawData: data, mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', sizeBytes }
   }
 
@@ -66,7 +136,7 @@ async function parseFile(file: File): Promise<{ content: string; rawData: unknow
     }
   }
 
-  // Fallback: anything else (images, docx, zip, ...) is binary. Decoding it
+  // Allowed images are binary. Decoding them
   // via file.text() would corrupt it and can embed NUL bytes that Postgres
   // text columns reject outright, so just record it without extracted content.
   return { content: '', rawData: null, mimeType: mimeType || 'application/octet-stream', sizeBytes }
@@ -80,6 +150,13 @@ export async function POST(request: Request) {
     }
 
     const contentType = request.headers.get('content-type') || ''
+    const contentLength = Number(request.headers.get('content-length'))
+    if (Number.isFinite(contentLength)) {
+      const requestLimit = contentType.includes('multipart/form-data') ? MAX_MULTIPART_BYTES : MAX_JSON_BYTES
+      if (contentLength > requestLimit) {
+        return NextResponse.json({ error: 'Request payload too large' }, { status: 413 })
+      }
+    }
     const db = createServiceClient()
 
     let name: string
@@ -97,13 +174,14 @@ export async function POST(request: Request) {
       if (!file) {
         return NextResponse.json({ error: 'No file provided' }, { status: 400 })
       }
-      name = file.name
+      validateFile(file)
+      name = safeFilename(file.name)
       const parsed = await parseFile(file)
       content = parsed.content
       rawData = parsed.rawData
       mimeType = parsed.mimeType
       sizeBytes = parsed.sizeBytes
-      metadata = { source: 'operations_upload', filename: file.name, mime_type: mimeType }
+      metadata = { source: 'operations_upload', filename: name, mime_type: mimeType }
       // File/Blob can be read more than once -- safe to read again here for
       // the raw bytes now that parseFile() has already consumed it for text.
       fileBuffer = Buffer.from(await file.arrayBuffer())
@@ -116,9 +194,13 @@ export async function POST(request: Request) {
       content = String(body.text)
       type = 'text'
       sizeBytes = new TextEncoder().encode(content).length
+      if (sizeBytes > MAX_JSON_BYTES) {
+        return NextResponse.json({ error: 'Text payload too large' }, { status: 413 })
+      }
+      name = safeFilename(String(body.name))
       metadata = { source: 'operations_upload', input_type: 'text' }
     } else {
-      return NextResponse.json({ error: 'Unsupported content type' }, { status: 400 })
+      return NextResponse.json({ error: 'Unsupported content type' }, { status: 415 })
     }
 
     const insert: Record<string, unknown> = {
@@ -195,6 +277,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, document: responseDoc, document_id: doc.id })
   } catch (error) {
+    if (error instanceof UploadError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
     console.error('[operations/upload] error:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Upload failed' },

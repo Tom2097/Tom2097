@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getAuthenticatedUser, handleAuthError } from '@/lib/auth/server-auth'
 
 function slugify(name: string): string {
   const base = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -8,6 +9,7 @@ function slugify(name: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getAuthenticatedUser()
     const data = await request.json()
     const {
       fullName, email, phone,
@@ -20,15 +22,27 @@ export async function POST(request: NextRequest) {
       role?: string; position?: string
     }
 
-    if (!email || !companyName) {
-      return NextResponse.json({ error: 'email and companyName are required' }, { status: 400 })
+    if (!companyName) {
+      return NextResponse.json({ error: 'companyName is required' }, { status: 400 })
+    }
+    if (email && user.email && email.toLowerCase() !== user.email.toLowerCase()) {
+      return NextResponse.json({ error: 'Email does not match the authenticated account' }, { status: 403 })
     }
 
     const db = createServiceClient()
 
-    const { data: profile } = await db.from('profiles').select('id').eq('email', email.toLowerCase()).maybeSingle()
+    // The service-role client bypasses RLS, so profile ownership must come
+    // exclusively from the verified session rather than a caller-supplied email.
+    const { data: profile } = await db
+      .from('profiles')
+      .select('id, organization_id')
+      .eq('id', user.id)
+      .maybeSingle()
     if (!profile) {
-      return NextResponse.json({ error: 'No account found for this email. Please verify your passcode again.' }, { status: 404 })
+      return NextResponse.json({ error: 'No profile found for the authenticated account' }, { status: 404 })
+    }
+    if (profile.organization_id) {
+      return NextResponse.json({ error: 'Onboarding has already been completed' }, { status: 409 })
     }
 
     const { data: org, error: orgError } = await db
@@ -48,22 +62,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create organization' }, { status: 500 })
     }
 
-    const { error: profileError } = await db
+    const { data: updatedProfile, error: profileError } = await db
       .from('profiles')
       .update({
         full_name: fullName || null,
         phone: phone || null,
-        role: role || 'member',
+        role: role === 'owner' || role === 'admin' ? role : 'member',
         organization_id: org.id,
       })
       .eq('id', profile.id)
+      .is('organization_id', null)
+      .select('id')
+      .maybeSingle()
 
-    if (profileError) {
+    if (profileError || !updatedProfile) {
       return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, organizationId: org.id, position: position ?? null })
-  } catch {
-    return NextResponse.json({ error: 'Failed to complete onboarding' }, { status: 500 })
+  } catch (error) {
+    return handleAuthError(error as Error)
   }
 }
