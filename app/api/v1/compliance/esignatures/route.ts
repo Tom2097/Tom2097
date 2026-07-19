@@ -11,20 +11,19 @@ export const GET = withAuth(async (req: NextRequest, { organizationId }) => {
   const status = req.nextUrl.searchParams.get("status") as SignatureRequest["status"] | null
   const requests = await listSignatureRequests(organizationId, status ?? undefined)
   return NextResponse.json({ requests })
-})
+}, { requireAny: ["esignatures:read", "compliance:read"] })
 
 // POST /api/v1/compliance/esignatures
 export const POST = withAuth(async (req: NextRequest, { organizationId, userId }) => {
-  const { documentId, documentName, signerEmail, signerName, signerPhone, message, expiresInDays } = await req.json()
+  const { documentId, signerEmail, signerName, signerPhone, message, expiresInDays } = await req.json()
 
-  if (!documentId || !documentName || !signerEmail) {
-    return NextResponse.json({ error: "documentId, documentName, and signerEmail are required" }, { status: 400 })
+  if (!documentId || !signerEmail) {
+    return NextResponse.json({ error: "documentId and signerEmail are required" }, { status: 400 })
   }
 
   const request = await createSignatureRequest(
     organizationId,
     documentId,
-    documentName,
     userId,
     signerEmail,
     signerName ?? null,
@@ -48,4 +47,4 @@ export const POST = withAuth(async (req: NextRequest, { organizationId, userId }
   )
 
   return NextResponse.json({ request })
-})
+}, { requireAny: ["esignatures:write", "compliance:write"] })

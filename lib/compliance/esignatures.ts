@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "crypto"
+import { createHash } from "crypto"
 import { createServiceClient } from "@/lib/supabase/service"
 import { publish } from "@/lib/events/bus"
 
@@ -40,7 +40,6 @@ export interface SignedDocument {
 export async function createSignatureRequest(
   organizationId: string,
   documentId: string,
-  documentName: string,
   requesterId: string,
   signerEmail: string,
   signerName: string | null = null,
@@ -50,10 +49,21 @@ export async function createSignatureRequest(
 ): Promise<SignatureRequest | null> {
   const db = createServiceClient()
 
+  // The service role bypasses RLS. Resolve the document inside the caller's
+  // tenant and derive its name server-side so a foreign document UUID cannot
+  // be attached to a request in the attacker's organization.
+  const { data: document, error: documentError } = await db
+    .from("documents")
+    .select("id, name")
+    .eq("id", documentId)
+    .eq("organization_id", organizationId)
+    .maybeSingle()
+  if (documentError || !document) return null
+
   const { data, error } = await db.from("esignature_requests").insert({
     organization_id: organizationId,
     document_id: documentId,
-    document_name: documentName,
+    document_name: document.name,
     requester_id: requesterId,
     signer_email: signerEmail,
     signer_name: signerName,
@@ -122,13 +132,18 @@ export async function signDocument(
     signature_hash: signatureHash,
     signed_at: new Date().toISOString(),
     signed_ip: ipAddress,
-  }).eq("id", requestId)
+  })
+    .eq("id", requestId)
+    .eq("organization_id", organizationId)
+    .eq("signer_email", signerEmail)
 
   await db.from("documents").update({
     signature_status: "signed",
     signed_at: new Date().toISOString(),
     signed_by: signerEmail,
-  }).eq("id", req.document_id)
+  })
+    .eq("id", req.document_id)
+    .eq("organization_id", organizationId)
 
   await publish({
     type: "compliance.document_signed",
@@ -209,6 +224,7 @@ export async function rejectSignatureRequest(
     .from("esignature_requests")
     .update({ status: "rejected", message: reason ?? req.message })
     .eq("id", requestId)
+    .eq("organization_id", organizationId)
     .select("*")
     .single()
 
