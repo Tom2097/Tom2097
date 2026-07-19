@@ -211,7 +211,12 @@ function LoginForm() {
              />
           </div>
           <div className="space-y-2">
-             <Label htmlFor="password">{t("auth.login.password")}</Label>
+             <div className="flex items-center justify-between">
+               <Label htmlFor="password">{t("auth.login.password")}</Label>
+               <Link href="/auth/forgot-password" className="text-xs text-primary hover:underline">
+                 {t("auth.login.forgotPassword")}
+               </Link>
+             </div>
              <div className="relative">
                <Input
                  id="password"

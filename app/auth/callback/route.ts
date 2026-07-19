@@ -41,6 +41,29 @@ async function ensureUserProfile(
 
   if (existingProfile) return
 
+  // Invited team members join the inviter's existing organization instead
+  // of getting a brand-new one -- see invited_organization_id/invited_role
+  // set on the user by app/api/v1/auth/invite/route.ts's inviteUserByEmail
+  // call.
+  const invitedOrganizationId = user.user_metadata?.invited_organization_id as string | undefined
+  if (invitedOrganizationId) {
+    const { error: profileError } = await db
+      .from("profiles")
+      .insert({
+        id: user.id,
+        email: user.email,
+        full_name: (user.user_metadata?.full_name || "") as string,
+        organization_id: invitedOrganizationId,
+        role: (user.user_metadata?.invited_role as string) || "member",
+      })
+
+    if (profileError) {
+      console.error("[auth] Failed to create profile for invited user:", { error: profileError })
+      return buildRedirect(`/auth/error?reason=${encodeURIComponent("Failed to join organization")}`)
+    }
+    return
+  }
+
   if (!isPlatformOwnerEmail(user.email)) {
     const cap = await canCreateTenant()
   if (!cap.allowed) {
@@ -152,6 +175,11 @@ export async function GET(request: Request) {
       if (type === "signup") {
         await supabase.auth.signOut()
         return buildRedirect("/auth/login?confirmed=true")
+      }
+      // Invited users have no password yet -- keep the session (like
+      // recovery) and send them to set one, same as a password reset.
+      if (type === "invite") {
+        return buildRedirect("/auth/reset-password")
       }
       return buildRedirect(next)
     }

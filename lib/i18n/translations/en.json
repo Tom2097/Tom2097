@@ -838,7 +838,37 @@
       "resendConfirmation": "Resend confirmation email",
       "resending": "Sending...",
       "resendSent": "Sent — check your inbox in a moment.",
-      "emailConfirmed": "Email confirmed! Sign in below to get started."
+      "emailConfirmed": "Email confirmed! Sign in below to get started.",
+      "forgotPassword": "Forgot password?"
+    },
+    "forgotPassword": {
+      "title": "Reset your password",
+      "description": "Enter your email and we'll send you a link to reset your password.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@company.com",
+      "sendLink": "Send reset link",
+      "sending": "Sending...",
+      "invalidResponse": "Unexpected response from the server",
+      "failed": "Something went wrong. Please try again.",
+      "checkYourEmail": "Check your email",
+      "sentDesc": "If an account exists for that email, a password reset link is on its way. Check your spam folder if you don't see it in a minute or two.",
+      "backToSignIn": "Back to sign in"
+    },
+    "resetPassword": {
+      "title": "Set a new password",
+      "description": "Choose a new password for your account.",
+      "newPasswordLabel": "New password",
+      "newPasswordPlaceholder": "Enter a new password",
+      "confirmPasswordLabel": "Confirm new password",
+      "confirmPasswordPlaceholder": "Re-enter your new password",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "minLength": "Password must be at least 8 characters",
+      "updating": "Updating...",
+      "resetPassword": "Reset password",
+      "successTitle": "Password updated",
+      "successDesc": "Your password has been changed successfully.",
+      "signIn": "Sign in",
+      "loading": "Loading..."
     },
     "signUp": {
       "title": "Create your account",
