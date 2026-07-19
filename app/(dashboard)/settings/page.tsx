@@ -167,6 +167,19 @@ export default function SettingsPage() {
     return data
   }, [])
 
+  // API keys handlers
+  const fetchApiKeys = useCallback(async () => {
+    setApiKeysLoading(true)
+    try {
+      const data = await api("/api/v1/api-keys")
+      setApiKeys(data.keys)
+    } catch {
+      // silent
+    } finally {
+      setApiKeysLoading(false)
+    }
+  }, [api])
+
   useEffect(() => {
     const fetchData = async () => {
       const supabase = createClient()
@@ -225,13 +238,17 @@ export default function SettingsPage() {
       }
     }
 
-    fetchData()
     // API keys previously only loaded after generating a new one -- visiting
     // the Organization tab and seeing existing keys never worked because
     // fetchApiKeys() was never called on mount.
-    fetchApiKeys()
+    const loadApiKeys = async () => {
+      await fetchApiKeys()
+    }
+
+    fetchData()
+    loadApiKeys()
     fetchNotificationPreferences()
-  }, [])
+  }, [fetchApiKeys])
 
   const handleManageBilling = () => {
     startTransition(async () => {
@@ -278,19 +295,6 @@ export default function SettingsPage() {
       showToast("error", err.message)
     } finally {
       setSavingOrg(false)
-    }
-  }
-
-  // API keys handlers
-  const fetchApiKeys = async () => {
-    setApiKeysLoading(true)
-    try {
-      const data = await api("/api/v1/api-keys")
-      setApiKeys(data.keys)
-    } catch {
-      // silent
-    } finally {
-      setApiKeysLoading(false)
     }
   }
 
