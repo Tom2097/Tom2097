@@ -3,7 +3,11 @@ import { createServiceClient } from "@/lib/supabase/service"
 import { logAuthEvent, getClientIp } from "@/lib/auth/audit"
 import { NextResponse } from "next/server"
 
-export const PUT = withAuth(async (req, { organizationId, userId }) => {
+export const PUT = withAuth(async (req, { organizationId, userId, role }) => {
+  if (role !== "owner" && role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
+
   const { name, slug } = await req.json()
 
   if (!name && !slug) {

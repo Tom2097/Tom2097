@@ -3,7 +3,7 @@ export interface TenantContextMiddleware {
   organizationId: string
   userId: string
   email: string
-  role: "admin" | "member" | "viewer"
+  role: "owner" | "admin" | "member" | "viewer"
   teamId?: string | null
   planId?: string
   featureFlags?: string[]
