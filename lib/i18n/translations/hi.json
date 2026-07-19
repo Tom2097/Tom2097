@@ -2109,9 +2109,92 @@
     }
   },
   "platformAdmin": {
+    "layout": {
+      "platformAdmin": "प्लेटफ़ॉर्म एडमिन",
+      "dashboard": "डैशबोर्ड",
+      "tenants": "टेनेंट",
+      "users": "उपयोगकर्ता",
+      "roles": "भूमिकाएँ",
+      "security": "सुरक्षा"
+    },
+    "dashboard": {
+      "title": "प्लेटफ़ॉर्म डैशबोर्ड",
+      "subtitle": "टेनेंट, उपयोगकर्ताओं और प्लेटफ़ॉर्म स्वास्थ्य का अवलोकन",
+      "totalTenants": "कुल टेनेंट",
+      "limit": "सीमा",
+      "totalUsers": "कुल उपयोगकर्ता",
+      "activeSubscriptions": "सक्रिय सदस्यताएँ",
+      "platformHealth": "प्लेटफ़ॉर्म स्वास्थ्य",
+      "healthy": "स्वस्थ",
+      "updated": "अपडेट किया गया",
+      "quickActions": "त्वरित कार्रवाइयाँ",
+      "manageTenants": "टेनेंट प्रबंधित करें",
+      "manageTenantsDesc": "टेनेंट संगठनों को देखें, निलंबित करें या हटाएं",
+      "userManagement": "उपयोगकर्ता प्रबंधन",
+      "userManagementDesc": "प्लेटफ़ॉर्म के सभी उपयोगकर्ताओं को देखें और प्रबंधित करें",
+      "securityCenter": "सुरक्षा केंद्र",
+      "securityCenterDesc": "ऑडिट इवेंट और एक्सेस निगरानी"
+    },
+    "tenants": {
+      "title": "टेनेंट",
+      "subtitle": "प्लेटफ़ॉर्म पर संगठनों को प्रबंधित करें",
+      "trial": "ट्रायल",
+      "suspend": "निलंबित करें",
+      "activate": "सक्रिय करें",
+      "delete": "हटाएं",
+      "deleteConfirm": "क्या आप वाकई इस टेनेंट को हटाना चाहते हैं? इसे पूर्ववत नहीं किया जा सकता।",
+      "noOrganizations": "कोई संगठन नहीं मिला।"
+    },
+    "users": {
+      "title": "उपयोगकर्ता",
+      "subtitle": "प्लेटफ़ॉर्म के सभी उपयोगकर्ताओं को देखें",
+      "unknown": "अज्ञात उपयोगकर्ता",
+      "noUsers": "कोई उपयोगकर्ता नहीं मिला।"
+    },
     "roles": {
+      "title": "भूमिकाएँ",
+      "subtitle": "अपने संगठन के लिए भूमिकाएँ और अनुमतियाँ प्रबंधित करें",
+      "createRoleTitle": "नई भूमिका बनाएं",
       "define_a_new_role_with_specific_permissions_for": "अपने संगठन के लिए विशिष्ट अनुमतियों के साथ एक नई भूमिका परिभाषित करें।",
-      "update_role_details_and_permissions": "भूमिका विवरण और अनुमतियाँ अद्यतन करें."
+      "roleNameLabel": "भूमिका का नाम",
+      "roleNamePlaceholder": "जैसे सपोर्ट एजेंट",
+      "roleDescriptionLabel": "विवरण",
+      "roleDescriptionPlaceholder": "यह भूमिका किस लिए है",
+      "permissionsLabel": "अनुमतियाँ",
+      "creating": "बनाया जा रहा है...",
+      "createRole": "भूमिका बनाएं",
+      "roleNameRequired": "भूमिका का नाम आवश्यक है",
+      "createSuccess": "भूमिका बनाई गई",
+      "createFailed": "भूमिका बनाने में विफल",
+      "update_role_details_and_permissions": "भूमिका विवरण और अनुमतियाँ अद्यतन करें.",
+      "saving": "सहेजा जा रहा है...",
+      "saveChanges": "बदलाव सहेजें",
+      "updateSuccess": "भूमिका अपडेट की गई",
+      "updateFailed": "भूमिका अपडेट करने में विफल",
+      "deleteConfirm": "क्या आप वाकई इस भूमिका को हटाना चाहते हैं?",
+      "deleteSuccess": "भूमिका हटाई गई",
+      "deleteFailed": "भूमिका हटाने में विफल",
+      "loadFailed": "भूमिकाएँ और अनुमतियाँ लोड करने में विफल",
+      "rolesTitle": "सभी भूमिकाएँ",
+      "rolesDesc": "भूमिकाएँ और उनकी निर्धारित अनुमतियाँ",
+      "searchPlaceholder": "भूमिकाएँ खोजें...",
+      "name": "नाम",
+      "noDescription": "कोई विवरण नहीं",
+      "systemRole": "प्रकार",
+      "system": "सिस्टम",
+      "custom": "कस्टम",
+      "more": "और",
+      "actions": "कार्रवाइयाँ"
+    },
+    "security": {
+      "title": "सुरक्षा",
+      "subtitle": "ऑडिट इवेंट और एक्सेस निगरानी",
+      "totalEvents": "कुल इवेंट",
+      "failedDenied": "विफल / अस्वीकृत",
+      "status": "स्थिति",
+      "auditing": "ऑडिटिंग जारी",
+      "recentAuditEvents": "हाल के ऑडिट इवेंट",
+      "noAuditEvents": "अभी तक कोई ऑडिट इवेंट नहीं।"
     }
   },
   "adminPlatform": {

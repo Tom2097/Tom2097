@@ -6,11 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Trash2, Edit2, Save, X, Check, Shield, Users, UserPlus, Lock } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Edit2, Trash2, UserPlus, Lock } from 'lucide-react'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 interface Role {
@@ -43,7 +42,6 @@ export default function RolesPage() {
     permissions: [] as string[]
   })
    const [searchTerm, setSearchTerm] = useState('')
-  const router = useRouter()
 
   const fetchRolesAndPermissions = async () => {
     try {
@@ -157,6 +155,14 @@ export default function RolesPage() {
       console.error('Error:', error)
     }
   }
+
+  useEffect(() => {
+    const loadRolesAndPermissions = async () => {
+      await fetchRolesAndPermissions()
+    }
+    loadRolesAndPermissions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const togglePermission = (permissionId: string) => {
     if (!currentRole) return
@@ -308,25 +314,27 @@ export default function RolesPage() {
                         {role.permissions.slice(0, 3).map(permId => {
                           const permission = permissions.find(p => p.id === permId)
                           return permission ? (
-                            <span key={permId} className="text-xs bg-secondary px-2 py-1 rounded-full">
+                            <Badge key={permId} variant="secondary">
                               {permission.name}
-                            </span>
+                            </Badge>
                           ) : null
                         })}
                         {role.permissions.length > 3 && (
-                          <span className="text-xs bg-secondary px-2 py-1 rounded-full">
-                            +{role.permissions.length - 3} more
-                          </span>
+                          <Badge variant="secondary">
+                            +{role.permissions.length - 3} {t("platformAdmin.roles.more")}
+                          </Badge>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
                       {role.is_system_role ? (
-                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full flex items-center gap-1">
-                          <Lock className="h-3 w-3" /> System
-                        </span>
+                        <Badge variant="outline" className="bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400 gap-1">
+                          <Lock className="h-3 w-3" /> {t("platformAdmin.roles.system")}
+                        </Badge>
                       ) : (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">{t("platformAdmin.roles.custom")}</span>
+                        <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400">
+                          {t("platformAdmin.roles.custom")}
+                        </Badge>
                       )}
                     </TableCell>
                     <TableCell>

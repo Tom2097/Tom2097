@@ -2109,9 +2109,92 @@
     }
   },
   "platformAdmin": {
+    "layout": {
+      "platformAdmin": "ਪਲੇਟਫਾਰਮ ਐਡਮਿਨ",
+      "dashboard": "ਡੈਸ਼ਬੋਰਡ",
+      "tenants": "ਟੈਨੈਂਟ",
+      "users": "ਵਰਤੋਂਕਾਰ",
+      "roles": "ਭੂਮਿਕਾਵਾਂ",
+      "security": "ਸੁਰੱਖਿਆ"
+    },
+    "dashboard": {
+      "title": "ਪਲੇਟਫਾਰਮ ਡੈਸ਼ਬੋਰਡ",
+      "subtitle": "ਟੈਨੈਂਟ, ਵਰਤੋਂਕਾਰਾਂ ਅਤੇ ਪਲੇਟਫਾਰਮ ਸਿਹਤ ਦੀ ਸੰਖੇਪ ਜਾਣਕਾਰੀ",
+      "totalTenants": "ਕੁੱਲ ਟੈਨੈਂਟ",
+      "limit": "ਸੀਮਾ",
+      "totalUsers": "ਕੁੱਲ ਵਰਤੋਂਕਾਰ",
+      "activeSubscriptions": "ਸਰਗਰਮ ਸਬਸਕ੍ਰਿਪਸ਼ਨਾਂ",
+      "platformHealth": "ਪਲੇਟਫਾਰਮ ਸਿਹਤ",
+      "healthy": "ਸਿਹਤਮੰਦ",
+      "updated": "ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ",
+      "quickActions": "ਤੁਰੰਤ ਕਾਰਵਾਈਆਂ",
+      "manageTenants": "ਟੈਨੈਂਟ ਪ੍ਰਬੰਧਿਤ ਕਰੋ",
+      "manageTenantsDesc": "ਟੈਨੈਂਟ ਸੰਸਥਾਵਾਂ ਨੂੰ ਦੇਖੋ, ਮੁਅੱਤਲ ਕਰੋ ਜਾਂ ਹਟਾਓ",
+      "userManagement": "ਵਰਤੋਂਕਾਰ ਪ੍ਰਬੰਧਨ",
+      "userManagementDesc": "ਪਲੇਟਫਾਰਮ ਦੇ ਸਾਰੇ ਵਰਤੋਂਕਾਰਾਂ ਨੂੰ ਦੇਖੋ ਅਤੇ ਪ੍ਰਬੰਧਿਤ ਕਰੋ",
+      "securityCenter": "ਸੁਰੱਖਿਆ ਕੇਂਦਰ",
+      "securityCenterDesc": "ਆਡਿਟ ਇਵੈਂਟ ਅਤੇ ਪਹੁੰਚ ਨਿਗਰਾਨੀ"
+    },
+    "tenants": {
+      "title": "ਟੈਨੈਂਟ",
+      "subtitle": "ਪਲੇਟਫਾਰਮ 'ਤੇ ਸੰਸਥਾਵਾਂ ਨੂੰ ਪ੍ਰਬੰਧਿਤ ਕਰੋ",
+      "trial": "ਟ੍ਰਾਇਲ",
+      "suspend": "ਮੁਅੱਤਲ ਕਰੋ",
+      "activate": "ਸਰਗਰਮ ਕਰੋ",
+      "delete": "ਹਟਾਓ",
+      "deleteConfirm": "ਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਤੌਰ 'ਤੇ ਇਸ ਟੈਨੈਂਟ ਨੂੰ ਹਟਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ? ਇਸਨੂੰ ਵਾਪਸ ਨਹੀਂ ਲਿਆ ਜਾ ਸਕਦਾ।",
+      "noOrganizations": "ਕੋਈ ਸੰਸਥਾ ਨਹੀਂ ਮਿਲੀ।"
+    },
+    "users": {
+      "title": "ਵਰਤੋਂਕਾਰ",
+      "subtitle": "ਪਲੇਟਫਾਰਮ ਦੇ ਸਾਰੇ ਵਰਤੋਂਕਾਰਾਂ ਨੂੰ ਦੇਖੋ",
+      "unknown": "ਅਣਜਾਣ ਵਰਤੋਂਕਾਰ",
+      "noUsers": "ਕੋਈ ਵਰਤੋਂਕਾਰ ਨਹੀਂ ਮਿਲਿਆ।"
+    },
     "roles": {
+      "title": "ਭੂਮਿਕਾਵਾਂ",
+      "subtitle": "ਆਪਣੀ ਸੰਸਥਾ ਲਈ ਭੂਮਿਕਾਵਾਂ ਅਤੇ ਇਜਾਜ਼ਤਾਂ ਪ੍ਰਬੰਧਿਤ ਕਰੋ",
+      "createRoleTitle": "ਨਵੀਂ ਭੂਮਿਕਾ ਬਣਾਓ",
       "define_a_new_role_with_specific_permissions_for": "ਆਪਣੀ ਸੰਸਥਾ ਲਈ ਵਿਸ਼ੇਸ਼ ਅਧਿਕਾਰਾਂ ਦੇ ਨਾਲ ਇੱਕ ਨਵੀਂ ਭੂਮਿਕਾ ਨੂੰ ਪਰਿਭਾਸ਼ਿਤ ਕਰੋ।",
-      "update_role_details_and_permissions": "ਰੋਲ ਵੇਰਵਿਆਂ ਅਤੇ ਇਜਾਜ਼ਤਾਂ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ।"
+      "roleNameLabel": "ਭੂਮਿਕਾ ਦਾ ਨਾਮ",
+      "roleNamePlaceholder": "ਜਿਵੇਂ ਸਪੋਰਟ ਏਜੰਟ",
+      "roleDescriptionLabel": "ਵੇਰਵਾ",
+      "roleDescriptionPlaceholder": "ਇਹ ਭੂਮਿਕਾ ਕਿਸ ਲਈ ਹੈ",
+      "permissionsLabel": "ਇਜਾਜ਼ਤਾਂ",
+      "creating": "ਬਣਾਇਆ ਜਾ ਰਿਹਾ ਹੈ...",
+      "createRole": "ਭੂਮਿਕਾ ਬਣਾਓ",
+      "roleNameRequired": "ਭੂਮਿਕਾ ਦਾ ਨਾਮ ਲੋੜੀਂਦਾ ਹੈ",
+      "createSuccess": "ਭੂਮਿਕਾ ਬਣਾਈ ਗਈ",
+      "createFailed": "ਭੂਮਿਕਾ ਬਣਾਉਣ ਵਿੱਚ ਅਸਫਲ",
+      "update_role_details_and_permissions": "ਰੋਲ ਵੇਰਵਿਆਂ ਅਤੇ ਇਜਾਜ਼ਤਾਂ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ।",
+      "saving": "ਸੰਭਾਲਿਆ ਜਾ ਰਿਹਾ ਹੈ...",
+      "saveChanges": "ਬਦਲਾਅ ਸੰਭਾਲੋ",
+      "updateSuccess": "ਭੂਮਿਕਾ ਅੱਪਡੇਟ ਕੀਤੀ ਗਈ",
+      "updateFailed": "ਭੂਮਿਕਾ ਅੱਪਡੇਟ ਕਰਨ ਵਿੱਚ ਅਸਫਲ",
+      "deleteConfirm": "ਕੀ ਤੁਸੀਂ ਯਕੀਨੀ ਤੌਰ 'ਤੇ ਇਸ ਭੂਮਿਕਾ ਨੂੰ ਹਟਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ?",
+      "deleteSuccess": "ਭੂਮਿਕਾ ਹਟਾਈ ਗਈ",
+      "deleteFailed": "ਭੂਮਿਕਾ ਹਟਾਉਣ ਵਿੱਚ ਅਸਫਲ",
+      "loadFailed": "ਭੂਮਿਕਾਵਾਂ ਅਤੇ ਇਜਾਜ਼ਤਾਂ ਲੋਡ ਕਰਨ ਵਿੱਚ ਅਸਫਲ",
+      "rolesTitle": "ਸਾਰੀਆਂ ਭੂਮਿਕਾਵਾਂ",
+      "rolesDesc": "ਭੂਮਿਕਾਵਾਂ ਅਤੇ ਉਹਨਾਂ ਦੀਆਂ ਨਿਰਧਾਰਤ ਇਜਾਜ਼ਤਾਂ",
+      "searchPlaceholder": "ਭੂਮਿਕਾਵਾਂ ਖੋਜੋ...",
+      "name": "ਨਾਮ",
+      "noDescription": "ਕੋਈ ਵੇਰਵਾ ਨਹੀਂ",
+      "systemRole": "ਕਿਸਮ",
+      "system": "ਸਿਸਟਮ",
+      "custom": "ਕਸਟਮ",
+      "more": "ਹੋਰ",
+      "actions": "ਕਾਰਵਾਈਆਂ"
+    },
+    "security": {
+      "title": "ਸੁਰੱਖਿਆ",
+      "subtitle": "ਆਡਿਟ ਇਵੈਂਟ ਅਤੇ ਪਹੁੰਚ ਨਿਗਰਾਨੀ",
+      "totalEvents": "ਕੁੱਲ ਇਵੈਂਟ",
+      "failedDenied": "ਅਸਫਲ / ਅਸਵੀਕਾਰ",
+      "status": "ਸਥਿਤੀ",
+      "auditing": "ਆਡਿਟਿੰਗ ਜਾਰੀ",
+      "recentAuditEvents": "ਹਾਲੀਆ ਆਡਿਟ ਇਵੈਂਟ",
+      "noAuditEvents": "ਹਾਲੇ ਤੱਕ ਕੋਈ ਆਡਿਟ ਇਵੈਂਟ ਨਹੀਂ।"
     }
   },
   "adminPlatform": {

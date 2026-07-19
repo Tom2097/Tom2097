@@ -1,9 +1,9 @@
 "use client"
 import { useI18n } from "@/components/providers/i18n-provider"
 
-import { useEffect, useState } from "react"
 import { notFound, usePathname } from "next/navigation"
 import Link from "next/link"
+import useSWR from "swr"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
@@ -13,6 +13,12 @@ import {
   Activity,
   Loader2,
 } from "lucide-react"
+
+// Same key + fetcher as components/digit/sidebar.tsx's owner-check --
+// SWR dedupes identical requests, so this reuses the sidebar's already-
+// fetched result instead of triggering a second request and a visible
+// spinner flash on every admin sub-page navigation.
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n()
@@ -24,19 +30,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: t("platformAdmin.layout.roles"), href: "/platform/admin/roles", icon: Shield },
     { label: t("platformAdmin.layout.security"), href: "/platform/admin/security", icon: Activity },
   ]
-  const [isOwner, setIsOwner] = useState<boolean | null>(null)
+  const { data: ownerData, isLoading } = useSWR<{ isOwner: boolean }>("/api/platform/owner-check", fetcher)
+  const isOwner = ownerData?.isOwner ?? false
 
-  useEffect(() => {
-    const check = async () => {
-      const res = await fetch("/api/platform/owner-check")
-      if (!res.ok) { setIsOwner(false); return }
-      setIsOwner(true)
-    }
-    check()
-  }, [])
-
-  if (isOwner === false) { notFound() }
-  if (isOwner === null) {
+  if (!isLoading && !isOwner) { notFound() }
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
