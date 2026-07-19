@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, Loader2, Eye, EyeOff, Fingerprint, Shield } from "lucide-react"
+import { AlertCircle, CheckCircle2, Loader2, Eye, EyeOff, Fingerprint, Shield } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 import { startAuthentication } from "@simplewebauthn/browser"
 import { useI18n } from "@/components/providers/i18n-provider"
@@ -30,6 +30,7 @@ function LoginForm() {
   const errorParam = searchParams?.get("error")
   const reasonParam = searchParams?.get("reason")
   const unconfirmedEmail = errorParam === "email_not_confirmed" ? searchParams?.get("email") || "" : ""
+  const justConfirmed = searchParams?.get("confirmed") === "true"
   const displayError = unconfirmedEmail
     ? null
     : errorParam || (reasonParam ? `Auth check failed: ${reasonParam}` : null)
@@ -123,6 +124,13 @@ function LoginForm() {
       <form action="/api/auth/login" method="POST">
         <input type="hidden" name="redirect" value={redirect} />
         <CardContent className="space-y-4">
+          {justConfirmed && !displayError && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 text-sm">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              {t("auth.login.emailConfirmed")}
+            </div>
+          )}
+
           {displayError && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
               <AlertCircle className="w-4 h-4 shrink-0" />

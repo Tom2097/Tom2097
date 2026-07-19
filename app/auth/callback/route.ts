@@ -143,6 +143,16 @@ export async function GET(request: Request) {
             console.error("[auth] Post-OTP profile creation failed:", err)
           }
       }
+      // Signup confirmation establishes a session as a side effect of
+      // verifying the token, but the user never went through a deliberate
+      // login step -- and since this link is often opened on a different
+      // device/browser than the one they intend to actually use, sign them
+      // out here and have them log in properly rather than silently
+      // landing them in the dashboard on whatever device confirmed it.
+      if (type === "signup") {
+        await supabase.auth.signOut()
+        return buildRedirect("/auth/login?confirmed=true")
+      }
       return buildRedirect(next)
     }
     console.error("[v0] verifyOtp failed:", { error: error.message })
