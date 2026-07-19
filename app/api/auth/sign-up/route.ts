@@ -52,10 +52,25 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient()
+    const db = createServiceClient()
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL
     if (!siteUrl) {
       console.error("[auth] Missing canonical site URL for signup verification")
       return NextResponse.json({ error: "Signup is temporarily unavailable" }, { status: 503 })
+    }
+
+    // Authoritative pre-check: auth.users isn't exposed over PostgREST, so
+    // this RPC (a narrowly-scoped SECURITY DEFINER function, see the
+    // check_email_registered migration) is the only reliable way to know
+    // this *before* calling signUp -- its own response shape for "already
+    // registered" is ambiguous (see below) and was previously being
+    // misapplied to genuinely new signups too.
+    const { data: alreadyRegistered } = await db.rpc("check_email_registered", { p_email: normalizedEmail })
+    if (alreadyRegistered) {
+      return NextResponse.json(
+        { error: "An account with this email already exists. Try signing in instead." },
+        { status: 409 }
+      )
     }
 
     const emailRedirectTo = new URL("/auth/callback", siteUrl)
@@ -73,14 +88,23 @@ export async function POST(request: Request) {
       },
     })
 
-    // Supabase's anti-enumeration behavior: signing up with an email that's
-    // already registered returns { user: null, error: null } instead of a
-    // real error, so it can't be distinguished from a generic failure below
-    // without this explicit check.
+    // Supabase's signUp() can return {user: null, error: null} for reasons
+    // other than "already registered" (the pre-check above already ruled
+    // that out). Re-check directly: if the account exists now, the signup
+    // actually succeeded despite the ambiguous response -- report success
+    // rather than a misleading failure.
     if (!authError && !authData?.user) {
+      const { data: nowRegistered } = await db.rpc("check_email_registered", { p_email: normalizedEmail })
+      if (nowRegistered) {
+        return NextResponse.json({
+          success: true,
+          requiresEmailVerification: true,
+          message: "Check your email to verify your account",
+        })
+      }
       return NextResponse.json(
-        { error: "An account with this email already exists. Try signing in instead." },
-        { status: 409 }
+        { error: "Failed to create account. Please try again." },
+        { status: 400 }
       )
     }
 
@@ -98,7 +122,6 @@ export async function POST(request: Request) {
     // account and fail closed instead of provisioning it.
     if (authData.session) {
       await supabase.auth.signOut()
-      const db = createServiceClient()
       const { error: cleanupError } = await db.auth.admin.deleteUser(authData.user.id)
       if (cleanupError) {
         console.error("[auth] Failed to clean up unverified signup:", cleanupError)
