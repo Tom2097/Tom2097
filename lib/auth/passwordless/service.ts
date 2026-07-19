@@ -1,7 +1,7 @@
-import { randomBytes, createHash } from "node:crypto"
+import { createHash } from "node:crypto"
 import { createServiceClient } from "@/lib/supabase/service"
 import { DEFAULT_PASSWORDLESS_CONFIG, PasswordlessError, PasswordlessErrorCode } from "./types"
-import type { MagicLinkOptions, MagicLinkToken, PasswordlessConfig } from "./types"
+import type { MagicLinkOptions, PasswordlessConfig } from "./types"
 import { logger } from "@/lib/logging"
 
 function generatePasscode(): string {
@@ -123,7 +123,18 @@ export async function verifyMagicLink(
   const expiresAt = new Date(record.expires_at as string)
   if (expiresAt < new Date()) return null
 
-  await db.from("magic_link_tokens").update({ used: true, used_at: new Date().toISOString() }).eq("id", record.id)
+  // Claim the token atomically. The `used = false` predicate is rechecked by
+  // Postgres when concurrent updates contend for the same row, so only one
+  // request receives a row and proceeds to session creation.
+  const { data: consumed, error } = await db
+    .from("magic_link_tokens")
+    .update({ used: true, used_at: new Date().toISOString() })
+    .eq("id", record.id)
+    .eq("used", false)
+    .select("user_id")
+    .maybeSingle()
 
-  return record.user_id as string
+  if (error || !consumed || consumed.user_id !== record.user_id) return null
+
+  return consumed.user_id as string
 }

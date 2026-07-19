@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { verifyMagicLink } from '@/lib/auth/passwordless/service'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { getClientIp } from '@/lib/auth/audit'
+import { checkTenantRateLimit } from '@/lib/multitenant/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +13,14 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedEmail = String(email).trim().toLowerCase()
+    const ip = getClientIp(request.headers) ?? 'unknown'
+    const [ipLimited, emailLimited] = await Promise.all([
+      checkTenantRateLimit(`passwordless-verify-ip:${ip}`, 100, 10),
+      checkTenantRateLimit(`passwordless-verify-email:${normalizedEmail}`, 20, 5),
+    ])
+    if (ipLimited) return ipLimited
+    if (emailLimited) return emailLimited
+
     const userId = await verifyMagicLink(String(passcode), normalizedEmail)
     if (!userId) {
       return NextResponse.json({ error: 'Invalid or expired passcode' }, { status: 400 })
