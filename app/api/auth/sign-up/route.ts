@@ -40,8 +40,8 @@ export async function POST(request: Request) {
     const normalizedEmail = String(email).trim().toLowerCase()
     const clientIp = getClientIp(request.headers) ?? "unknown"
     const [ipLimited, emailLimited] = await Promise.all([
-      checkTenantRateLimit(`signup-ip:${clientIp}`, 10, 60),
-      checkTenantRateLimit(`signup-email:${normalizedEmail}`, 3, 60),
+      checkTenantRateLimit(`signup-ip:${clientIp}`, 60, 10),
+      checkTenantRateLimit(`signup-email:${normalizedEmail}`, 60, 3),
     ])
 
     if (ipLimited || emailLimited) {
