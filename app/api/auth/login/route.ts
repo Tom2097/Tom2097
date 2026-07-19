@@ -67,6 +67,11 @@ export async function POST(request: Request) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        return NextResponse.redirect(
+          new URL(`/auth/login?error=email_not_confirmed&email=${encodeURIComponent(email)}`, origin)
+        )
+      }
       return NextResponse.redirect(
         new URL(`/auth/login?error=${encodeURIComponent(error.message)}`, origin)
       )

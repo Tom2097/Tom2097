@@ -833,7 +833,11 @@
       "dontHaveAccount": "Don't have an account?",
       "signUp": "Sign up",
       "passkeyError": "Passkey authentication was canceled.",
-      "passkeyErrorGeneric": "An unexpected error occurred."
+      "passkeyErrorGeneric": "An unexpected error occurred.",
+      "emailNotConfirmed": "You need to confirm your email address before signing in.",
+      "resendConfirmation": "Resend confirmation email",
+      "resending": "Sending...",
+      "resendSent": "Sent — check your inbox in a moment."
     },
     "signUp": {
       "title": "Create your account",
@@ -874,10 +878,14 @@
       "termsAgree": "By signing up, you agree to our Terms of Service and Privacy Policy"
     },
     "signUpSuccess": {
-      "accountReady": "Account ready",
-      "accountActive": "Your account has been created and is active",
-      "signInNow": "You can now sign in with your email and password to start using the platform.",
-      "signIn": "Sign in"
+      "checkYourEmail": "Check your email",
+      "confirmationSentTo": "We sent a confirmation link to {email}.",
+      "confirmationSent": "We sent a confirmation link to your email address.",
+      "clickLinkToActivate": "Click the link in that email to activate your account. If you don't see it in a minute or two, check your spam folder.",
+      "resendEmail": "Resend confirmation email",
+      "resending": "Sending...",
+      "resendSent": "Sent — check your inbox again shortly.",
+      "signIn": "Back to sign in"
     },
     "error": {
       "atCapacity": "We're at capacity",

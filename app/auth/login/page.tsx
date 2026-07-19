@@ -29,7 +29,25 @@ function LoginForm() {
   const redirect = searchParams?.get("redirect") || "/"
   const errorParam = searchParams?.get("error")
   const reasonParam = searchParams?.get("reason")
-  const displayError = errorParam || (reasonParam ? `Auth check failed: ${reasonParam}` : null)
+  const unconfirmedEmail = errorParam === "email_not_confirmed" ? searchParams?.get("email") || "" : ""
+  const displayError = unconfirmedEmail
+    ? null
+    : errorParam || (reasonParam ? `Auth check failed: ${reasonParam}` : null)
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle")
+
+  const handleResendConfirmation = async () => {
+    if (!unconfirmedEmail || resendState === "sending") return
+    setResendState("sending")
+    try {
+      await fetch("/api/auth/resend-confirmation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: unconfirmedEmail }),
+      })
+    } finally {
+      setResendState("sent")
+    }
+  }
 
   // Check if WebAuthn is available
   useEffect(() => {
@@ -109,6 +127,27 @@ function LoginForm() {
             <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
               <AlertCircle className="w-4 h-4 shrink-0" />
               {displayError}
+            </div>
+          )}
+
+          {unconfirmedEmail && (
+            <div className="space-y-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-sm">
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {t("auth.login.emailNotConfirmed")}
+              </div>
+              {resendState === "sent" ? (
+                <p className="text-muted-foreground">{t("auth.login.resendSent")}</p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendConfirmation}
+                  disabled={resendState === "sending"}
+                  className="text-primary hover:underline text-sm font-medium"
+                >
+                  {resendState === "sending" ? t("auth.login.resending") : t("auth.login.resendConfirmation")}
+                </button>
+              )}
             </div>
           )}
 

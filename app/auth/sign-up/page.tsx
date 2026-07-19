@@ -88,7 +88,7 @@ export default function SignUpPage() {
         throw new Error(result.error || t("auth.signUp.failedToCreate"))
       }
 
-      router.push("/auth/sign-up-success")
+      router.push(`/auth/sign-up-success?email=${encodeURIComponent(email)}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : t("auth.signUp.failedToCreate"))
       setIsLoading(false)
