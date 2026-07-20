@@ -15,7 +15,7 @@ function sanitizeRedirectPath(path: string | null | undefined): string {
   if (!path) return "/"
   const normalized = path.replace(/\\/g, "/")
   if (!normalized.startsWith("/") || normalized.startsWith("//")) return "/"
-  return path
+  return normalized
 }
 
 export async function POST(request: Request) {

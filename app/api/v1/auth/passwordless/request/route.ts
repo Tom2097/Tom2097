@@ -12,8 +12,11 @@ export async function POST(request: NextRequest) {
     }
 
     const ip = getClientIp(request.headers) ?? 'unknown'
-    const limited = await checkTenantRateLimit(`passwordless-request-ip:${ip}`, 30, 5)
-    if (limited) return limited
+    const normalizedEmail = email.trim().toLowerCase()
+    const ipLimited = await checkTenantRateLimit(`passwordless-request-ip:${ip}`, 30, 5)
+    if (ipLimited) return ipLimited
+    const emailLimited = await checkTenantRateLimit(`passwordless-request-email:${normalizedEmail}`, 60, 3)
+    if (emailLimited) return emailLimited
 
     await sendMagicLink({ email, redirectTo })
     return NextResponse.json({ success: true })

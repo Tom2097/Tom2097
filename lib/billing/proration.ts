@@ -104,6 +104,32 @@ export async function executePlanChange(
     } catch (err) {
       return { success: false, error: `Stripe error: ${err instanceof Error ? err.message : "Unknown"}` }
     }
+  } else if (sub.razorpay_subscription_id) {
+    try {
+      const { updateRazorpaySubscription } = await import("./razorpay")
+      const newPlan = getPlanById(newPlanId)
+      if (!newPlan) return { success: false, error: "New plan not found" }
+
+      // updateRazorpaySubscription() is the real Razorpay side-effect (PUT to
+      // Razorpay's subscription endpoint). Previously this branch didn't
+      // exist at all, so Razorpay/INR plan changes only ever updated our own
+      // DB row and never told Razorpay -- the customer kept being billed on
+      // their old plan. Only write plan_id below if this actually succeeds.
+      const updated = await updateRazorpaySubscription(organizationId, {
+        id: newPlan.id as "free" | "pro" | "enterprise",
+        name: newPlan.name,
+        price: newPlan.priceInr,
+        currency: "INR",
+        billingPeriod: newPlan.interval === "year" ? "yearly" : "monthly",
+        features: newPlan.features,
+      })
+
+      if (!updated) {
+        return { success: false, error: "Razorpay subscription update failed" }
+      }
+    } catch (err) {
+      return { success: false, error: `Razorpay error: ${err instanceof Error ? err.message : "Unknown"}` }
+    }
   }
 
   const now = new Date()

@@ -45,11 +45,34 @@ interface SubscriptionRow {
   cancel_at_period_end: boolean
   created_at: string
   updated_at: string
+  stripe_subscription_id?: string | null
+  razorpay_subscription_id?: string | null
 }
 
-function monthlyPriceOf(planId: string): number {
-  const plan = getPlanById(planId)
-  return plan ? plan.priceInCents / 100 : 0
+// Approximate, fixed USD/INR rate used ONLY to combine a Razorpay (INR)
+// subscriber's native price into the single USD-denominated MRR/ARR figure
+// this dashboard displays. This is intentionally not a live FX lookup --
+// precision to the rupee doesn't matter for a rollup metric, and a fixed
+// rate keeps historical MRR numbers stable instead of drifting every time
+// this function is called. Revisit this constant periodically.
+const INR_TO_USD_RATE = 1 / 83
+
+// Returns the subscriber's monthly price in USD, using the plan's native
+// price for whichever gateway the subscription actually runs on: Stripe
+// subscribers are billed in USD (priceInCents), Razorpay subscribers are
+// billed in INR (priceInr, in paise). Previously this always read
+// priceInCents regardless of gateway, so Razorpay/INR subscribers' MRR was
+// computed from their USD list price instead of what they're actually
+// billed -- summing raw USD-cents and raw INR-paise together would also
+// have been wrong, so Razorpay figures are converted at the fixed rate
+// above rather than left in a different currency.
+function monthlyPriceOf(sub: Pick<SubscriptionRow, "plan_id" | "stripe_subscription_id" | "razorpay_subscription_id">): number {
+  const plan = getPlanById(sub.plan_id)
+  if (!plan) return 0
+  if (!sub.stripe_subscription_id && sub.razorpay_subscription_id) {
+    return (plan.priceInr / 100) * INR_TO_USD_RATE
+  }
+  return plan.priceInCents / 100
 }
 
 const ACTIVE_STATUSES = ["active"]
@@ -58,7 +81,7 @@ const CHURNED_STATUSES = ["cancelled", "expired"]
 async function fetchSubscriptions(db: ReturnType<typeof createServiceClient>): Promise<SubscriptionRow[]> {
   const { data } = await db
     .from("subscriptions")
-    .select("id, organization_id, plan_id, status, cancel_at_period_end, created_at, updated_at")
+    .select("id, organization_id, plan_id, status, cancel_at_period_end, created_at, updated_at, stripe_subscription_id, razorpay_subscription_id")
   return data ?? []
 }
 
@@ -76,14 +99,14 @@ export async function getRevenueMetrics(): Promise<RevenueMetrics> {
   const subs = await fetchSubscriptions(db)
 
   const active = subs.filter((s) => ACTIVE_STATUSES.includes(s.status))
-  const mrr = active.reduce((sum, s) => sum + monthlyPriceOf(s.plan_id), 0)
+  const mrr = active.reduce((sum, s) => sum + monthlyPriceOf(s), 0)
   const arr = mrr * 12
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000)
   const previouslyActive = subs.filter(
     (s) => new Date(s.created_at) <= thirtyDaysAgo && (ACTIVE_STATUSES.includes(s.status) || (CHURNED_STATUSES.includes(s.status) && new Date(s.updated_at) > thirtyDaysAgo)),
   )
-  const previousMrr = previouslyActive.reduce((sum, s) => sum + monthlyPriceOf(s.plan_id), 0)
+  const previousMrr = previouslyActive.reduce((sum, s) => sum + monthlyPriceOf(s), 0)
   const mrrChange = previousMrr > 0 ? Number((((mrr - previousMrr) / previousMrr) * 100).toFixed(1)) : 0
   const arrChange = mrrChange
 
@@ -106,7 +129,7 @@ export async function getRevenueMetrics(): Promise<RevenueMetrics> {
   const byPlan = new Map<string, { amount: number; subscribers: number }>()
   for (const s of active) {
     const entry = byPlan.get(s.plan_id) ?? { amount: 0, subscribers: 0 }
-    entry.amount += monthlyPriceOf(s.plan_id)
+    entry.amount += monthlyPriceOf(s)
     entry.subscribers += 1
     byPlan.set(s.plan_id, entry)
   }
@@ -125,7 +148,7 @@ export async function getRevenueMetrics(): Promise<RevenueMetrics> {
   const byRegion = new Map<string, number>()
   for (const s of active) {
     const region = regionFor(countryByOrg.get(s.organization_id) ?? null)
-    byRegion.set(region, (byRegion.get(region) ?? 0) + monthlyPriceOf(s.plan_id))
+    byRegion.set(region, (byRegion.get(region) ?? 0) + monthlyPriceOf(s))
   }
   const revenueByRegion = Array.from(byRegion.entries()).map(([region, amount]) => ({
     region,
@@ -141,7 +164,7 @@ export async function getRevenueMetrics(): Promise<RevenueMetrics> {
     const activeAtMonthEnd = subs.filter(
       (s) => new Date(s.created_at) <= monthEnd && (ACTIVE_STATUSES.includes(s.status) || new Date(s.updated_at) > monthEnd),
     )
-    const monthMrr = activeAtMonthEnd.reduce((sum, s) => sum + monthlyPriceOf(s.plan_id), 0)
+    const monthMrr = activeAtMonthEnd.reduce((sum, s) => sum + monthlyPriceOf(s), 0)
     const churnedInMonth = subs.filter((s) => CHURNED_STATUSES.includes(s.status) && new Date(s.updated_at) >= monthStart && new Date(s.updated_at) <= monthEnd)
     const newInMonth = subs.filter((s) => new Date(s.created_at) >= monthStart && new Date(s.created_at) <= monthEnd)
     monthlyTrend.push({

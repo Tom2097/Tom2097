@@ -139,8 +139,12 @@ export async function retryDunning(
   if (sub.razorpay_subscription_id) {
     try {
       const razorpay = await import("./razorpay")
-      await razorpay.retryRazorpayPayment(subscriptionId)
-      
+      // Razorpay's retry endpoint needs the real Razorpay subscription id
+      // (sub.razorpay_subscription_id), not our internal Supabase UUID
+      // (subscriptionId) -- passing the UUID always 404'd against Razorpay's
+      // API.
+      await razorpay.retryRazorpayPayment(sub.razorpay_subscription_id)
+
       await recordSuccessfulPayment(subscriptionId, organizationId)
       return { success: true }
     } catch (err) {

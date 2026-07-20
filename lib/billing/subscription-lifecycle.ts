@@ -224,7 +224,13 @@ export async function processRefund(
 
   if (subRecord.razorpay_subscription_id) {
     const razorpay = await import("./razorpay.js")
-    await razorpay.cancelRazorpaySubscription(organizationId)
+    const cancelled = await razorpay.cancelRazorpaySubscription(organizationId)
+    if (!cancelled) {
+      // Don't report a refund as processed if Razorpay never actually
+      // cancelled the subscription -- otherwise the customer keeps getting
+      // billed while our DB (and the UI) says "refunded".
+      return { success: false, error: "Failed to cancel Razorpay subscription" }
+    }
   }
 
   const plan = await getPlanById(subRecord.plan_id)
@@ -303,7 +309,13 @@ async function cancelAtPeriodEnd(
 
   if (sub.razorpay_subscription_id) {
     const razorpay = await import("./razorpay")
-    await razorpay.cancelRazorpaySubscription(organizationId)
+    const cancelled = await razorpay.cancelRazorpaySubscription(organizationId)
+    if (!cancelled) {
+      // Same reasoning as processRefund() above: if Razorpay rejects the
+      // cancellation, the DB must not be marked cancelled -- otherwise the
+      // customer sees "cancelled" while Razorpay keeps billing them.
+      return { charged: false, error: "Failed to cancel Razorpay subscription" }
+    }
   }
 
   await supabase

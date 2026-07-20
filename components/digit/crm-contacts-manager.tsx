@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { CONTACT_STATUSES } from "@/lib/crm/types"
 import {
   Select,
   SelectContent,
@@ -347,7 +348,7 @@ export function CrmContactsManager({ initialContacts }: CrmContactsManagerProps)
               />
             </div>
             <Button variant="outline" size="icon" aria-label="Filter contacts" onClick={() => {
-              const statuses = ["all", "active", "inactive", "lead", "customer"]
+              const statuses = ["all", ...CONTACT_STATUSES]
               const next = statuses[(statuses.indexOf(statusFilter) + 1) % statuses.length]
               setStatusFilter(next)
             }}>

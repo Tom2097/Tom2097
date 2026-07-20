@@ -93,7 +93,7 @@ export function CrmSupportTickets() {
       const data = await response.json()
       
       if (response.ok) {
-        setContacts(data)
+        setContacts(data.contacts || data.data || [])
       }
     } catch (error) {
       console.error('Error loading contacts:', error)

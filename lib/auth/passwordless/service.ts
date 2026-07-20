@@ -82,7 +82,7 @@ export async function sendMagicLink(
   try {
     const apiKey = process.env.RESEND_API_KEY
     if (apiKey) {
-      await fetch("https://api.resend.com/emails", {
+      const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -92,6 +92,14 @@ export async function sendMagicLink(
           html,
         }),
       })
+      if (!res.ok) {
+        const errorBody = await res.text().catch(() => "")
+        logger.logError("[passwordless] Resend API returned an error:", {
+          status: res.status,
+          body: errorBody,
+        })
+        throw new PasswordlessError("Failed to send email", PasswordlessErrorCode.EMAIL_SEND_FAILED)
+      }
     } else {
       logger.logWarn("[passwordless] No RESEND_API_KEY set; would send email", { email: options.email })
     }

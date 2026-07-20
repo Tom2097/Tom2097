@@ -40,7 +40,7 @@ export async function createQuote(organizationId: string, createdBy: string, inp
     })
     .select("*")
     .single()
-  if (error) { console.log("[v0] createQuote failed:", error.message); throw new Error("failed to create quote") }
+  if (error) { console.error("[v0] createQuote failed:", error.message); throw new Error("failed to create quote") }
   return data as Quote
 }
 
@@ -51,7 +51,7 @@ export async function listQuotes(organizationId: string, opts: ListQuotesOptions
   if (opts.dealId) q = q.eq("deal_id", opts.dealId)
   q = q.order("created_at", { ascending: false }).range(opts.offset ?? 0, (opts.offset ?? 0) + (opts.limit ?? 50) - 1)
   const { data, error, count } = await q
-  if (error) { console.log("[v0] listQuotes failed:", error.message); throw new Error("failed to list quotes") }
+  if (error) { console.error("[v0] listQuotes failed:", error.message); throw new Error("failed to list quotes") }
   return { quotes: (data ?? []) as Quote[], total: count ?? 0 }
 }
 
@@ -61,7 +61,7 @@ export async function updateQuoteStatus(organizationId: string, id: string, stat
   if (status === "sent") patch.sent_at = new Date().toISOString()
   if (status === "accepted") patch.accepted_at = new Date().toISOString()
   const { data, error } = await db.from("crm_quotes").update(patch).eq("id", id).eq("organization_id", organizationId).select("*").maybeSingle()
-  if (error) { console.log("[v0] updateQuoteStatus failed:", error.message); throw new Error("failed to update quote") }
+  if (error) { console.error("[v0] updateQuoteStatus failed:", error.message); throw new Error("failed to update quote") }
   return (data as Quote) ?? null
 }
 
@@ -84,7 +84,7 @@ export async function addTimelineEntry(organizationId: string, createdBy: string
     })
     .select("*")
     .single()
-  if (error) { console.log("[v0] addTimelineEntry failed:", error.message); throw new Error("failed to add timeline entry") }
+  if (error) { console.error("[v0] addTimelineEntry failed:", error.message); throw new Error("failed to add timeline entry") }
   return data as TimelineEntry
 }
 
@@ -96,7 +96,7 @@ export async function listTimeline(organizationId: string, opts: ListTimelineOpt
   if (opts.entryType) q = q.eq("entry_type", opts.entryType)
   q = q.order("occurred_at", { ascending: false }).range(opts.offset ?? 0, (opts.offset ?? 0) + (opts.limit ?? 50) - 1)
   const { data, error, count } = await q
-  if (error) { console.log("[v0] listTimeline failed:", error.message); throw new Error("failed to list timeline") }
+  if (error) { console.error("[v0] listTimeline failed:", error.message); throw new Error("failed to list timeline") }
   return { entries: (data ?? []) as TimelineEntry[], total: count ?? 0 }
 }
 
@@ -120,7 +120,7 @@ export async function createTask(organizationId: string, createdBy: string, inpu
     })
     .select("*")
     .single()
-  if (error) { console.log("[v0] createTask failed:", error.message); throw new Error("failed to create task") }
+  if (error) { console.error("[v0] createTask failed:", error.message); throw new Error("failed to create task") }
   return data as CrmTask
 }
 
@@ -134,7 +134,7 @@ export async function listTasks(organizationId: string, opts: ListTasksOptions =
   if (opts.entityId) q = q.eq("entity_id", opts.entityId)
   q = q.order("created_at", { ascending: false }).range(opts.offset ?? 0, (opts.offset ?? 0) + (opts.limit ?? 50) - 1)
   const { data, error, count } = await q
-  if (error) { console.log("[v0] listTasks failed:", error.message); throw new Error("failed to list tasks") }
+  if (error) { console.error("[v0] listTasks failed:", error.message); throw new Error("failed to list tasks") }
   return { tasks: (data ?? []) as CrmTask[], total: count ?? 0 }
 }
 
@@ -143,14 +143,14 @@ export async function updateTask(organizationId: string, id: string, input: CrmT
   const patch: Record<string, unknown> = { ...input }
   if (input.status === "completed") patch.completed_at = new Date().toISOString()
   const { data, error } = await db.from("crm_tasks").update(patch).eq("id", id).eq("organization_id", organizationId).select("*").maybeSingle()
-  if (error) { console.log("[v0] updateTask failed:", error.message); throw new Error("failed to update task") }
+  if (error) { console.error("[v0] updateTask failed:", error.message); throw new Error("failed to update task") }
   return (data as CrmTask) ?? null
 }
 
 export async function deleteTask(organizationId: string, id: string): Promise<boolean> {
   const db = createServiceClient()
   const { error } = await db.from("crm_tasks").delete().eq("id", id).eq("organization_id", organizationId)
-  if (error) { console.log("[v0] deleteTask failed:", error.message); return false }
+  if (error) { console.error("[v0] deleteTask failed:", error.message); return false }
   return true
 }
 
@@ -177,7 +177,7 @@ export async function sendCommunication(organizationId: string, userId: string, 
     })
     .select("*")
     .single()
-  if (error) { console.log("[v0] sendCommunication failed:", error.message); throw new Error("failed to send communication") }
+  if (error) { console.error("[v0] sendCommunication failed:", error.message); throw new Error("failed to send communication") }
   return data as Communication
 }
 
@@ -189,7 +189,7 @@ export async function listCommunications(organizationId: string, opts: ListCommu
   if (opts.dealId) q = q.eq("deal_id", opts.dealId)
   q = q.order("sent_at", { ascending: false }).range(opts.offset ?? 0, (opts.offset ?? 0) + (opts.limit ?? 50) - 1)
   const { data, error, count } = await q
-  if (error) { console.log("[v0] listCommunications failed:", error.message); throw new Error("failed to list communications") }
+  if (error) { console.error("[v0] listCommunications failed:", error.message); throw new Error("failed to list communications") }
   return { communications: (data ?? []) as Communication[], total: count ?? 0 }
 }
 
@@ -210,7 +210,7 @@ export async function createTemplate(organizationId: string, input: CommTemplate
     })
     .select("*")
     .single()
-  if (error) { console.log("[v0] createTemplate failed:", error.message); throw new Error("failed to create template") }
+  if (error) { console.error("[v0] createTemplate failed:", error.message); throw new Error("failed to create template") }
   return data as CommTemplate
 }
 
@@ -221,7 +221,7 @@ export async function listTemplates(organizationId: string, opts: ListTemplatesO
   if (opts.category) q = q.eq("category", opts.category)
   q = q.order("name").range(opts.offset ?? 0, (opts.offset ?? 0) + (opts.limit ?? 50) - 1)
   const { data, error, count } = await q
-  if (error) { console.log("[v0] listTemplates failed:", error.message); throw new Error("failed to list templates") }
+  if (error) { console.error("[v0] listTemplates failed:", error.message); throw new Error("failed to list templates") }
   return { templates: (data ?? []) as CommTemplate[], total: count ?? 0 }
 }
 
@@ -235,7 +235,7 @@ export async function getCustomerAccount(organizationId: string, companyId: stri
     .eq("organization_id", organizationId)
     .eq("company_id", companyId)
     .maybeSingle()
-  if (error) { console.log("[v0] getCustomerAccount failed:", error.message); return null }
+  if (error) { console.error("[v0] getCustomerAccount failed:", error.message); return null }
   return (data as CustomerAccount) ?? null
 }
 
@@ -246,14 +246,14 @@ export async function listCustomerAccounts(organizationId: string, opts: ListCus
   if (opts.companyId) q = q.eq("company_id", opts.companyId)
   q = q.order("created_at", { ascending: false }).range(opts.offset ?? 0, (opts.offset ?? 0) + (opts.limit ?? 50) - 1)
   const { data, error, count } = await q
-  if (error) { console.log("[v0] listCustomerAccounts failed:", error.message); throw new Error("failed to list customer accounts") }
+  if (error) { console.error("[v0] listCustomerAccounts failed:", error.message); throw new Error("failed to list customer accounts") }
   return { accounts: (data ?? []) as CustomerAccount[], total: count ?? 0 }
 }
 
 export async function updateCustomerAccount(organizationId: string, id: string, input: CustomerAccountUpdateInput): Promise<CustomerAccount | null> {
   const db = createServiceClient()
   const { data, error } = await db.from("customer_accounts").update(input).eq("id", id).eq("organization_id", organizationId).select("*").maybeSingle()
-  if (error) { console.log("[v0] updateCustomerAccount failed:", error.message); throw new Error("failed to update customer account") }
+  if (error) { console.error("[v0] updateCustomerAccount failed:", error.message); throw new Error("failed to update customer account") }
   return (data as CustomerAccount) ?? null
 }
 

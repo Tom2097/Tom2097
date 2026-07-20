@@ -23,19 +23,35 @@ export const razorpayInstance = axios.create({
 // enterprise) -- this previously used a stale free/pro/enterprise naming
 // scheme that didn't match any real plan id, so INR checkout for starter
 // and professional plans always failed with "Invalid plan".
-const RAZORPAY_PLANS: Record<string, { planId: string; name: string }> = {
+const RAZORPAY_PLANS: Record<string, { planId: string | undefined; name: string }> = {
   starter: {
-    planId: process.env.RAZORPAY_STARTER_PLAN_ID || "plan_1234567890",
+    planId: process.env.RAZORPAY_STARTER_PLAN_ID,
     name: "Starter",
   },
   professional: {
-    planId: process.env.RAZORPAY_PROFESSIONAL_PLAN_ID || "plan_1234567891",
+    planId: process.env.RAZORPAY_PROFESSIONAL_PLAN_ID,
     name: "Professional",
   },
   enterprise: {
-    planId: process.env.RAZORPAY_ENTERPRISE_PLAN_ID || "plan_0987654321",
+    planId: process.env.RAZORPAY_ENTERPRISE_PLAN_ID,
     name: "Enterprise",
   },
+}
+
+// These placeholder ids used to be silently substituted whenever the real
+// RAZORPAY_*_PLAN_ID env vars were unset, which meant a misconfigured
+// deployment would happily send a fake plan id to Razorpay's API instead of
+// failing loudly. Resolve the real plan id here and throw a clear
+// configuration error instead.
+const PLACEHOLDER_PLAN_IDS = new Set(["plan_1234567890", "plan_1234567891", "plan_0987654321"])
+
+function resolveRazorpayPlanId(planKey: string): string {
+  const config = RAZORPAY_PLANS[planKey]
+  if (!config) throw new Error(`Invalid plan: ${planKey}`)
+  if (!config.planId || PLACEHOLDER_PLAN_IDS.has(config.planId)) {
+    throw new Error(`RAZORPAY_${planKey.toUpperCase()}_PLAN_ID is not configured`)
+  }
+  return config.planId
 }
 
 export async function createRazorpaySession(
@@ -75,11 +91,10 @@ export async function createRazorpaySession(
     }
 
     // Create subscription
-    const planConfig = RAZORPAY_PLANS[plan.id]
-    if (!planConfig) throw new Error(`Invalid plan: ${plan.id}`)
+    const razorpayPlanId = resolveRazorpayPlanId(plan.id)
 
     const response = await razorpayInstance.post("/subscriptions", {
-      plan_id: planConfig.planId,
+      plan_id: razorpayPlanId,
       customer_notify: 1,
       customer_id: customerId,
       quantity: 1,
@@ -125,11 +140,10 @@ export async function updateRazorpaySubscription(
 
     if (!sub?.razorpay_subscription_id) return false
 
-    const planConfig = RAZORPAY_PLANS[newPlan.id]
-    if (!planConfig) throw new Error(`Invalid plan: ${newPlan.id}`)
+    const razorpayPlanId = resolveRazorpayPlanId(newPlan.id)
 
     await razorpayInstance.put(`/subscriptions/${sub.razorpay_subscription_id}`, {
-      plan_id: planConfig.planId,
+      plan_id: razorpayPlanId,
       quantity: 1,
     })
 

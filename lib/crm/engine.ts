@@ -99,7 +99,7 @@ export async function createCompany(
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] createCompany failed:", error.message)
+    console.error("[v0] createCompany failed:", error.message)
     throw new Error("failed to create company")
   }
   return data as Company
@@ -123,7 +123,7 @@ export async function listCompanies(
 
   const { data, error, count } = await query
   if (error) {
-    console.log("[v0] listCompanies failed:", error.message)
+    console.error("[v0] listCompanies failed:", error.message)
     throw new Error("failed to list companies")
   }
   return { companies: (data ?? []) as Company[], total: count ?? 0 }
@@ -153,7 +153,7 @@ export async function getCompanyHierarchy(
 
   const { data: companies, error: companyError } = await companyQuery
   if (companyError) {
-    console.log("[v0] getCompanyHierarchy companies failed:", companyError.message)
+    console.error("[v0] getCompanyHierarchy companies failed:", companyError.message)
     throw new Error("failed to list accounts")
   }
   const companyIds = (companies ?? []).map((c) => c.id)
@@ -216,7 +216,7 @@ export async function getCompany(organizationId: string, id: string): Promise<Co
     .eq("id", id)
     .maybeSingle()
   if (error) {
-    console.log("[v0] getCompany failed:", error.message)
+    console.error("[v0] getCompany failed:", error.message)
     throw new Error("failed to fetch company")
   }
   return (data as Company) ?? null
@@ -252,7 +252,7 @@ export async function updateCompany(
     .select("*")
     .maybeSingle()
   if (error) {
-    console.log("[v0] updateCompany failed:", error.message)
+    console.error("[v0] updateCompany failed:", error.message)
     throw new Error("failed to update company")
   }
   return (data as Company) ?? null
@@ -268,7 +268,7 @@ export async function deleteCompany(organizationId: string, id: string): Promise
     .select("id")
     .maybeSingle()
   if (error) {
-    console.log("[v0] deleteCompany failed:", error.message)
+    console.error("[v0] deleteCompany failed:", error.message)
     throw new Error("failed to delete company")
   }
   return Boolean(data)
@@ -314,7 +314,7 @@ export async function createContact(
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] createContact failed:", error.message)
+    console.error("[v0] createContact failed:", error.message)
     throw new Error("failed to create contact")
   }
   return data as Contact
@@ -343,7 +343,7 @@ export async function listContacts(
 
   const { data, error, count } = await query
   if (error) {
-    console.log("[v0] listContacts failed:", error.message)
+    console.error("[v0] listContacts failed:", error.message)
     throw new Error("failed to list contacts")
   }
   return { contacts: (data ?? []) as Contact[], total: count ?? 0 }
@@ -358,7 +358,7 @@ export async function getContact(organizationId: string, id: string): Promise<Co
     .eq("id", id)
     .maybeSingle()
   if (error) {
-    console.log("[v0] getContact failed:", error.message)
+    console.error("[v0] getContact failed:", error.message)
     throw new Error("failed to fetch contact")
   }
   return (data as Contact) ?? null
@@ -392,7 +392,7 @@ export async function updateContact(
     .select("*")
     .maybeSingle()
   if (error) {
-    console.log("[v0] updateContact failed:", error.message)
+    console.error("[v0] updateContact failed:", error.message)
     throw new Error("failed to update contact")
   }
   return (data as Contact) ?? null
@@ -408,7 +408,7 @@ export async function deleteContact(organizationId: string, id: string): Promise
     .select("id")
     .maybeSingle()
   if (error) {
-    console.log("[v0] deleteContact failed:", error.message)
+    console.error("[v0] deleteContact failed:", error.message)
     throw new Error("failed to delete contact")
   }
   return Boolean(data)
@@ -474,7 +474,7 @@ export async function createDeal(organizationId: string, createdBy: string, inpu
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] createDeal failed:", error.message)
+    console.error("[v0] createDeal failed:", error.message)
     throw new Error("failed to create deal")
   }
   return data as Deal
@@ -497,7 +497,7 @@ export async function listDeals(
 
   const { data, error, count } = await query
   if (error) {
-    console.log("[v0] listDeals failed:", error.message)
+    console.error("[v0] listDeals failed:", error.message)
     throw new Error("failed to list deals")
   }
   return { deals: (data ?? []) as Deal[], total: count ?? 0 }
@@ -512,7 +512,7 @@ export async function getDeal(organizationId: string, id: string): Promise<Deal 
     .eq("id", id)
     .maybeSingle()
   if (error) {
-    console.log("[v0] getDeal failed:", error.message)
+    console.error("[v0] getDeal failed:", error.message)
     throw new Error("failed to fetch deal")
   }
   return (data as Deal) ?? null
@@ -566,7 +566,7 @@ export async function updateDeal(
     .select("*")
     .maybeSingle()
   if (error) {
-    console.log("[v0] updateDeal failed:", error.message)
+    console.error("[v0] updateDeal failed:", error.message)
     throw new Error("failed to update deal")
   }
   return (data as Deal) ?? null
@@ -582,7 +582,7 @@ export async function deleteDeal(organizationId: string, id: string): Promise<bo
     .select("id")
     .maybeSingle()
   if (error) {
-    console.log("[v0] deleteDeal failed:", error.message)
+    console.error("[v0] deleteDeal failed:", error.message)
     throw new Error("failed to delete deal")
   }
   return Boolean(data)
@@ -602,7 +602,7 @@ export async function getPipelineSummary(organizationId: string): Promise<Pipeli
     .select("stage,value,probability,currency")
     .eq("organization_id", organizationId)
   if (error) {
-    console.log("[v0] getPipelineSummary failed:", error.message)
+    console.error("[v0] getPipelineSummary failed:", error.message)
     throw new Error("failed to compute pipeline summary")
   }
 
@@ -754,7 +754,7 @@ async function entityExists(organizationId: string, entityType: CrmEntityType, e
     .eq("id", entityId)
     .maybeSingle()
   if (error) {
-    console.log("[v0] entityExists failed:", error.message)
+    console.error("[v0] entityExists failed:", error.message)
     return false
   }
   return Boolean(data)
@@ -785,7 +785,7 @@ export async function logActivity(
     .select("*")
     .single()
   if (error) {
-    console.log("[v0] logActivity failed:", error.message)
+    console.error("[v0] logActivity failed:", error.message)
     throw new Error("failed to log activity")
   }
   return data as Activity
@@ -808,7 +808,7 @@ export async function listActivities(
 
   const { data, error, count } = await query
   if (error) {
-    console.log("[v0] listActivities failed:", error.message)
+    console.error("[v0] listActivities failed:", error.message)
     throw new Error("failed to list activities")
   }
   return { activities: (data ?? []) as Activity[], total: count ?? 0 }
