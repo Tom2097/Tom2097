@@ -1,10 +1,35 @@
-import { stripe } from "@/lib/stripe"
+import { getStripe } from "@/lib/stripe"
 import { createServiceClient } from "@/lib/supabase/service"
 import { claimWebhookEvent, completeWebhookEvent, failWebhookEvent } from "@/lib/billing/idempotency"
 import { recordDiscountUse } from "@/lib/billing/discounts"
 import { getPlanIdFromStripePriceId } from "@/lib/products"
+import { stripePayoutStatus } from "@/lib/billing/payout-status"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
+import type Stripe from "stripe"
+import type { SupabaseClient } from "@supabase/supabase-js"
+
+// Stripe payouts are platform-level (from the account's own balance), not
+// scoped to an organization -- upsert by (provider, external_id) so
+// payout.created/updated/paid/failed can all land on the same row regardless
+// of delivery order.
+async function upsertStripePayout(supabase: SupabaseClient, payout: Stripe.Payout) {
+  const { error } = await supabase.from("payouts").upsert(
+    {
+      provider: "stripe",
+      external_id: payout.id,
+      amount: payout.amount / 100,
+      currency: payout.currency,
+      status: stripePayoutStatus(payout.status),
+      arrival_date: new Date(payout.arrival_date * 1000).toISOString(),
+      failure_message: payout.failure_message,
+      metadata: { stripe_status: payout.status },
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "provider,external_id" }
+  )
+  if (error) throw error
+}
 
 export async function POST(req: Request) {
   const body = await req.text()
@@ -19,6 +44,8 @@ export async function POST(req: Request) {
   if (!webhookSecret) {
     return NextResponse.json({ error: "Webhook secret is not configured" }, { status: 500 })
   }
+
+  const stripe = await getStripe()
 
   let event
 
@@ -173,7 +200,50 @@ export async function POST(req: Request) {
           .update({ status: "past_due" })
           .eq("organization_id", data.organization_id)
         if (subscriptionUpdateError) throw subscriptionUpdateError
+
+        const { error: billingEventError } = await supabase.from("billing_events").insert({
+          organization_id: data.organization_id,
+          event_type: "payment.failed",
+          provider: "stripe",
+          external_id: invoice.id,
+          amount: invoice.amount_due / 100,
+          status: "failed",
+        })
+        if (billingEventError) throw billingEventError
       }
+      break
+    }
+
+    case "invoice.paid": {
+      const invoice = event.data.object
+      const customerId = invoice.customer as string
+
+      const { data, error: subscriptionReadError } = await supabase
+        .from("subscriptions")
+        .select("organization_id")
+        .eq("stripe_customer_id", customerId)
+        .single()
+      if (subscriptionReadError) throw subscriptionReadError
+
+      if (data?.organization_id) {
+        const { error: billingEventError } = await supabase.from("billing_events").insert({
+          organization_id: data.organization_id,
+          event_type: "payment.completed",
+          provider: "stripe",
+          external_id: invoice.id,
+          amount: invoice.amount_paid / 100,
+          status: "completed",
+        })
+        if (billingEventError) throw billingEventError
+      }
+      break
+    }
+
+    case "payout.created":
+    case "payout.updated":
+    case "payout.paid":
+    case "payout.failed": {
+      await upsertStripePayout(supabase, event.data.object)
       break
     }
     }

@@ -5,12 +5,15 @@ import { logAuthEvent } from "@/lib/auth/audit"
 import { claimWebhookEvent, completeWebhookEvent, failWebhookEvent } from "./idempotency"
 import type { BillingPlan } from "./types"
 import { logger } from "@/lib/logging"
+import { razorpaySettlementStatus } from "./payout-status"
 
 const razorpayAuth = Buffer.from(
   `${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`
 ).toString("base64")
 
-const razorpayInstance = axios.create({
+// Exported for lib/billing/payout-sync.ts's manual settlement backfill --
+// same authenticated client, no need for a second axios instance.
+export const razorpayInstance = axios.create({
   baseURL: "https://api.razorpay.com/v1",
   headers: { Authorization: `Basic ${razorpayAuth}` },
 })
@@ -201,6 +204,7 @@ export async function handleRazorpayWebhook(
     const inner = (payload.payload as Record<string, unknown>) || {}
     const subscription = (inner.subscription as { entity?: unknown })?.entity as Record<string, unknown> | undefined
     const payment = (inner.payment as { entity?: unknown })?.entity as Record<string, unknown> | undefined
+    const settlement = (inner.settlement as { entity?: unknown })?.entity as Record<string, unknown> | undefined
 
     switch (event) {
       case "subscription.activated": {
@@ -297,6 +301,29 @@ export async function handleRazorpayWebhook(
             })
             if (eventError) throw eventError
           }
+        }
+        break
+      }
+
+      // Settlements are platform-level (Razorpay's own payout to the
+      // linked bank account), not scoped to an organization -- upsert by
+      // (provider, external_id) same as Stripe payouts.
+      case "settlement.processed": {
+        if (settlement) {
+          const { error: payoutError } = await supabase.from("payouts").upsert(
+            {
+              provider: "razorpay",
+              external_id: settlement.id as string,
+              amount: (settlement.amount as number) / 100,
+              currency: "inr",
+              status: razorpaySettlementStatus((settlement.status as string) || "processed"),
+              arrival_date: new Date().toISOString(),
+              metadata: { utr: settlement.utr, fees: (settlement.fees as number) / 100 },
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "provider,external_id" }
+          )
+          if (payoutError) throw payoutError
         }
         break
       }

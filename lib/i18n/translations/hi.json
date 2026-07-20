@@ -2158,6 +2158,7 @@
       "tenants": "टेनेंट",
       "users": "उपयोगकर्ता",
       "roles": "भूमिकाएँ",
+      "payouts": "भुगतान",
       "security": "सुरक्षा"
     },
     "dashboard": {
@@ -2238,6 +2239,44 @@
       "auditing": "ऑडिटिंग जारी",
       "recentAuditEvents": "हाल के ऑडिट इवेंट",
       "noAuditEvents": "अभी तक कोई ऑडिट इवेंट नहीं।"
+    },
+    "payouts": {
+      "title": "भुगतान",
+      "subtitle": "चेकआउट से लेकर आपके बैंक खाते तक पैसे को ट्रैक करें",
+      "sync": "गेटवे से सिंक करें",
+      "syncing": "सिंक हो रहा है...",
+      "syncSuccess": "Stripe और Razorpay से भुगतान सिंक हो गए",
+      "syncFailed": "भुगतान सिंक करने में विफल",
+      "loadFailed": "भुगतान लोड करने में विफल",
+      "empty": "अभी तक कोई भुगतान नहीं।",
+      "funnelTitle": "पैसे का प्रवाह",
+      "funnelDesc": "ग्राहक चेकआउट से लेकर आपके बैंक खाते तक",
+      "funnel": {
+        "customer": "ग्राहक",
+        "subscriptionPurchased": "सदस्यता खरीदी गई",
+        "paymentGateway": "भुगतान गेटवे",
+        "transactionCreated": "लेनदेन बनाया गया",
+        "paymentVerified": "भुगतान सत्यापित",
+        "settlement": "निपटान",
+        "payout": "भुगतान",
+        "bankAccount": "बैंक खाता",
+        "revenueDashboard": "राजस्व डैशबोर्ड"
+      },
+      "status": {
+        "pending": "लंबित भुगतान",
+        "scheduled": "निर्धारित भुगतान",
+        "completed": "पूर्ण भुगतान",
+        "failed": "विफल भुगतान"
+      },
+      "listTitle": "हाल के भुगतान",
+      "listDesc": "Stripe और Razorpay से व्यक्तिगत भुगतान",
+      "table": {
+        "provider": "प्रदाता",
+        "amount": "राशि",
+        "status": "स्थिति",
+        "arrivalDate": "आगमन तिथि",
+        "reference": "संदर्भ"
+      }
     }
   },
   "adminPlatform": {

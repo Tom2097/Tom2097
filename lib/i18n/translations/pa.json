@@ -2158,6 +2158,7 @@
       "tenants": "ਟੈਨੈਂਟ",
       "users": "ਵਰਤੋਂਕਾਰ",
       "roles": "ਭੂਮਿਕਾਵਾਂ",
+      "payouts": "ਭੁਗਤਾਨ",
       "security": "ਸੁਰੱਖਿਆ"
     },
     "dashboard": {
@@ -2238,6 +2239,44 @@
       "auditing": "ਆਡਿਟਿੰਗ ਜਾਰੀ",
       "recentAuditEvents": "ਹਾਲੀਆ ਆਡਿਟ ਇਵੈਂਟ",
       "noAuditEvents": "ਹਾਲੇ ਤੱਕ ਕੋਈ ਆਡਿਟ ਇਵੈਂਟ ਨਹੀਂ।"
+    },
+    "payouts": {
+      "title": "ਭੁਗਤਾਨ",
+      "subtitle": "ਚੈੱਕਆਊਟ ਤੋਂ ਲੈ ਕੇ ਤੁਹਾਡੇ ਬੈਂਕ ਖਾਤੇ ਤੱਕ ਪੈਸੇ ਨੂੰ ਟਰੈਕ ਕਰੋ",
+      "sync": "ਗੇਟਵੇ ਤੋਂ ਸਿੰਕ ਕਰੋ",
+      "syncing": "ਸਿੰਕ ਹੋ ਰਿਹਾ ਹੈ...",
+      "syncSuccess": "Stripe ਅਤੇ Razorpay ਤੋਂ ਭੁਗਤਾਨ ਸਿੰਕ ਹੋ ਗਏ",
+      "syncFailed": "ਭੁਗਤਾਨ ਸਿੰਕ ਕਰਨ ਵਿੱਚ ਅਸਫਲ",
+      "loadFailed": "ਭੁਗਤਾਨ ਲੋਡ ਕਰਨ ਵਿੱਚ ਅਸਫਲ",
+      "empty": "ਹਾਲੇ ਤੱਕ ਕੋਈ ਭੁਗਤਾਨ ਨਹੀਂ।",
+      "funnelTitle": "ਪੈਸੇ ਦਾ ਪ੍ਰਵਾਹ",
+      "funnelDesc": "ਗਾਹਕ ਚੈੱਕਆਊਟ ਤੋਂ ਲੈ ਕੇ ਤੁਹਾਡੇ ਬੈਂਕ ਖਾਤੇ ਤੱਕ",
+      "funnel": {
+        "customer": "ਗਾਹਕ",
+        "subscriptionPurchased": "ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਖਰੀਦੀ ਗਈ",
+        "paymentGateway": "ਭੁਗਤਾਨ ਗੇਟਵੇ",
+        "transactionCreated": "ਲੈਣ-ਦੇਣ ਬਣਾਇਆ ਗਿਆ",
+        "paymentVerified": "ਭੁਗਤਾਨ ਪ੍ਰਮਾਣਿਤ",
+        "settlement": "ਨਿਪਟਾਰਾ",
+        "payout": "ਭੁਗਤਾਨ",
+        "bankAccount": "ਬੈਂਕ ਖਾਤਾ",
+        "revenueDashboard": "ਮਾਲੀਆ ਡੈਸ਼ਬੋਰਡ"
+      },
+      "status": {
+        "pending": "ਬਕਾਇਆ ਭੁਗਤਾਨ",
+        "scheduled": "ਨਿਯਤ ਭੁਗਤਾਨ",
+        "completed": "ਪੂਰਾ ਭੁਗਤਾਨ",
+        "failed": "ਅਸਫਲ ਭੁਗਤਾਨ"
+      },
+      "listTitle": "ਹਾਲੀਆ ਭੁਗਤਾਨ",
+      "listDesc": "Stripe ਅਤੇ Razorpay ਤੋਂ ਵਿਅਕਤੀਗਤ ਭੁਗਤਾਨ",
+      "table": {
+        "provider": "ਪ੍ਰਦਾਤਾ",
+        "amount": "ਰਕਮ",
+        "status": "ਸਥਿਤੀ",
+        "arrivalDate": "ਆਗਮਨ ਮਿਤੀ",
+        "reference": "ਹਵਾਲਾ"
+      }
     }
   },
   "adminPlatform": {

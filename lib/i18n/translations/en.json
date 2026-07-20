@@ -2158,6 +2158,7 @@
       "tenants": "Tenants",
       "users": "Users",
       "roles": "Roles",
+      "payouts": "Payouts",
       "security": "Security"
     },
     "dashboard": {
@@ -2238,6 +2239,44 @@
       "auditing": "Auditing",
       "recentAuditEvents": "Recent Audit Events",
       "noAuditEvents": "No audit events yet."
+    },
+    "payouts": {
+      "title": "Payouts",
+      "subtitle": "Track money from checkout to your bank account",
+      "sync": "Sync from gateway",
+      "syncing": "Syncing...",
+      "syncSuccess": "Payouts synced from Stripe and Razorpay",
+      "syncFailed": "Failed to sync payouts",
+      "loadFailed": "Failed to load payouts",
+      "empty": "No payouts yet.",
+      "funnelTitle": "Money flow",
+      "funnelDesc": "From customer checkout through to your bank account",
+      "funnel": {
+        "customer": "Customer",
+        "subscriptionPurchased": "Subscription Purchased",
+        "paymentGateway": "Payment Gateway",
+        "transactionCreated": "Transaction Created",
+        "paymentVerified": "Payment Verified",
+        "settlement": "Settlement",
+        "payout": "Payout",
+        "bankAccount": "Bank Account",
+        "revenueDashboard": "Revenue Dashboard"
+      },
+      "status": {
+        "pending": "Pending Payout",
+        "scheduled": "Scheduled Payout",
+        "completed": "Completed Payout",
+        "failed": "Failed Payout"
+      },
+      "listTitle": "Recent payouts",
+      "listDesc": "Individual payouts from Stripe and Razorpay",
+      "table": {
+        "provider": "Provider",
+        "amount": "Amount",
+        "status": "Status",
+        "arrivalDate": "Arrival Date",
+        "reference": "Reference"
+      }
     }
   },
   "adminPlatform": {
