@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { NextResponse } from 'next/server'
 import { isPlatformAdmin } from '@/lib/auth/rbac'
+import { isCurrentUserPlatformOwner } from '@/lib/platform/owner'
 
 export async function getAuthenticatedUser() {
   const supabase = await createClient()
@@ -34,6 +35,23 @@ export async function getAuthenticatedUser() {
 export async function requirePlatformAdmin(userId: string) {
   const isAdmin = await isPlatformAdmin(userId)
   if (!isAdmin) {
+    throw new Error('Forbidden')
+  }
+}
+
+// Two independent admin surfaces share some of the same API routes: the
+// legacy /admin/* console (gated by profiles.role === 'platform_admin', a
+// DB-role flag) and the founder-only /platform/admin/* console (gated by
+// PLATFORM_OWNER_EMAIL, an env allowlist -- see lib/platform/owner.ts). A
+// founder passes their console's own page-level gate but has no
+// platform_admin DB role, so requirePlatformAdmin alone 403s them on routes
+// both consoles call. Accept either credential instead of picking one.
+export async function requirePlatformAccess(userId: string) {
+  const [isAdmin, isOwner] = await Promise.all([
+    isPlatformAdmin(userId),
+    isCurrentUserPlatformOwner(),
+  ])
+  if (!isAdmin && !isOwner) {
     throw new Error('Forbidden')
   }
 }

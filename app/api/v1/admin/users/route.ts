@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getAuthenticatedUser, requirePlatformAdmin, handleAuthError } from '@/lib/auth/server-auth'
+import { getAuthenticatedUser, requirePlatformAccess, handleAuthError } from '@/lib/auth/server-auth'
 import { requireIpAllowlisted } from '@/lib/auth/ip-allowlist'
 import { createServiceClient } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
-    await requirePlatformAdmin(user.id)
+    await requirePlatformAccess(user.id)
     await requireIpAllowlisted(request)
 
     const search = request.nextUrl.searchParams.get('search')?.trim()
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
-    await requirePlatformAdmin(user.id)
+    await requirePlatformAccess(user.id)
     await requireIpAllowlisted(request)
 
     const { action, userId } = await request.json()
