@@ -793,6 +793,19 @@
         "title": "Email Notifications",
         "description": "Receive security alerts via email"
       },
+      "passkeys": {
+        "title": "Passkeys",
+        "description": "Sign in without a password using your fingerprint, face, or device PIN",
+        "register": "Register a passkey",
+        "unsupported": "Passkeys aren't supported on this device or browser",
+        "empty": "No passkeys registered yet",
+        "added": "Added",
+        "lastUsed": "last used",
+        "registerSuccess": "Passkey registered successfully",
+        "registerFailed": "Failed to register passkey",
+        "removeSuccess": "Passkey removed",
+        "removeFailed": "Failed to remove passkey"
+      },
       "changePassword": {
         "title": "Change Password",
         "currentPassword": "Current Password",

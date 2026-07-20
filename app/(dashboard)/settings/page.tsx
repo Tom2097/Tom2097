@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useTransition, useCallback, Suspense } from "react"
 import { motion } from "framer-motion"
-import { 
-  CreditCard, 
-  Users, 
-  Building2, 
-  Shield, 
+import {
+  CreditCard,
+  Users,
+  Building2,
+  Shield,
   Key,
+  Fingerprint,
   ChevronRight,
   Check,
   AlertCircle,
@@ -19,6 +20,7 @@ import {
   Trash2,
   X
 } from "lucide-react"
+import { startRegistration } from "@simplewebauthn/browser"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -131,6 +133,12 @@ export default function SettingsPage() {
   const [generatingKey, setGeneratingKey] = useState(false)
   const [showKey, setShowKey] = useState(false)
 
+  // Passkey state
+  const [passkeys, setPasskeys] = useState<{ id: string; device_name: string; created_at: string; last_used_at: string | null }[]>([])
+  const [passkeysLoading, setPasskeysLoading] = useState(false)
+  const [registeringPasskey, setRegisteringPasskey] = useState(false)
+  const [passkeySupported, setPasskeySupported] = useState(false)
+
   // 2FA state
   const [qrCode, setQrCode] = useState<string | null>(null)
   const [backupCodes, setBackupCodes] = useState<string[]>([])
@@ -179,6 +187,70 @@ export default function SettingsPage() {
       setApiKeysLoading(false)
     }
   }, [api])
+
+  // Passkey handlers
+  const fetchPasskeys = useCallback(async () => {
+    setPasskeysLoading(true)
+    try {
+      const data = await api("/api/auth/passkeys")
+      setPasskeys(data.passkeys)
+    } catch {
+      // silent
+    } finally {
+      setPasskeysLoading(false)
+    }
+  }, [api])
+
+  const handleRegisterPasskey = async () => {
+    setRegisteringPasskey(true)
+    try {
+      const start = await api("/api/auth/passkeys/register", {
+        method: "POST",
+        body: JSON.stringify({ action: "start-registration" }),
+      })
+      const credential = await startRegistration({ optionsJSON: start.options })
+      const deviceName =
+        typeof navigator !== "undefined" && /iphone|ipad/i.test(navigator.userAgent)
+          ? "iPhone/iPad"
+          : typeof navigator !== "undefined" && /android/i.test(navigator.userAgent)
+            ? "Android device"
+            : typeof navigator !== "undefined" && /mac/i.test(navigator.userAgent)
+              ? "Mac"
+              : typeof navigator !== "undefined" && /win/i.test(navigator.userAgent)
+                ? "Windows PC"
+                : "This device"
+      await api("/api/auth/passkeys/register", {
+        method: "POST",
+        body: JSON.stringify({ action: "verify-registration", data: { credential, deviceName } }),
+      })
+      showToast("success", t("settings.security.passkeys.registerSuccess"))
+      fetchPasskeys()
+    } catch (err: any) {
+      if (err?.name !== "NotAllowedError") {
+        showToast("error", err?.message || t("settings.security.passkeys.registerFailed"))
+      }
+    } finally {
+      setRegisteringPasskey(false)
+    }
+  }
+
+  const handleDeletePasskey = async (id: string) => {
+    try {
+      await api(`/api/auth/passkeys?id=${id}`, { method: "DELETE" })
+      setPasskeys((prev) => prev.filter((p) => p.id !== id))
+      showToast("success", t("settings.security.passkeys.removeSuccess"))
+    } catch (err: any) {
+      showToast("error", err?.message || t("settings.security.passkeys.removeFailed"))
+    }
+  }
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.PublicKeyCredential) {
+      PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.()
+        .then(setPasskeySupported)
+        .catch(() => setPasskeySupported(false))
+    }
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -245,10 +317,15 @@ export default function SettingsPage() {
       await fetchApiKeys()
     }
 
+    const loadPasskeys = async () => {
+      await fetchPasskeys()
+    }
+
     fetchData()
     loadApiKeys()
+    loadPasskeys()
     fetchNotificationPreferences()
-  }, [fetchApiKeys])
+  }, [fetchApiKeys, fetchPasskeys])
 
   const handleManageBilling = () => {
     startTransition(async () => {
@@ -956,6 +1033,58 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+            <Card className="p-6 border-border/50 bg-card/50">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">{t("settings.security.passkeys.title")}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{t("settings.security.passkeys.description")}</p>
+                </div>
+                <Button onClick={handleRegisterPasskey} disabled={registeringPasskey || !passkeySupported} size="sm" className="gap-2">
+                  {registeringPasskey ? <Loader2 className="w-4 h-4 animate-spin" /> : <Fingerprint className="w-4 h-4" />}
+                  {t("settings.security.passkeys.register")}
+                </Button>
+              </div>
+
+              {!passkeySupported && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground mb-4">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  {t("settings.security.passkeys.unsupported")}
+                </div>
+              )}
+
+              {passkeysLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : passkeys.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4">{t("settings.security.passkeys.empty")}</p>
+              ) : (
+                <div className="space-y-2">
+                  {passkeys.map((passkey) => (
+                    <div key={passkey.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                          <Fingerprint className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{passkey.device_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {t("settings.security.passkeys.added")} {new Date(passkey.created_at).toLocaleDateString()}
+                            {passkey.last_used_at && ` · ${t("settings.security.passkeys.lastUsed")} ${new Date(passkey.last_used_at).toLocaleDateString()}`}
+                          </p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeletePasskey(passkey.id)}>
+                        <Trash2 className="w-4 h-4 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Card>
           </motion.div>
 
