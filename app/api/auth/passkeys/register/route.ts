@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
         userDisplayName: user.user_metadata?.full_name || user.email || "User",
         attestationType: "none",
         authenticatorSelection: {
+          authenticatorAttachment: "platform",
           residentKey: "preferred",
           userVerification: "required",
         },
