@@ -11,7 +11,9 @@ const CHALLENGE_COOKIE = "digit_passkey_registration_flow"
 const CHALLENGE_TTL_MS = 5 * 60 * 1000
 
 function webAuthnConfig() {
-  const origin = new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
+  const origin = new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  )
   return { origin: origin.origin, rpID: origin.hostname }
 }
 
