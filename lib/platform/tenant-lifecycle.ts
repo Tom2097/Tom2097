@@ -15,7 +15,7 @@ export interface TenantInfo {
 
 export async function listTenants(): Promise<TenantInfo[]> {
   const supabase = await createServiceClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("organizations")
     .select(`
       id, name, created_at, status,
@@ -24,6 +24,13 @@ export async function listTenants(): Promise<TenantInfo[]> {
     `)
     .order("created_at", { ascending: false })
 
+  // A query error here (e.g. a schema mismatch) previously looked identical
+  // to "no tenants exist" -- log it so a broken query surfaces instead of
+  // silently rendering an empty Tenants page.
+  if (error) {
+    console.error("[v0] listTenants query failed:", error)
+    return []
+  }
   if (!data) return []
   
   return data.map((org: Record<string, unknown>) => {
