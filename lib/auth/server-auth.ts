@@ -73,6 +73,29 @@ export async function requirePlatformAccess(userId: string) {
   }
 }
 
+// Owner is "whoever's actually paying" (founder spec): billing/subscription/
+// payment actions (starting a subscription, changing plan, refunds,
+// add-ons, trials) are owner-only. Admin keeps every other product
+// permission (CRM, analytics, org settings, invites) -- only this narrow
+// slice is restricted further than the existing admin-or-owner checks
+// elsewhere (e.g. app/api/v1/auth/invite/route.ts).
+export async function requireOwnerRole(userId: string) {
+  const supabase = await createServiceClient()
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .single()
+
+  if (error || !profile) {
+    throw new Error('Organization not found')
+  }
+
+  if (profile.role !== 'owner') {
+    throw new Error('OwnerRequired')
+  }
+}
+
 export async function getOrganizationId(userId: string) {
   const supabase = await createServiceClient()
   const { data: profile, error } = await supabase
@@ -110,6 +133,12 @@ export function handleAuthError(error: Error) {
   if (error.message === 'Suspended') {
     return NextResponse.json(
       { error: 'Account suspended' },
+      { status: 403 }
+    )
+  }
+  if (error.message === 'OwnerRequired') {
+    return NextResponse.json(
+      { error: 'Only the organization owner can manage billing' },
       { status: 403 }
     )
   }

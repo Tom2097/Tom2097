@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
+import { getAuthenticatedUser, getOrganizationId, requireOwnerRole, handleAuthError } from '@/lib/auth/server-auth'
 import { getPlanById } from '@/lib/products'
 import { executePlanChange } from '@/lib/billing/proration'
 
@@ -7,6 +7,7 @@ export async function POST(request: Request) {
   try {
     const user = await getAuthenticatedUser()
     const organizationId = await getOrganizationId(user.id)
+    await requireOwnerRole(user.id)
 
     const { planId } = (await request.json()) as { planId?: string }
     if (!planId || !getPlanById(planId)) {

@@ -1,11 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
+import { getAuthenticatedUser, getOrganizationId, requireOwnerRole, handleAuthError } from '@/lib/auth/server-auth'
 import { processRefund } from '@/lib/billing/subscription-lifecycle'
 
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
     const organizationId = await getOrganizationId(user.id)
+    await requireOwnerRole(user.id)
     const { reason } = (await request.json()) as { reason?: string }
 
     const result = await processRefund(organizationId, user.id)

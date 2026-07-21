@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
+import { getAuthenticatedUser, getOrganizationId, requireOwnerRole, handleAuthError } from '@/lib/auth/server-auth'
 import { createServiceClient } from '@/lib/supabase/service'
 import { getStripe } from '@/lib/stripe'
 import { addOns } from '@/lib/subscription-data'
@@ -8,6 +8,7 @@ export async function POST(request: Request) {
   try {
     const user = await getAuthenticatedUser()
     const organizationId = await getOrganizationId(user.id)
+    await requireOwnerRole(user.id)
 
     const { addonId } = (await request.json()) as { addonId?: string }
     const addon = addOns.find((a) => a.id === addonId)

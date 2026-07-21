@@ -18,7 +18,9 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  X
+  X,
+  Crown,
+  ArrowRightLeft
 } from "lucide-react"
 import { startRegistration } from "@simplewebauthn/browser"
 import { Card } from "@/components/ui/card"
@@ -85,6 +87,14 @@ interface ApiKey {
   last_used_at: string | null
 }
 
+interface TeamMember {
+  id: string
+  full_name: string | null
+  email: string
+  role: string
+  created_at: string
+}
+
 function SuccessBanner({ t }: { t: (key: string, params?: Record<string, string | number>) => string }) {
   const searchParams = useSearchParams()
   const success = searchParams?.get("success")
@@ -120,6 +130,17 @@ export default function SettingsPage() {
   const [inviteRole, setInviteRole] = useState("member")
   const [inviteOpen, setInviteOpen] = useState(false)
   const [inviting, setInviting] = useState(false)
+
+  // Team roster state
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [teamLoading, setTeamLoading] = useState(true)
+  const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null)
+
+  // Transfer ownership state
+  const [transferOpen, setTransferOpen] = useState(false)
+  const [transferTargetId, setTransferTargetId] = useState("")
+  const [transferConfirm, setTransferConfirm] = useState("")
+  const [transferring, setTransferring] = useState(false)
 
   // Org state
   const [orgName, setOrgName] = useState("")
@@ -185,6 +206,19 @@ export default function SettingsPage() {
       // silent
     } finally {
       setApiKeysLoading(false)
+    }
+  }, [api])
+
+  // Team roster handlers
+  const fetchTeamMembers = useCallback(async () => {
+    setTeamLoading(true)
+    try {
+      const data = await api("/api/v1/auth/team/members")
+      setTeamMembers(data.members ?? [])
+    } catch {
+      // silent
+    } finally {
+      setTeamLoading(false)
     }
   }, [api])
 
@@ -321,11 +355,16 @@ export default function SettingsPage() {
       await fetchPasskeys()
     }
 
+    const loadTeamMembers = async () => {
+      await fetchTeamMembers()
+    }
+
     fetchData()
     loadApiKeys()
     loadPasskeys()
     fetchNotificationPreferences()
-  }, [fetchApiKeys, fetchPasskeys])
+    loadTeamMembers()
+  }, [fetchApiKeys, fetchPasskeys, fetchTeamMembers])
 
   const handleManageBilling = () => {
     startTransition(async () => {
@@ -354,6 +393,52 @@ export default function SettingsPage() {
       showToast("error", err.message)
     } finally {
       setInviting(false)
+    }
+  }
+
+  // Team role change handler -- optimistic update with rollback on failure,
+  // matching the drag-and-drop stage change in crm-pipeline-board.tsx
+  const handleRoleChange = async (member: TeamMember, newRole: string) => {
+    if (newRole === member.role) return
+    const previousRole = member.role
+    setTeamMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, role: newRole } : m)))
+    setUpdatingRoleId(member.id)
+    try {
+      const data = await api(`/api/v1/auth/team/members/${member.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ role: newRole }),
+      })
+      if (data?.member) {
+        setTeamMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, ...data.member } : m)))
+      }
+      showToast("success", t("settings.team.roleUpdateSuccess", { name: member.full_name || member.email }))
+    } catch (err: any) {
+      setTeamMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, role: previousRole } : m)))
+      showToast("error", err?.message || t("settings.team.roleUpdateError", { name: member.full_name || member.email }))
+    } finally {
+      setUpdatingRoleId(null)
+    }
+  }
+
+  // Transfer ownership handler
+  const handleTransferOwnership = async () => {
+    if (!transferTargetId || transferConfirm !== "TRANSFER") return
+    setTransferring(true)
+    try {
+      await api("/api/v1/auth/team/transfer-ownership", {
+        method: "POST",
+        body: JSON.stringify({ newOwnerUserId: transferTargetId }),
+      })
+      showToast("success", t("settings.team.transferOwnership.success"))
+      setTransferOpen(false)
+      setTransferTargetId("")
+      setTransferConfirm("")
+      setProfile((prev) => (prev ? { ...prev, role: "admin" } : prev))
+      await fetchTeamMembers()
+    } catch (err: any) {
+      showToast("error", err?.message || t("settings.team.transferOwnership.error"))
+    } finally {
+      setTransferring(false)
     }
   }
 
@@ -517,6 +602,10 @@ export default function SettingsPage() {
   }
 
   const currentPlan = subscription ? getPlanById(subscription.plan_id) : null
+
+  const canManageTeamRoles = profile?.role === "owner" || profile?.role === "admin"
+  const assignableRoles = profile?.role === "owner" ? ["admin", "member", "viewer"] : ["member", "viewer"]
+  const transferCandidates = teamMembers.filter((m) => m.id !== profile?.id && m.role !== "owner")
 
   if (loading) {
     return (
@@ -723,75 +812,189 @@ export default function SettingsPage() {
                     {t("settings.team.description")}
                   </p>
                 </div>
-                <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Users className="w-4 h-4 mr-2" />
-                      {t("settings.team.inviteMember")}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>{t("settings.team.inviteDialog.title")}</DialogTitle>
-                      <DialogDescription>
-                        {t("settings.team.inviteDialog.description")}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="inviteEmail">{t("settings.team.inviteDialog.emailLabel")}</Label>
-                        <Input
-                          id="inviteEmail"
-                          type="email"
-                          placeholder={t("settings.team.inviteDialog.emailPlaceholder")}
-                          value={inviteEmail}
-                          onChange={(e) => setInviteEmail(e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="inviteRole">{t("settings.team.inviteDialog.roleLabel")}</Label>
-                        <Select value={inviteRole} onValueChange={setInviteRole}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="member">{t("settings.team.inviteDialog.roleOptions.member")}</SelectItem>
-                            <SelectItem value="admin">{t("settings.team.inviteDialog.roleOptions.admin")}</SelectItem>
-                            <SelectItem value="viewer">{t("settings.team.inviteDialog.roleOptions.viewer")}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setInviteOpen(false)}>
-                        {t("settings.team.inviteDialog.cancel")}
+                <div className="flex items-center gap-2">
+                  {profile?.role === "owner" && (
+                    <Dialog
+                      open={transferOpen}
+                      onOpenChange={(open) => {
+                        setTransferOpen(open)
+                        if (!open) {
+                          setTransferTargetId("")
+                          setTransferConfirm("")
+                        }
+                      }}
+                    >
+                      <DialogTrigger asChild>
+                        <Button variant="outline">
+                          <ArrowRightLeft className="w-4 h-4 mr-2" />
+                          {t("settings.team.transferOwnership.button")}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>{t("settings.team.transferOwnership.title")}</DialogTitle>
+                          <DialogDescription>
+                            {t("settings.team.transferOwnership.description", { confirmation: "TRANSFER" })}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="transferTarget">{t("settings.team.transferOwnership.selectLabel")}</Label>
+                            <Select value={transferTargetId} onValueChange={setTransferTargetId}>
+                              <SelectTrigger id="transferTarget" className="w-full">
+                                <SelectValue placeholder={t("settings.team.transferOwnership.selectPlaceholder")} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {transferCandidates.map((m) => (
+                                  <SelectItem key={m.id} value={m.id}>
+                                    {m.full_name || m.email}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Input
+                            placeholder={t("settings.team.transferOwnership.confirmPlaceholder")}
+                            value={transferConfirm}
+                            onChange={(e) => setTransferConfirm(e.target.value)}
+                          />
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setTransferOpen(false)}>
+                            {t("settings.team.transferOwnership.cancel")}
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={handleTransferOwnership}
+                            disabled={!transferTargetId || transferConfirm !== "TRANSFER" || transferring}
+                          >
+                            {transferring ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                            {t("settings.team.transferOwnership.confirm")}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                  <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Users className="w-4 h-4 mr-2" />
+                        {t("settings.team.inviteMember")}
                       </Button>
-                      <Button onClick={handleInvite} disabled={!inviteEmail || inviting}>
-                        {inviting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                        {t("settings.team.inviteDialog.sendInvitation")}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>{t("settings.team.inviteDialog.title")}</DialogTitle>
+                        <DialogDescription>
+                          {t("settings.team.inviteDialog.description")}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="inviteEmail">{t("settings.team.inviteDialog.emailLabel")}</Label>
+                          <Input
+                            id="inviteEmail"
+                            type="email"
+                            placeholder={t("settings.team.inviteDialog.emailPlaceholder")}
+                            value={inviteEmail}
+                            onChange={(e) => setInviteEmail(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="inviteRole">{t("settings.team.inviteDialog.roleLabel")}</Label>
+                          <Select value={inviteRole} onValueChange={setInviteRole}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="member">{t("settings.team.inviteDialog.roleOptions.member")}</SelectItem>
+                              <SelectItem value="admin">{t("settings.team.inviteDialog.roleOptions.admin")}</SelectItem>
+                              <SelectItem value="viewer">{t("settings.team.inviteDialog.roleOptions.viewer")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setInviteOpen(false)}>
+                          {t("settings.team.inviteDialog.cancel")}
+                        </Button>
+                        <Button onClick={handleInvite} disabled={!inviteEmail || inviting}>
+                          {inviting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                          {t("settings.team.inviteDialog.sendInvitation")}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-sm font-medium text-primary">
-                      {profile?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{profile?.full_name || 'User'}</p>
-                    <p className="text-xs text-muted-foreground">{profile?.email}</p>
-                  </div>
+              {teamLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                 </div>
-                <div className="flex items-center gap-4">
-                  <Badge variant="secondary" className="bg-chart-2/20 text-chart-2">{t("settings.team.status.active")}</Badge>
-                  <Badge>{profile?.role || t("settings.team.status.owner")}</Badge>
+              ) : (
+                <div className="space-y-3">
+                  {teamMembers.map((member) => {
+                    const isSelf = member.id === profile?.id
+                    const isOwnerRow = member.role === "owner"
+                    const canEditRole = canManageTeamRoles && !isSelf && !isOwnerRow
+                    const displayName = member.full_name || member.email
+
+                    return (
+                      <div key={member.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                            <span className="text-sm font-medium text-primary">
+                              {member.full_name
+                                ? member.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                                : member.email?.[0]?.toUpperCase() || 'U'}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">
+                              {displayName}
+                              {isSelf && (
+                                <span className="text-muted-foreground font-normal"> {t("settings.team.you")}</span>
+                              )}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{member.email}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {t("settings.team.joinedOn", { date: new Date(member.created_at).toLocaleDateString() })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {isOwnerRow ? (
+                            <Badge className="bg-amber-500/20 text-amber-600 border-amber-500/30 gap-1">
+                              <Crown className="w-3 h-3" />
+                              {t("settings.team.roleLabels.owner")}
+                            </Badge>
+                          ) : canEditRole ? (
+                            <Select
+                              value={member.role}
+                              onValueChange={(newRole) => handleRoleChange(member, newRole)}
+                              disabled={updatingRoleId === member.id}
+                            >
+                              <SelectTrigger className="w-[130px] h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {assignableRoles.map((r) => (
+                                  <SelectItem key={r} value={r}>
+                                    {t(`settings.team.roleLabels.${r}`)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Badge variant="secondary">{t(`settings.team.roleLabels.${member.role}`)}</Badge>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
-              </div>
+              )}
 
               <p className="text-sm text-muted-foreground mt-4">
                 {t("settings.team.inviteDescription")}

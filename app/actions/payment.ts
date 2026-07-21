@@ -66,12 +66,19 @@ export async function createPaymentIntent(planId: string) {
 
   const { data: profile } = await db
     .from("profiles")
-    .select("organization_id")
+    .select("organization_id, role")
     .eq("id", user.id)
     .single()
 
   if (!profile?.organization_id) {
     throw new Error("No organization found for this account")
+  }
+
+  // Owner is "whoever's actually paying" (founder spec) -- starting a new
+  // paid subscription is owner-only, same as app/actions/stripe.ts's
+  // createCheckoutSession().
+  if (profile.role !== "owner") {
+    throw new Error("Only the organization owner can manage billing")
   }
 
   const customerId = await resolveCustomer(planId, user, profile)
@@ -113,12 +120,16 @@ export async function setupTrialSubscription(planId: string) {
 
   const { data: profile } = await db
     .from("profiles")
-    .select("organization_id")
+    .select("organization_id, role")
     .eq("id", user.id)
     .single()
 
   if (!profile?.organization_id) {
     throw new Error("No organization found for this account")
+  }
+
+  if (profile.role !== "owner") {
+    throw new Error("Only the organization owner can manage billing")
   }
 
   const customerId = await resolveCustomer(planId, user, profile)
@@ -152,11 +163,15 @@ export async function confirmTrialSubscription(setupIntentId: string, planId: st
 
   const { data: profile } = await db
     .from("profiles")
-    .select("organization_id")
+    .select("organization_id, role")
     .eq("id", user.id)
     .single()
 
   if (!profile?.organization_id) throw new Error("No organization found")
+
+  if (profile.role !== "owner") {
+    throw new Error("Only the organization owner can manage billing")
+  }
 
   const setupIntent = await stripe.setupIntents.retrieve(setupIntentId)
   if (setupIntent.status !== "succeeded") {
@@ -232,12 +247,16 @@ export async function confirmSubscription(paymentIntentId: string, planId: strin
 
   const { data: profile } = await db
     .from("profiles")
-    .select("organization_id")
+    .select("organization_id, role")
     .eq("id", user.id)
     .single()
 
   if (!profile?.organization_id) {
     throw new Error("No organization found")
+  }
+
+  if (profile.role !== "owner") {
+    throw new Error("Only the organization owner can manage billing")
   }
 
   const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)

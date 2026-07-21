@@ -112,6 +112,12 @@ async function ensureUserProfile(
     return { redirect: buildRedirect(`/auth/error?reason=${encodeURIComponent("Failed to create organization")}`) }
   }
 
+  // Brand-new self-signups create their own organization, which makes them
+  // its Owner (billing, deletion, promoting/demoting Admins, transferring
+  // ownership -- see supabase/migrations/20260825000000_owner_role.sql).
+  // Invited users never hit this path -- they join an existing org above
+  // with whatever role the inviter picked (admin/member/viewer; owner is
+  // never invited-as).
   const { error: profileError } = await db
     .from("profiles")
     .insert({
@@ -119,7 +125,7 @@ async function ensureUserProfile(
       email: user.email,
       full_name: (user.user_metadata?.full_name || "") as string,
       organization_id: org.id,
-      role: "admin",
+      role: "owner",
     })
 
   if (profileError) {

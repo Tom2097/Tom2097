@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getAuthenticatedUser, getOrganizationId } from '@/lib/auth/server-auth'
+import { getAuthenticatedUser, getOrganizationId, requireOwnerRole } from '@/lib/auth/server-auth'
 import { getPlanById } from '@/lib/products'
 import { createRazorpaySession } from '@/lib/billing/razorpay'
 import { getRequestOrigin } from '@/lib/http/request-origin'
@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
     const organizationId = await getOrganizationId(user.id)
+    await requireOwnerRole(user.id)
 
     const checkoutUrl = await createRazorpaySession(
       organizationId,
@@ -42,7 +43,14 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.redirect(checkoutUrl)
-  } catch {
+  } catch (error) {
+    // A logged-in non-owner is a Forbidden case, not an auth failure --
+    // bouncing them to /auth/login would be misleading since they're
+    // already authenticated. Send them back to pricing with a clear flag
+    // instead, matching this route's existing error-flag redirects above.
+    if (error instanceof Error && error.message === 'OwnerRequired') {
+      return NextResponse.redirect(`${origin}/pricing?error=owner_required`)
+    }
     return NextResponse.redirect(`${origin}/auth/login?redirect=/pricing`)
   }
 }

@@ -168,6 +168,8 @@ export type AuthAuditAction =
   | "auth.api_key_generated"
   | "auth.api_key_revoked"
   | "auth.organization_updated"
+  | "auth.team_role_updated"
+  | "auth.ownership_transferred"
   // Module #20: localization system
   | "localization.locale_created"
   | "localization.locale_updated"

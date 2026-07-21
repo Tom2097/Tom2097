@@ -23,12 +23,19 @@ export async function createCheckoutSession(planId: string, discountCode?: strin
   // Get or create Stripe customer
   const { data: profile } = await supabase
     .from("profiles")
-    .select("organization_id")
+    .select("organization_id, role")
     .eq("id", user.id)
     .single()
 
   if (!profile?.organization_id) {
     throw new Error("No organization found")
+  }
+
+  // Owner is "whoever's actually paying" (founder spec) -- starting a new
+  // paid subscription is owner-only. Admin keeps every other product
+  // permission, just not this.
+  if (profile.role !== "owner") {
+    throw new Error("Only the organization owner can manage billing")
   }
 
   // Validate discount code (read-only -- does NOT consume a redemption).
@@ -194,12 +201,18 @@ export async function createBillingPortalSession() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("organization_id")
+    .select("organization_id, role")
     .eq("id", user.id)
     .single()
 
   if (!profile?.organization_id) {
     throw new Error("No organization found")
+  }
+
+  // Owner-only: the billing portal exposes payment methods, invoices, and
+  // cancellation -- see createCheckoutSession()'s matching check above.
+  if (profile.role !== "owner") {
+    throw new Error("Only the organization owner can manage billing")
   }
 
   const { data: subscription } = await supabase

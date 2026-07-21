@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
+import { getAuthenticatedUser, getOrganizationId, requireOwnerRole, handleAuthError } from '@/lib/auth/server-auth'
 import { startTrial, extendTrial } from '@/lib/billing/trials'
 import { createServiceClient } from '@/lib/supabase/service'
 
@@ -71,6 +71,7 @@ async function getRealTrialStatus(organizationId: string): Promise<OrgTrial | nu
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
+    await requireOwnerRole(user.id)
     const organizationId = await getOrganizationId(user.id)
     const { planId } = await request.json()
     if (!planId) {
@@ -102,6 +103,7 @@ export async function GET(_request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser()
+    await requireOwnerRole(user.id)
     const organizationId = await getOrganizationId(user.id)
     const { extraDays } = await request.json()
     if (!extraDays || typeof extraDays !== 'number') {

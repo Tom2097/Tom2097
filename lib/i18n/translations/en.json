@@ -753,7 +753,29 @@
         "active": "active",
         "owner": "owner"
       },
-      "inviteDescription": "Invite team members to collaborate on your AI analytics dashboard."
+      "inviteDescription": "Invite team members to collaborate on your AI analytics dashboard.",
+      "you": "(You)",
+      "joinedOn": "Joined {{date}}",
+      "roleLabels": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member",
+        "viewer": "Viewer"
+      },
+      "roleUpdateSuccess": "Updated {{name}}'s role",
+      "roleUpdateError": "Failed to update {{name}}'s role",
+      "transferOwnership": {
+        "button": "Transfer Ownership",
+        "title": "Transfer Ownership",
+        "description": "Transfer ownership of this organization to another teammate. You will be demoted to Admin and this action cannot be undone. Type **{{confirmation}}** to confirm.",
+        "selectLabel": "New Owner",
+        "selectPlaceholder": "Select a teammate",
+        "confirmPlaceholder": "Type TRANSFER to confirm",
+        "cancel": "Cancel",
+        "confirm": "Transfer Ownership",
+        "success": "Ownership transferred successfully",
+        "error": "Failed to transfer ownership"
+      }
     },
     "organization": {
       "details": "Organization Details",
