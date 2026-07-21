@@ -13,10 +13,11 @@ import {
 import { getPlanById } from "@/lib/products"
 import { calculateProration, executePlanChange } from "./proration"
 import { recordFailedPayment, retryDunning, getDunningStatus } from "./dunning"
+import { TRIAL_DAYS } from "./constants"
 
 import type { SubscriptionRecord } from "./types"
 
-const TRIAL_DAYS = 7
+export { TRIAL_DAYS }
 const REFUND_WINDOW_DAYS = 30
 const YEARLY_MIN_MONTHS = 3
 const YEARLY_REMINDER_MONTH = 4
@@ -142,6 +143,89 @@ export async function processTrialEnd(organizationId: string): Promise<{ charged
     .eq("organization_id", organizationId)
 
   return { charged: true }
+}
+
+/**
+ * Lazily expires a trial whose `trial_ends_at` has already passed.
+ *
+ * startTrial() writes a real `subscriptions` row with status "trialing", but
+ * historically nothing ever transitioned it once the trial period elapsed --
+ * processTrialEnd() (above) was only ever called from the test suite, and
+ * that function isn't a fit for this job anyway: it unconditionally flips
+ * status to "active" (i.e. paid) even when there's no stripe_subscription_id
+ * or the charge never happened, which is exactly the "free forever" bug this
+ * closes, not a fix for it. This transitions to "expired" instead -- an
+ * already-defined SubscriptionRecord status (see lib/billing/types.ts) that
+ * checkFeatureAccess()/getFeatureFlags() already treat as not-entitled
+ * because they require status === "active".
+ *
+ * Idempotent: the update is guarded by `.eq("status", "trialing")`, so a
+ * second call (from a concurrent request, or from the scheduled sweep below
+ * after the lazy check already ran) is a no-op and never double-fires
+ * trackTrialEnded().
+ *
+ * Reused by:
+ * - lib/auth/server-auth.ts getAuthenticatedUser() -- per-request lazy check
+ * - app/api/v1/billing/trials/run-due/route.ts -- scheduled batch sweep
+ */
+export async function expireTrialIfDue(organizationId: string): Promise<{ expired: boolean }> {
+  const supabase = await createServiceClient()
+
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("id, status, trial_ends_at, user_id, plan_id")
+    .eq("organization_id", organizationId)
+    .maybeSingle()
+
+  if (!sub || sub.status !== "trialing" || !sub.trial_ends_at) {
+    return { expired: false }
+  }
+
+  if (new Date(sub.trial_ends_at).getTime() > Date.now()) {
+    return { expired: false }
+  }
+
+  const { data: updated } = await supabase
+    .from("subscriptions")
+    .update({ status: "expired", updated_at: new Date().toISOString() })
+    .eq("organization_id", organizationId)
+    .eq("status", "trialing")
+    .select("id")
+
+  if (!updated || updated.length === 0) {
+    return { expired: false }
+  }
+
+  await trackTrialEnded(organizationId, sub.user_id, sub.plan_id)
+
+  return { expired: true }
+}
+
+/**
+ * Scheduled sweep: finds every subscription whose trial has run out but is
+ * still sitting in "trialing" (i.e. no request from that org has hit the
+ * lazy check in getAuthenticatedUser() since expiry) and expires it.
+ * Delegates the actual transition to expireTrialIfDue() so both enforcement
+ * paths share one idempotent code path.
+ */
+export async function expireAllDueTrials(): Promise<{ processed: number; expired: number }> {
+  const supabase = await createServiceClient()
+
+  const { data: dueSubs } = await supabase
+    .from("subscriptions")
+    .select("organization_id")
+    .eq("status", "trialing")
+    .lt("trial_ends_at", new Date().toISOString())
+
+  const rows = dueSubs ?? []
+  let expired = 0
+
+  for (const row of rows) {
+    const result = await expireTrialIfDue(row.organization_id)
+    if (result.expired) expired++
+  }
+
+  return { processed: rows.length, expired }
 }
 
 /**

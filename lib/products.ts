@@ -109,6 +109,16 @@ export function getPlanById(id: string): SubscriptionPlan | undefined {
 }
 
 /**
+ * Validates an untrusted, caller-supplied plan id (e.g. a query param
+ * threaded through signup, or user_metadata read back at the auth callback)
+ * against the real plan catalog, falling back to a safe default rather than
+ * trusting it blindly.
+ */
+export function getValidatedPlanId(id: unknown, fallback = "starter"): string {
+  return typeof id === "string" && getPlanById(id) ? id : fallback
+}
+
+/**
  * Reverse-lookup a plan id from a Stripe price id, using the same
  * STRIPE_PRICE_<PLAN> env var convention lib/billing/proration.ts uses to go
  * the other direction (plan id -> price id). Used by the Stripe webhook

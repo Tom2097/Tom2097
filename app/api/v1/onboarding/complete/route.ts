@@ -35,13 +35,21 @@ export async function POST(request: NextRequest) {
     // exclusively from the verified session rather than a caller-supplied email.
     const { data: profile } = await db
       .from('profiles')
-      .select('id, organization_id')
+      .select('id, organization_id, onboarding_completed_at')
       .eq('id', user.id)
       .maybeSingle()
     if (!profile) {
       return NextResponse.json({ error: 'No profile found for the authenticated account' }, { status: 404 })
     }
-    if (profile.organization_id) {
+    // profiles.onboarding_completed_at is the one real "onboarding is done"
+    // signal used across both onboarding paths (see
+    // app/api/v1/onboarding/recommendations's "complete" action, which sets
+    // it for the /onboarding questionnaire flow). organization_id being set
+    // is not a valid proxy for that here: invited users and every self-signup
+    // (app/auth/callback/route.ts's ensureUserProfile) now get an
+    // organization_id long before this KYC flow could ever run, so that
+    // check meant this endpoint could never succeed for anyone.
+    if (profile.onboarding_completed_at) {
       return NextResponse.json({ error: 'Onboarding has already been completed' }, { status: 409 })
     }
 
@@ -69,13 +77,28 @@ export async function POST(request: NextRequest) {
         phone: phone || null,
         role: role === 'owner' || role === 'admin' ? role : 'member',
         organization_id: org.id,
+        onboarding_completed_at: new Date().toISOString(),
       })
       .eq('id', profile.id)
-      .is('organization_id', null)
+      // Same field the upfront 409 check above reads -- keeping the atomic
+      // condition on onboarding_completed_at (rather than organization_id)
+      // means a concurrent completion of this same request can't leave this
+      // request's just-created organization orphaned: if another request
+      // already set the flag, zero rows match and the org gets cleaned up
+      // below instead.
+      .is('onboarding_completed_at', null)
       .select('id')
       .maybeSingle()
 
     if (profileError || !updatedProfile) {
+      // Don't orphan the organization row just created above -- either the
+      // update genuinely failed, or a concurrent completion already set
+      // onboarding_completed_at first (see the .is() filter above), in which
+      // case this request's org was never actually assigned to anyone.
+      const { error: cleanupError } = await db.from('organizations').delete().eq('id', org.id)
+      if (cleanupError) {
+        console.error('[onboarding/complete] failed to clean up orphaned organization:', cleanupError.message)
+      }
       return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 })
     }
 

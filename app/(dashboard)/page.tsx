@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { getTranslator } from "@/lib/i18n/server"
 import { createServiceClient } from '@/lib/supabase/service'
 import { createClient } from '@/lib/supabase/server'
@@ -37,11 +38,25 @@ export default async function DashboardPage() {
   const serviceDb = createServiceClient()
   const { data: profile, error: profileErr } = await serviceDb
     .from("profiles")
-    .select("organization_id, role")
+    .select("organization_id, role, onboarding_completed_at")
     .eq("id", user.id)
     .maybeSingle()
   if (!profile) {
     return <Err msg="Profile not found" detail={profileErr?.message} uid={user.id} />
+  }
+
+  // Brand-new self-signups are meant to see the /onboarding questionnaire
+  // before the dashboard (app/auth/callback/route.ts redirects there
+  // directly when it can), but the standard email-confirmation flow signs
+  // the user out before a redirect there is possible -- so this is the real
+  // gate: anyone who reaches the dashboard without having completed
+  // onboarding gets sent there instead. Invited users have
+  // onboarding_completed_at set at profile-creation time, so they're never
+  // redirected. Existing accounts from before this flag existed are
+  // backfilled (see the 20260824000001 migration) so this never re-triggers
+  // for already-onboarded users.
+  if (!profile.onboarding_completed_at) {
+    redirect("/onboarding")
   }
 
   const { data: org, error: orgErr } = await serviceDb

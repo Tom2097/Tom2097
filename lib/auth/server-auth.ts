@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { NextResponse } from 'next/server'
 import { isPlatformAdmin } from '@/lib/auth/rbac'
 import { isCurrentUserPlatformOwner } from '@/lib/platform/owner'
+import { expireTrialIfDue } from '@/lib/billing/subscription-lifecycle'
 
 export async function getAuthenticatedUser() {
   const supabase = await createClient()
@@ -20,12 +21,28 @@ export async function getAuthenticatedUser() {
   const serviceDb = createServiceClient()
   const { data: profile } = await serviceDb
     .from('profiles')
-    .select('status')
+    .select('status, organization_id')
     .eq('id', user.id)
     .maybeSingle()
 
   if (profile?.status === 'suspended') {
     throw new Error('Suspended')
+  }
+
+  // Same idea as the suspended-profile check above: startTrial() writes a
+  // "trialing" subscription with a trial_ends_at, but historically nothing
+  // on the request path ever moved it past that once the trial period
+  // elapsed -- every trial granted full paid access forever. This is the
+  // request-time safety net that catches it for any org making an
+  // authenticated request; app/api/v1/billing/trials/run-due/route.ts is the
+  // scheduled sweep for orgs that don't. Failures here must never block
+  // login/auth for an unrelated request, so they're swallowed and logged.
+  if (profile?.organization_id) {
+    try {
+      await expireTrialIfDue(profile.organization_id)
+    } catch (err) {
+      console.error('[auth] Failed to check trial expiry:', err)
+    }
   }
 
   return user

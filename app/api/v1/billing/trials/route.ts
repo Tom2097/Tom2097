@@ -1,6 +1,72 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
-import { startTrial, getTrialStatus, extendTrial } from '@/lib/billing/trials'
+import { startTrial, extendTrial } from '@/lib/billing/trials'
+import { createServiceClient } from '@/lib/supabase/service'
+
+interface OrgTrial {
+  orgId: string
+  planId: string
+  startedAt: string
+  expiresAt: string
+  status: 'active' | 'expired' | 'converted' | 'cancelled'
+  daysRemaining: number
+}
+
+/**
+ * Maps the caller's real `subscriptions` row (the source of truth billed by
+ * Stripe/Razorpay) onto the OrgTrial shape app/(dashboard)/billing/plans/page.tsx
+ * expects. This used to read lib/billing/trials.ts's in-process `Map`, which
+ * is wiped on every server restart and was never connected to the real
+ * subscription a trial signup actually creates -- the UI's trial banner
+ * reflected fake state that had nothing to do with what the org was
+ * entitled to.
+ */
+async function getRealTrialStatus(organizationId: string): Promise<OrgTrial | null> {
+  const supabase = await createServiceClient()
+
+  const { data: sub } = await supabase
+    .from('subscriptions')
+    .select('plan_id, status, trial_ends_at, current_period_start')
+    .eq('organization_id', organizationId)
+    .maybeSingle()
+
+  if (!sub || !sub.trial_ends_at) {
+    return null
+  }
+
+  let status: OrgTrial['status']
+  switch (sub.status) {
+    case 'trialing':
+      status = 'active'
+      break
+    case 'expired':
+      status = 'expired'
+      break
+    case 'active':
+      status = 'converted'
+      break
+    case 'cancelled':
+    case 'refunded':
+      status = 'cancelled'
+      break
+    default:
+      status = 'expired'
+  }
+
+  const daysRemaining = Math.max(
+    0,
+    Math.ceil((new Date(sub.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+  )
+
+  return {
+    orgId: organizationId,
+    planId: sub.plan_id,
+    startedAt: sub.current_period_start,
+    expiresAt: sub.trial_ends_at,
+    status,
+    daysRemaining,
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,7 +92,7 @@ export async function GET(_request: NextRequest) {
     // platform-admin use case for this route calls it with an override, so
     // it's removed rather than gated.
     const organizationId = await getOrganizationId(user.id)
-    const trial = getTrialStatus(organizationId)
+    const trial = await getRealTrialStatus(organizationId)
     return NextResponse.json({ trial })
   } catch (error) {
     return handleAuthError(error as Error)

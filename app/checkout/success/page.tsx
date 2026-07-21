@@ -22,7 +22,8 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
-import { getPlanById, formatPrice } from "@/lib/products"
+import { getPlanById, formatPrice, type SubscriptionPlan } from "@/lib/products"
+import { getCheckoutSessionPlanId } from "@/app/actions/stripe"
 
 interface SubscriptionData {
   plan_id: string
@@ -30,48 +31,99 @@ interface SubscriptionData {
   current_period_end: string | null
 }
 
+// Payment webhooks land asynchronously and can arrive after the browser has
+// already redirected back here, so the very first read of `subscriptions`
+// can miss a just-completed purchase (or, on an upgrade, still show the
+// pre-upgrade row). Poll for a bit instead of trusting a single read -- and
+// never fall back to fabricated plan/price info if the row still hasn't
+// caught up by the time we give up.
+const MAX_POLL_ATTEMPTS = 9
+const POLL_INTERVAL_MS = 2000
+
+type FetchState = "checking" | "ready" | "pending"
+
 function CheckoutSuccessContent() {
   const { t } = useI18n()
   const searchParams = useSearchParams()
   const sessionId = searchParams?.get("session_id")
+  // The legacy /checkout/[planId] flow redirects here with ?plan=; the live
+  // embedded-checkout flow only passes ?session_id= (Stripe substitutes
+  // {CHECKOUT_SESSION_ID}), so fall back to looking the plan up from the
+  // session's own metadata.
+  const expectedPlanFromUrl = searchParams?.get("plan")
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null)
-  const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState<string | null>(null)
+  const [fetchState, setFetchState] = useState<FetchState>("checking")
 
   useEffect(() => {
-    const fetchSubscription = async () => {
-      const supabase = createClient()
-      
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setEmail(user.email || null)
-        
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("organization_id")
-          .eq("id", user.id)
-          .single()
+    let cancelled = false
+    const supabase = createClient()
 
-        if (profile?.organization_id) {
-          const { data: sub } = await supabase
-            .from("subscriptions")
-            .select("plan_id, status, current_period_end")
-            .eq("organization_id", profile.organization_id)
-            .single()
-
-          if (sub) {
-            setSubscription(sub)
-          }
-        }
-      }
-      
-      setLoading(false)
+    const readSubscription = async (organizationId: string) => {
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("plan_id, status, current_period_end")
+        .eq("organization_id", organizationId)
+        .maybeSingle()
+      return sub as SubscriptionData | null
     }
 
-    fetchSubscription()
-  }, [])
+    const run = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        if (!cancelled) setFetchState("pending")
+        return
+      }
+      if (!cancelled) setEmail(user.email || null)
 
-  const plan = subscription ? getPlanById(subscription.plan_id) : null
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("organization_id")
+        .eq("id", user.id)
+        .single()
+
+      if (!profile?.organization_id) {
+        if (!cancelled) setFetchState("pending")
+        return
+      }
+
+      let expectedPlanId = expectedPlanFromUrl
+      if (!expectedPlanId && sessionId) {
+        expectedPlanId = await getCheckoutSessionPlanId(sessionId).catch(() => null)
+      }
+
+      for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
+        if (cancelled) return
+
+        const sub = await readSubscription(profile.organization_id)
+        const isSettled = sub?.status === "active" || sub?.status === "trialing"
+        const matchesExpectedPlan = !expectedPlanId || sub?.plan_id === expectedPlanId
+        const resolvedPlan = sub ? getPlanById(sub.plan_id) : undefined
+
+        if (sub && isSettled && matchesExpectedPlan && resolvedPlan) {
+          if (!cancelled) {
+            setSubscription(sub)
+            setFetchState("ready")
+          }
+          return
+        }
+
+        if (attempt < MAX_POLL_ATTEMPTS - 1) {
+          await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+        }
+      }
+
+      if (!cancelled) setFetchState("pending")
+    }
+
+    run()
+
+    return () => {
+      cancelled = true
+    }
+  }, [sessionId, expectedPlanFromUrl])
+
+  const plan: SubscriptionPlan | undefined = subscription ? getPlanById(subscription.plan_id) : undefined
 
   const quickStartSteps = [
     {
@@ -96,6 +148,50 @@ function CheckoutSuccessContent() {
       action: t("checkout.success.setupIntegrations")
     }
   ]
+
+  if (fetchState === "checking") {
+    return <CheckoutSuccessFallback />
+  }
+
+  // Never fabricate plan/price info: if we gave up polling without a
+  // subscription row that genuinely reflects the purchase (or somehow ended
+  // up here without one), show an honest "still processing" state instead.
+  if (fetchState === "pending" || !subscription || !plan) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+          <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-3">
+              <Logo size="md" />
+            </Link>
+          </div>
+        </header>
+
+        <div className="container mx-auto px-6 py-24">
+          <div className="max-w-lg mx-auto text-center">
+            <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-6" />
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+              {t("checkout.success.stillProcessingTitle")}
+            </h1>
+            <p className="text-muted-foreground mb-8">
+              {t("checkout.success.stillProcessingDesc")}
+            </p>
+            {email && (
+              <p className="text-sm text-muted-foreground mb-8">
+                {t("checkout.success.stillProcessingEmail", { email })}
+              </p>
+            )}
+            <Button size="lg" className="gap-2" asChild>
+              <Link href="/">
+                {t("checkout.success.goToDashboard")}
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -140,10 +236,10 @@ function CheckoutSuccessContent() {
             className="text-center mb-12"
           >
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {t("checkout.success.welcome", { planName: plan?.name || "Professional" })}
+              {t("checkout.success.welcome", { planName: plan.name })}
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              {t("checkout.success.activeDesc", { planName: plan?.name || "plan" })}
+              {t("checkout.success.activeDesc", { planName: plan.name })}
             </p>
           </motion.div>
 
@@ -158,7 +254,7 @@ function CheckoutSuccessContent() {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-xl font-semibold text-foreground">
-                      {t("checkout.success.planTitle", { planName: plan?.name || "Professional" })}
+                      {t("checkout.success.planTitle", { planName: plan.name })}
                     </h2>
                     <Badge className="bg-chart-2/20 text-chart-2 border-chart-2/30">
                       {t("checkout.success.active")}
@@ -171,7 +267,7 @@ function CheckoutSuccessContent() {
                         <span>{email}</span>
                       </div>
                     )}
-                    {subscription?.current_period_end && (
+                    {subscription.current_period_end && (
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         <span>
@@ -183,7 +279,7 @@ function CheckoutSuccessContent() {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-foreground">
-                    {plan ? formatPrice(plan.priceInCents) : "$999"}
+                    {formatPrice(plan.priceInCents)}
                   </p>
                   <p className="text-sm text-muted-foreground">/month</p>
                 </div>

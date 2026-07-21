@@ -1,8 +1,8 @@
 "use client"
 import { useI18n } from "@/components/providers/i18n-provider"
 
-import { useState, useMemo } from "react"
-import { useRouter } from "next/navigation"
+import { Suspense, useState, useMemo } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,7 +37,7 @@ function getPasswordStrength(password: string, t: (key: string) => string) {
   return { score, checks, label, color }
 }
 
-export default function SignUpPage() {
+function SignUpForm() {
   const { t } = useI18n()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -49,6 +49,12 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  // The pricing/checkout pages send the plan a visitor picked as
+  // /auth/sign-up?plan=<planId> -- forward it to the API so the account
+  // created here starts on that plan instead of silently dropping it (see
+  // app/api/auth/sign-up/route.ts and app/auth/callback/route.ts).
+  const plan = searchParams?.get("plan") || undefined
 
   const strength = useMemo(() => getPasswordStrength(password, t), [password, t])
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword
@@ -79,6 +85,7 @@ export default function SignUpPage() {
           password,
           fullName,
           companyName,
+          plan,
         }),
       })
 
@@ -300,5 +307,21 @@ export default function SignUpPage() {
         </form>
       </Card>
     </div>
+  )
+}
+
+function SignUpFallback() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+    </div>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<SignUpFallback />}>
+      <SignUpForm />
+    </Suspense>
   )
 }

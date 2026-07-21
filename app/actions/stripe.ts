@@ -148,6 +148,41 @@ export async function createCheckoutSession(planId: string, discountCode?: strin
   return { clientSecret: session.client_secret }
 }
 
+/**
+ * Look up which plan a Checkout Session was for, from the `session_id`
+ * Stripe substitutes into `success_url` (see createCheckoutSession above).
+ * Used by the checkout success page to know what purchase to expect while
+ * it polls the `subscriptions` row for the (asynchronous, webhook-driven)
+ * update to land -- without this, the success page has no way to tell "the
+ * webhook hasn't landed yet" apart from "nothing happened".
+ *
+ * Re-checks the session's organization_id against the caller's own org so a
+ * guessed/foreign session_id can't be used to peek at another org's plan.
+ */
+export async function getCheckoutSessionPlanId(sessionId: string): Promise<string | null> {
+  if (!sessionId) return null
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("organization_id")
+    .eq("id", user.id)
+    .single()
+  if (!profile?.organization_id) return null
+
+  try {
+    const stripe = await getStripe()
+    const session = await stripe.checkout.sessions.retrieve(sessionId)
+    if (session.metadata?.organization_id !== profile.organization_id) return null
+    return session.metadata?.plan_id ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function createBillingPortalSession() {
   const stripe = await getStripe()
   const supabase = await createClient()

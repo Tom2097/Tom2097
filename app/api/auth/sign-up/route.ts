@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
 import { checkTenantRateLimit } from "@/lib/multitenant/rate-limit"
 import { getClientIp } from "@/lib/auth/audit"
+import { getValidatedPlanId } from "@/lib/products"
 
 function validatePassword(password: string): { valid: boolean; error?: string } {
   if (password.length < 8) return { valid: false, error: "Password must be at least 8 characters" }
@@ -20,7 +21,15 @@ function validatePassword(password: string): { valid: boolean; error?: string } 
 // only after the callback has verified the email and established a session.
 export async function POST(request: Request) {
   try {
-    const { email, password, fullName, companyName } = await request.json()
+    const { email, password, fullName, companyName, plan } = await request.json()
+
+    // The pricing/checkout pages send the plan the visitor picked as a query
+    // param on the sign-up link (?plan=<planId>); carry it through signup as
+    // user_metadata so app/auth/callback/route.ts's ensureUserProfile() can
+    // provision the trial on the right plan instead of always defaulting to
+    // "free"/"incomplete". Never trust it blindly -- validate against the
+    // real plan catalog and fall back to "starter" if missing/invalid.
+    const planId = getValidatedPlanId(plan)
 
     if (!email || !password) {
       return NextResponse.json(
@@ -84,6 +93,7 @@ export async function POST(request: Request) {
         data: {
           full_name: fullName,
           company_name: companyName,
+          selected_plan_id: planId,
         },
       },
     })

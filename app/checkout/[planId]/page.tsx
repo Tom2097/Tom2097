@@ -77,8 +77,6 @@ function CheckoutForm({
   const [billingEmail, setBillingEmail] = useState("")
   const [saveCard, setSaveCard] = useState(true)
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "error">("idle")
-  const [promoCode, setPromoCode] = useState("")
-  const [promoApplied, setPromoApplied] = useState(false)
   const { t } = useI18n()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -157,12 +155,6 @@ function CheckoutForm({
       setPaymentStatus("error")
       onError(t("checkout.page.unexpectedError"))
       setIsProcessing(false)
-    }
-  }
-
-  const handleApplyPromo = () => {
-    if (promoCode.toLowerCase() === "welcome20") {
-      setPromoApplied(true)
     }
   }
 
@@ -300,56 +292,6 @@ function CheckoutForm({
 
       <Separator />
 
-      {/* Promo Code */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-            3
-          </div>
-          <h3 className="font-semibold text-foreground">{t("checkout.page.promoCode")}</h3>
-          <span className="text-xs text-muted-foreground">{t("checkout.page.optional")}</span>
-        </div>
-        
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder={t("checkout.page.promoPlaceholder")}
-              value={promoCode}
-              onChange={(e) => setPromoCode(e.target.value)}
-              disabled={promoApplied}
-              className="h-11 pl-10"
-            />
-          </div>
-          <Button 
-            type="button" 
-            variant="outline"
-            onClick={handleApplyPromo}
-            disabled={!promoCode || promoApplied}
-            className="h-11"
-          >
-            {promoApplied ? (
-              <>
-                <Check className="w-4 h-4 mr-1" />
-                Applied
-              </>
-            ) : (
-              t("checkout.page.apply")
-            )}
-          </Button>
-        </div>
-        {promoApplied && (
-          <motion.p 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-sm text-emerald-600 flex items-center gap-1"
-          >
-            <BadgeCheck className="w-4 h-4" />
-            20% discount applied to your first month!
-          </motion.p>
-        )}
-      </div>
-
       {/* Save Card */}
       <div className="flex items-center space-x-2">
         <Checkbox 
@@ -386,7 +328,7 @@ function CheckoutForm({
         ) : (
           <>
             <Lock className="w-4 h-4 mr-2" />
-            Pay {formatPrice(promoApplied ? Math.round(plan.priceInCents * 0.8) : plan.priceInCents)}
+            Pay {formatPrice(plan.priceInCents)}
             <ChevronRight className="w-4 h-4 ml-2" />
           </>
         )}

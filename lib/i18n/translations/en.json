@@ -2373,7 +2373,10 @@
       "goToDashboard": "Go to Dashboard",
       "needHelp": "Need help getting started?",
       "contactSupport": "Contact our support team",
-      "downloadReceipt": "Download Receipt"
+      "downloadReceipt": "Download Receipt",
+      "stillProcessingTitle": "Still processing your payment",
+      "stillProcessingDesc": "This can take a minute. We're confirming your subscription with our payment provider -- check back shortly and your plan details will appear here.",
+      "stillProcessingEmail": "We'll also send a confirmation to {email}."
     }
   },
   "onboarding": {
