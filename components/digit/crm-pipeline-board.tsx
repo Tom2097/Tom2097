@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Plus, GripVertical, DollarSign, Calendar, User, Tag, X, Loader2 } from "lucide-react"
+import { Plus, GripVertical, DollarSign, Calendar, User, Tag, X, Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 interface Deal {
@@ -72,6 +72,21 @@ export function CrmPipelineBoard() {
     }
   }
 
+  const handleDeleteDeal = async (dealId: string) => {
+    if (!confirm("Are you sure you want to delete this deal?")) return
+
+    const previousDeals = deals
+    setDeals((prev) => prev.filter((d) => d.id !== dealId))
+
+    try {
+      const res = await fetch(`/api/v1/crm/deals/${dealId}`, { method: "DELETE" })
+      if (!res.ok) throw new Error("Failed to delete deal")
+    } catch {
+      setDeals(previousDeals)
+      toast.error("Failed to delete deal — please try again")
+    }
+  }
+
   const addDeal = async () => {
     if (!newTitle.trim()) return
     setSaving(true)
@@ -130,9 +145,19 @@ export function CrmPipelineBoard() {
                       e.dataTransfer.setData("dealId", deal.id)
                     }}
                     onDragEnd={() => setDraggingId(null)}
-                    className={`p-2.5 rounded-lg bg-card border border-border/50 cursor-grab active:cursor-grabbing hover:border-primary/30 transition-all animate-in fade-in slide-in-from-bottom-1 ${draggingId === deal.id ? "opacity-50" : ""}`}
+                    className={`group relative p-2.5 rounded-lg bg-card border border-border/50 cursor-grab active:cursor-grabbing hover:border-primary/30 transition-all animate-in fade-in slide-in-from-bottom-1 ${draggingId === deal.id ? "opacity-50" : ""}`}
                   >
-                    <p className="text-xs font-medium truncate">{deal.title}</p>
+                    <button
+                      type="button"
+                      draggable={false}
+                      aria-label="Delete deal"
+                      className="absolute top-1.5 right-1.5 p-1 rounded text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive hover:bg-destructive/10 transition-all"
+                      onClick={(e) => { e.stopPropagation(); handleDeleteDeal(deal.id) }}
+                      onPointerDown={(e) => e.stopPropagation()}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                    <p className="text-xs font-medium truncate pr-4">{deal.title}</p>
                     <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
                       <span className="flex items-center gap-0.5"><DollarSign className="h-3 w-3" />{deal.value?.toLocaleString()}</span>
                       <span className="flex items-center gap-0.5"><Tag className="h-3 w-3" />{deal.probability}%</span>

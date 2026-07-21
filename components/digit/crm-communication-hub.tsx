@@ -9,6 +9,17 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { COMMUNICATION_CHANNELS } from "@/lib/crm/types"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
 interface CommMessage {
@@ -30,6 +41,13 @@ export function CrmCommunicationHub() {
   const [subject, setSubject] = useState("")
   const [body, setBody] = useState("")
   const [showCompose, setShowCompose] = useState(false)
+
+  const [newTemplateOpen, setNewTemplateOpen] = useState(false)
+  const [newTemplateName, setNewTemplateName] = useState("")
+  const [newTemplateChannel, setNewTemplateChannel] = useState<string>("email")
+  const [newTemplateSubject, setNewTemplateSubject] = useState("")
+  const [newTemplateBody, setNewTemplateBody] = useState("")
+  const [creatingTemplate, setCreatingTemplate] = useState(false)
 
   const fetchData = async () => {
     try {
@@ -57,6 +75,42 @@ export function CrmCommunicationHub() {
       setTemplates(tmplData.templates ?? tmplData ?? [])
     }).catch(() => setError("Could not load communications"))
   }, [])
+
+  const resetTemplateForm = () => {
+    setNewTemplateName("")
+    setNewTemplateChannel("email")
+    setNewTemplateSubject("")
+    setNewTemplateBody("")
+  }
+
+  const createTemplate = async () => {
+    if (!newTemplateName.trim() || !newTemplateSubject.trim() || !newTemplateBody.trim()) return
+    setCreatingTemplate(true)
+    try {
+      const res = await fetch("/api/v1/crm/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newTemplateName.trim(),
+          channel: newTemplateChannel,
+          subject: newTemplateSubject.trim(),
+          body: newTemplateBody,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to create template")
+      }
+      await fetchData()
+      toast.success("Template created")
+      setNewTemplateOpen(false)
+      resetTemplateForm()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create template")
+    } finally {
+      setCreatingTemplate(false)
+    }
+  }
 
   const applyTemplate = (t: CommTemplate) => {
     setSubject(t.subject)
@@ -146,7 +200,56 @@ export function CrmCommunicationHub() {
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-foreground">Templates</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium text-foreground">Templates</h3>
+          <Dialog open={newTemplateOpen} onOpenChange={(open) => { setNewTemplateOpen(open); if (!open) resetTemplateForm() }}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline" className="gap-1 h-7 text-xs">
+                <Plus className="w-3 h-3" /> New
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>New Template</DialogTitle>
+                <DialogDescription>Create a reusable communication template.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 py-2">
+                <div className="space-y-2">
+                  <Label htmlFor="template-name">Name</Label>
+                  <Input id="template-name" value={newTemplateName} onChange={(e) => setNewTemplateName(e.target.value)} placeholder="Welcome email" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="template-channel">Channel</Label>
+                  <Select value={newTemplateChannel} onValueChange={setNewTemplateChannel}>
+                    <SelectTrigger id="template-channel">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMUNICATION_CHANNELS.map((c) => (
+                        <SelectItem key={c} value={c} className="capitalize">{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="template-subject">Subject</Label>
+                  <Input id="template-subject" value={newTemplateSubject} onChange={(e) => setNewTemplateSubject(e.target.value)} placeholder="Welcome to {{company}}!" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="template-body">Body</Label>
+                  <Textarea id="template-body" value={newTemplateBody} onChange={(e) => setNewTemplateBody(e.target.value)} rows={5} placeholder="Write your template content..." />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => { setNewTemplateOpen(false); resetTemplateForm() }}>Cancel</Button>
+                <Button onClick={createTemplate} disabled={creatingTemplate || !newTemplateName.trim() || !newTemplateSubject.trim() || !newTemplateBody.trim()}>
+                  {creatingTemplate && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Create Template
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
         {templates.length === 0 && <p className="text-xs text-muted-foreground">No templates yet</p>}
         <div className="space-y-2">
           {templates.map((t) => (

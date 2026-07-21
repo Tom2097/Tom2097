@@ -1,9 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Heart, TrendingUp, AlertTriangle, CheckCircle2, Calendar, ArrowUp, Users } from "lucide-react"
+import { Heart, TrendingUp, AlertTriangle, CheckCircle2, Calendar, ArrowUp, Users, Loader2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ACCOUNT_HEALTH_STATUSES } from "@/lib/crm/types"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
 interface Account {
@@ -32,6 +35,7 @@ export function CrmCustomerSuccess() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [filter, setFilter] = useState<string>("all")
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetch("/api/v1/crm/customer-success")
@@ -64,6 +68,29 @@ export function CrmCustomerSuccess() {
       })
       .catch(() => { setError("Failed to load accounts"); setLoading(false) })
   }, [])
+
+  const updateHealth = async (id: string, health: string) => {
+    const previous = accounts
+    setAccounts((prev) => prev.map((a) => a.id === id ? { ...a, health: health as Account["health"] } : a))
+    setUpdatingId(id)
+    try {
+      const res = await fetch(`/api/v1/crm/customer-success?id=${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ health_status: health }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to update health status")
+      }
+      toast.success("Health status updated")
+    } catch (err) {
+      setAccounts(previous)
+      toast.error(err instanceof Error ? err.message : "Failed to update health status")
+    } finally {
+      setUpdatingId(null)
+    }
+  }
 
   const filtered = filter === "all" ? accounts : accounts.filter((a) => a.health === filter)
   const healthy = accounts.filter((a) => a.health === "healthy").length
@@ -128,11 +155,21 @@ export function CrmCustomerSuccess() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-xs" onClick={(e) => e.stopPropagation()}>
                   <Badge variant="outline" className="gap-1 text-[10px]">
                     <TrendingUp className="w-3 h-3" />
                     {account.score >= 80 ? "Upsell opportunity" : account.score >= 40 ? "Needs attention" : "At risk of churn"}
                   </Badge>
+                  <Select value={account.health} onValueChange={(v) => updateHealth(account.id, v)}>
+                    <SelectTrigger className="h-7 w-[110px] text-[10px] capitalize">
+                      {updatingId === account.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <SelectValue />}
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACCOUNT_HEALTH_STATUSES.map((h) => (
+                        <SelectItem key={h} value={h} className="text-xs capitalize">{h === "at_risk" ? "At Risk" : h}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </Card>

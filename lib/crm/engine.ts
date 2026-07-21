@@ -71,6 +71,7 @@ export function validateCompany(input: unknown): string | null {
   const c = input as CompanyInput
   if (!c.name || typeof c.name !== "string" || !c.name.trim()) return "name is required"
   if (c.name.length > 200) return "name too long (max 200)"
+  if (c.parent_id !== undefined && c.parent_id !== null && typeof c.parent_id !== "string") return "parent_id must be a string"
   return null
 }
 
@@ -95,6 +96,7 @@ export async function createCompany(
       annual_revenue: clampNum(input.annual_revenue),
       notes: clampStr(input.notes, 5000),
       tags: sanitizeTags(input.tags),
+      parent_id: input.parent_id ?? null,
     })
     .select("*")
     .single()

@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect, useCallback } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Building2, Users, Plus, ChevronRight, ChevronDown, Building, Search, Mail, Phone, Loader2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Building2, Users, Plus, ChevronRight, ChevronDown, Building, Search, Mail, Phone, Loader2, X } from "lucide-react"
 
 interface AccountContact {
   id: string; name: string; email: string | null; phone: string | null; title: string | null
@@ -83,23 +83,76 @@ function AccountNodeView({ node, depth = 0 }: { node: AccountNode; depth?: numbe
   )
 }
 
+/** Flattens the hierarchy into `{ id, label }` options for the "parent company" picker, indenting by depth. */
+function flattenAccounts(nodes: AccountNode[], depth = 0): { id: string; label: string }[] {
+  return nodes.flatMap((node) => [
+    { id: node.id, label: `${"— ".repeat(depth)}${node.name}` },
+    ...(node.children ? flattenAccounts(node.children, depth + 1) : []),
+  ])
+}
+
 export function CrmAccountsHierarchy() {
   const [accounts, setAccounts] = useState<AccountNode[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [search, setSearch] = useState("")
 
-  useEffect(() => {
+  const [addOpen, setAddOpen] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [newDomain, setNewDomain] = useState("")
+  const [newParentId, setNewParentId] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [formError, setFormError] = useState("")
+
+  const loadAccounts = useCallback(() => {
     const params = new URLSearchParams()
     if (search) params.set("search", search)
     params.set("limit", "50")
 
-    fetch(`/api/v1/crm/companies?${params}`)
+    return fetch(`/api/v1/crm/companies?${params}`)
       .then((r) => { if (!r.ok) throw new Error("Failed"); return r.json() })
       .then((data) => { setAccounts(data.companies ?? data ?? []); setError("") })
       .catch(() => setError("Could not load accounts"))
       .finally(() => setLoading(false))
   }, [search])
+
+  useEffect(() => {
+    loadAccounts()
+  }, [loadAccounts])
+
+  const resetForm = () => {
+    setNewName(""); setNewDomain(""); setNewParentId(""); setFormError("")
+  }
+
+  const handleAddAccount = async () => {
+    if (!newName.trim()) return
+    setSaving(true)
+    setFormError("")
+    try {
+      const res = await fetch("/api/v1/crm/companies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newName.trim(),
+          domain: newDomain.trim() || null,
+          parent_id: newParentId || null,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to create account")
+      }
+      setAddOpen(false)
+      resetForm()
+      await loadAccounts()
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Failed to create account")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const parentOptions = flattenAccounts(accounts)
 
   return (
     <div className="space-y-4">
@@ -113,7 +166,7 @@ export function CrmAccountsHierarchy() {
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <input className="h-8 w-48 rounded-md border border-input bg-background pl-8 pr-3 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder="Search accounts..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <Button size="sm" className="h-8"><Plus className="h-3.5 w-3.5 mr-1" />Add Account</Button>
+          <Button size="sm" className="h-8" onClick={() => setAddOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />Add Account</Button>
         </div>
       </div>
 
@@ -129,6 +182,53 @@ export function CrmAccountsHierarchy() {
           ))}
         </div>
       )}
+
+      <AnimatePresence>
+        {addOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            onClick={() => { setAddOpen(false); resetForm() }}
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              className="bg-card rounded-xl p-6 w-full max-w-md space-y-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">New Account</h3>
+                <Button variant="ghost" size="icon" onClick={() => { setAddOpen(false); resetForm() }}><X className="h-4 w-4" /></Button>
+              </div>
+              <div className="space-y-3">
+                {formError && (
+                  <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{formError}</div>
+                )}
+                <Input placeholder="Company name" value={newName} onChange={(e) => setNewName(e.target.value)} />
+                <Input placeholder="Domain (optional)" value={newDomain} onChange={(e) => setNewDomain(e.target.value)} />
+                <select
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={newParentId}
+                  onChange={(e) => setNewParentId(e.target.value)}
+                >
+                  <option value="">No parent (top-level account)</option>
+                  {parentOptions.map((opt) => (
+                    <option key={opt.id} value={opt.id}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => { setAddOpen(false); resetForm() }}>Cancel</Button>
+                <Button onClick={handleAddAccount} disabled={!newName.trim() || saving}>
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}Create Account
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

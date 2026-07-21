@@ -1,11 +1,21 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Mail, Phone, Sparkles, ArrowRight, Star, Clock, MoreHorizontal, UserPlus } from "lucide-react"
+import { useState, useEffect, useCallback } from "react"
+import { Mail, Phone, Sparkles, ArrowRight, Star, Clock, MoreHorizontal, UserPlus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 
 interface Lead {
@@ -39,26 +49,47 @@ export function CrmLeadInbox() {
   const [search, setSearch] = useState("")
   const [sortBy, setSortBy] = useState<"score" | "recent">("score")
 
-  useEffect(() => {
-    fetch("/api/v1/crm/contacts?status=lead")
-      .then((r) => r.ok ? r.json() : Promise.reject("Failed"))
-      .then((data) => {
+  const [addOpen, setAddOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+  const [title, setTitle] = useState("")
+
+  const loadLeads = useCallback(() => {
+    setLoading(true)
+    setError("")
+    Promise.all([
+      fetch("/api/v1/crm/contacts?status=lead").then((r) => (r.ok ? r.json() : Promise.reject("Failed"))),
+      // Real, persisted lead scores (computed by computeLeadScore) -- the plain contacts
+      // query has no score column, so this is the only place a real score comes from.
+      fetch("/api/v1/crm/leads/scores")
+        .then((r) => (r.ok ? r.json() : []))
+        .catch(() => []),
+    ])
+      .then(([data, scores]) => {
+        const scoreList = Array.isArray(scores) ? scores : []
+        const scoreMap = new Map<string, number>(
+          scoreList
+            .filter((s): s is { contact_id: string; score: number } => !!s && typeof s.contact_id === "string" && typeof s.score === "number")
+            .map((s) => [s.contact_id, s.score]),
+        )
         const items = (data.contacts || data.data || []).map((c: unknown) => {
           const contact = c as {
-            id: string;
-            first_name?: string;
-            last_name?: string;
-            name?: string;
-            email?: string;
-            phone?: string;
-            title?: string;
-            status?: string;
-            company?: string;
-            company_name?: string;
-            score?: number;
-            lead_score?: number;
-            created_at?: string;
-          };
+            id: string
+            first_name?: string
+            last_name?: string
+            name?: string
+            email?: string
+            phone?: string
+            title?: string
+            status?: string
+            company?: string
+            company_name?: string
+            created_at?: string
+          }
           return {
             id: contact.id,
             name: `${contact.first_name || ""} ${contact.last_name || ""}`.trim() || contact.name || contact.email || "Unknown",
@@ -66,16 +97,63 @@ export function CrmLeadInbox() {
             phone: contact.phone || null,
             title: contact.title || null,
             company: contact.company || contact.company_name || null,
-            score: contact.score || contact.lead_score || 0,
+            score: scoreMap.get(contact.id) ?? 0,
             status: contact.status || "lead",
             created_at: contact.created_at || new Date().toISOString(),
-          };
-      })
+          }
+        })
         setLeads(items)
-        setLoading(false)
       })
-      .catch(() => { setError("Failed to load leads"); setLoading(false) })
+      .catch(() => setError("Failed to load leads"))
+      .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    const load = async () => {
+      await loadLeads()
+    }
+    load()
+  }, [loadLeads])
+
+  const resetForm = () => {
+    setFirstName("")
+    setLastName("")
+    setEmail("")
+    setPhone("")
+    setTitle("")
+    setFormError(null)
+  }
+
+  const handleAddLead = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    setFormError(null)
+    try {
+      const res = await fetch("/api/v1/crm/contacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          email: email || null,
+          phone: phone || null,
+          title: title || null,
+          status: "lead",
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to create lead")
+      }
+      setAddOpen(false)
+      resetForm()
+      loadLeads()
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "An error occurred")
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const filtered = leads
     .filter((l) => !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.company?.toLowerCase().includes(search.toLowerCase()))
@@ -109,7 +187,53 @@ export function CrmLeadInbox() {
             </button>
           </div>
         </div>
-        <Button size="sm" className="gap-1"><UserPlus className="w-4 h-4" /> Add Lead</Button>
+        <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) resetForm() }}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="gap-1"><UserPlus className="w-4 h-4" /> Add Lead</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Lead</DialogTitle>
+              <DialogDescription>Add a new lead to your inbox.</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleAddLead}>
+              <div className="grid gap-4 py-4">
+                {formError && (
+                  <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{formError}</div>
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="lead-first-name">First name</Label>
+                    <Input id="lead-first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="John" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lead-last-name">Last name</Label>
+                    <Input id="lead-last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lead-email">Email</Label>
+                  <Input id="lead-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="john@company.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lead-phone">Phone</Label>
+                  <Input id="lead-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lead-title">Title</Label>
+                  <Input id="lead-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Software Engineer" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => { setAddOpen(false); resetForm() }}>Cancel</Button>
+                <Button type="submit" disabled={saving}>
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Add Lead
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-3">

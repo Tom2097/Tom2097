@@ -50,6 +50,7 @@ export interface CompanyInput {
   notes?: string | null
   tags?: string[]
   owner_id?: string | null
+  parent_id?: string | null
 }
 export type CompanyUpdateInput = Partial<CompanyInput>
 

@@ -1,11 +1,37 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FileText, Plus, Eye, Send, CheckCircle2, XCircle, Download, MoreHorizontal } from "lucide-react"
+import { FileText, Plus, Eye, Send, CheckCircle2, XCircle, Download, MoreHorizontal, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+
+interface QuoteContactOption {
+  id: string
+  first_name: string
+  last_name: string
+  email: string | null
+}
+
+interface QuoteCompanyOption {
+  id: string
+  name: string
+}
 
 interface Quote {
   id: string
@@ -38,12 +64,77 @@ export function CrmQuotes() {
   const [error, setError] = useState("")
   const [filter, setFilter] = useState<string>("all")
 
-  useEffect(() => {
+  const [contacts, setContacts] = useState<QuoteContactOption[]>([])
+  const [companies, setCompanies] = useState<QuoteCompanyOption[]>([])
+  const [newQuoteOpen, setNewQuoteOpen] = useState(false)
+  const [newTitle, setNewTitle] = useState("")
+  const [newContactId, setNewContactId] = useState<string>("")
+  const [newCompanyId, setNewCompanyId] = useState<string>("")
+  const [newValue, setNewValue] = useState("")
+  const [newCurrency, setNewCurrency] = useState("USD")
+  const [newValidUntil, setNewValidUntil] = useState("")
+  const [newNotes, setNewNotes] = useState("")
+  const [creating, setCreating] = useState(false)
+
+  const fetchQuotes = () =>
     fetch("/api/v1/crm/quotes")
       .then((r) => r.ok ? r.json() : Promise.reject("Failed to load"))
       .then((data) => { setQuotes(data.quotes || []); setLoading(false) })
       .catch(() => { setError("Failed to load quotes"); setLoading(false) })
+
+  useEffect(() => {
+    fetchQuotes()
+    fetch("/api/v1/crm/contacts?limit=100")
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((data) => setContacts(data.contacts ?? []))
+      .catch(() => {})
+    fetch("/api/v1/crm/companies?limit=100")
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((data) => setCompanies(data.companies ?? []))
+      .catch(() => {})
   }, [])
+
+  const resetNewQuoteForm = () => {
+    setNewTitle("")
+    setNewContactId("")
+    setNewCompanyId("")
+    setNewValue("")
+    setNewCurrency("USD")
+    setNewValidUntil("")
+    setNewNotes("")
+  }
+
+  const createQuote = async () => {
+    if (!newTitle.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch("/api/v1/crm/quotes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          contact_id: newContactId || null,
+          company_id: newCompanyId || null,
+          value: newValue ? parseFloat(newValue) : 0,
+          currency: newCurrency || "USD",
+          valid_until: newValidUntil || null,
+          notes: newNotes || null,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to create quote")
+      }
+      await fetchQuotes()
+      toast.success("Quote created")
+      setNewQuoteOpen(false)
+      resetNewQuoteForm()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create quote")
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const updateStatus = async (id: string, status: string) => {
     try {
@@ -76,7 +167,74 @@ export function CrmQuotes() {
             </button>
           ))}
         </div>
-        <Button size="sm" className="gap-1"><Plus className="w-4 h-4" /> New Quote</Button>
+        <Dialog open={newQuoteOpen} onOpenChange={(open) => { setNewQuoteOpen(open); if (!open) resetNewQuoteForm() }}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="gap-1"><Plus className="w-4 h-4" /> New Quote</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>New Quote</DialogTitle>
+              <DialogDescription>Create a new quote for a contact or company.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="quote-title">Title</Label>
+                <Input id="quote-title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Annual subscription renewal" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="quote-contact">Contact</Label>
+                  <Select value={newContactId || "none"} onValueChange={(v) => setNewContactId(v === "none" ? "" : v)}>
+                    <SelectTrigger id="quote-contact"><SelectValue placeholder="None" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {contacts.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{[c.first_name, c.last_name].filter(Boolean).join(" ") || c.email || "Unnamed"}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="quote-company">Company</Label>
+                  <Select value={newCompanyId || "none"} onValueChange={(v) => setNewCompanyId(v === "none" ? "" : v)}>
+                    <SelectTrigger id="quote-company"><SelectValue placeholder="None" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {companies.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="quote-value">Value</Label>
+                  <Input id="quote-value" type="number" min="0" value={newValue} onChange={(e) => setNewValue(e.target.value)} placeholder="0" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="quote-currency">Currency</Label>
+                  <Input id="quote-currency" value={newCurrency} onChange={(e) => setNewCurrency(e.target.value.toUpperCase())} placeholder="USD" maxLength={3} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quote-valid-until">Valid until</Label>
+                <Input id="quote-valid-until" type="date" value={newValidUntil} onChange={(e) => setNewValidUntil(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quote-notes">Notes</Label>
+                <Textarea id="quote-notes" value={newNotes} onChange={(e) => setNewNotes(e.target.value)} rows={3} placeholder="Optional notes..." />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => { setNewQuoteOpen(false); resetNewQuoteForm() }}>Cancel</Button>
+              <Button onClick={createQuote} disabled={creating || !newTitle.trim()}>
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Quote
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="space-y-2">

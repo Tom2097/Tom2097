@@ -10,17 +10,58 @@ import { TrendingUp, DollarSign, Target, BarChart3, ArrowUp, ArrowDown, FileText
 import { LiveChart } from "@/components/digit/live-chart"
 import { ChartContainer } from "@/components/digit/live-chart"
 
+// Matches PipelineStageSummary from lib/crm/types.ts -- real stage keys, not display names.
 interface PipelineStage {
-  name: string; value: number; count: number; probability: number
+  stage: string
+  count: number
+  value: number
+  weighted_value: number
+}
+
+// Matches PipelineSummary from lib/crm/types.ts, as returned by GET /api/v1/crm/pipeline.
+interface PipelineSummary {
+  currency: string
+  total_open_value: number
+  weighted_open_value: number
+  won_value: number
+  open_deals: number
+  stages: PipelineStage[]
 }
 
 interface WinLossReason {
   reason: string; pct: number
 }
 
+const STAGE_LABELS: Record<string, string> = {
+  lead: "Lead",
+  qualified: "Qualified",
+  proposal: "Proposal",
+  negotiation: "Negotiation",
+  won: "Won",
+  lost: "Lost",
+}
+
+function stageLabel(stage: string): string {
+  return STAGE_LABELS[stage] ?? stage
+}
+
+/** Defensively narrow the model's free-text JSON reply -- there's no enforced schema on it. */
+function sanitizeReasons(value: unknown): WinLossReason[] {
+  if (!Array.isArray(value)) return []
+  const out: WinLossReason[] = []
+  for (const item of value) {
+    if (!item || typeof item !== "object") continue
+    const r = item as { reason?: unknown; pct?: unknown }
+    if (typeof r.reason !== "string" || !r.reason.trim()) continue
+    const pct = typeof r.pct === "number" && Number.isFinite(r.pct) ? Math.max(0, Math.min(100, Math.round(r.pct))) : 0
+    out.push({ reason: r.reason.trim(), pct })
+  }
+  return out
+}
+
 export function CrmForecastReports() {
   const [period, setPeriod] = useState("q2")
-  const [stages, setStages] = useState<PipelineStage[]>([])
+  const [summary, setSummary] = useState<PipelineSummary | null>(null)
   const [winReasons, setWinReasons] = useState<WinLossReason[]>([])
   const [lossReasons, setLossReasons] = useState<WinLossReason[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,34 +76,41 @@ export function CrmForecastReports() {
         body: JSON.stringify({
           query: "Return win/loss analysis for CRM. Return ONLY valid JSON with two arrays: winReasons (array of {reason: string, pct: number}) and lossReasons (array of {reason: string, pct: number}). No markdown.",
         }),
-      }).then((r) => r.json()),
+      }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]).then(([pipelineData, aiData]) => {
-      const p = pipelineData.pipeline ?? pipelineData
-      setStages(p.stages ?? [])
-      setWinReasons(p.winReasons ?? [])
-      setLossReasons(p.lossReasons ?? [])
-      try {
-        const parsed = JSON.parse(aiData.response)
-        if (parsed.winReasons) setWinReasons(parsed.winReasons)
-        if (parsed.lossReasons) setLossReasons(parsed.lossReasons)
-      } catch { /* use pipeline data */ }
+      setSummary(pipelineData as PipelineSummary)
+      // The AI route has no enforced response schema for this free-text query -- treat
+      // its reply as untrusted and fall back to the "No data" placeholder if it doesn't parse.
+      if (aiData && typeof aiData.response === "string") {
+        try {
+          const parsed = JSON.parse(aiData.response)
+          const win = sanitizeReasons(parsed?.winReasons)
+          const loss = sanitizeReasons(parsed?.lossReasons)
+          if (win.length > 0) setWinReasons(win)
+          if (loss.length > 0) setLossReasons(loss)
+        } catch {
+          // model didn't return valid JSON -- keep the "No data" placeholder
+        }
+      }
     }).catch(() => setError("Could not load forecast"))
       .finally(() => setLoading(false))
   }, [])
 
-  const totalPipeline = stages.reduce((s, st) => s + st.value, 0)
-  const weightedPipeline = stages.filter(s => s.name !== "Lost (closed)").reduce((s, st) => s + st.value * st.probability, 0)
-  const wonValue = stages.find(s => s.name === "Won (closed)")?.value ?? 0
-  const lostValue = stages.find(s => s.name === "Lost (closed)")?.value ?? 0
-  const winRate = (wonValue + lostValue) > 0 ? Math.round((wonValue / (wonValue + lostValue)) * 100) : 0
-  const totalDeals = stages.reduce((s, st) => s + st.count, 0)
-  const avgDealSize = totalDeals > 0 ? Math.round(totalPipeline / totalDeals / 1000) : 0
+  const stages = summary?.stages ?? []
+  const totalPipeline = summary?.total_open_value ?? 0
+  const weightedPipeline = summary?.weighted_open_value ?? 0
+  const wonValue = summary?.won_value ?? 0
+  const lostValue = stages.find((s) => s.stage === "lost")?.value ?? 0
+  const winRate = wonValue + lostValue > 0 ? Math.round((wonValue / (wonValue + lostValue)) * 100) : 0
+  const allDealsValue = stages.reduce((s, st) => s + st.value, 0)
+  const allDealsCount = stages.reduce((s, st) => s + st.count, 0)
+  const avgDealSize = allDealsCount > 0 ? Math.round(allDealsValue / allDealsCount / 1000) : 0
 
   const [exporting, setExporting] = useState(false)
   const handleExport = async () => {
     setExporting(true)
-    const rows = [["Stage", "Value", "Count", "Probability"]]
-    stages.forEach((s) => rows.push([s.name, String(s.value), String(s.count), String(s.probability)]))
+    const rows = [["Stage", "Value", "Count", "Weighted Value"]]
+    stages.forEach((s) => rows.push([stageLabel(s.stage), String(s.value), String(s.count), String(s.weighted_value)]))
     const csv = rows.map((r) => r.join(",")).join("\n")
     const blob = new Blob([csv], { type: "text/csv" })
     const url = URL.createObjectURL(blob)
@@ -145,7 +193,7 @@ export function CrmForecastReports() {
         <TabsContent value="pipeline" className="mt-4">
           <ChartContainer title="Pipeline by Stage" subtitle="Deal value distribution across stages">
             <LiveChart
-              data={stages.map(s => ({ name: s.name, value: s.value }))}
+              data={stages.map((s) => ({ name: stageLabel(s.stage), value: s.value }))}
               dataKey="value" type="bar" height={300} color="hsl(var(--chart-2))"
             />
           </ChartContainer>
@@ -154,7 +202,7 @@ export function CrmForecastReports() {
         <TabsContent value="forecast" className="mt-4">
           <ChartContainer title="Revenue Forecast" subtitle="Projected revenue">
             <LiveChart
-              data={stages.filter(s => s.name !== "Lost (closed)").map(s => ({ name: s.name, value: s.value * s.probability }))}
+              data={stages.filter((s) => s.stage !== "lost").map((s) => ({ name: stageLabel(s.stage), value: s.weighted_value }))}
               dataKey="value" type="bar" height={300}
               color="hsl(var(--chart-2))"
             />
@@ -169,9 +217,9 @@ export function CrmForecastReports() {
                 const nextStage = stages[i + 1]
                 const conversionRate = stage.count > 0 ? Math.round((nextStage.count / stage.count) * 100) : 0
                 return (
-                  <div key={stage.name} className="space-y-1">
+                  <div key={stage.stage} className="space-y-1">
                     <div className="flex justify-between text-xs">
-                      <span className="font-medium">{stage.name} → {nextStage.name}</span>
+                      <span className="font-medium">{stageLabel(stage.stage)} → {stageLabel(nextStage.stage)}</span>
                       <span>{conversionRate}%</span>
                     </div>
                     <div className="h-2 rounded-full bg-muted overflow-hidden">
