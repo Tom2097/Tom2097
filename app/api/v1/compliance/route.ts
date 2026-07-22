@@ -2,13 +2,14 @@
 
 import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
-import { calculateComplianceScore, generateRequirementTraceabilityMatrix, generateMockAuditQA } from "@/lib/compliance/scoring"
+import { computeComplianceScore, generateRequirementTraceabilityMatrix, generateMockAuditQA } from "@/lib/compliance/scoring"
 
 export const POST = withAuth(async (req: NextRequest, { organizationId }) => {
   try {
     const { action, requirements, auditScope } = await req.json()
     if (action === "score") {
-      return NextResponse.json(calculateComplianceScore(organizationId))
+      const score = await computeComplianceScore(organizationId)
+      return NextResponse.json(score)
     }
     if (action === "traceability") {
       return NextResponse.json(generateRequirementTraceabilityMatrix(requirements || []))

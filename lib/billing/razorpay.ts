@@ -356,6 +356,14 @@ export function verifyRazorpaySignature(
   signature: string,
   secret: string
 ): boolean {
-  const hash = crypto.createHmac("sha256", secret).update(body).digest("hex")
-  return hash === signature
+  const expected = crypto.createHmac("sha256", secret).update(body).digest()
+  const supplied = Buffer.from(signature, "hex")
+
+  // Buffers of different lengths would make timingSafeEqual throw; treat
+  // that as "not a match" rather than leaking length info via an exception.
+  if (supplied.length !== expected.length) {
+    return false
+  }
+
+  return crypto.timingSafeEqual(supplied, expected)
 }

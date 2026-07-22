@@ -70,7 +70,7 @@ export const GET = withAuth(async (req: NextRequest, { organizationId, userId })
 }, { requireAny: ["documents:read", "documents:manage"] })
 
 // POST /api/v1/resources/documents - Create document
-const POST = withAuth(async (req: NextRequest, { organizationId, userId }) => {
+export const POST = withAuth(async (req: NextRequest, { organizationId, userId }) => {
   const body = await req.json()
   const validation = DocumentSchema.safeParse(body)
   if (!validation.success) {

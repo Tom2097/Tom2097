@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { LiveChart } from '@/components/digit/live-chart'
-import { AlertTriangle, CheckCircle2, Info, Brain, BarChart2, Target, Clock, Play, Plus, Trash2, Save, Upload, FileText, Send } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Info, Brain, BarChart2, Target, Clock, Play, Plus, Trash2, Save, Upload, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
@@ -503,7 +503,12 @@ export function PredictiveModeling() {
                       </Button>
                     )}
                     {model.status === 'deployed' && (
-                      <Button size="sm" variant="outline">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled
+                        title="Prediction is not available yet: this environment has no configured model-serving/inference backend."
+                      >
                         <Target className="h-4 w-4 mr-1" /> Predict
                       </Button>
                     )}
@@ -599,7 +604,11 @@ export function PredictiveModeling() {
                           )}
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm">
+                          <Button
+                            size="sm"
+                            disabled
+                            title="Prediction is not available yet: this environment has no configured model-serving/inference backend."
+                          >
                             <Target className="h-4 w-4 mr-1" /> Predict
                           </Button>
                           <Button size="sm" variant="outline">
@@ -717,53 +726,24 @@ export function PredictiveModeling() {
                       </Button>
                     )}
                     {currentModel.status === 'deployed' && (
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button size="sm">
-                            <Target className="h-4 w-4 mr-1" /> Make Prediction
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
-                          <DialogHeader>
-                            <DialogTitle>Make Prediction with {currentModel.name}</DialogTitle>
-                            <DialogDescription>
-                              Enter input data for the prediction.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            {currentModel.training_data?.feature_columns && currentModel.training_data.feature_columns.length > 0 ? (
-                              currentModel.training_data.feature_columns.map((feature) => (
-                                <div key={feature} className="space-y-2">
-                                  <Label htmlFor={`feature-${feature}`}>{feature}</Label>
-                                  <Input
-                                    id={`feature-${feature}`}
-                                    placeholder={`Enter value for ${feature}`}
-                                    type="number"
-                                    onChange={(e) => {
-                                      // Handle input change
-                                    }}
-                                  />
-                                </div>
-                              ))
-                            ) : (
-                              <div className="space-y-2">
-                                <Label htmlFor="prediction-input">Input Data</Label>
-                                <Textarea
-                                  id="prediction-input"
-                                  placeholder="Enter input data as JSON..."
-                                  rows={5}
-                                />
-                              </div>
-                            )}
-                          </div>
-                          <DialogFooter>
-                            <Button variant="outline">Cancel</Button>
-                            <Button>
-                              <Send className="h-4 w-4 mr-2" /> Run Prediction
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
+                      // JUDGMENT CALL: this used to open a dialog with a
+                      // "Run Prediction" button that had no onClick (and
+                      // whose inputs had no working onChange either) --
+                      // wiring it to lib/ai/model-training.ts's predict
+                      // endpoint isn't honest here, because that endpoint
+                      // now correctly reports that no real model-serving
+                      // backend exists in this environment (see the
+                      // JUDGMENT CALL comment on makePrediction there). So
+                      // rather than build a working form around a call that
+                      // always fails, the entry point is disabled with a
+                      // clear explanation.
+                      <Button
+                        size="sm"
+                        disabled
+                        title="Prediction is not available yet: this environment has no configured model-serving/inference backend."
+                      >
+                        <Target className="h-4 w-4 mr-1" /> Make Prediction
+                      </Button>
                     )}
                     <Button size="sm" variant="outline">
                       <Save className="h-4 w-4 mr-1" /> Export Model

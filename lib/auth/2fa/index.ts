@@ -9,7 +9,7 @@ export * from './utils'
 
 // Re-export main functions
 import { generateTOTPSecret, verifyTOTPCode, generateTOTPSetup, verify2FACode } from './totp-service'
-import { TwoFARateLimiter, twoFARateLimiter } from './totp-service'
+import { checkTwoFARateLimit } from './totp-service'
 import { TwoFAError, TwoFAErrorCode } from './types'
 
-export { generateTOTPSecret, verifyTOTPCode, generateTOTPSetup, verify2FACode, TwoFARateLimiter, twoFARateLimiter, TwoFAError, TwoFAErrorCode }
+export { generateTOTPSecret, verifyTOTPCode, generateTOTPSetup, verify2FACode, checkTwoFARateLimit, TwoFAError, TwoFAErrorCode }

@@ -23,17 +23,39 @@ function pick<T extends readonly string[]>(allowed: T, v: unknown, fallback: T[n
   return allowed.includes(v as T[number]) ? (v as T[number]) : fallback
 }
 
-/** Validate a feedback submission payload. Returns an error string or null. */
-export function validateFeedback(input: unknown): string | null {
+/**
+ * Validate a feedback submission/update payload. Returns an error string or
+ * null. `pick()` above silently falls back to a default for unrecognized
+ * enum values (type/priority/status) instead of rejecting them -- this is
+ * the gate that's supposed to catch that before pick() ever gets a chance
+ * to paper over it. Pass `{ requireTitle: false }` for partial updates
+ * (PUT /api/v1/feedback/[id]), where title is optional.
+ */
+export function validateFeedback(input: unknown, opts: { requireTitle?: boolean } = {}): string | null {
+  const { requireTitle = true } = opts
   if (!input || typeof input !== "object") return "feedback must be an object"
-  const f = input as FeedbackInput
-  if (!f.title || typeof f.title !== "string" || !f.title.trim()) return "title is required"
-  if (f.title.length > 300) return "title too long (max 300)"
+  const f = input as FeedbackInput & FeedbackUpdate
+  if (requireTitle) {
+    if (!f.title || typeof f.title !== "string" || !f.title.trim()) return "title is required"
+  } else if (f.title != null && (typeof f.title !== "string" || !f.title.trim())) {
+    return "title must be a non-empty string"
+  }
+  if (typeof f.title === "string" && f.title.length > 300) return "title too long (max 300)"
   if (f.body != null && typeof f.body !== "string") return "body must be a string"
   if (f.rating != null && (typeof f.rating !== "number" || f.rating < 1 || f.rating > 5)) {
     return "rating must be an integer between 1 and 5"
   }
   if (f.metadata != null && typeof f.metadata !== "object") return "metadata must be an object"
+  if (f.category != null && typeof f.category !== "string") return "category must be a string"
+  if (f.type != null && !FEEDBACK_TYPES.includes(f.type)) {
+    return `type must be one of: ${FEEDBACK_TYPES.join(", ")}`
+  }
+  if (f.priority != null && !FEEDBACK_PRIORITIES.includes(f.priority)) {
+    return `priority must be one of: ${FEEDBACK_PRIORITIES.join(", ")}`
+  }
+  if (f.status != null && !FEEDBACK_STATUSES.includes(f.status)) {
+    return `status must be one of: ${FEEDBACK_STATUSES.join(", ")}`
+  }
   return null
 }
 

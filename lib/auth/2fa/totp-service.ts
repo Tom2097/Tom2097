@@ -12,6 +12,7 @@ import {
   TOTPOptions,
 } from './types'
 import { createHash } from './utils'
+import { checkTenantRateLimit } from '@/lib/multitenant/rate-limit'
 
 // TOTP options
 const TOTP_OPTIONS = {
@@ -180,88 +181,26 @@ export function verify2FACode(
 
 /**
  * Rate limiting for 2FA attempts
- * Prevents brute force attacks
+ * Prevents brute force attacks.
+ *
+ * This used to be an in-process `Map` (TwoFARateLimiter), which reset on
+ * every deploy/restart and wasn't shared across serverless instances --
+ * an attacker could retry indefinitely just by hitting a fresh instance.
+ * Every other auth-sensitive endpoint (login, signup, forgot-password,
+ * passwordless) already rate-limits through the Redis-backed
+ * `checkTenantRateLimit` (lib/multitenant/rate-limit.ts), so 2FA now goes
+ * through the same distributed limiter.
+ *
+ * That helper only exposes fixed 1-minute / 1-hour sliding windows (no
+ * custom 5-minute window, and no separate "lockout" state), so the
+ * original 5-attempts-per-5-minutes-then-15-minute-lockout policy is
+ * approximated as the closest equivalent it can express: at most 5
+ * attempts per rolling minute AND at most 5 attempts per rolling hour.
+ * The hourly cap is what actually enforces the lockout here -- once 5
+ * attempts are made, the caller is blocked for up to an hour (stricter
+ * than the original 15-minute lockout, but the same order of magnitude,
+ * and consistently enforced across all instances instead of per-process).
  */
-export class TwoFARateLimiter {
-  private attempts: Map<string, { count: number; lastAttempt: number; lockedUntil?: number }> = new Map()
-  private maxAttempts: number
-  private lockoutDuration: number
-  private windowMs: number
-
-  constructor(
-    maxAttempts: number = 5,
-    lockoutDuration: number = 15 * 60 * 1000,
-    windowMs: number = 5 * 60 * 1000
-  ) {
-    this.maxAttempts = maxAttempts
-    this.lockoutDuration = lockoutDuration
-    this.windowMs = windowMs
-  }
-
-  canAttempt(userId: string): { allowed: boolean; remainingAttempts: number; lockedUntil?: Date } {
-    const now = Date.now()
-    const userRecord = this.attempts.get(userId)
-    
-    if (userRecord) {
-      if (userRecord.lockedUntil && now < userRecord.lockedUntil) {
-        return {
-          allowed: false,
-          remainingAttempts: 0,
-          lockedUntil: new Date(userRecord.lockedUntil),
-        }
-      }
-      
-      if (now - userRecord.lastAttempt > this.windowMs) {
-        this.attempts.delete(userId)
-        return { allowed: true, remainingAttempts: this.maxAttempts }
-      }
-      
-      if (userRecord.count >= this.maxAttempts) {
-        const lockedUntil = now + this.lockoutDuration
-        this.attempts.set(userId, {
-          count: userRecord.count + 1,
-          lastAttempt: now,
-          lockedUntil,
-        })
-        return { allowed: false, remainingAttempts: 0, lockedUntil: new Date(lockedUntil) }
-      }
-      
-      return { allowed: true, remainingAttempts: this.maxAttempts - userRecord.count }
-    }
-    
-    return { allowed: true, remainingAttempts: this.maxAttempts }
-  }
-
-  recordAttempt(userId: string): void {
-    const now = Date.now()
-    const userRecord = this.attempts.get(userId)
-    
-    if (userRecord) {
-      this.attempts.set(userId, {
-        count: userRecord.count + 1,
-        lastAttempt: now,
-        lockedUntil: userRecord.lockedUntil,
-      })
-    } else {
-      this.attempts.set(userId, { count: 1, lastAttempt: now })
-    }
-  }
-
-  clearAttempts(userId: string): void {
-    this.attempts.delete(userId)
-  }
-
-  getStatus(userId: string): { attempts: number; lastAttempt: Date; lockedUntil?: Date } {
-    const userRecord = this.attempts.get(userId)
-    if (!userRecord) {
-      return { attempts: 0, lastAttempt: new Date(0) }
-    }
-    return {
-      attempts: userRecord.count,
-      lastAttempt: new Date(userRecord.lastAttempt),
-      lockedUntil: userRecord.lockedUntil ? new Date(userRecord.lockedUntil) : undefined,
-    }
-  }
+export async function checkTwoFARateLimit(userId: string) {
+  return checkTenantRateLimit(`2fa:${userId}`, 5, 5)
 }
-
-export const twoFARateLimiter = new TwoFARateLimiter()

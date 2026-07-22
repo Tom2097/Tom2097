@@ -273,121 +273,83 @@ async function simulateDataPreprocessing(modelId: string, datasetId: string) {
 }
 
 // Simulate model training
+//
+// JUDGMENT CALL (see also simulateModelEvaluation below): this codebase has
+// no real ML training compute, no feature/label extraction from the
+// `datasets` table (which only stores file metadata, not row data), and no
+// gradient/loss computation of any kind. The previous code faked per-epoch
+// "Loss: 0.xxxx" values with Math.random() and logged them as if a real
+// model were being fit. That is exactly the fabrication this fix is meant to
+// remove: a human reading those logs would reasonably believe real training
+// was happening. We keep the status-machine progression (draft ->
+// preprocessing -> training -> evaluating -> trained) because that reflects
+// a real, honest state transition of the *record*, but the step logs below
+// no longer assert any invented numeric training signal.
 async function simulateModelTraining(modelId: string, datasetId: string) {
   const supabase = await createServiceClient()
-  
+
   // Get model type to determine training approach
   const { data: model, error: modelError } = await supabase
     .from('ai_models')
     .select('type')
     .eq('id', modelId)
     .single()
-  
+
   if (modelError) throw modelError
-  
+
   const modelType = model.type
-  
-  // Simulate training based on model type
+
   await updateTrainingStatus(modelId, 'training', `Initializing ${modelType} model...`)
   await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  await updateTrainingStatus(modelId, 'training', 'Training model on dataset...')
-  
-  // Simulate training epochs
-  const epochs = 10
-  for (let i = 0; i < epochs; i++) {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    await updateTrainingStatus(modelId, 'training', `Epoch ${i + 1}/${epochs} - Loss: ${(Math.random() * 0.5 + 0.1).toFixed(4)}`)
-  }
-  
-  await updateTrainingStatus(modelId, 'training', 'Model training completed')
+
+  await updateTrainingStatus(
+    modelId,
+    'training',
+    'No real training compute is configured in this environment -- recording this run without fabricated per-epoch metrics.'
+  )
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  await updateTrainingStatus(modelId, 'training', 'Model training step completed')
 }
 
 // Simulate model evaluation
+//
+// JUDGMENT CALL: option (b) from the fix brief applies here -- there is no
+// real training/evaluation pipeline or held-out dataset in this codebase to
+// compute genuine performance metrics (rmse/accuracy/f1/etc. all used to be
+// Math.random() dressed up as real numbers). Rather than keep returning
+// fabricated metrics under any name, performance_metrics is left null and we
+// record an honest, UI-visible note that automated evaluation is not yet
+// available. components/digit/predictive-modeling.tsx already only renders
+// the "Performance Metrics" section when performance_metrics is truthy, so
+// leaving it null means the UI honestly shows nothing there instead of fake
+// numbers.
 async function simulateModelEvaluation(modelId: string) {
   const supabase = await createServiceClient()
-  
-  // Get model type to determine evaluation metrics
-  const { data: model, error: modelError } = await supabase
-    .from('ai_models')
-    .select('type')
-    .eq('id', modelId)
-    .single()
-  
-  if (modelError) throw modelError
-  
-  const modelType = model.type
-  
+
   await updateTrainingStatus(modelId, 'evaluating', 'Evaluating model performance...')
   await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  // Generate performance metrics based on model type
-  const metrics = generatePerformanceMetrics(modelType)
-  
-  await updateTrainingStatus(modelId, 'evaluating', 'Calculating evaluation metrics...')
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  // Update model with performance metrics
+
+  await updateTrainingStatus(
+    modelId,
+    'evaluating',
+    'Automated performance evaluation is not available: this environment has no configured training/evaluation pipeline or held-out dataset. Metrics were intentionally left unset rather than showing fabricated numbers.'
+  )
+
+  // Update model explicitly with no performance metrics (honest null, not a
+  // fabricated number) so any UI checking `model.performance_metrics` knows
+  // there is nothing real to show.
   const { error: updateError } = await supabase
     .from('ai_models')
     .update({
-      performance_metrics: metrics,
+      performance_metrics: null,
       updated_at: new Date().toISOString()
     })
     .eq('id', modelId)
-  
-  if (updateError) throw updateError
-  
-  await updateTrainingStatus(modelId, 'evaluating', 'Model evaluation completed')
-}
 
-// Generate performance metrics based on model type
-function generatePerformanceMetrics(modelType: ModelType): Record<string, number> {
-  switch (modelType) {
-    case 'regression':
-      return {
-        rmse: 0.45 + Math.random() * 0.3,
-        mae: 0.3 + Math.random() * 0.2,
-        r2: 0.7 + Math.random() * 0.25
-      }
-    case 'classification':
-      return {
-        accuracy: 0.8 + Math.random() * 0.15,
-        precision: 0.75 + Math.random() * 0.2,
-        recall: 0.7 + Math.random() * 0.25,
-        f1_score: 0.72 + Math.random() * 0.2,
-        auc_roc: 0.8 + Math.random() * 0.15
-      }
-    case 'time_series':
-      return {
-        rmse: 0.5 + Math.random() * 0.3,
-        mae: 0.4 + Math.random() * 0.2,
-        r2: 0.65 + Math.random() * 0.25,
-        mape: 5 + Math.random() * 10
-      }
-    case 'clustering':
-      return {
-        silhouette_score: 0.5 + Math.random() * 0.4,
-        davies_bouldin_score: 0.8 + Math.random() * 0.7,
-        calinski_harabasz_score: 100 + Math.random() * 500
-      }
-    case 'neural_network':
-      return {
-        accuracy: 0.85 + Math.random() * 0.1,
-        loss: 0.2 + Math.random() * 0.3,
-        val_accuracy: 0.8 + Math.random() * 0.15,
-        val_loss: 0.3 + Math.random() * 0.4
-      }
-    case 'ensemble':
-      return {
-        accuracy: 0.88 + Math.random() * 0.08,
-        precision: 0.85 + Math.random() * 0.1,
-        recall: 0.82 + Math.random() * 0.12,
-        f1_score: 0.83 + Math.random() * 0.1
-      }
-    default:
-      return {}
-  }
+  if (updateError) throw updateError
+
+  await updateTrainingStatus(modelId, 'evaluating', 'Model evaluation step completed')
 }
 
 // Deploy a trained model
@@ -511,11 +473,20 @@ export async function makePrediction(
         error: `Missing required features: ${missingFeatures.join(', ')}`
       }
     }
-    
-    // Simulate prediction based on model type
-    const prediction = generateMockPrediction(model.type, inputData)
-    
-    // Log audit event
+
+    // JUDGMENT CALL (option (b) from the fix brief): there is no real
+    // model-serving/inference backend in this codebase -- "deployed" models
+    // have no actual fitted weights, only a status flag and a metadata blob.
+    // The previous implementation returned a Math.random()-based number,
+    // class label, or forecast as if it were a genuine model prediction.
+    // Rather than keep fabricating a plausible-looking output, we honestly
+    // report that real inference isn't available yet, while still logging
+    // the (failed) attempt for audit purposes. See simulateModelEvaluation
+    // above for the matching decision on training metrics.
+    // Reuses the existing 'ai.model_prediction' audit action (adding a new
+    // action literal would mean editing lib/auth/audit.ts's AuthAuditAction
+    // union, which is outside this fix's file scope) -- `available: false`
+    // in the metadata distinguishes this from a real served prediction.
     await logAuthEvent({
       action: 'ai.model_prediction',
       organizationId,
@@ -525,70 +496,19 @@ export async function makePrediction(
       metadata: {
         modelName: model.name,
         inputFeatures: Object.keys(inputData),
-        predictionType: typeof prediction
+        available: false
       }
     })
-    
-    // Track usage
-    await trackUsage(organizationId, userId, 'ai_prediction', 1, {
-      modelId,
-      modelType: model.type
-    })
-    
-    return { success: true, prediction }
+
+    return {
+      success: false,
+      error: 'Prediction is not available: this environment has no configured model-serving/inference backend. Training and deployment status are tracked for real, but no actual inference is run.'
+    }
   } catch (err) {
     console.error('[ModelPrediction] Unexpected error:', err)
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Prediction failed'
     }
-  }
-}
-
-// Generate mock prediction based on model type
-function generateMockPrediction(
-  modelType: ModelType,
-  inputData: Record<string, unknown>
-): unknown {
-  switch (modelType) {
-    case 'regression':
-      // Return a numeric prediction
-      return 100 + Math.random() * 900
-    
-    case 'classification':
-      // Return a class label
-      const classes = ['low', 'medium', 'high', 'critical']
-      return classes[Math.floor(Math.random() * classes.length)]
-    
-    case 'time_series':
-      // Return a time series forecast
-      return {
-        forecast: Array.from({ length: 5 }, () => 100 + Math.random() * 900),
-        confidence_intervals: [
-          Array.from({ length: 5 }, () => 80 + Math.random() * 20),
-          Array.from({ length: 5 }, () => 120 + Math.random() * 20)
-        ]
-      }
-    
-    case 'clustering':
-      // Return a cluster assignment
-      return Math.floor(Math.random() * 5)
-    
-    case 'neural_network':
-      // Return a probability distribution
-      return {
-        probabilities: Array.from({ length: 3 }, () => Math.random()),
-        predicted_class: Math.floor(Math.random() * 3)
-      }
-    
-    case 'ensemble':
-      // Return an ensemble prediction
-      return {
-        prediction: Math.random() > 0.5 ? 'positive' : 'negative',
-        confidence: 0.7 + Math.random() * 0.3
-      }
-    
-    default:
-      return null
   }
 }

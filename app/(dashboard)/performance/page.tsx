@@ -7,6 +7,7 @@ import { driverDecomposition, forecastMetric } from "@/lib/analytics/forecasting
 import { getTranslator } from "@/lib/i18n/server"
 import { NewObjectiveDialog } from "@/components/digit/performance/new-objective-dialog"
 import { RunReportButton } from "@/components/digit/performance/run-report-button"
+import { KeyResultsPanel } from "@/components/digit/performance/key-results-panel"
 
 export default async function PerformancePage() {
   const ctx = await extractTenantContext()
@@ -22,6 +23,15 @@ export default async function PerformancePage() {
   ])
 
   const activeObjectives = objectives.filter((o) => o.status !== "completed")
+
+  // Pacing (expected vs. actual progress given elapsed time in the objective's
+  // window) is computed per-objective so the Active Objectives list can show
+  // whether progress -- now driven by real key-result values -- is on schedule.
+  const pacingByObjective = new Map(
+    await Promise.all(
+      activeObjectives.slice(0, 8).map(async (o) => [o.id, await computePacing(orgId, o.id).catch(() => null)] as const),
+    ),
+  )
 
   return (
     <div className="space-y-6">
@@ -71,18 +81,29 @@ export default async function PerformancePage() {
            </h3>
           {activeObjectives.length > 0 ? (
             <div className="space-y-3">
-              {activeObjectives.slice(0, 8).map((obj, i) => (
-                <div key={i} className="rounded-xl bg-secondary/30 p-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-medium">{obj.name}</p>
-                    <span className="text-xs text-muted-foreground capitalize">{obj.owner}</span>
+              {activeObjectives.slice(0, 8).map((obj) => {
+                const pacing = pacingByObjective.get(obj.id)
+                return (
+                  <div key={obj.id} className="rounded-xl bg-secondary/30 p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-medium">{obj.name}</p>
+                      <span className="text-xs text-muted-foreground capitalize">{obj.owner}</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-amber-500" style={{ width: `${Math.min(obj.progress ?? 0, 100)}%` }} />
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-xs text-muted-foreground">{obj.progress ?? 0}% complete</p>
+                      {pacing && (
+                        <p className={`text-xs ${pacing.ahead ? "text-green-500" : "text-amber-500"}`}>
+                          {pacing.ahead ? "Ahead of" : "Behind"} pace ({pacing.variance > 0 ? "+" : ""}{pacing.variance}%)
+                        </p>
+                      )}
+                    </div>
+                    <KeyResultsPanel objectiveId={obj.id} addLabel={t("performance.page.addKeyResult")} />
                   </div>
-                  <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-amber-500" style={{ width: `${Math.min(obj.progress ?? 0, 100)}%` }} />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">{obj.progress ?? 0}% complete</p>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
              <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">{t("performance.page.noObjectives")}</div>

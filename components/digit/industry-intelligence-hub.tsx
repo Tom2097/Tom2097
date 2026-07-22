@@ -66,9 +66,14 @@ interface IndustryBenchmark {
   unit: string
 }
 
-function computeLearningStats(findings: IndustryInsight[]): AILearningStats {
+// `totalInteractions` ("Data Points") used to be a hardcoded 1247 labeled as
+// real AI telemetry. It's now the real count of records the intelligence
+// layer has actually ingested for this org -- active findings plus indexed
+// operational-graph nodes, both fetched from /api/v1/intelligence/aggregate
+// (see loadData below) -- rather than an invented number.
+function computeLearningStats(findings: IndustryInsight[], dataPointsScanned: number): AILearningStats {
   return {
-    totalInteractions: 1247,
+    totalInteractions: dataPointsScanned,
     insightsGenerated: findings.length,
     accuracyScore: findings.length > 0
       ? findings.reduce((s, f) => s + f.relevanceScore, 0) / findings.length
@@ -122,15 +127,21 @@ export function IndustryIntelligenceHub() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [findingsRes, briefingRes] = await Promise.all([
+        const [findingsRes, briefingRes, aggregateRes] = await Promise.all([
           fetch("/api/v1/intelligence/findings?limit=10"),
           fetch("/api/v1/intelligence/briefing"),
+          fetch("/api/v1/intelligence/aggregate"),
         ])
+        let dataPointsScanned = 0
+        if (aggregateRes.ok) {
+          const data = await aggregateRes.json()
+          dataPointsScanned = (data.metrics?.insightsGenerated ?? 0) + (data.metrics?.graphComplexity ?? 0)
+        }
         if (findingsRes.ok) {
           const data = await findingsRes.json()
           const mapped = (data.findings || []).map(insightFromFinding)
           setInsights(mapped)
-          setLearningStats(computeLearningStats(mapped))
+          setLearningStats(computeLearningStats(mapped, dataPointsScanned))
         }
         if (briefingRes.ok) {
           const data = await briefingRes.json()
@@ -158,12 +169,20 @@ export function IndustryIntelligenceHub() {
     setIsRefreshing(true)
     try {
       await fetch("/api/v1/intelligence/monitor", { method: "POST" })
-      const res = await fetch("/api/v1/intelligence/findings?limit=10")
+      const [res, aggregateRes] = await Promise.all([
+        fetch("/api/v1/intelligence/findings?limit=10"),
+        fetch("/api/v1/intelligence/aggregate"),
+      ])
+      let dataPointsScanned = 0
+      if (aggregateRes.ok) {
+        const data = await aggregateRes.json()
+        dataPointsScanned = (data.metrics?.insightsGenerated ?? 0) + (data.metrics?.graphComplexity ?? 0)
+      }
       if (res.ok) {
         const data = await res.json()
         const mapped = (data.findings || []).map(insightFromFinding)
         setInsights(mapped)
-        setLearningStats(computeLearningStats(mapped))
+        setLearningStats(computeLearningStats(mapped, dataPointsScanned))
       }
     } catch {
     } finally {
@@ -493,22 +512,34 @@ export function IndustryIntelligenceHub() {
           </Card>
         </TabsContent>
 
-        {/* Predictions Tab */}
+        {/* Predictions Tab -- JUDGMENT CALL: this used to be a fully
+            hardcoded array (fake revenue/churn/acquisition numbers) labeled
+            "AI-Powered Predictions" and "Machine learning forecasts based on
+            your data" -- none of it was derived from this org's real data,
+            and there is no real forecasting pipeline in this codebase to
+            back genuine numbers here (same gap documented in
+            lib/ai/model-training.ts). Rather than invent a new "real"
+            calculation that itself might mislead, this is honestly relabeled
+            as an illustrative example rather than a live AI output. */}
         <TabsContent value="predictions" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="w-5 h-5 text-primary" />
-                AI-Powered Predictions
+                Example Forecasts
+                <Badge variant="secondary" className="ml-2">Illustrative, not live data</Badge>
               </CardTitle>
-              <CardDescription>Machine learning forecasts based on your data and industry trends</CardDescription>
+              <CardDescription>
+                A sample of the kind of forecast this tab could show once a real forecasting pipeline is connected.
+                The figures below are placeholders, not generated from your organization&apos;s data.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {[
-                { label: "Q3 Revenue Forecast", value: "+12.5%", confidence: 85, trend: "up" },
-                { label: "Customer Acquisition (Next 90 days)", value: "234 new", confidence: 78, trend: "up" },
-                { label: "Churn Risk (High Priority)", value: "23 accounts", confidence: 92, trend: "down" },
-                { label: "Market Opportunity Score", value: "8.4/10", confidence: 81, trend: "up" }
+                { label: "Q3 Revenue Forecast (example)", value: "+12.5%", confidence: 85, trend: "up" },
+                { label: "Customer Acquisition, next 90 days (example)", value: "234 new", confidence: 78, trend: "up" },
+                { label: "Churn Risk, high priority (example)", value: "23 accounts", confidence: 92, trend: "down" },
+                { label: "Market Opportunity Score (example)", value: "8.4/10", confidence: 81, trend: "up" }
               ].map((prediction, index) => (
                 <motion.div
                   key={prediction.label}
@@ -531,7 +562,7 @@ export function IndustryIntelligenceHub() {
                     <div>
                       <p className="font-medium">{prediction.label}</p>
                       <p className="text-xs text-muted-foreground">
-                        AI Confidence: {prediction.confidence}%
+                        Example confidence: {prediction.confidence}%
                       </p>
                     </div>
                   </div>
@@ -545,8 +576,14 @@ export function IndustryIntelligenceHub() {
           </Card>
         </TabsContent>
 
-        {/* Resources Tab */}
+        {/* Resources Tab -- these are static, general-purpose reference
+            links, not personalized or AI-generated from this org's data.
+            Labeled plainly here so this tab isn't mistaken for output of the
+            "Continuously learning from your data" header above. */}
         <TabsContent value="resources" className="space-y-4 mt-4">
+          <p className="text-sm text-muted-foreground">
+            General reference resources -- not personalized or generated from your organization&apos;s data.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               { title: "Industry Report 2026", type: "PDF", desc: "Comprehensive analysis of market trends", icon: BookOpen },

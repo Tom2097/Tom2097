@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUser, handleAuthError } from '@/lib/auth/server-auth'
 import { createServiceClient } from '@/lib/supabase/service'
-import { verify2FACode, twoFARateLimiter } from '@/lib/auth/2fa'
+import { verify2FACode, checkTwoFARateLimit } from '@/lib/auth/2fa'
+import { getClientIp, logAuthEvent } from '@/lib/auth/audit'
 
 /**
  * POST /api/v1/auth/2fa/verify
@@ -29,16 +30,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'code is required' }, { status: 400 })
     }
 
-    const rateLimit = twoFARateLimiter.canAttempt(user.id)
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        {
-          error: 'Too many attempts. Try again later.',
-          lockedUntil: rateLimit.lockedUntil?.toISOString(),
-        },
-        { status: 429 }
-      )
-    }
+    const rateLimited = await checkTwoFARateLimit(user.id)
+    if (rateLimited) return rateLimited
+
+    const ip = getClientIp(request.headers)
 
     const db = createServiceClient()
     const { data: profile } = await db
@@ -61,11 +56,13 @@ export async function POST(request: NextRequest) {
     const result = verify2FACode(code, secret, hashedBackupCodes)
 
     if (!result.valid) {
-      twoFARateLimiter.recordAttempt(user.id)
+      await logAuthEvent({
+        action: 'auth.2fa_verify_failed',
+        userId: user.id,
+        ipAddress: ip,
+      })
       return NextResponse.json({ error: 'Invalid code', valid: false }, { status: 401 })
     }
-
-    twoFARateLimiter.clearAttempts(user.id)
 
     const updates: Record<string, unknown> = {}
 
@@ -87,6 +84,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to verify 2FA code' }, { status: 500 })
       }
     }
+
+    await logAuthEvent({
+      action: 'auth.2fa_verified',
+      userId: user.id,
+      ipAddress: ip,
+      metadata: { isConfirmingSetup, usedBackupCode: result.isBackupCode },
+    })
 
     return NextResponse.json({
       valid: true,

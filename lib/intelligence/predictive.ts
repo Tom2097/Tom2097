@@ -101,8 +101,8 @@ export async function predictDealCloseRisk(
   const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString()
 
   const { data: deal } = await db
-    .from("deals")
-    .select("id, name, value, stage, updated_at")
+    .from("crm_deals")
+    .select("id, title, value, stage, updated_at")
     .eq("organization_id", organizationId)
     .eq("id", dealId)
     .single()

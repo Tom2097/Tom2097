@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, usePathname } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { useI18n } from '@/components/providers/i18n-provider'
 import {
   BarChart3,
@@ -12,9 +12,26 @@ import {
   RefreshCw,
   Activity,
   ShieldCheck,
+  Sparkles,
+  FileText,
+  Loader2,
+  Play,
+  Plus,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ChartContainer, LiveChart, MultiLineChart } from '@/components/digit/live-chart'
 
@@ -335,7 +352,309 @@ export function AnalyticsView(data: AnalyticsViewData) {
           </table>
         </div>
       </div>
+
+      {/* AI Analytics */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <AiQueryPanel />
+        <SavedReportsPanel />
+      </div>
     </div>
+  )
+}
+
+interface AiQueryResult {
+  explanation: string
+  result: {
+    type: 'timeseries' | 'breakdown' | 'summary'
+    points?: Array<{ bucket: string; value: number }>
+    rows?: Array<{ label: string; value: number }>
+    summary?: { total_events: number; unique_users: number; distinct_events: number; total_value: number }
+  }
+}
+
+function AiQueryPanel() {
+  const [question, setQuestion] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<AiQueryResult | null>(null)
+
+  const handleAsk = async () => {
+    if (!question.trim()) return
+    setLoading(true)
+    setResult(null)
+    try {
+      const res = await fetch('/api/v1/analytics/ai-query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        toast.error(data.error || 'Failed to run AI query')
+        return
+      }
+      setResult(data.data)
+    } catch {
+      toast.error('Failed to run AI query')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Sparkles className="h-4 w-4 text-primary" />
+          Ask AI about your data
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <Textarea
+          placeholder="e.g. Show me daily active users for the last 30 days"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+              e.preventDefault()
+              handleAsk()
+            }
+          }}
+          rows={2}
+          className="resize-none text-sm"
+        />
+        <div className="flex justify-end">
+          <Button size="sm" onClick={handleAsk} disabled={loading || !question.trim()}>
+            {loading ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
+            Ask
+          </Button>
+        </div>
+
+        {result && (
+          <div className="rounded-xl border border-border/50 bg-secondary/30 p-4 space-y-3">
+            <p className="text-xs text-muted-foreground">{result.explanation}</p>
+
+            {result.result.type === 'summary' && result.result.summary && (
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Total events: </span>
+                  <span className="font-medium text-foreground">{result.result.summary.total_events.toLocaleString()}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Unique users: </span>
+                  <span className="font-medium text-foreground">{result.result.summary.unique_users.toLocaleString()}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Event types: </span>
+                  <span className="font-medium text-foreground">{result.result.summary.distinct_events.toLocaleString()}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Total value: </span>
+                  <span className="font-medium text-foreground">{result.result.summary.total_value.toLocaleString()}</span>
+                </div>
+              </div>
+            )}
+
+            {result.result.type === 'timeseries' && result.result.points && (
+              result.result.points.length > 0 ? (
+                <LiveChart data={result.result.points.map((p) => ({ name: p.bucket, value: p.value }))} dataKey="value" type="area" currency={false} height={180} />
+              ) : (
+                <p className="text-xs text-muted-foreground">No data points for this range.</p>
+              )
+            )}
+
+            {result.result.type === 'breakdown' && result.result.rows && (
+              result.result.rows.length > 0 ? (
+                <ul className="space-y-1">
+                  {result.result.rows.slice(0, 10).map((row, i) => (
+                    <li key={i} className="flex items-center justify-between text-sm">
+                      <span className="text-foreground">{row.label}</span>
+                      <span className="font-medium text-muted-foreground">{row.value.toLocaleString()}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-muted-foreground">No rows for this breakdown.</p>
+              )
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+interface SavedReport {
+  id: string
+  name: string
+  description: string | null
+  config: { type: string; event_name?: string | null; range_days?: number }
+}
+
+function SavedReportsPanel() {
+  const [reports, setReports] = useState<SavedReport[]>([])
+  const [loading, setLoading] = useState(true)
+  const [runningId, setRunningId] = useState<string | null>(null)
+  const [runOutput, setRunOutput] = useState<Record<string, unknown> | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [form, setForm] = useState({ name: '', event_name: '', type: 'summary', range_days: '30' })
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  useEffect(() => {
+    fetch('/api/v1/analytics/reports')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setReports(data.data.reports)
+      })
+      .catch(() => {
+        // Non-fatal: the panel just shows an empty state.
+      })
+      .finally(() => setLoading(false))
+  }, [refreshKey])
+
+  const handleRun = async (reportId: string) => {
+    setRunningId(reportId)
+    setRunOutput(null)
+    try {
+      const res = await fetch(`/api/v1/analytics/reports/${reportId}/run`)
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error || 'Failed to run report')
+        return
+      }
+      setRunOutput(data)
+      toast.success('Report executed')
+    } catch {
+      toast.error('Failed to run report')
+    } finally {
+      setRunningId(null)
+    }
+  }
+
+  const handleCreate = async () => {
+    if (!form.name.trim()) {
+      toast.error('Name is required')
+      return
+    }
+    setCreating(true)
+    try {
+      const res = await fetch('/api/v1/analytics/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          config: {
+            type: form.type,
+            event_name: form.event_name || null,
+            range_days: Number(form.range_days) || 30,
+          },
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        toast.error(data.error || 'Failed to create report')
+        return
+      }
+      toast.success('Report created')
+      setCreateOpen(false)
+      setForm({ name: '', event_name: '', type: 'summary', range_days: '30' })
+      setRefreshKey((k) => k + 1)
+    } catch {
+      toast.error('Failed to create report')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <FileText className="h-4 w-4 text-primary" />
+          Saved Reports
+        </CardTitle>
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" variant="outline">
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              New
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>New Saved Report</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <Input
+                placeholder="Report name"
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              />
+              <Input
+                placeholder="Event name (optional)"
+                value={form.event_name}
+                onChange={(e) => setForm((f) => ({ ...f, event_name: e.target.value }))}
+              />
+              <Input
+                placeholder="Range (days)"
+                type="number"
+                value={form.range_days}
+                onChange={(e) => setForm((f) => ({ ...f, range_days: e.target.value }))}
+              />
+            </div>
+            <DialogFooter>
+              <Button onClick={handleCreate} disabled={creating}>
+                {creating ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : null}
+                Create
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {loading ? (
+          <p className="text-xs text-muted-foreground">Loading reports...</p>
+        ) : reports.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No saved reports yet. Create one to get started.</p>
+        ) : (
+          <ul className="space-y-2">
+            {reports.map((report) => (
+              <li
+                key={report.id}
+                className="flex items-center justify-between rounded-xl border border-border/50 bg-secondary/30 p-3"
+              >
+                <div>
+                  <p className="text-sm font-medium text-foreground">{report.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {report.config.type}
+                    {report.config.event_name ? ` · ${report.config.event_name}` : ''}
+                    {report.config.range_days ? ` · ${report.config.range_days}d` : ''}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleRun(report.id)}
+                  disabled={runningId === report.id}
+                >
+                  {runningId === report.id ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Play className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {runOutput ? (
+          <pre className="max-h-40 overflow-auto rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground">
+            {JSON.stringify(runOutput, null, 2)}
+          </pre>
+        ) : null}
+      </CardContent>
+    </Card>
   )
 }
 

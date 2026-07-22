@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createServiceClient } from '@/lib/supabase/service'
 import { createClient } from '@/lib/supabase/server'
+import { getOrganizationId } from '@/lib/auth/server-auth'
 import { checkTenantRateLimit } from '@/lib/multitenant/rate-limit'
 import { getClientIp } from '@/lib/auth/audit'
 
@@ -24,9 +25,26 @@ export async function POST(request: Request) {
     const auth = await createClient()
     const { data: { user } } = await auth.auth.getUser()
 
+    // Best-effort org resolution -- this widget is reachable while
+    // unauthenticated (see components/navbar.tsx), so a missing org is
+    // expected and shouldn't block submission.
+    let organizationId: string | null = null
+    if (user?.id) {
+      try {
+        organizationId = await getOrganizationId(user.id)
+      } catch {
+        organizationId = null
+      }
+    }
+
     const supabase = createServiceClient()
 
-    const { error } = await supabase.from('feedback').insert({
+    // This is a lightweight NPS-style rating widget, not the structured
+    // feedback/feature-request engine in lib/feedback/engine.ts -- it has
+    // its own distinctly-named table (nps_responses) so it can't collide
+    // with or corrupt the org-scoped "feedback" table that engine reads.
+    const { error } = await supabase.from('nps_responses').insert({
+      organization_id: organizationId,
       rating,
       comments: comments || null,
       user_id: user?.id || null,

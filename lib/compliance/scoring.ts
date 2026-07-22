@@ -56,67 +56,6 @@ export async function computeComplianceScore(organizationId: string): Promise<{
   }
 }
 
-export interface ComplianceDimension {
-  name: string; weight: number; score: number; maxScore: number
-  subFactors: Array<{ name: string; score: number; maxScore: number; notes?: string }>
-}
-
-export interface ComplianceScore {
-  overall: number; dimensions: ComplianceDimension[]
-  trend: Array<{ date: string; score: number }>
-  recommendations: string[]
-}
-
-function defaultDimensions(): ComplianceDimension[] {
-  return [
-    { name: "Data Protection & Privacy", weight: 0.25, score: 82, maxScore: 100,
-      subFactors: [
-        { name: "Data Encryption at Rest", score: 90, maxScore: 100 },
-        { name: "PII Access Controls", score: 75, maxScore: 100, notes: "Role-based access not fully enforced" },
-        { name: "Data Retention Policy", score: 80, maxScore: 100 },
-      ] },
-    { name: "Quality Management", weight: 0.20, score: 78, maxScore: 100,
-      subFactors: [
-        { name: "CAPA Completion Rate", score: 70, maxScore: 100, notes: "3 overdue CAPAs" },
-        { name: "Audit Readiness", score: 85, maxScore: 100 },
-        { name: "Document Control", score: 80, maxScore: 100 },
-      ] },
-    { name: "Regulatory Filings", weight: 0.20, score: 95, maxScore: 100,
-      subFactors: [
-        { name: "Submission Timeliness", score: 100, maxScore: 100 },
-        { name: "Reporting Accuracy", score: 90, maxScore: 100 },
-      ] },
-    { name: "Training & Competency", weight: 0.15, score: 72, maxScore: 100,
-      subFactors: [
-        { name: "Mandatory Training Completion", score: 65, maxScore: 100, notes: "30% of staff behind on GxP training" },
-        { name: "Competency Assessments", score: 80, maxScore: 100 },
-      ] },
-    { name: "Incident Management", weight: 0.20, score: 88, maxScore: 100,
-      subFactors: [
-        { name: "Incident Resolution Time", score: 85, maxScore: 100 },
-        { name: "Root Cause Analysis", score: 90, maxScore: 100 },
-      ] },
-  ]
-}
-
-export function calculateComplianceScore(
-  organizationId: string,
-  dimensions?: ComplianceDimension[]
-): ComplianceScore {
-  const dims = dimensions || defaultDimensions()
-  const overall = dims.reduce((sum, d) => sum + (d.score / d.maxScore) * d.weight * 100, 0)
-  const trend = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date()
-    d.setMonth(d.getMonth() - (5 - i))
-    return { date: d.toLocaleDateString("en-US", { month: "short", year: "numeric" }), score: Math.max(0, overall + (Math.random() - 0.5) * 10) }
-  })
-  const recommendations: string[] = []
-  dims.forEach((d) => {
-    if (d.score < 80) recommendations.push(`${d.name}: Score ${d.score}/100 — below threshold. ${d.subFactors.filter((s) => s.score < 80).map((s) => s.name).join(", ")} needs improvement.`)
-  })
-  return { overall: Math.round(overall * 10) / 10, dimensions: dims, trend, recommendations }
-}
-
 export function generateRequirementTraceabilityMatrix(requirements: string[]): Array<{
   requirement: string; testCases: string[]; designSpecs: string[]
   riskLevel: "High" | "Medium" | "Low"; coverage: number

@@ -55,10 +55,44 @@ export async function listObjectives(organizationId: string): Promise<Objective[
   return (data ?? []) as Objective[]
 }
 
+/** Org-scoped single objective lookup -- used to authorize key-result reads/writes below. */
+export async function getObjective(organizationId: string, objectiveId: string): Promise<Objective | null> {
+  const db = createServiceClient()
+  const { data } = await db
+    .from("okr_objectives")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .eq("id", objectiveId)
+    .maybeSingle()
+  return (data as Objective) ?? null
+}
+
 export async function listKeyResults(objectiveId: string): Promise<KeyResult[]> {
   const db = createServiceClient()
   const { data } = await db.from("okr_key_results").select("*").eq("objective_id", objectiveId)
   return (data ?? []) as KeyResult[]
+}
+
+export async function createKeyResult(
+  objectiveId: string,
+  input: { name: string; metric?: string; target: number; current?: number; unit?: string; weight?: number },
+): Promise<KeyResult | null> {
+  const db = createServiceClient()
+  const { data, error } = await db
+    .from("okr_key_results")
+    .insert({
+      objective_id: objectiveId,
+      name: input.name,
+      metric: input.metric ?? null,
+      target: input.target,
+      current: input.current ?? 0,
+      unit: input.unit ?? null,
+      weight: input.weight ?? 1,
+    })
+    .select("*")
+    .single()
+  if (error) return null
+  return data as KeyResult
 }
 
 export async function updateKeyResultValue(krId: string, currentValue: number): Promise<KeyResult | null> {

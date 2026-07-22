@@ -6,6 +6,8 @@ import {
 import type { AuthenticationResponseJSON } from "@simplewebauthn/server"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
+import { checkTenantRateLimit } from "@/lib/multitenant/rate-limit"
+import { getClientIp, logAuthEvent } from "@/lib/auth/audit"
 
 const CHALLENGE_COOKIE = "digit_passkey_auth_flow"
 const CHALLENGE_TTL_MS = 5 * 60 * 1000
@@ -30,6 +32,7 @@ function clearChallengeCookie(response: NextResponse) {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req.headers) ?? "unknown"
     const body = await req.json() as {
       action?: "options" | "verify"
       credential?: AuthenticationResponseJSON
@@ -38,6 +41,12 @@ export async function POST(req: NextRequest) {
     const { origin, rpID } = webAuthnConfig()
 
     if (body.action === "options") {
+      // Unauthenticated -- inserts a fresh challenge row per call -- so it's
+      // IP-rate-limited the same way as other unauthenticated auth entry
+      // points (see app/api/auth/forgot-password/route.ts).
+      const rateLimited = await checkTenantRateLimit(`passkey-auth-options-ip:${ip}`, 60, 10)
+      if (rateLimited) return rateLimited
+
       const options = await generateAuthenticationOptions({
         rpID,
         userVerification: "required",
@@ -65,6 +74,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (body.action === "verify") {
+      const rateLimited = await checkTenantRateLimit(`passkey-auth-verify-ip:${ip}`, 60, 10)
+      if (rateLimited) return rateLimited
+
       const credential = body.credential
       const flowId = req.cookies.get(CHALLENGE_COOKIE)?.value
       if (!credential || !flowId) {
@@ -96,6 +108,11 @@ export async function POST(req: NextRequest) {
         .single()
 
       if (passkeyError || !passkey) {
+        await logAuthEvent({
+          action: "auth.passkey_verify_failed",
+          ipAddress: ip,
+          metadata: { reason: "unknown_credential" },
+        })
         return clearChallengeCookie(
           NextResponse.json({ error: "Passkey authentication failed" }, { status: 400 })
         )
@@ -116,6 +133,12 @@ export async function POST(req: NextRequest) {
       })
 
       if (!verification.verified) {
+        await logAuthEvent({
+          action: "auth.passkey_verify_failed",
+          userId: passkey.user_id,
+          ipAddress: ip,
+          metadata: { reason: "verification_failed" },
+        })
         return clearChallengeCookie(
           NextResponse.json({ error: "Passkey authentication failed" }, { status: 400 })
         )
@@ -127,6 +150,12 @@ export async function POST(req: NextRequest) {
         .eq("id", passkey.user_id)
         .maybeSingle()
       if (profile?.status === "suspended") {
+        await logAuthEvent({
+          action: "auth.passkey_verify_failed",
+          userId: passkey.user_id,
+          ipAddress: ip,
+          metadata: { reason: "suspended" },
+        })
         return clearChallengeCookie(
           NextResponse.json({ error: "Account suspended" }, { status: 403 })
         )
@@ -179,6 +208,12 @@ export async function POST(req: NextRequest) {
           NextResponse.json({ error: "Unable to create authenticated session" }, { status: 503 })
         )
       }
+
+      await logAuthEvent({
+        action: "auth.passkey_verified",
+        userId: passkey.user_id,
+        ipAddress: ip,
+      })
 
       return clearChallengeCookie(NextResponse.json({ success: true }))
     }

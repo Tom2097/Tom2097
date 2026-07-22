@@ -187,6 +187,7 @@
       "title": "Performance Workspace",
       "subtitle": "OKRs, KPIs, forecasting, anomaly detection, and benchmarking",
       "newObjective": "New Objective",
+      "addKeyResult": "Add key result",
       "runReport": "Run Report",
       "activeObjectives": "Active Objectives",
       "completedObjectives": "Completed Objectives",

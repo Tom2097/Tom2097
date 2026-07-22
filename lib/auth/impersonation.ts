@@ -84,6 +84,14 @@ export async function startImpersonation(
     return { error: "Target user not found" }
   }
 
+  // Platform owners must never be impersonated -- PLATFORM_OWNER_EMAIL
+  // supports multiple comma-separated co-founders, and without this check
+  // one owner could start a "consented" impersonation session against
+  // another owner's account, silently escalating access between them.
+  if (isPlatformOwnerEmail(targetProfile.email)) {
+    return { error: "Cannot impersonate another platform owner" }
+  }
+
   const now = new Date()
 
   // Only one already-active (consented) impersonation session per admin at a time.

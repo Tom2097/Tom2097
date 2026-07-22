@@ -52,14 +52,14 @@ const TABLE_WHITELIST = [
   "documents",
   "profiles",
   "organizations",
-  "contacts",
-  "deals",
+  "crm_contacts",
+  "crm_deals",
   "accounts_payable",
   "assets",
   "compliance_audits",
-  "compliance_capas",
-  "performance_objectives",
-  "performance_key_results",
+  "capa_records",
+  "okr_objectives",
+  "okr_key_results",
 ]
 
 export function guardQuery(sql: string): GuardedQuery {
@@ -98,11 +98,11 @@ The database is a Postgres analytics warehouse with these tables:
 - analytics_events: columns(event_name, event_properties JSONB, user_id, session_id, timestamp, organization_id)
 - analytics_event_timeseries: columns(date, event_name, count, organization_id)
 - documents: columns(id, name, type, content, classification, status, created_at, organization_id)
-- contacts: columns(id, name, email, phone, company, status, organization_id)
-- deals: columns(id, name, amount, stage, close_date, owner_id, organization_id)
+- crm_contacts: columns(id, first_name, last_name, name, email, phone, company_id, status, organization_id)
+- crm_deals: columns(id, title, value, stage, expected_close_date, owner_id, organization_id)
 - accounts_payable: columns(id, vendor, amount, status, due_date, organization_id)
-- assets: columns(id, name, type, status, location, organization_id)
-- compliance_capas: columns(id, title, severity, status, assigned_to, due_date, organization_id)
+- assets: columns(id, name, category, status, location, organization_id)
+- capa_records: columns(id, title, severity, status, assigned_to, sla_deadline, organization_id)
 
 Rules:
 1. Always add "WHERE organization_id = '${organizationId}'" to scope queries

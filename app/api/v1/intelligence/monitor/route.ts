@@ -1,7 +1,16 @@
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { isAuthorizedCronRequest } from '@/lib/cron/auth'
 import { runDueChecks } from '@/lib/monitoring/engine'
 
-export async function POST() {
+/** Scheduled: runs all due monitor checks. Auth: Authorization: Bearer CRON_SECRET.
+ *  This duplicated app/api/v1/monitoring/run-due/route.ts's job (same
+ *  runDueChecks() call, which fetches every org's monitor targets) but
+ *  without the cron-secret gate, so anyone could trigger it unauthenticated.
+ */
+export async function POST(req: NextRequest) {
+  if (!isAuthorizedCronRequest(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   try {
     const summary = await runDueChecks()
     return NextResponse.json({ success: true, summary })

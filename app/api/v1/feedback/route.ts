@@ -2,7 +2,7 @@
 
 import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
-import { getFeedbackStats, listFeedback, submitFeedback } from "@/lib/feedback/engine"
+import { getFeedbackStats, listFeedback, submitFeedback, validateFeedback } from "@/lib/feedback/engine"
 import {
   FEEDBACK_STATUSES,
   FEEDBACK_TYPES,
@@ -44,6 +44,10 @@ export const GET = withAuth(async (req: NextRequest, { organizationId, userId })
 export const POST = withAuth(async (req: NextRequest, { organizationId, userId }) => {
   try {
     const body = await req.json()
+    const validationError = validateFeedback(body)
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 })
+    }
     const feedback = await submitFeedback(organizationId, userId, body)
     return NextResponse.json(feedback)
   } catch (error) {

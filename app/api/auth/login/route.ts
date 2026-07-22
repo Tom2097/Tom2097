@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { getRequestOrigin } from "@/lib/http/request-origin"
-import { getClientIp } from "@/lib/auth/audit"
+import { getClientIp, logAuthEvent } from "@/lib/auth/audit"
 import { checkTenantRateLimit } from "@/lib/multitenant/rate-limit"
 
 /**
@@ -68,23 +68,50 @@ export async function POST(request: Request) {
 
     if (error) {
       if (error.message.toLowerCase().includes("email not confirmed")) {
+        await logAuthEvent({
+          action: "auth.login_failed",
+          metadata: { email, reason: "email_not_confirmed" },
+          ipAddress: ip,
+        })
         return NextResponse.redirect(
           new URL(`/auth/login?error=email_not_confirmed&email=${encodeURIComponent(email)}`, origin)
         )
       }
+      await logAuthEvent({
+        action: "auth.login_failed",
+        metadata: { email, reason: error.message },
+        ipAddress: ip,
+      })
       return NextResponse.redirect(
         new URL(`/auth/login?error=${encodeURIComponent(error.message)}`, origin)
       )
     }
 
     if (!data?.session) {
+      await logAuthEvent({
+        action: "auth.login_failed",
+        metadata: { email, reason: "no_session" },
+        ipAddress: ip,
+      })
       return NextResponse.redirect(
         new URL(`/auth/login?error=no_session`, origin)
       )
     }
 
+    await logAuthEvent({
+      action: "auth.login",
+      userId: data.session.user.id,
+      metadata: { email },
+      ipAddress: ip,
+    })
+
     return NextResponse.redirect(new URL(redirectTo, origin))
   } catch (err) {
+    await logAuthEvent({
+      action: "auth.login_failed",
+      metadata: { email, reason: err instanceof Error ? err.message : "unknown" },
+      ipAddress: ip,
+    })
     return NextResponse.redirect(
       new URL(`/auth/login?error=${encodeURIComponent(err instanceof Error ? err.message : "Login failed")}`, origin)
     )

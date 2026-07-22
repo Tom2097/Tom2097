@@ -79,7 +79,7 @@ export const GET = withAuth(async (req: NextRequest, { organizationId, userId })
 }, { requireAny: ["kb:read", "kb:manage"] })
 
 // POST /api/v1/resources/kb/articles - Create article
-const POST = withAuth(async (req: NextRequest, { organizationId, userId }) => {
+export const POST = withAuth(async (req: NextRequest, { organizationId, userId }) => {
   const body = await req.json()
   const validation = ArticleSchema.safeParse(body)
   if (!validation.success) {

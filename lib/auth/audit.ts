@@ -170,6 +170,12 @@ export type AuthAuditAction =
   | "auth.organization_updated"
   | "auth.team_role_updated"
   | "auth.ownership_transferred"
+  | "auth.2fa_verified"
+  | "auth.2fa_verify_failed"
+  | "auth.2fa_disabled"
+  | "auth.2fa_disable_failed"
+  | "auth.passkey_verified"
+  | "auth.passkey_verify_failed"
   // Module #20: localization system
   | "localization.locale_created"
   | "localization.locale_updated"

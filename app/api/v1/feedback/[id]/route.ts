@@ -2,7 +2,7 @@
 
 import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
-import { getFeedback, updateFeedback, deleteFeedback } from "@/lib/feedback/engine"
+import { getFeedback, updateFeedback, deleteFeedback, validateFeedback } from "@/lib/feedback/engine"
 
 // GET /api/v1/feedback/[id] - Get a single feedback item
 export const GET = withAuth(async (_req: NextRequest, { params, organizationId }) => {
@@ -23,6 +23,10 @@ export const PUT = withAuth(async (req: NextRequest, { params, organizationId })
   const { id } = params
   try {
     const body = await req.json()
+    const validationError = validateFeedback(body, { requireTitle: false })
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 })
+    }
     const feedback = await updateFeedback(organizationId, id, body)
     return NextResponse.json({ feedback })
   } catch (error) {
