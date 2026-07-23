@@ -6,6 +6,7 @@ import { getDashboardStats, getRevenueMetrics, getOperationalMetrics, getRiskMet
 import { listMonitors } from '@/lib/monitoring/engine'
 import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
 import { forecastMetric } from '@/lib/analytics/forecasting'
+import { LandingPage } from '@/components/digit/landing-page'
 import DashboardContent from './dashboard-content'
 
 export const dynamic = 'force-dynamic'
@@ -28,15 +29,14 @@ async function Err({ msg, detail, uid, oid }: { msg: string; detail?: string; ui
 }
 
 export default async function DashboardPage() {
-  const { t } = await getTranslator()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    // A missing/expired session is routine (cookie expiry, cleared
-    // cookies, etc.) -- every other page in the app redirects cleanly to
-    // login for this case. This page was the one place still showing a
-    // raw "getUser returned null" diagnostic dump to real users instead.
-    redirect("/auth/login")
+    // "/" is the one page in the app a signed-out visitor actually reaches
+    // (every other page redirects to /auth/login before rendering) -- so
+    // it doubles as the public marketing homepage instead of bouncing
+    // straight to the login form.
+    return <LandingPage />
   }
 
   const serviceDb = createServiceClient()

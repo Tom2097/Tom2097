@@ -2518,5 +2518,50 @@
       "operational": "Operational",
       "contact": "For incident history or to report an issue, contact"
     }
+  },
+  "landing": {
+    "header": {
+      "signIn": "Sign in",
+      "getStarted": "Get started"
+    },
+    "hero": {
+      "badge": "Enterprise Intelligence Platform",
+      "headline": "Run your business on one intelligent operating layer",
+      "subheadline": "DigiT unifies CRM, operations, compliance, and AI-driven analytics into a single platform that learns from your business and helps your team make better decisions, faster.",
+      "ctaPrimary": "Start free trial",
+      "ctaSecondary": "View pricing"
+    },
+    "modules": {
+      "title": "Everything your team needs, in one place",
+      "subtitle": "Nine connected modules, one shared source of truth.",
+      "crm": "Smart CRM",
+      "crmDesc": "Track leads, accounts, and deals with a pipeline that scores and prioritizes itself.",
+      "operations": "Operations",
+      "operationsDesc": "Monitor the workflows and systems that keep your business running, in real time.",
+      "performance": "Performance",
+      "performanceDesc": "See how teams, processes, and revenue are trending before small issues become big ones.",
+      "resources": "Resources",
+      "resourcesDesc": "Plan capacity and allocate people and assets against real demand.",
+      "compliance": "Compliance",
+      "complianceDesc": "Track obligations and audit readiness with a live, evidence-backed compliance score.",
+      "feedback": "Feedback",
+      "feedbackDesc": "Collect and act on customer and employee feedback without leaving the platform.",
+      "aiIntelligence": "AI Intelligence",
+      "aiIntelligenceDesc": "Ask questions about your business in plain language and get answers grounded in your own data.",
+      "aiAnalytics": "AI Analytics",
+      "aiAnalyticsDesc": "Forecasts and anomaly detection that flag what needs attention before it costs you."
+    },
+    "finalCta": {
+      "title": "Ready to see DigiT in action?",
+      "subtitle": "Start a free trial in minutes, no credit card required.",
+      "cta": "Create your account"
+    },
+    "footer": {
+      "security": "Security",
+      "status": "Status",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "copyright": "© 2026 DigiT. All rights reserved."
+    }
   }
 }

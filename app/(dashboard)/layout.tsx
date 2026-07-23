@@ -1,54 +1,23 @@
-'use client'
+import { createClient } from '@/lib/supabase/server'
+import { DashboardChrome } from '@/components/digit/dashboard-chrome'
 
-import { useState } from 'react'
-import { Sidebar } from '@/components/digit/sidebar'
-import { Navbar } from '@/components/digit/navbar'
-import { AIAssistant } from '@/components/digit/ai-assistant'
-import { HelpSupport } from '@/components/digit/help-support'
-import { SettingsPanel } from '@/components/digit/settings-panel'
-import { cn } from '@/lib/utils'
-
-export default function DashboardLayout({
+// The (dashboard) route group also owns "/" (app/(dashboard)/page.tsx),
+// which is the one page in this group a signed-out visitor can actually
+// see rendered (every other page here redirects to /auth/login before
+// render). The internal sidebar/navbar/AI-assistant chrome assumes a
+// logged-in user, so it's skipped entirely for signed-out requests --
+// the public landing page renders full-bleed instead.
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [isAIOpen, setIsAIOpen] = useState(false)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  return (
-    <div className="relative min-h-screen bg-background">
-      {/* Background Effects */}
-      <div className="pointer-events-none fixed inset-0 digit-radial-bg" />
-      <div className="pointer-events-none fixed inset-0 digit-grid-bg opacity-30" />
-      
-      {/* Sidebar */}
-      <Sidebar 
-        isCollapsed={isSidebarCollapsed} 
-        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
-      />
-      
-      {/* Main Content */}
-      <div 
-        className={cn(
-          "transition-all duration-300 ease-in-out",
-          isSidebarCollapsed ? 'ml-16' : 'ml-64'
-        )}
-      >
-        <Navbar onOpenAI={() => setIsAIOpen(true)} />
-        <main className="relative min-h-[calc(100vh-4rem)] p-6">
-          {children}
-        </main>
-      </div>
-      
-      {/* AI Assistant */}
-      <AIAssistant isOpen={isAIOpen} onClose={() => setIsAIOpen(false)} />
-      
-      {/* Settings Panel */}
-      <SettingsPanel />
-      
-      {/* Help & Support */}
-      <HelpSupport />
-    </div>
-  )
+  if (!user) {
+    return <>{children}</>
+  }
+
+  return <DashboardChrome>{children}</DashboardChrome>
 }
