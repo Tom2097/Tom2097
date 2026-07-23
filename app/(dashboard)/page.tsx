@@ -30,9 +30,13 @@ async function Err({ msg, detail, uid, oid }: { msg: string; detail?: string; ui
 export default async function DashboardPage() {
   const { t } = await getTranslator()
   const supabase = await createClient()
-  const { data: { user }, error: userErr } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    return <Err msg="getUser returned null" detail={userErr?.message} />
+    // A missing/expired session is routine (cookie expiry, cleared
+    // cookies, etc.) -- every other page in the app redirects cleanly to
+    // login for this case. This page was the one place still showing a
+    // raw "getUser returned null" diagnostic dump to real users instead.
+    redirect("/auth/login")
   }
 
   const serviceDb = createServiceClient()
