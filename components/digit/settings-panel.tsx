@@ -154,7 +154,8 @@ export function SettingsPanel() {
     setIsSigningOut(true)
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push("/auth/login")
+    router.push("/")
+    router.refresh()
   }
 
   const [workspaceColors, setWorkspaceColors] = useState({

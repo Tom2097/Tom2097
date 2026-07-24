@@ -189,7 +189,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
-    router.push('/auth/login')
+    router.push('/')
     router.refresh()
   }
 
