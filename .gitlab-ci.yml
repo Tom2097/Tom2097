@@ -8,6 +8,16 @@ default:
     - docker
     - tom2097
 
+variables:
+  # The default tar+gzip cache archiver was the single biggest cost in this
+  # pipeline: archiving .pnpm-store's ~42k small files took ~57s on every
+  # run by itself. FastZip is GitLab's own documented fix for exactly this
+  # (much faster archive/extract); "fastest" trades a slightly larger cache
+  # file for speed, which is the right trade on a cache that's never
+  # uploaded anywhere remote (this runner has no shared cache server).
+  FF_USE_FASTZIP: "true"
+  CACHE_COMPRESSION_LEVEL: "fastest"
+
 verify-production-build:
   stage: verify
   image: node:22-alpine
@@ -19,11 +29,29 @@ verify-production-build:
     - pnpm lint
     - pnpm build
   cache:
-    key:
-      files:
-        - pnpm-lock.yaml
-    paths:
-      - .pnpm-store/
+    # Multiple independent cache entries so a dependency bump (which changes
+    # the pnpm-store key) doesn't also throw away the ESLint/Next.js build
+    # caches, and vice versa.
+    - key:
+        files:
+          - pnpm-lock.yaml
+      paths:
+        - .pnpm-store/
+    - key: eslint-$CI_COMMIT_REF_SLUG
+      paths:
+        - .eslintcache
+    - key:
+        prefix: next-build-cache
+        files:
+          - pnpm-lock.yaml
+      paths:
+        # Next.js's own SWC/webpack compilation cache -- previously not
+        # cached at all, so every run recompiled the entire app from
+        # scratch. This is the same directory Next.js's own docs recommend
+        # caching in CI. TypeScript's incremental build cache travels with
+        # it since both represent "how far the last build got".
+        - .next/cache/
+        - tsconfig.tsbuildinfo
 
 deploy-to-github:
   stage: deploy

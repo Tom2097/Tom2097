@@ -15,3 +15,12 @@ node_modules
 .DS_Store
 .vercel
 .env*
+.claude/worktrees/
+
+# Local TypeScript/lint build caches -- these are regenerated on every build
+# and were previously committed by accident, which meant every local build
+# left tsconfig.tsbuildinfo permanently "modified" in git status. CI caches
+# these itself now (see .gitlab-ci.yml) instead of relying on whatever a
+# developer's machine last happened to commit.
+tsconfig.tsbuildinfo
+.eslintcache
