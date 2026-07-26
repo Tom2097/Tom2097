@@ -12,7 +12,7 @@ interface FeedItem {
 const feed: FeedItem[] = [
   { label: 'Smart CRM', detail: 'Lead scored 92 -- routed to sales', color: '#3ce0e2' },
   { label: 'Compliance', detail: 'SOC 2 evidence check passed', color: '#00c875' },
-  { label: 'Operations', detail: 'Anomaly resolved in checkout flow', color: '#1a56db' },
+  { label: 'Operations', detail: 'Anomaly resolved in checkout flow', color: '#3b7cf5' },
 ]
 
 const sparkPoints = [4, 18, 12, 26, 20, 34, 28, 40, 36, 48]

@@ -18,7 +18,7 @@ export function AuroraBackground() {
       />
       <div
         className="absolute bottom-0 left-0 h-[32rem] w-[32rem] rounded-full opacity-[0.14] blur-[130px]"
-        style={{ background: '#1a56db' }}
+        style={{ background: '#3b7cf5' }}
       />
       <svg className="absolute inset-0 h-full w-full opacity-[0.035] mix-blend-overlay">
         <filter id="digit-grain">

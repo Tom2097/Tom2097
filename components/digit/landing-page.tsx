@@ -20,8 +20,14 @@ import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { InView } from "@/components/motion-primitives/in-view"
 import { AuroraBackground } from "@/components/digit/aurora-background"
 import { HeroSignalPanel } from "@/components/digit/hero-signal-panel"
+import { WaveDivider } from "@/components/digit/wave-divider"
 
-const TRIAD = ["#3ce0e2", "#1a56db", "#00c875"]
+// Brightened from the logo's literal #1a56db for the blue slot -- verified
+// against WCAG contrast: the logo's blue only reached 3.3:1 on the dark
+// background (barely clears the 3:1 floor for non-text/icon use) while
+// teal and green landed at 12.5:1 and 9.2:1, so blue read visibly muddier
+// next to them. This tint keeps the same hue but reaches 5.2:1.
+const TRIAD = ["#3ce0e2", "#3b7cf5", "#00c875"]
 
 const modules: Array<{ icon: LucideIcon; titleKey: string; descKey: string; span: 1 | 2 }> = [
   { icon: Users, titleKey: "crm", descKey: "crmDesc", span: 2 },
@@ -92,6 +98,8 @@ export async function LandingPage() {
             <HeroSignalPanel />
           </div>
         </section>
+
+        <WaveDivider />
 
         {/* Feature grid -- asymmetric bento instead of a uniform card grid */}
         <section className="container mx-auto px-6 py-16">
