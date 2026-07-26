@@ -18,25 +18,28 @@ import { getTranslator } from "@/lib/i18n/server"
 import { TextEffect } from "@/components/motion-primitives/text-effect"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { InView } from "@/components/motion-primitives/in-view"
+import { AuroraBackground } from "@/components/digit/aurora-background"
+import { HeroSignalPanel } from "@/components/digit/hero-signal-panel"
 
-const modules: Array<{ icon: LucideIcon; titleKey: string; descKey: string }> = [
-  { icon: Users, titleKey: "crm", descKey: "crmDesc" },
-  { icon: LayoutGrid, titleKey: "operations", descKey: "operationsDesc" },
-  { icon: Activity, titleKey: "performance", descKey: "performanceDesc" },
-  { icon: Boxes, titleKey: "resources", descKey: "resourcesDesc" },
-  { icon: ShieldCheck, titleKey: "compliance", descKey: "complianceDesc" },
-  { icon: MessageSquarePlus, titleKey: "feedback", descKey: "feedbackDesc" },
-  { icon: Brain, titleKey: "aiIntelligence", descKey: "aiIntelligenceDesc" },
-  { icon: BarChart3, titleKey: "aiAnalytics", descKey: "aiAnalyticsDesc" },
+const TRIAD = ["#3ce0e2", "#1a56db", "#00c875"]
+
+const modules: Array<{ icon: LucideIcon; titleKey: string; descKey: string; span: 1 | 2 }> = [
+  { icon: Users, titleKey: "crm", descKey: "crmDesc", span: 2 },
+  { icon: LayoutGrid, titleKey: "operations", descKey: "operationsDesc", span: 1 },
+  { icon: Activity, titleKey: "performance", descKey: "performanceDesc", span: 1 },
+  { icon: Boxes, titleKey: "resources", descKey: "resourcesDesc", span: 1 },
+  { icon: ShieldCheck, titleKey: "compliance", descKey: "complianceDesc", span: 1 },
+  { icon: MessageSquarePlus, titleKey: "feedback", descKey: "feedbackDesc", span: 2 },
+  { icon: Brain, titleKey: "aiIntelligence", descKey: "aiIntelligenceDesc", span: 2 },
+  { icon: BarChart3, titleKey: "aiAnalytics", descKey: "aiAnalyticsDesc", span: 2 },
 ]
 
 export async function LandingPage() {
   const { t } = await getTranslator()
 
   return (
-    <div className="relative min-h-screen bg-background">
-      <div className="pointer-events-none fixed inset-0 digit-radial-bg" />
-      <div className="pointer-events-none fixed inset-0 digit-grid-bg opacity-30" />
+    <div className="relative min-h-screen overflow-x-hidden bg-background">
+      <AuroraBackground />
 
       <div className="relative">
         {/* Header */}
@@ -60,19 +63,19 @@ export async function LandingPage() {
           </div>
         </header>
 
-        {/* Hero */}
-        <section className="container mx-auto px-6 py-24 text-center">
+        {/* Hero -- asymmetric two-column: copy left, live product glimpse right */}
+        <section className="container mx-auto grid gap-12 px-6 py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-28">
           <AnimatedGroup>
-            <Badge variant="outline" className="mb-6 border-primary/30 bg-primary/5 text-primary">
+            <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">
               {t("landing.hero.badge")}
             </Badge>
-            <h1 className="mx-auto max-w-3xl text-balance text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 max-w-2xl text-balance text-5xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
               <TextEffect text={t("landing.hero.headline")} delay={0.3} />
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground">
+            <p className="mt-6 max-w-lg text-balance text-lg leading-relaxed text-muted-foreground">
               {t("landing.hero.subheadline")}
             </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Button size="lg" className="gap-2 digit-glow" asChild>
                 <Link href="/auth/sign-up">
                   {t("landing.hero.ctaPrimary")}
@@ -84,28 +87,42 @@ export async function LandingPage() {
               </Button>
             </div>
           </AnimatedGroup>
+
+          <div className="flex justify-center lg:justify-end">
+            <HeroSignalPanel />
+          </div>
         </section>
 
-        {/* Feature grid */}
+        {/* Feature grid -- asymmetric bento instead of a uniform card grid */}
         <section className="container mx-auto px-6 py-16">
           <InView className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-bold text-foreground">{t("landing.modules.title")}</h2>
             <p className="mt-3 text-muted-foreground">{t("landing.modules.subtitle")}</p>
           </InView>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {modules.map(({ icon: Icon, titleKey, descKey }, i) => (
-              <InView key={titleKey} delay={(i % 4) * 0.08}>
-                <div className="group flex h-full flex-col rounded-3xl border border-border/50 bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:digit-glow-sm">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                    <Icon className="h-6 w-6" />
+          <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {modules.map(({ icon: Icon, titleKey, descKey, span }, i) => {
+              const accent = TRIAD[i % TRIAD.length]
+              return (
+                <InView
+                  key={titleKey}
+                  delay={(i % 4) * 0.06}
+                  className={span === 2 ? "sm:col-span-2" : undefined}
+                >
+                  <div className="group flex h-full flex-col rounded-3xl border border-border/50 bg-card p-6 transition-all duration-300 hover:border-primary/30 hover:digit-glow-sm">
+                    <div
+                      className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110"
+                      style={{ backgroundColor: `${accent}1a`, color: accent }}
+                    >
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <h3 className="font-bold text-foreground">{t(`landing.modules.${titleKey}`)}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {t(`landing.modules.${descKey}`)}
+                    </p>
                   </div>
-                  <h3 className="font-bold text-foreground">{t(`landing.modules.${titleKey}`)}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {t(`landing.modules.${descKey}`)}
-                  </p>
-                </div>
-              </InView>
-            ))}
+                </InView>
+              )
+            })}
           </div>
         </section>
 
