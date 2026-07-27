@@ -7,13 +7,19 @@ import { Logo } from "@/components/digit/logo"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { AuroraBackground } from "@/components/digit/aurora-background"
+import { InView } from "@/components/motion-primitives/in-view"
+
+const TRIAD = ["#3ce0e2", "#3b7cf5", "#00c875"]
 
 export default function RefundPolicyPage() {
   const { t } = useI18n()
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background">
+      <AuroraBackground />
+
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <Logo size="md" />
@@ -49,7 +55,7 @@ export default function RefundPolicyPage() {
           >
             <Card className="p-8 mb-8">
               <div className="space-y-6">
-                <div>
+                <InView delay={0 * 0.08}>
                   <h2 className="text-2xl font-bold text-foreground mb-4">Monthly Plans</h2>
                   <div className="space-y-4">
                     <div className="flex items-start gap-4">
@@ -88,9 +94,9 @@ export default function RefundPolicyPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </InView>
 
-                <div>
+                <InView delay={1 * 0.08}>
                   <h2 className="text-2xl font-bold text-foreground mb-4">Yearly Plans</h2>
                   <div className="space-y-4">
                     <div className="flex items-start gap-4">
@@ -117,14 +123,17 @@ export default function RefundPolicyPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </InView>
 
-                <div>
+                <InView delay={2 * 0.08}>
                   <h2 className="text-2xl font-bold text-foreground mb-4">How to Request a Refund</h2>
                   <div className="space-y-4">
                     <div className="flex items-start gap-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-1">
-                        <Check className="w-4 h-4 text-blue-500" />
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
+                        style={{ backgroundColor: `${TRIAD[0]}1a` }}
+                      >
+                        <Check className="w-4 h-4" style={{ color: TRIAD[0] }} />
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground">Eligibility</h3>
@@ -133,10 +142,13 @@ export default function RefundPolicyPage() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start gap-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-1">
-                        <Check className="w-4 h-4 text-blue-500" />
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
+                        style={{ backgroundColor: `${TRIAD[1]}1a` }}
+                      >
+                        <Check className="w-4 h-4" style={{ color: TRIAD[1] }} />
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground">Request Process</h3>
@@ -145,10 +157,13 @@ export default function RefundPolicyPage() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start gap-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-1">
-                        <Check className="w-4 h-4 text-blue-500" />
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
+                        style={{ backgroundColor: `${TRIAD[2]}1a` }}
+                      >
+                        <Check className="w-4 h-4" style={{ color: TRIAD[2] }} />
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground">Processing Time</h3>
@@ -158,7 +173,7 @@ export default function RefundPolicyPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </InView>
               </div>
             </Card>
 
