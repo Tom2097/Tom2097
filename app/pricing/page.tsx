@@ -18,12 +18,17 @@ import { useRouter, useSearchParams } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
 import { Logo } from "@/components/digit/logo"
 import { useI18n } from "@/components/providers/i18n-provider"
+import { AuroraBackground } from "@/components/digit/aurora-background"
 
 const tierIcons = {
   starter: Rocket,
   professional: Zap,
   enterprise: Building2,
 }
+
+// Same brand triad used on the homepage/bento grid, brightened for
+// contrast against the dark background (see components/digit/landing-page.tsx).
+const TRIAD = ["#3ce0e2", "#3b7cf5", "#00c875"]
 
 // Component that uses useSearchParams
 function CanceledBanner() {
@@ -226,9 +231,11 @@ function PricingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background">
+      <AuroraBackground />
+
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
+      <header className="relative border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Logo size="md" link />
           <nav className="hidden md:flex items-center gap-6">
@@ -265,7 +272,6 @@ function PricingContent() {
 
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,212,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
         <div className="container mx-auto px-6 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -430,8 +436,14 @@ function PricingContent() {
                 transition={{ duration: 0.4, delay: index * 0.05 }}
               >
                 <Card className="p-4 text-center border-border/50 bg-card/50 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 cursor-pointer">
-                  <div className="w-10 h-10 rounded-lg bg-muted mx-auto mb-3 flex items-center justify-center">
-                    <div className="w-5 h-5 rounded bg-primary/50" />
+                  <div
+                    className="w-10 h-10 rounded-lg mx-auto mb-3 flex items-center justify-center"
+                    style={{ backgroundColor: `${TRIAD[index % TRIAD.length]}1a` }}
+                  >
+                    <div
+                      className="w-5 h-5 rounded"
+                      style={{ backgroundColor: TRIAD[index % TRIAD.length] }}
+                    />
                   </div>
                   <p className="text-sm font-medium text-foreground">{module.name}</p>
                 </Card>
