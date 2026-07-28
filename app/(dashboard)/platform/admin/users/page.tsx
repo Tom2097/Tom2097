@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Users as UsersIcon, Loader2, Eye } from "lucide-react"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 interface PlatformUser {
   id: string
@@ -49,11 +51,14 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">{t("platformAdmin.users.title")}</h1>
-        <p className="text-muted-foreground mt-1">{t("platformAdmin.users.subtitle")}</p>
-      </div>
+      <AnimatedGroup>
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">{t("platformAdmin.users.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("platformAdmin.users.subtitle")}</p>
+        </div>
+      </AnimatedGroup>
 
+      <InView>
       <Card>
         <CardHeader>
           <CardTitle>All Users ({users.length})</CardTitle>
@@ -97,6 +102,7 @@ export default function AdminUsersPage() {
           </div>
         </CardContent>
       </Card>
+      </InView>
     </div>
   )
 }

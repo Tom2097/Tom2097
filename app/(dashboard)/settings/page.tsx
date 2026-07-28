@@ -54,6 +54,7 @@ import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { useI18n } from "@/components/providers/i18n-provider"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 interface Profile {
   id: string
@@ -617,10 +618,10 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8 p-6 md:p-8">
-      <div>
+      <AnimatedGroup>
         <h1 className="text-3xl font-bold text-foreground mb-2">{t("settings.title")}</h1>
         <p className="text-muted-foreground">{t("settings.description")}</p>
-      </div>
+      </AnimatedGroup>
 
       {toast && (
         <motion.div

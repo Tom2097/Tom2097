@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { ShieldAlert, Clock, CheckCircle2, XCircle, AlertTriangle } from "lucide-react"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 interface ElevationRequest {
   id: string
@@ -123,10 +124,10 @@ export default function JitAccessPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <AnimatedGroup>
           <h1 className="text-2xl font-bold">{t("admin.jit.title")}</h1>
           <p className="text-muted-foreground">{t("admin.jit.subtitle")}</p>
-        </div>
+        </AnimatedGroup>
         <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
           <DialogTrigger asChild>
             <Button>

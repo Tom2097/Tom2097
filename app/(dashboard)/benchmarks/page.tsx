@@ -7,6 +7,8 @@ import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { getPeerComparison, DEFAULT_BENCHMARK_CONFIG } from '@/lib/analytics/cohort-benchmarking'
 import { ConfidenceIndicator } from '@/components/digit/confidence-indicator'
 import { getTranslator } from '@/lib/i18n/server'
+import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
+import { InView } from '@/components/motion-primitives/in-view'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,6 +49,7 @@ export default async function BenchmarksPage() {
 
   return (
     <div className="space-y-6">
+      <AnimatedGroup className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-500">
@@ -115,7 +118,9 @@ export default async function BenchmarksPage() {
           </CardContent>
         </Card>
       </div>
+      </AnimatedGroup>
 
+      <InView>
       <div className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Users className="h-5 w-5 text-muted-foreground" />
@@ -217,6 +222,7 @@ export default async function BenchmarksPage() {
           </div>
         )}
       </div>
+      </InView>
     </div>
   )
 }

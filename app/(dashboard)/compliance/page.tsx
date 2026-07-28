@@ -11,6 +11,8 @@ import { ComplianceDsar } from "@/components/digit/compliance-dsar"
 import { ComplianceESignatures } from "@/components/digit/compliance-esignatures"
 import { ComplianceAuditTrail } from "@/components/digit/compliance-audit-trail"
 import { ComplianceRunAuditButton } from "@/components/digit/compliance-run-audit-button"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 export default async function CompliancePage() {
   const ctx = await extractTenantContext()
@@ -30,6 +32,7 @@ export default async function CompliancePage() {
 
   return (
     <div className="space-y-6">
+      <AnimatedGroup className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/20 text-teal-500">
@@ -69,6 +72,7 @@ export default async function CompliancePage() {
           <p className="text-xs text-muted-foreground mt-1">{score?.by_framework?.length ?? 0} {t("compliance.page.frameworksTracked")}</p>
         </div>
       </div>
+      </AnimatedGroup>
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList>
@@ -82,6 +86,7 @@ export default async function CompliancePage() {
 
         <TabsContent value="overview" className="mt-4">
           <div className="grid gap-6 lg:grid-cols-2">
+            <InView>
             <div className="rounded-2xl border border-border/50 bg-card p-6">
                <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
                  <AlertTriangle className="h-5 w-5 text-amber-500" />{t("compliance.page.recentCapas")}
@@ -107,7 +112,9 @@ export default async function CompliancePage() {
                 </div>
               )}
             </div>
+            </InView>
 
+            <InView delay={0.08}>
             <div className="rounded-2xl border border-border/50 bg-card p-6">
                <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
                  <Calendar className="h-5 w-5 text-blue-500" />{t("compliance.page.complianceChecks")}
@@ -131,6 +138,7 @@ export default async function CompliancePage() {
                  <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">{t("compliance.page.noFrameworkScores")}</div>
               )}
             </div>
+            </InView>
           </div>
         </TabsContent>
 

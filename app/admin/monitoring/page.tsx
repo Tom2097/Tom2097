@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Activity, Clock, AlertTriangle, AlertCircle, ArrowUp, ArrowDown, Minus, Server } from "lucide-react"
 import { toast } from "sonner"
 import type { ObservabilitySummary, ServiceLevelIndicator } from "@/lib/observability/dashboard"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 export default function MonitoringPage() {
   const { t } = useI18n()
@@ -72,54 +74,57 @@ export default function MonitoringPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t("admin.monitoring.title")}</h1>
-        <p className="text-muted-foreground">{t("admin.monitoring.subtitle")}</p>
-      </div>
+      <AnimatedGroup className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">{t("admin.monitoring.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.monitoring.subtitle")}</p>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t("admin.monitoring.uptime")}</CardTitle>
-            <Activity className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary?.uptime ?? "--"}%</div>
-            <p className="text-xs text-muted-foreground">{t("admin.monitoring.last30Days")}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t("admin.monitoring.avgResponseTime")}</CardTitle>
-            <Clock className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary?.avgResponseTime ?? "--"}ms</div>
-            <p className="text-xs text-muted-foreground">{t("admin.monitoring.p95Latency")}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t("admin.monitoring.errors")}</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary?.totalErrors ?? "--"}</div>
-            <p className="text-xs text-muted-foreground">{t("admin.monitoring.last100Entries")}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{t("admin.monitoring.activeAlerts")}</CardTitle>
-            <AlertCircle className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summary?.activeAlerts ?? "--"}</div>
-            <p className="text-xs text-muted-foreground">{t("admin.monitoring.requiringAttention")}</p>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">{t("admin.monitoring.uptime")}</CardTitle>
+              <Activity className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary?.uptime ?? "--"}%</div>
+              <p className="text-xs text-muted-foreground">{t("admin.monitoring.last30Days")}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">{t("admin.monitoring.avgResponseTime")}</CardTitle>
+              <Clock className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary?.avgResponseTime ?? "--"}ms</div>
+              <p className="text-xs text-muted-foreground">{t("admin.monitoring.p95Latency")}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">{t("admin.monitoring.errors")}</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary?.totalErrors ?? "--"}</div>
+              <p className="text-xs text-muted-foreground">{t("admin.monitoring.last100Entries")}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">{t("admin.monitoring.activeAlerts")}</CardTitle>
+              <AlertCircle className="h-4 w-4 text-yellow-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary?.activeAlerts ?? "--"}</div>
+              <p className="text-xs text-muted-foreground">{t("admin.monitoring.requiringAttention")}</p>
+            </CardContent>
+          </Card>
+        </div>
+      </AnimatedGroup>
 
+      <InView delay={0}>
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -211,8 +216,10 @@ export default function MonitoringPage() {
           </CardContent>
         </Card>
       </div>
+      </InView>
 
       {selectedService && serviceMetrics && (
+        <InView delay={0.08}>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -256,6 +263,7 @@ export default function MonitoringPage() {
             </Tabs>
           </CardContent>
         </Card>
+        </InView>
       )}
     </div>
   )

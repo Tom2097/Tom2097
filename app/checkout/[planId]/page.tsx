@@ -13,8 +13,10 @@ import {
   useElements,
 } from "@stripe/react-stripe-js"
 import { Logo } from "@/components/digit/logo"
-import { 
-  ArrowLeft, 
+import { AuroraBackground } from "@/components/digit/aurora-background"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import {
+  ArrowLeft,
   Check, 
   Shield, 
   CreditCard, 
@@ -460,7 +462,8 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <div className="relative min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <AuroraBackground />
       {/* Yearly Plan Confirmation */}
       {showYearlyConfirmation && plan && (
         <YearlyPlanConfirmation
@@ -497,43 +500,45 @@ export default function CheckoutPage() {
       </header>
 
       {/* Progress Steps */}
-      <div className="border-b border-border/50 bg-background/50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-center gap-2 sm:gap-4">
-            {[
-              { num: 1, label: t("checkout.page.review") },
-              { num: 2, label: t("checkout.page.payment") },
-              { num: 3, label: t("checkout.page.complete") }
-            ].map((s, i) => (
-              <div key={s.num} className="flex items-center">
-                <div className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
-                    step === "review" && s.num === 1
-                      ? "bg-primary text-primary-foreground"
-                      : step === "payment" && s.num <= 2
-                        ? s.num === 2 ? "bg-primary text-primary-foreground" : "bg-emerald-500 text-white"
-                        : "bg-muted text-muted-foreground"
-                  }`}>
-                    {(step === "payment" && s.num === 1) ? (
-                      <Check className="w-4 h-4" />
-                    ) : s.num}
+      <AnimatedGroup>
+        <div className="border-b border-border/50 bg-background/50">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-center gap-2 sm:gap-4">
+              {[
+                { num: 1, label: t("checkout.page.review") },
+                { num: 2, label: t("checkout.page.payment") },
+                { num: 3, label: t("checkout.page.complete") }
+              ].map((s, i) => (
+                <div key={s.num} className="flex items-center">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
+                      step === "review" && s.num === 1
+                        ? "bg-primary text-primary-foreground"
+                        : step === "payment" && s.num <= 2
+                          ? s.num === 2 ? "bg-primary text-primary-foreground" : "bg-emerald-500 text-white"
+                          : "bg-muted text-muted-foreground"
+                    }`}>
+                      {(step === "payment" && s.num === 1) ? (
+                        <Check className="w-4 h-4" />
+                      ) : s.num}
+                    </div>
+                    <span className={`hidden sm:inline text-sm font-medium ${
+                      (step === "review" && s.num === 1) || (step === "payment" && s.num === 2)
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                    }`}>
+                      {s.label}
+                    </span>
                   </div>
-                  <span className={`hidden sm:inline text-sm font-medium ${
-                    (step === "review" && s.num === 1) || (step === "payment" && s.num === 2)
-                      ? "text-foreground"
-                      : "text-muted-foreground"
-                  }`}>
-                    {s.label}
-                  </span>
+                  {i < 2 && (
+                    <div className="w-8 sm:w-16 h-px bg-border mx-2 sm:mx-4" />
+                  )}
                 </div>
-                {i < 2 && (
-                  <div className="w-8 sm:w-16 h-px bg-border mx-2 sm:mx-4" />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </AnimatedGroup>
 
       {/* Error Alert */}
       <AnimatePresence>

@@ -36,6 +36,8 @@ import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
 import { forecastMetric } from '@/lib/analytics/forecasting'
 import { getTranslator } from '@/lib/i18n/server'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
+import { InView } from '@/components/motion-primitives/in-view'
 
 export const dynamic = 'force-dynamic'
 
@@ -89,6 +91,7 @@ export default async function CRMPage() {
 
   return (
     <div className="space-y-6">
+      <AnimatedGroup className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
@@ -126,8 +129,10 @@ export default async function CRMPage() {
          <MetricCard label={t("crm.page.anomalies")} value={anomalies.anomalies.length} subtitle={t("crm.page.last30Days")} />
          <MetricCard label={t("crm.page.forecastGrowth")} value={forecast && forecast.length >= 2 ? `${Math.round(((forecast[forecast.length - 1].forecast - (forecast[0].actual || 0)) / ((forecast[0].actual || 1))) * 100)}%` : '0%'} subtitle={t("crm.page.next6Months")} />
        </MetricGrid>
+      </AnimatedGroup>
 
        {/* Real-Time Pipeline Charts */}
+       <InView>
        <div className="grid gap-6 lg:grid-cols-2">
            <ChartContainer title={t("crm.page.salesPipeline")}>
             {hasPipeline ? (
@@ -220,8 +225,10 @@ export default async function CRMPage() {
            </div>
          </ChartContainer>
        </div>
+       </InView>
 
        {/* Pipeline Breakdown with Anomalies */}
+       <InView delay={0.08}>
        <div className="rounded-2xl border border-border/50 bg-card p-6">
          <h3 className="mb-4 text-lg font-semibold text-foreground flex items-center gap-2">
            Pipeline Breakdown
@@ -269,13 +276,17 @@ export default async function CRMPage() {
            </div>
          )}
        </div>
+       </InView>
 
+      <InView delay={0.16}>
       <div className="grid gap-4 lg:grid-cols-2">
         <CrmAskYourCrm />
         <CrmAutoProvision />
       </div>
+      </InView>
 
       {/* All CRM Tabs */}
+      <InView delay={0.24}>
       <Tabs defaultValue="ai-sdr" className="w-full">
         <TabsList className="h-auto w-full flex-col items-stretch gap-4 rounded-2xl border border-border/50 bg-card p-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -453,6 +464,7 @@ export default async function CRMPage() {
           <CrmSalesAnalytics />
         </TabsContent>
       </Tabs>
+      </InView>
     </div>
   )
 }

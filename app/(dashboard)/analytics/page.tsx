@@ -6,6 +6,7 @@ import { getAuditLogStats } from '@/lib/audit/store'
 import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
 import { forecastMetric } from '@/lib/analytics/forecasting'
 import { AnalyticsView, type AnalyticsViewData } from '@/components/digit/analytics-view'
+import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
 
 // Always render with fresh tenant data.
 export const dynamic = 'force-dynamic'
@@ -125,5 +126,9 @@ export default async function AnalyticsPage({
     anomalySummary: anomalies.summary,
   }
 
-  return <AnalyticsView {...data} />
+  return (
+    <AnimatedGroup>
+      <AnalyticsView {...data} />
+    </AnimatedGroup>
+  )
 }

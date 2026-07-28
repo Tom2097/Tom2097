@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Loader2, RefreshCw, MessageSquare, Smile, MessageSquarePlus, ThumbsUp, AlertTriangle, Brain, Search, Sparkles } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer, Cell } from "recharts"
 import { ChartContainer } from "@/components/digit/live-chart"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 // Feedback types -- must match lib/feedback/types.ts's real enums (and the
 // feedback table's CHECK constraints); a mismatch here means submissions
@@ -216,6 +218,7 @@ export default function FeedbackPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      <AnimatedGroup className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -370,9 +373,10 @@ export default function FeedbackPage() {
           </CardContent>
         </Card>
       </div>
+      </AnimatedGroup>
 
       {feedback.length > 0 && (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <InView className="grid gap-6 lg:grid-cols-2">
           <ChartContainer title={t("feedback.page.sentimentAnalysis")}>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={sentimentData}>
@@ -399,7 +403,7 @@ export default function FeedbackPage() {
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
-        </div>
+        </InView>
       )}
 
       {/* Filters */}
@@ -441,6 +445,7 @@ export default function FeedbackPage() {
       </div>
 
       {/* List */}
+      <InView delay={0.08}>
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -515,6 +520,7 @@ export default function FeedbackPage() {
           })}
         </div>
       )}
+      </InView>
     </div>
   )
 }

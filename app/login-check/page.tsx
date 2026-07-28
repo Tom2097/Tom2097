@@ -1,6 +1,8 @@
 import { getTranslator } from "@/lib/i18n/server"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
+import { AuroraBackground } from "@/components/digit/aurora-background"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 export default async function LoginCheckPage() {
   const { t } = await getTranslator()
@@ -47,8 +49,11 @@ export default async function LoginCheckPage() {
   }
 
   return (
-    <div style={{ background: "#111", color: "#0f0", minHeight: "100vh", padding: 40, fontFamily: "monospace" }}>
-      <h1 style={{ fontSize: 24, marginBottom: 20 }}>🔍 Login Check v2</h1>
+    <div style={{ position: "relative", background: "#111", color: "#0f0", minHeight: "100vh", padding: 40, fontFamily: "monospace" }}>
+      <AuroraBackground />
+      <AnimatedGroup>
+        <h1 style={{ fontSize: 24, marginBottom: 20 }}>🔍 Login Check v2</h1>
+      </AnimatedGroup>
       {results.map((r, i) => (
         <div key={i} style={{ marginBottom: 8, fontSize: 16 }}>• {r}</div>
       ))}

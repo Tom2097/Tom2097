@@ -18,6 +18,8 @@ import {
   PieChart,
   Target,
 } from "lucide-react"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 interface RevenueMetrics {
   mrr: number
@@ -111,38 +113,41 @@ export default function RevenuePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t("admin.revenue.title")}</h1>
-        <p className="text-muted-foreground">{t("admin.revenue.subtitle")}</p>
-      </div>
+      <AnimatedGroup className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">{t("admin.revenue.title")}</h1>
+          <p className="text-muted-foreground">{t("admin.revenue.subtitle")}</p>
+        </div>
 
-      <MetricGrid columns={3}>
-        <MetricCard
-          label={t("admin.revenue.mrr")}
-          value={metrics ? formatInr(metrics.mrr) : '...'}
-          trend={metrics && metrics.mrrChange > 0 ? 'up' : 'down'}
-          change={metrics?.mrrChange}
-          subtitle={t("admin.revenue.vsPreviousMonth")}
-        />
-        <MetricCard
-          label={t("admin.revenue.arr")}
-          value={metrics ? formatInr(metrics.arr) : '...'}
-          trend={metrics && metrics.arrChange > 0 ? 'up' : 'down'}
-          change={metrics?.arrChange}
-          subtitle={t("admin.revenue.projected")}
-        />
-        <MetricCard label={t("admin.revenue.activeSubscriptions")} value={metrics?.activeSubscriptions ?? '...'} trend="up" change={5} />
-        <MetricCard
-          label={t("admin.revenue.churnRate")}
-          value={metrics ? `${metrics.churnRate}%` : '...'}
-          trend={metrics && metrics.churnChange > 0 ? 'up' : 'down'}
-          change={metrics?.churnChange}
-          subtitle={t("admin.revenue.improvement")}
-        />
-        <MetricCard label={t("admin.revenue.arpu")} value={metrics ? formatInr(metrics.averageRevenuePerUser) : '...'} trend="up" change={3} />
-        <MetricCard label={t("admin.revenue.ltv")} value={metrics ? formatInr(metrics.lifetimeValue) : '...'} trend="up" change={8} />
-      </MetricGrid>
+        <MetricGrid columns={3}>
+          <MetricCard
+            label={t("admin.revenue.mrr")}
+            value={metrics ? formatInr(metrics.mrr) : '...'}
+            trend={metrics && metrics.mrrChange > 0 ? 'up' : 'down'}
+            change={metrics?.mrrChange}
+            subtitle={t("admin.revenue.vsPreviousMonth")}
+          />
+          <MetricCard
+            label={t("admin.revenue.arr")}
+            value={metrics ? formatInr(metrics.arr) : '...'}
+            trend={metrics && metrics.arrChange > 0 ? 'up' : 'down'}
+            change={metrics?.arrChange}
+            subtitle={t("admin.revenue.projected")}
+          />
+          <MetricCard label={t("admin.revenue.activeSubscriptions")} value={metrics?.activeSubscriptions ?? '...'} trend="up" change={5} />
+          <MetricCard
+            label={t("admin.revenue.churnRate")}
+            value={metrics ? `${metrics.churnRate}%` : '...'}
+            trend={metrics && metrics.churnChange > 0 ? 'up' : 'down'}
+            change={metrics?.churnChange}
+            subtitle={t("admin.revenue.improvement")}
+          />
+          <MetricCard label={t("admin.revenue.arpu")} value={metrics ? formatInr(metrics.averageRevenuePerUser) : '...'} trend="up" change={3} />
+          <MetricCard label={t("admin.revenue.ltv")} value={metrics ? formatInr(metrics.lifetimeValue) : '...'} trend="up" change={8} />
+        </MetricGrid>
+      </AnimatedGroup>
 
+      <InView delay={0}>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -237,7 +242,9 @@ export default function RevenuePage() {
           </CardContent>
         </Card>
       </div>
+      </InView>
 
+      <InView delay={0.08}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm">
@@ -292,7 +299,9 @@ export default function RevenuePage() {
           )}
         </CardContent>
       </Card>
+      </InView>
 
+      <InView delay={0.16}>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -401,7 +410,9 @@ export default function RevenuePage() {
           </Card>
         </div>
       </div>
+      </InView>
 
+      <InView delay={0.24}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm">
@@ -444,6 +455,7 @@ export default function RevenuePage() {
           )}
         </CardContent>
       </Card>
+      </InView>
 
       <Card>
         <CardHeader>

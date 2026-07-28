@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { getAuthenticatedUser } from "@/lib/auth/server-auth"
 import { isPlatformAdmin } from "@/lib/auth/rbac"
 import { DesignPartnerView } from "@/components/digit/design-partner-view"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 export default async function DesignPartnerPage() {
   let user
@@ -16,5 +17,9 @@ export default async function DesignPartnerPage() {
     redirect("/unauthorized")
   }
 
-  return <DesignPartnerView />
+  return (
+    <AnimatedGroup>
+      <DesignPartnerView />
+    </AnimatedGroup>
+  )
 }

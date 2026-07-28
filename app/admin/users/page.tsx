@@ -33,6 +33,8 @@ import {
   ShieldCheck,
   ShieldX,
 } from "lucide-react"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 interface PlatformUser {
   id: string
@@ -126,13 +128,16 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{t("admin.users.title")}</h1>
-          <p className="text-muted-foreground">{t("admin.users.subtitle")}</p>
+      <AnimatedGroup>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">{t("admin.users.title")}</h1>
+            <p className="text-muted-foreground">{t("admin.users.subtitle")}</p>
+          </div>
         </div>
-      </div>
+      </AnimatedGroup>
 
+      <InView delay={0}>
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
@@ -241,6 +246,7 @@ export default function UsersPage() {
           )}
         </CardContent>
       </Card>
+      </InView>
 
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
         <DialogContent>

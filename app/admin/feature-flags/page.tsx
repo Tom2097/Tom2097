@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { Flag, Skull, AlertTriangle, Snail, Activity } from "lucide-react"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 const CATEGORY_MAP: Record<string, { label: string; color: string }> = {
   ai: { label: "AI", color: "bg-violet-500/10 text-violet-500" },
@@ -141,10 +142,10 @@ export default function FeatureFlagsPage() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div>
+          <AnimatedGroup>
             <h1 className="text-2xl font-bold">{t("admin.featureFlags.title")}</h1>
             <p className="text-muted-foreground">{t("admin.featureFlags.platformwide_feature_flag_management")}</p>
-          </div>
+          </AnimatedGroup>
         </div>
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">{t("admin.featureFlags.loading")}</CardContent>
@@ -156,10 +157,10 @@ export default function FeatureFlagsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <AnimatedGroup>
           <h1 className="text-2xl font-bold">{t("admin.featureFlags.title")}</h1>
           <p className="text-muted-foreground">{t("admin.featureFlags.subtitle")}</p>
-        </div>
+        </AnimatedGroup>
       </div>
 
       <Card>

@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { MetricCard, MetricGrid } from "@/components/digit/metric-card"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 import {
   Building2,
   Users,
@@ -121,22 +123,25 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{t("admin.page.admin_dashboard")}</h1>
-          <p className="text-muted-foreground">{t("admin.page.platformwide_overview_and_management")}</p>
+      <AnimatedGroup className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">{t("admin.page.admin_dashboard")}</h1>
+            <p className="text-muted-foreground">{t("admin.page.platformwide_overview_and_management")}</p>
+          </div>
         </div>
-      </div>
 
-      <MetricGrid>
-        <MetricCard label="Total Tenants" value={loading ? "..." : stats.tenants} trend={trendOf(stats.tenantChange)} change={stats.tenantChange} />
-        <MetricCard label="Active Users" value={loading ? "..." : stats.users} trend={trendOf(stats.userChange)} change={stats.userChange} />
-        <MetricCard label="Active Alerts" value={loading ? "..." : health.activeAlerts} trend={health.activeAlerts > 0 ? "down" : "stable"} />
-        <MetricCard label="Revenue (MTD)" value={loading ? "..." : `$${stats.revenue.toLocaleString()}`} trend={trendOf(stats.revenueChange)} change={stats.revenueChange} />
-      </MetricGrid>
+        <MetricGrid>
+          <MetricCard label="Total Tenants" value={loading ? "..." : stats.tenants} trend={trendOf(stats.tenantChange)} change={stats.tenantChange} />
+          <MetricCard label="Active Users" value={loading ? "..." : stats.users} trend={trendOf(stats.userChange)} change={stats.userChange} />
+          <MetricCard label="Active Alerts" value={loading ? "..." : health.activeAlerts} trend={health.activeAlerts > 0 ? "down" : "stable"} />
+          <MetricCard label="Revenue (MTD)" value={loading ? "..." : `$${stats.revenue.toLocaleString()}`} trend={trendOf(stats.revenueChange)} change={stats.revenueChange} />
+        </MetricGrid>
+      </AnimatedGroup>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <InView delay={0} className="lg:col-span-2">
+        <Card>
           <CardHeader>
             <CardTitle>{t("admin.page.recent_tenant_registrations")}</CardTitle>
             <CardDescription>{t("admin.page.latest_organizations_to_join_the_platform")}</CardDescription>
@@ -182,7 +187,9 @@ export default function AdminDashboardPage() {
             </div>
           </CardContent>
         </Card>
+        </InView>
 
+        <InView delay={0.08}>
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -244,6 +251,7 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
         </div>
+        </InView>
       </div>
     </div>
   )

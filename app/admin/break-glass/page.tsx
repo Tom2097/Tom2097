@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner"
 import { ShieldAlert, Shield, Clock, AlertTriangle, Ban, CheckCircle2 } from "lucide-react"
 import type { BreakGlassSession } from "@/lib/auth/break-glass"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 export default function BreakGlassPage() {
   const { t } = useI18n()
@@ -115,10 +116,10 @@ export default function BreakGlassPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <AnimatedGroup>
           <h1 className="text-2xl font-bold">{t("admin.breakGlass.title")}</h1>
           <p className="text-muted-foreground">{t("admin.breakGlass.subtitle")}</p>
-        </div>
+        </AnimatedGroup>
         <Dialog open={activateDialogOpen} onOpenChange={setActivateDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="destructive">

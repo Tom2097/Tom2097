@@ -10,6 +10,7 @@ import { MetricCard, MetricGrid } from "@/components/digit/metric-card"
 import { toast } from "sonner"
 import { Check, Gift, Percent, Ticket, Sparkles, AlertTriangle, BarChart3, Timer } from "lucide-react"
 import { useI18n } from "@/components/providers/i18n-provider"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 interface OrgTrial {
   orgId: string
@@ -234,10 +235,10 @@ export default function BillingPlansPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <AnimatedGroup>
         <h1 className="text-2xl font-bold">{t('billingPlans.page.title')}</h1>
         <p className="text-muted-foreground">{t('billingPlans.page.subtitle')}</p>
-      </div>
+      </AnimatedGroup>
 
       {trial && trial.status === 'active' && (
         <Card className="border-primary/30 bg-primary/5">

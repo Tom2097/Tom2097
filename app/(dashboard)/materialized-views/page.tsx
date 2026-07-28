@@ -40,6 +40,8 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/components/providers/i18n-provider'
+import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
+import { InView } from '@/components/motion-primitives/in-view'
 
 interface MaterializedView {
   name: string
@@ -188,76 +190,79 @@ export default function MaterializedViewsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-500">
-            <Database className="h-5 w-5" />
+      <AnimatedGroup className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-500">
+              <Database className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{t('materializedViews.page.title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('materializedViews.page.subtitle')}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t('materializedViews.page.title')}</h1>
-            <p className="text-sm text-muted-foreground">{t('materializedViews.page.subtitle')}</p>
-          </div>
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={handleRefreshAll}
+            disabled={refreshingAll}
+          >
+            <RefreshCw className={cn('h-4 w-4', refreshingAll && 'animate-spin')} />
+            {refreshingAll ? t('materializedViews.page.refreshing') : t('materializedViews.page.refreshAll')}
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          className="gap-2"
-          onClick={handleRefreshAll}
-          disabled={refreshingAll}
-        >
-          <RefreshCw className={cn('h-4 w-4', refreshingAll && 'animate-spin')} />
-          {refreshingAll ? t('materializedViews.page.refreshing') : t('materializedViews.page.refreshAll')}
-        </Button>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <Layers className="h-5 w-5 text-cyan-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('materializedViews.page.totalViews')}</p>
-                <p className="text-2xl font-bold text-foreground">{views.length}</p>
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <Layers className="h-5 w-5 text-cyan-500" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('materializedViews.page.totalViews')}</p>
+                  <p className="text-2xl font-bold text-foreground">{views.length}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('materializedViews.page.fresh')}</p>
-                <p className="text-2xl font-bold text-green-500">{freshCount}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('materializedViews.page.fresh')}</p>
+                  <p className="text-2xl font-bold text-green-500">{freshCount}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('materializedViews.page.stale')}</p>
-                <p className="text-2xl font-bold text-amber-500">{staleCount}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('materializedViews.page.stale')}</p>
+                  <p className="text-2xl font-bold text-amber-500">{staleCount}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <BarChart3 className="h-5 w-5 text-indigo-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('materializedViews.page.totalRows')}</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {views.reduce((s, v) => s + v.rowCount, 0).toLocaleString()}
-                </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-5 w-5 text-indigo-500" />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('materializedViews.page.totalRows')}</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {views.reduce((s, v) => s + v.rowCount, 0).toLocaleString()}
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      </AnimatedGroup>
 
+      <InView>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -342,7 +347,9 @@ export default function MaterializedViewsPage() {
           </Table>
         </CardContent>
       </Card>
+      </InView>
 
+      <InView delay={0.08}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -383,6 +390,7 @@ export default function MaterializedViewsPage() {
           )}
         </CardContent>
       </Card>
+      </InView>
 
       <Dialog open={cacheDialogOpen} onOpenChange={setCacheDialogOpen}>
         <DialogContent className="sm:max-w-lg">

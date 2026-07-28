@@ -19,6 +19,7 @@ import {
   RefreshCw,
 } from "lucide-react"
 import { toast } from "sonner"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 interface Payout {
   id: string
@@ -136,10 +137,10 @@ export default function PayoutsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <AnimatedGroup>
           <h1 className="text-2xl font-bold text-foreground">{t("platformAdmin.payouts.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("platformAdmin.payouts.subtitle")}</p>
-        </div>
+        </AnimatedGroup>
         <Button onClick={handleSync} disabled={syncing} variant="outline" className="gap-2">
           <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
           {syncing ? t("platformAdmin.payouts.syncing") : t("platformAdmin.payouts.sync")}

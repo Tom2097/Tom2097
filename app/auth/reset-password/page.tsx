@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, Loader2, Check } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
+import { AuroraBackground } from "@/components/digit/aurora-background"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 const PRODUCTION_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://digit-ai.org"
 
@@ -61,14 +63,17 @@ function ResetPasswordForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="relative min-h-screen bg-background flex items-center justify-center p-4">
+        <AuroraBackground />
+        <Card className="w-full max-w-md relative">
           <CardHeader className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Logo size="lg" />
-            </div>
-            <CardTitle className="text-2xl">{t("auth.resetPassword.successTitle")}</CardTitle>
-            <CardDescription>{t("auth.resetPassword.successDesc")}</CardDescription>
+            <AnimatedGroup className="space-y-2">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Logo size="lg" />
+              </div>
+              <CardTitle className="text-2xl">{t("auth.resetPassword.successTitle")}</CardTitle>
+              <CardDescription>{t("auth.resetPassword.successDesc")}</CardDescription>
+            </AnimatedGroup>
           </CardHeader>
           <CardContent className="text-center">
             <div className="flex justify-center mb-4">
@@ -86,14 +91,17 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="relative min-h-screen bg-background flex items-center justify-center p-4">
+      <AuroraBackground />
+      <Card className="w-full max-w-md relative">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Logo size="lg" />
-          </div>
-          <CardTitle className="text-2xl">{t("auth.resetPassword.title")}</CardTitle>
-          <CardDescription>{t("auth.resetPassword.description")}</CardDescription>
+          <AnimatedGroup className="space-y-2">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Logo size="lg" />
+            </div>
+            <CardTitle className="text-2xl">{t("auth.resetPassword.title")}</CardTitle>
+            <CardDescription>{t("auth.resetPassword.description")}</CardDescription>
+          </AnimatedGroup>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -147,8 +155,9 @@ export default function ResetPasswordPage() {
   const { t } = useI18n()
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
+      <div className="relative min-h-screen bg-background flex items-center justify-center p-4">
+        <AuroraBackground />
+        <Card className="w-full max-w-md relative">
           <CardContent className="py-12 text-center">
             <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
             <p className="mt-4 text-muted-foreground">{t("auth.resetPassword.loading")}</p>

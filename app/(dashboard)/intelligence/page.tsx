@@ -14,6 +14,8 @@ import { ChartContainer } from "@/components/digit/live-chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Brain, BarChart3, Network, Sparkles, RefreshCw, Activity, Cpu, MemoryStick, Zap, AlertTriangle, TrendingUp } from "lucide-react"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 export default function IntelligencePage() {
   const { t } = useI18n()
@@ -62,6 +64,7 @@ export default function IntelligencePage() {
   return (
     <ErrorBoundary>
     <div className="space-y-6">
+      <AnimatedGroup className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
            <h1 className="text-3xl font-bold tracking-tight">{t("intelligence.page.title")}</h1>
@@ -121,9 +124,10 @@ export default function IntelligencePage() {
           </CardContent>
         </Card>
       </div>
+      </AnimatedGroup>
 
       {/* Real-Time Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <InView className="grid gap-6 lg:grid-cols-2">
         <ErrorBoundary>
            <ChartContainer title={t("intelligence.page.operationalGraphActivity")}>
             <RealTimeChart
@@ -198,8 +202,9 @@ export default function IntelligencePage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </InView>
 
+      <InView delay={0.08}>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4">
            <TabsTrigger value="command-center" className="gap-2">
@@ -244,6 +249,7 @@ export default function IntelligencePage() {
           </ErrorBoundary>
         </TabsContent>
       </Tabs>
+      </InView>
     </div>
     </ErrorBoundary>
   )

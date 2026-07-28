@@ -7,6 +7,8 @@ import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { analyzeDriverDecomposition, getCrossWorkspaceImpact } from '@/lib/analytics/driver-decomposition'
 import { ConfidenceIndicator } from '@/components/digit/confidence-indicator'
 import { getTranslator } from '@/lib/i18n/server'
+import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
+import { InView } from '@/components/motion-primitives/in-view'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,35 +60,40 @@ export default async function DriverAnalysisPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/20 text-rose-500">
-            <GitBranch className="h-5 w-5" />
+      <AnimatedGroup>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/20 text-rose-500">
+              <GitBranch className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{t('driverAnalysis.page.title')}</h1>
+              <p className="text-sm text-muted-foreground">
+                {t('driverAnalysis.page.subtitle')}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t('driverAnalysis.page.title')}</h1>
-            <p className="text-sm text-muted-foreground">
-              {t('driverAnalysis.page.subtitle')}
-            </p>
-          </div>
+          {decomposition && (
+            <Badge variant="secondary" className="gap-1.5 text-xs capitalize">
+              <TrendingUp className="h-3 w-3" />
+              {decomposition.metric.replace(/_/g, ' ')}
+            </Badge>
+          )}
         </div>
-        {decomposition && (
-          <Badge variant="secondary" className="gap-1.5 text-xs capitalize">
-            <TrendingUp className="h-3 w-3" />
-            {decomposition.metric.replace(/_/g, ' ')}
-          </Badge>
-        )}
-      </div>
+      </AnimatedGroup>
 
       {!decomposition ? (
+        <InView>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <BarChart3 className="h-12 w-12 text-muted-foreground/40 mb-4" />
             <p className="text-sm text-muted-foreground">{t('driverAnalysis.page.insufficientData')}</p>
           </CardContent>
         </Card>
+        </InView>
       ) : (
         <>
+          <InView>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="border-border/50">
               <CardHeader className="pb-2">
@@ -132,7 +139,9 @@ export default async function DriverAnalysisPage() {
               </CardContent>
             </Card>
           </div>
+          </InView>
 
+          <InView delay={0.08}>
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
@@ -265,6 +274,7 @@ export default async function DriverAnalysisPage() {
               </CardContent>
             </Card>
           </div>
+          </InView>
         </>
       )}
     </div>

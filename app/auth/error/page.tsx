@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, Clock } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
+import { AuroraBackground } from "@/components/digit/aurora-background"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { CAPACITY_MESSAGES } from "@/lib/platform/capacity"
 import { useI18n } from "@/components/providers/i18n-provider"
 
@@ -17,21 +19,20 @@ export default function AuthErrorPage() {
 
   if (atCapacity) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(0,212,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        </div>
+      <div className="relative min-h-screen bg-background flex items-center justify-center p-4">
+        <AuroraBackground />
         <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50 text-center">
           <CardHeader>
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Logo size="md" />
-            </div>
-            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Clock className="w-8 h-8 text-primary" />
-            </div>
-             <CardTitle className="text-2xl text-balance">{t("auth.error.atCapacity")}</CardTitle>
-             <CardDescription>{t("auth.error.onboardingWaves")}</CardDescription>
+            <AnimatedGroup className="space-y-2">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Logo size="md" />
+              </div>
+              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <Clock className="w-8 h-8 text-primary" />
+              </div>
+               <CardTitle className="text-2xl text-balance">{t("auth.error.atCapacity")}</CardTitle>
+               <CardDescription>{t("auth.error.onboardingWaves")}</CardDescription>
+            </AnimatedGroup>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground text-pretty">{CAPACITY_MESSAGES.tenantsFull}</p>
@@ -47,23 +48,21 @@ export default function AuthErrorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,212,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
-      </div>
+    <div className="relative min-h-screen bg-background flex items-center justify-center p-4">
+      <AuroraBackground />
 
       <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50 text-center">
         <CardHeader>
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Logo size="md" />
-          </div>
-          <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
-            <AlertTriangle className="w-8 h-8 text-destructive" />
-          </div>
-           <CardTitle className="text-2xl">{t("auth.error.authError")}</CardTitle>
-           <CardDescription>{t("auth.error.somethingWentWrong")}</CardDescription>
+          <AnimatedGroup className="space-y-2">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Logo size="md" />
+            </div>
+            <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
+              <AlertTriangle className="w-8 h-8 text-destructive" />
+            </div>
+             <CardTitle className="text-2xl">{t("auth.error.authError")}</CardTitle>
+             <CardDescription>{t("auth.error.somethingWentWrong")}</CardDescription>
+          </AnimatedGroup>
         </CardHeader>
         <CardContent className="space-y-4">
            <p className="text-sm text-muted-foreground">

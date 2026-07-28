@@ -46,6 +46,8 @@ import {
   Users,
   Settings2,
 } from "lucide-react"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 interface TenantDetail {
   id: string
@@ -178,39 +180,42 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-            <Building2 className="h-7 w-7 text-primary" />
-          </div>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold">{tenant.name}</h1>
-              {getStatusBadge(tenant.status)}
+      <AnimatedGroup>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+              <Building2 className="h-7 w-7 text-primary" />
             </div>
-            <p className="text-sm text-muted-foreground">Created {formatDate(tenant.created_at)}</p>
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold">{tenant.name}</h1>
+                {getStatusBadge(tenant.status)}
+              </div>
+              <p className="text-sm text-muted-foreground">Created {formatDate(tenant.created_at)}</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {tenant.status !== "suspended" && tenant.status !== "deprovisioned" && (
+              <Button variant="destructive" size="sm" onClick={() => setSuspendDialogOpen(true)}>
+                <PauseCircle className="mr-2 h-4 w-4" />
+                Suspend Tenant
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={() => setNotifyDialogOpen(true)}>
+              <Send className="mr-2 h-4 w-4" />
+              Send Notification
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/?tenant=${tenant.id}`}>
+                <ExternalLink className="mr-2 h-4 w-4" />
+                View as User
+              </Link>
+            </Button>
           </div>
         </div>
-        <div className="flex gap-2">
-          {tenant.status !== "suspended" && tenant.status !== "deprovisioned" && (
-            <Button variant="destructive" size="sm" onClick={() => setSuspendDialogOpen(true)}>
-              <PauseCircle className="mr-2 h-4 w-4" />
-              Suspend Tenant
-            </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={() => setNotifyDialogOpen(true)}>
-            <Send className="mr-2 h-4 w-4" />
-            Send Notification
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/?tenant=${tenant.id}`}>
-              <ExternalLink className="mr-2 h-4 w-4" />
-              View as User
-            </Link>
-          </Button>
-        </div>
-      </div>
+      </AnimatedGroup>
 
+      <InView delay={0}>
       <div className="grid gap-6 lg:grid-cols-3">
         <Card>
           <CardHeader>
@@ -297,7 +302,9 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
           </CardContent>
         </Card>
       </div>
+      </InView>
 
+      <InView delay={0.08}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -329,6 +336,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
           </div>
         </CardContent>
       </Card>
+      </InView>
 
       <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
         <AlertDialogContent>

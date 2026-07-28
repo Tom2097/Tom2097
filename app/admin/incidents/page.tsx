@@ -16,6 +16,7 @@ import { toast } from "sonner"
 import { AlertTriangle, AlertCircle, Shield, BookOpen, Plus, ArrowUpCircle, CheckCircle2 } from "lucide-react"
 import type { Incident } from "@/lib/monitoring/types"
 import { DEFAULT_RUNBOOKS, type Runbook } from "@/lib/incident/response"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 export default function IncidentsPage() {
   const { t } = useI18n()
@@ -148,10 +149,10 @@ export default function IncidentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <AnimatedGroup>
           <h1 className="text-2xl font-bold">{t("admin.incidents.incident_response")}</h1>
           <p className="text-muted-foreground">{t("admin.incidents.subtitle")}</p>
-        </div>
+        </AnimatedGroup>
         <div className="flex gap-2">
           <Dialog open={runbookDialogOpen} onOpenChange={setRunbookDialogOpen}>
             <DialogTrigger asChild>

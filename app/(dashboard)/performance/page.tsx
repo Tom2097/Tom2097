@@ -8,6 +8,8 @@ import { getTranslator } from "@/lib/i18n/server"
 import { NewObjectiveDialog } from "@/components/digit/performance/new-objective-dialog"
 import { RunReportButton } from "@/components/digit/performance/run-report-button"
 import { KeyResultsPanel } from "@/components/digit/performance/key-results-panel"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 export default async function PerformancePage() {
   const ctx = await extractTenantContext()
@@ -35,6 +37,7 @@ export default async function PerformancePage() {
 
   return (
     <div className="space-y-6">
+      <AnimatedGroup className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-500">
@@ -73,9 +76,10 @@ export default async function PerformancePage() {
            <p className="text-xs text-muted-foreground mt-1">{t("performance.page.projectedDataPoints")}</p>
         </div>
       </div>
+      </AnimatedGroup>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-border/50 bg-card p-6">
+        <InView className="rounded-2xl border border-border/50 bg-card p-6">
            <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
              <Target className="h-5 w-5 text-amber-500" />{t("performance.page.activeObjectives")}
            </h3>
@@ -108,9 +112,9 @@ export default async function PerformancePage() {
           ) : (
              <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">{t("performance.page.noObjectives")}</div>
           )}
-        </div>
+        </InView>
 
-        <div className="rounded-2xl border border-border/50 bg-card p-6">
+        <InView delay={0.08} className="rounded-2xl border border-border/50 bg-card p-6">
            <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
              <TrendingUp className="h-5 w-5 text-green-500" />{t("performance.page.keyDrivers")}
            </h3>
@@ -134,7 +138,7 @@ export default async function PerformancePage() {
           ) : (
              <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">{t("performance.page.noDriverData")}</div>
           )}
-        </div>
+        </InView>
       </div>
     </div>
   )

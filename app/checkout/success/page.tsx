@@ -17,6 +17,7 @@ import {
   Zap
 } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
+import { AuroraBackground } from "@/components/digit/aurora-background"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -158,8 +159,9 @@ function CheckoutSuccessContent() {
   // up here without one), show an honest "still processing" state instead.
   if (fetchState === "pending" || !subscription || !plan) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="relative min-h-screen bg-background">
+        <AuroraBackground />
+        <header className="relative border-b border-border/50 bg-background/80 backdrop-blur-xl">
           <div className="container mx-auto px-6 py-4 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
               <Logo size="md" />
@@ -167,7 +169,7 @@ function CheckoutSuccessContent() {
           </div>
         </header>
 
-        <div className="container mx-auto px-6 py-24">
+        <div className="relative container mx-auto px-6 py-24">
           <div className="max-w-lg mx-auto text-center">
             <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-6" />
             <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
@@ -194,9 +196,10 @@ function CheckoutSuccessContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background">
+      <AuroraBackground />
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <header className="relative border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <Logo size="md" />
@@ -204,7 +207,7 @@ function CheckoutSuccessContent() {
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-12">
+      <div className="relative container mx-auto px-6 py-12">
         <div className="max-w-3xl mx-auto">
           {/* Success Animation */}
           <motion.div
@@ -400,8 +403,9 @@ function CheckoutSuccessContent() {
 
 function CheckoutSuccessFallback() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+    <div className="relative min-h-screen bg-background flex items-center justify-center">
+      <AuroraBackground />
+      <Loader2 className="relative w-8 h-8 animate-spin text-primary" />
     </div>
   )
 }

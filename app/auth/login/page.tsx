@@ -10,6 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, CheckCircle2, Loader2, Eye, EyeOff, Fingerprint, Shield } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
+import { AuroraBackground } from "@/components/digit/aurora-background"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { startAuthentication } from "@simplewebauthn/browser"
 import { useI18n } from "@/components/providers/i18n-provider"
 
@@ -115,11 +117,13 @@ function LoginForm() {
   return (
     <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50">
       <CardHeader className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Logo size="md" />
-        </div>
-         <CardTitle className="text-2xl">{t("auth.login.welcomeBack")}</CardTitle>
-         <CardDescription>{t("auth.login.signInToDashboard")} <span className="text-[10px] opacity-30">v:native</span></CardDescription>
+        <AnimatedGroup className="space-y-2">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Logo size="md" />
+          </div>
+           <CardTitle className="text-2xl">{t("auth.login.welcomeBack")}</CardTitle>
+           <CardDescription>{t("auth.login.signInToDashboard")} <span className="text-[10px] opacity-30">v:native</span></CardDescription>
+        </AnimatedGroup>
       </CardHeader>
       <form action="/api/auth/login" method="POST">
         <input type="hidden" name="redirect" value={redirect} />
@@ -278,11 +282,13 @@ function LoginFormFallback() {
   return (
     <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50">
       <CardHeader className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <Logo size="md" />
-        </div>
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Sign in to your enterprise dashboard</CardDescription>
+        <AnimatedGroup className="space-y-2">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Logo size="md" />
+          </div>
+          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <CardDescription>Sign in to your enterprise dashboard</CardDescription>
+        </AnimatedGroup>
       </CardHeader>
       <CardContent className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -293,13 +299,8 @@ function LoginFormFallback() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Animated background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,212,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
-      </div>
+    <div className="relative min-h-screen bg-background flex items-center justify-center p-4">
+      <AuroraBackground />
 
       <Suspense fallback={<LoginFormFallback />}>
         <LoginForm />

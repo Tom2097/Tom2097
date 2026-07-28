@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { UserCheck, Clock, ShieldAlert, Search } from "lucide-react"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 interface ImpersonationSession {
   id: string
@@ -141,10 +142,10 @@ export default function ImpersonationPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <AnimatedGroup>
           <h1 className="text-2xl font-bold">{t("admin.impersonation.title")}</h1>
           <p className="text-muted-foreground">{t("admin.impersonation.subtitle")}</p>
-        </div>
+        </AnimatedGroup>
         <Dialog open={isStartDialogOpen} onOpenChange={setIsStartDialogOpen}>
           <DialogTrigger asChild>
             <Button>

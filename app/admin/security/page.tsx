@@ -38,6 +38,7 @@ import {
   Clock,
   AlertTriangle,
 } from "lucide-react"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 interface AuditEvent {
   id: string
@@ -213,10 +214,10 @@ export default function SecurityPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <AnimatedGroup>
           <h1 className="text-2xl font-bold">{t("admin.security.title")}</h1>
           <p className="text-muted-foreground">{t("admin.security.subtitle")}</p>
-        </div>
+        </AnimatedGroup>
       </div>
 
       <Tabs defaultValue="audit">

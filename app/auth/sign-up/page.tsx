@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, Loader2, Eye, EyeOff, Check, X, Shield } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
+import { AuroraBackground } from "@/components/digit/aurora-background"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 function getPasswordStrength(password: string, t: (key: string) => string) {
   let score = 0
@@ -103,23 +105,20 @@ function SignUpForm() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Animated background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,212,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,212,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
-      </div>
+    <div className="relative min-h-screen bg-background flex items-center justify-center p-4">
+      <AuroraBackground />
 
       <Card className="w-full max-w-md relative bg-card/80 backdrop-blur-xl border-border/50">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Logo size="lg" />
-          </div>
-  <CardTitle className="text-2xl">{t("auth.signUp.title")}</CardTitle>
-  <CardDescription>
-    {t("auth.signUp.description")}
-  </CardDescription>
+          <AnimatedGroup className="space-y-2">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Logo size="lg" />
+            </div>
+            <CardTitle className="text-2xl">{t("auth.signUp.title")}</CardTitle>
+            <CardDescription>
+              {t("auth.signUp.description")}
+            </CardDescription>
+          </AnimatedGroup>
         </CardHeader>
         <form onSubmit={handleSignUp}>
           <CardContent className="space-y-4">

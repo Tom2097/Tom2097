@@ -13,6 +13,8 @@ import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import { useI18n } from "@/components/providers/i18n-provider"
 import type { RecordingUpload, TranscriptionResult, ActionItem } from "@/lib/audio/ingestion"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 function readAudioDuration(file: File): Promise<number | undefined> {
   return new Promise((resolve) => {
@@ -163,7 +165,7 @@ export default function RecordingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedGroup className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/20 text-rose-500">
             <Mic className="h-5 w-5" />
@@ -173,19 +175,22 @@ export default function RecordingsPage() {
             <p className="text-sm text-muted-foreground">{t('recordings.page.subtitle')}</p>
           </div>
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="audio/*"
-          className="hidden"
-          onChange={(e) => handleFileSelect(e.target.files?.[0])}
-        />
-        <Button disabled={uploading} onClick={() => fileInputRef.current?.click()}>
-          {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-          {t('recordings.page.uploadRecording')}
-        </Button>
-      </div>
+        <div className="flex items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="audio/*"
+            className="hidden"
+            onChange={(e) => handleFileSelect(e.target.files?.[0])}
+          />
+          <Button disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+            {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+            {t('recordings.page.uploadRecording')}
+          </Button>
+        </div>
+      </AnimatedGroup>
 
+      <InView>
       <Card>
         <CardHeader>
           <CardTitle>{t('recordings.page.allRecordings')}</CardTitle>
@@ -239,6 +244,7 @@ export default function RecordingsPage() {
           )}
         </CardContent>
       </Card>
+      </InView>
 
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
         <DialogContent className="sm:max-w-3xl max-h-[80vh] overflow-y-auto">

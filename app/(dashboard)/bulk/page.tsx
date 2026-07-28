@@ -11,6 +11,8 @@ import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import { useI18n } from "@/components/providers/i18n-provider"
 import type { BatchJob, BatchResult } from "@/lib/bulk/processor"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 const STATUS_BADGES: Record<string, string> = {
   pending: "bg-gray-500/20 text-gray-500 border-gray-500/30",
@@ -134,18 +136,21 @@ export default function BulkPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-500">
-            <Layers className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t('bulk.page.title')}</h1>
-            <p className="text-sm text-muted-foreground">{t('bulk.page.subtitle')}</p>
+      <AnimatedGroup>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-500">
+              <Layers className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{t('bulk.page.title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('bulk.page.subtitle')}</p>
+            </div>
           </div>
         </div>
-      </div>
+      </AnimatedGroup>
 
+      <InView>
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">{t('bulk.page.dropZone')}</CardTitle>
@@ -212,7 +217,9 @@ export default function BulkPage() {
           )}
         </CardContent>
       </Card>
+      </InView>
 
+      <InView delay={0.08}>
       <Card>
         <CardHeader>
           <CardTitle>{t('bulk.page.batchHistory')}</CardTitle>
@@ -280,6 +287,7 @@ export default function BulkPage() {
           )}
         </CardContent>
       </Card>
+      </InView>
 
       <Dialog open={resultsDialogOpen} onOpenChange={setResultsDialogOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">

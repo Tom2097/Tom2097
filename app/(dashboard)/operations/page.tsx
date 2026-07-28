@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Inbox, Beaker, BookTemplate, Columns, ArrowLeftRight, Brain, FileSearch, MessageSquare, Sparkles, ListTree, Zap, FileText, BarChart2, RefreshCw, AlertTriangle, MessageCircle, Users, Activity, Mail } from "lucide-react"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 const sampleDocuments = [
   { id: "doc-1", name: "Invoice_Acme_2024.pdf", content: "INVOICE #INV-001\nDate: 2024-01-15\nVendor: Acme Corp\nTotal: $12,500.00\nItems:\n  - Widget A x 50: $5,000\n  - Widget B x 30: $7,500" },
@@ -88,6 +90,7 @@ export default function OperationsPage() {
 
   return (
     <div className="space-y-6">
+      <AnimatedGroup className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-500">
@@ -150,7 +153,9 @@ export default function OperationsPage() {
           </CardContent>
         </Card>
       </div>
+      </AnimatedGroup>
 
+      <InView>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -243,9 +248,10 @@ export default function OperationsPage() {
           </CardContent>
         </Card>
       </div>
+      </InView>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
+        <InView delay={0.08} className="lg:col-span-2 space-y-6">
           <UniversalIntake />
 
           <Tabs defaultValue="feed">
@@ -286,9 +292,9 @@ export default function OperationsPage() {
               <OperationalReports />
             </TabsContent>
           </Tabs>
-        </div>
+        </InView>
 
-        <div className="space-y-6">
+        <InView delay={0.16} className="space-y-6">
           <Card>
             <CardHeader className="p-4 pb-2">
               <CardTitle className="flex items-center gap-2 text-sm">
@@ -363,7 +369,7 @@ export default function OperationsPage() {
           </Card>
 
           <OperationalCopilot />
-        </div>
+        </InView>
       </div>
     </div>
   )

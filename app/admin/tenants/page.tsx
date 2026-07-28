@@ -49,6 +49,8 @@ import {
   Trash2,
   ArrowUpDown,
 } from "lucide-react"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 interface Tenant {
   id: string
@@ -256,27 +258,30 @@ export default function TenantsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{t("admin.tenants.title")}</h1>
-          <p className="text-muted-foreground">{t("admin.tenants.subtitle")}</p>
+      <AnimatedGroup>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">{t("admin.tenants.title")}</h1>
+            <p className="text-muted-foreground">{t("admin.tenants.subtitle")}</p>
+          </div>
+          <div className="flex gap-2">
+            {selected.size > 0 && (
+              <>
+                <Button variant="destructive" size="sm" onClick={bulkSuspend}>
+                  <PauseCircle className="mr-2 h-4 w-4" />
+                  Suspend Selected ({selected.size})
+                </Button>
+              </>
+            )}
+            <Button variant="outline" size="sm" onClick={exportCsv}>
+              <Download className="mr-2 h-4 w-4" />
+              Export CSV
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          {selected.size > 0 && (
-            <>
-              <Button variant="destructive" size="sm" onClick={bulkSuspend}>
-                <PauseCircle className="mr-2 h-4 w-4" />
-                Suspend Selected ({selected.size})
-              </Button>
-            </>
-          )}
-          <Button variant="outline" size="sm" onClick={exportCsv}>
-            <Download className="mr-2 h-4 w-4" />
-            Export CSV
-          </Button>
-        </div>
-      </div>
+      </AnimatedGroup>
 
+      <InView delay={0}>
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
@@ -384,6 +389,7 @@ export default function TenantsPage() {
           )}
         </CardContent>
       </Card>
+      </InView>
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-2xl">

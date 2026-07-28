@@ -7,6 +7,8 @@ import { getCapacityUtilization, getVendorScorecard } from "@/lib/resources/anal
 import { getTranslator } from "@/lib/i18n/server"
 import { NewAssetDialog } from "@/components/digit/resources/new-asset-dialog"
 import { ScheduleMaintenanceDialog } from "@/components/digit/resources/schedule-maintenance-dialog"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 function flattenAssets(nodes: (AssetNode & { children?: AssetNode[] })[], depth = 0): AssetNode[] {
   return nodes.flatMap((n) => [
@@ -34,6 +36,7 @@ export default async function ResourcesPage() {
 
   return (
     <div className="space-y-6">
+      <AnimatedGroup className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/20 text-blue-500">
@@ -74,9 +77,10 @@ export default async function ResourcesPage() {
            <p className="text-xs text-muted-foreground mt-1">{t("resources.page.scorecardsActive")}</p>
         </div>
       </div>
+      </AnimatedGroup>
 
       {lowStock.length > 0 && (
-        <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-4">
+        <InView className="rounded-2xl border border-red-500/30 bg-red-500/5 p-4">
            <h3 className="flex items-center gap-2 text-sm font-semibold text-red-500 mb-2">
              <AlertTriangle className="h-4 w-4" />{t("resources.page.lowStock")}
            </h3>
@@ -87,11 +91,11 @@ export default async function ResourcesPage() {
               </span>
             ))}
           </div>
-        </div>
+        </InView>
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-border/50 bg-card p-6">
+        <InView delay={0.08} className="rounded-2xl border border-border/50 bg-card p-6">
            <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
              <Boxes className="h-5 w-5 text-blue-500" />{t("resources.page.assetRegistry")}
            </h3>
@@ -108,9 +112,9 @@ export default async function ResourcesPage() {
            ) : (
              <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">{t("resources.page.noAssets")}</div>
            )}
-        </div>
+        </InView>
 
-        <div className="rounded-2xl border border-border/50 bg-card p-6">
+        <InView delay={0.16} className="rounded-2xl border border-border/50 bg-card p-6">
            <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
              <Truck className="h-5 w-5 text-indigo-500" />{t("resources.page.vendorPerformance")}
            </h3>
@@ -130,7 +134,7 @@ export default async function ResourcesPage() {
           ) : (
              <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">{t("resources.page.noVendors")}</div>
           )}
-        </div>
+        </InView>
       </div>
     </div>
   )

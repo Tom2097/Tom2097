@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge'
 import { Edit2, Trash2, UserPlus, Lock } from 'lucide-react'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
+import { InView } from '@/components/motion-primitives/in-view'
 
 interface Role {
   id: string
@@ -198,10 +200,10 @@ export default function RolesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <AnimatedGroup>
           <h1 className="text-2xl font-bold text-foreground">{t("platformAdmin.roles.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("platformAdmin.roles.subtitle")}</p>
-        </div>
+        </AnimatedGroup>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
@@ -273,6 +275,7 @@ export default function RolesPage() {
         </Dialog>
       </div>
 
+      <InView>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -433,6 +436,7 @@ export default function RolesPage() {
           )}
         </CardContent>
       </Card>
+      </InView>
     </div>
   )
 }

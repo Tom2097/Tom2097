@@ -12,6 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
 import { useI18n } from "@/components/providers/i18n-provider"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 import type {
   Simulation,
   SimulationChange,
@@ -253,7 +255,7 @@ export default function SimulatePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedGroup className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/20 text-purple-500">
             <FlaskConical className="h-5 w-5" />
@@ -263,8 +265,9 @@ export default function SimulatePage() {
             <p className="text-sm text-muted-foreground">{t('simulate.page.subtitle')}</p>
           </div>
         </div>
-      </div>
+      </AnimatedGroup>
 
+      <InView>
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">{t('simulate.page.loadWorkspace')}</CardTitle>
@@ -287,7 +290,9 @@ export default function SimulatePage() {
           <p className="text-xs text-muted-foreground mt-2">{t('simulate.page.currentWorkspace', { workspaceId })}</p>
         </CardContent>
       </Card>
+      </InView>
 
+      <InView delay={0.08}>
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">{t('simulate.page.activeSimulations')}</h2>
         <Dialog open={newDialogOpen} onOpenChange={setNewDialogOpen}>
@@ -422,6 +427,7 @@ export default function SimulatePage() {
           </CardContent>
         </Card>
       )}
+      </InView>
 
       <Dialog open={diffDialogOpen} onOpenChange={setDiffDialogOpen}>
         <DialogContent className="sm:max-w-2xl">

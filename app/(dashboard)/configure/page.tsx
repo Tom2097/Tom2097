@@ -10,6 +10,8 @@ import { Settings, Plus, LayoutDashboard, Shield, Boxes, Activity, Wifi, HeartPu
 import Link from "next/link"
 import { RoutingRules } from "@/components/digit/routing-rules"
 import { useI18n } from "@/components/providers/i18n-provider"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 const verticalMeta: Record<string, { href: string | null; color: string; bg: string; icon: React.ReactNode }> = {
   operational: { href: "/operations", color: "text-indigo-500", bg: "bg-indigo-500/10", icon: <Wifi className="h-5 w-5" /> },
@@ -58,21 +60,24 @@ export default function ConfigurePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Settings className="h-5 w-5" />
+      <AnimatedGroup>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Settings className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{t('configure.page.title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('configure.page.subtitle')}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t('configure.page.title')}</h1>
-            <p className="text-sm text-muted-foreground">{t('configure.page.subtitle')}</p>
-          </div>
+          <Button onClick={() => setShowWizard(true)}>
+            <Plus className="h-4 w-4 mr-2" />{t('configure.page.newWorkspace')}
+          </Button>
         </div>
-        <Button onClick={() => setShowWizard(true)}>
-          <Plus className="h-4 w-4 mr-2" />{t('configure.page.newWorkspace')}
-        </Button>
-      </div>
+      </AnimatedGroup>
 
+      <InView>
       <Tabs defaultValue="workspaces" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="workspaces">{t('configure.page.tabs.workspaces')}</TabsTrigger>
@@ -142,6 +147,7 @@ export default function ConfigurePage() {
           <RoutingRules />
         </TabsContent>
       </Tabs>
+      </InView>
     </div>
   )
 }

@@ -50,6 +50,8 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/components/providers/i18n-provider'
+import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
+import { InView } from '@/components/motion-primitives/in-view'
 
 interface Skill {
   id: string
@@ -267,6 +269,7 @@ export default function SkillMatrixPage() {
 
   return (
     <div className="space-y-6">
+      <AnimatedGroup className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-500">
@@ -380,7 +383,9 @@ export default function SkillMatrixPage() {
           </CardContent>
         </Card>
       </div>
+      </AnimatedGroup>
 
+      <InView>
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -462,7 +467,9 @@ export default function SkillMatrixPage() {
           </CardContent>
         </Card>
       </div>
+      </InView>
 
+      <InView delay={0.08}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -515,7 +522,9 @@ export default function SkillMatrixPage() {
           </Table>
         </CardContent>
         </Card>
+      </InView>
 
+      <InView delay={0.16}>
        <Card>
          <CardHeader>
            <CardTitle className="flex items-center gap-2 text-lg">
@@ -550,6 +559,7 @@ export default function SkillMatrixPage() {
            )}
          </CardContent>
        </Card>
+      </InView>
     </div>
   )
 }

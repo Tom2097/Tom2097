@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner"
 import { Download, Trash2, FileText, ShieldCheck, AlertTriangle, CheckCircle2, Clock } from "lucide-react"
 import { useI18n } from "@/components/providers/i18n-provider"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 interface DsarRequest {
   id: string
@@ -179,7 +180,7 @@ export default function DsarPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedGroup className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t('dsar.page.title')}</h1>
           <p className="text-muted-foreground">{t('dsar.page.subtitle')}</p>
@@ -194,7 +195,7 @@ export default function DsarPage() {
             {t('dsar.page.requestDeletion')}
           </Button>
         </div>
-      </div>
+      </AnimatedGroup>
 
       <Tabs defaultValue="requests">
         <TabsList>

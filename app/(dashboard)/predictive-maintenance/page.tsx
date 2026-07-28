@@ -14,6 +14,8 @@ import { Progress } from "@/components/ui/progress"
 import { AlertTriangle, CheckCircle2, Info, Activity, BarChart3, Clock, Plus, Wrench, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
 import { useI18n } from "@/components/providers/i18n-provider"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 
 interface RULEstimate {
   assetId: string
@@ -227,68 +229,70 @@ export default function PredictiveMaintenancePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-500">
-            <Activity className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t('predictiveMaintenance.page.title')}</h1>
-            <p className="text-sm text-muted-foreground">{t('predictiveMaintenance.page.subtitle')}</p>
+      <AnimatedGroup className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-500">
+              <Activity className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{t('predictiveMaintenance.page.title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('predictiveMaintenance.page.subtitle')}</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <AlertCircle className="h-4 w-4 text-red-500" />
-              {t('predictiveMaintenance.page.overdue')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <p className="text-3xl font-bold text-red-500">{overdue.length}</p>
-            <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.assetsPastDue')}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4 text-amber-500" />
-              {t('predictiveMaintenance.page.dueSoon')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <p className="text-3xl font-bold text-amber-500">{dueSoon.length}</p>
-            <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.daysRemaining')}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Wrench className="h-4 w-4 text-amber-500" />
-              {t('predictiveMaintenance.page.needsAction')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <p className="text-3xl font-bold text-amber-500">{critical.length}</p>
-            <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.highFailureProbability')}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              {t('predictiveMaintenance.page.healthy')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <p className="text-3xl font-bold text-emerald-500">{healthy.length}</p>
-            <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.daysRemaining90')}</p>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                {t('predictiveMaintenance.page.overdue')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <p className="text-3xl font-bold text-red-500">{overdue.length}</p>
+              <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.assetsPastDue')}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Clock className="h-4 w-4 text-amber-500" />
+                {t('predictiveMaintenance.page.dueSoon')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <p className="text-3xl font-bold text-amber-500">{dueSoon.length}</p>
+              <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.daysRemaining')}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Wrench className="h-4 w-4 text-amber-500" />
+                {t('predictiveMaintenance.page.needsAction')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <p className="text-3xl font-bold text-amber-500">{critical.length}</p>
+              <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.highFailureProbability')}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                {t('predictiveMaintenance.page.healthy')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <p className="text-3xl font-bold text-emerald-500">{healthy.length}</p>
+              <p className="text-xs text-muted-foreground">{t('predictiveMaintenance.page.daysRemaining90')}</p>
+            </CardContent>
+          </Card>
+        </div>
+      </AnimatedGroup>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -307,6 +311,7 @@ export default function PredictiveMaintenancePage() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-4 space-y-4">
+          <InView>
           <Card>
             <CardHeader>
               <CardTitle>{t('predictiveMaintenance.page.schedule')}</CardTitle>
@@ -373,9 +378,11 @@ export default function PredictiveMaintenancePage() {
               )}
             </CardContent>
           </Card>
+          </InView>
         </TabsContent>
 
         <TabsContent value="lookup" className="mt-4 space-y-4">
+          <InView delay={0.08}>
           <Card>
             <CardHeader>
               <CardTitle>{t('predictiveMaintenance.page.assetLookup')}</CardTitle>
@@ -463,9 +470,11 @@ export default function PredictiveMaintenancePage() {
               )}
             </CardContent>
           </Card>
+          </InView>
         </TabsContent>
 
         <TabsContent value="simulator" className="mt-4 space-y-4">
+          <InView delay={0.16}>
           <Card>
             <CardHeader>
               <CardTitle>{t('predictiveMaintenance.page.telemetrySimulator')}</CardTitle>
@@ -501,6 +510,7 @@ export default function PredictiveMaintenancePage() {
               </div>
             </CardContent>
           </Card>
+          </InView>
         </TabsContent>
       </Tabs>
     </div>

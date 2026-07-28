@@ -7,6 +7,7 @@ import { getTranslator } from "@/lib/i18n/server"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 
 export default async function TrainingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -20,6 +21,7 @@ export default async function TrainingPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      <AnimatedGroup className="space-y-6">
       <Button variant="ghost" size="sm" asChild className="gap-2">
         <Link href="/skill-matrix">
           <ArrowLeft className="h-4 w-4" />
@@ -48,6 +50,7 @@ export default async function TrainingPage({ params }: { params: Promise<{ id: s
           <p className="text-sm text-muted-foreground">{t("training.page.noResourceYet")}</p>
         </CardContent>
       </Card>
+      </AnimatedGroup>
     </div>
   )
 }

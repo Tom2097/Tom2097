@@ -39,6 +39,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { InView } from "@/components/motion-primitives/in-view"
 import type { AIAnalysisResult, ModuleRecommendation, IndustryInsight } from "@/lib/ai-business-analyzer"
 import type { QuestionnaireData } from "@/lib/questionnaire-data"
 
@@ -156,7 +158,7 @@ export default function RecommendationsPage() {
 
       <div className="relative z-10 container max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <AnimatedGroup className="text-center mb-8">
           <Badge className="mb-4" variant="secondary">
             <Sparkles className="w-3 h-3 mr-1" />
             {t("onboarding.recommendations.badge")}
@@ -165,53 +167,57 @@ export default function RecommendationsPage() {
           <p className="text-muted-foreground max-w-2xl mx-auto">
             {t("onboarding.recommendations.subtitle", { industry: questionnaireData.industry })}
           </p>
-        </div>
+        </AnimatedGroup>
 
         {/* AI Confidence Banner */}
-        <Card className="mb-8 border-primary/20 bg-primary/5">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Brain className="w-5 h-5 text-primary" />
+        <InView delay={0 * 0.08}>
+          <Card className="mb-8 border-primary/20 bg-primary/5">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Brain className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{t("onboarding.recommendations.confidenceTitle")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("onboarding.recommendations.confidenceDesc", { count: analysisResult.recommendations.length })}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">{t("onboarding.recommendations.confidenceTitle")}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {t("onboarding.recommendations.confidenceDesc", { count: analysisResult.recommendations.length })}
-                  </p>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-primary">
+                      {Math.round(analysisResult.confidenceScore * 100)}%
+                    </p>
+                    <p className="text-xs text-muted-foreground">{t("onboarding.recommendations.matchScore")}</p>
+                  </div>
+                  <Progress
+                    value={analysisResult.confidenceScore * 100}
+                    className="w-32 h-2"
+                  />
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-primary">
-                    {Math.round(analysisResult.confidenceScore * 100)}%
-                  </p>
-                  <p className="text-xs text-muted-foreground">{t("onboarding.recommendations.matchScore")}</p>
-                </div>
-                <Progress
-                  value={analysisResult.confidenceScore * 100}
-                  className="w-32 h-2"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </InView>
 
         {/* Overall Analysis */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center shrink-0">
-                <Target className="w-6 h-6 text-white" />
+        <InView delay={1 * 0.08}>
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center shrink-0">
+                  <Target className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">{t("onboarding.recommendations.summaryTitle")}</h3>
+                  <p className="text-muted-foreground">{analysisResult.overallAnalysis}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold mb-2">{t("onboarding.recommendations.summaryTitle")}</h3>
-                <p className="text-muted-foreground">{analysisResult.overallAnalysis}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </InView>
 
         {/* Recommendations Grid */}
         <div className="mb-8">
@@ -459,7 +465,7 @@ function IndustryIntelligencePage({
 
       <div className="relative z-10 container max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <AnimatedGroup className="text-center mb-8">
           <Badge className="mb-4" variant="secondary">
             <Brain className="w-3 h-3 mr-1" />
             {t("onboarding.recommendations.intelligenceBadge")}
@@ -468,30 +474,32 @@ function IndustryIntelligencePage({
           <p className="text-muted-foreground max-w-2xl mx-auto">
             {t("onboarding.recommendations.intelligenceSubtitle", { industry: questionnaireData.industry })}
           </p>
-        </div>
+        </AnimatedGroup>
 
         {/* Learning indicator */}
-        <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-cyan-500/5">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                <Brain className="w-6 h-6 text-primary animate-pulse" />
+        <InView delay={0 * 0.08}>
+          <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-cyan-500/5">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-primary animate-pulse" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">{t("onboarding.recommendations.learningTitle")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("onboarding.recommendations.learningDesc")}
+                  </p>
+                </div>
+                {isGenerating && (
+                  <Badge variant="secondary" className="animate-pulse">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    {t("onboarding.recommendations.generating")}
+                  </Badge>
+                )}
               </div>
-              <div className="flex-1">
-                <p className="font-medium">{t("onboarding.recommendations.learningTitle")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t("onboarding.recommendations.learningDesc")}
-                </p>
-              </div>
-              {isGenerating && (
-                <Badge variant="secondary" className="animate-pulse">
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  {t("onboarding.recommendations.generating")}
-                </Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </InView>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3 mb-6">

@@ -44,6 +44,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useI18n } from '@/components/providers/i18n-provider'
+import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
 
 interface SignatureAuditEntry {
   timestamp: string
@@ -231,7 +232,7 @@ export default function EsignPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <AnimatedGroup className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/20 text-teal-500">
             <Fingerprint className="h-5 w-5" />
@@ -296,7 +297,7 @@ export default function EsignPage() {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+      </AnimatedGroup>
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
