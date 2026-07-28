@@ -116,7 +116,7 @@ export async function LandingPage() {
                   delay={(i % 4) * 0.06}
                   className={span === 2 ? "sm:col-span-2" : undefined}
                 >
-                  <div className="group flex h-full flex-col rounded-3xl border border-border/50 bg-card p-6 transition-all duration-300 hover:border-primary/30 hover:digit-glow-sm">
+                  <div className="digit-glass group flex h-full flex-col rounded-3xl p-6 transition-all duration-300 hover:border-primary/30 hover:digit-glow-sm">
                     <div
                       className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110"
                       style={{ backgroundColor: `${accent}1a`, color: accent }}
@@ -137,7 +137,7 @@ export async function LandingPage() {
         {/* CTA */}
         <section className="container mx-auto px-6 py-20">
           <InView className="mx-auto max-w-4xl">
-            <div className="flex flex-col items-center gap-6 rounded-3xl border border-primary/20 bg-primary/5 px-8 py-16 text-center digit-glow-sm">
+            <div className="flex flex-col items-center gap-6 rounded-3xl border border-primary/20 bg-primary/5 px-8 py-16 text-center backdrop-blur-xl digit-glow-sm">
               <h2 className="text-3xl font-bold text-foreground">{t("landing.finalCta.title")}</h2>
               <p className="max-w-xl text-muted-foreground">{t("landing.finalCta.subtitle")}</p>
               <Button size="lg" className="gap-2 digit-glow" asChild>
