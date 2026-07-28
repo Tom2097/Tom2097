@@ -6,6 +6,7 @@ import { Navbar } from '@/components/digit/navbar'
 import { AIAssistant } from '@/components/digit/ai-assistant'
 import { HelpSupport } from '@/components/digit/help-support'
 import { SettingsPanel } from '@/components/digit/settings-panel'
+import { AuroraBackground } from '@/components/digit/aurora-background'
 import { cn } from '@/lib/utils'
 
 export function DashboardChrome({
@@ -18,9 +19,9 @@ export function DashboardChrome({
 
   return (
     <div className="relative min-h-screen bg-background">
-      {/* Background Effects */}
-      <div className="pointer-events-none fixed inset-0 digit-radial-bg" />
-      <div className="pointer-events-none fixed inset-0 digit-grid-bg opacity-30" />
+      {/* Background Effects -- same brand-triad aurora used on the public
+          pages, replacing the old single-hue cyan radial/grid glow */}
+      <AuroraBackground />
 
       {/* Sidebar */}
       <Sidebar

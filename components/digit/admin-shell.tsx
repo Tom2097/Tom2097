@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
 import { Badge } from "@/components/ui/badge"
+import { AuroraBackground } from "@/components/digit/aurora-background"
 
 const ADMIN_NAV = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
@@ -44,8 +45,7 @@ export function AdminShell({
 
   return (
     <div className="relative min-h-screen bg-background">
-      <div className="pointer-events-none fixed inset-0 digit-radial-bg" />
-      <div className="pointer-events-none fixed inset-0 digit-grid-bg opacity-30" />
+      <AuroraBackground />
 
       <aside
         className={cn(
