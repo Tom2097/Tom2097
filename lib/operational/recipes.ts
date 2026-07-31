@@ -2,6 +2,7 @@ import { extractFields, INVOICE_SCHEMA, CONTRACT_SCHEMA } from "@/lib/extraction
 import { createServiceClient } from "@/lib/supabase/service"
 import { setRenewalReminder } from "@/lib/resources/contracts"
 import { createCapa } from "@/lib/compliance/capa"
+import { broadcast } from "@/lib/notifications/engine"
 
 export interface Recipe {
   id: string; name: string; description: string; category: string
@@ -104,11 +105,13 @@ export async function executeRecipe(
           break
         }
         case "send_notification": {
-          await db.from("notifications").insert({
-            organization_id: organizationId, type: "recipe_action",
+          await broadcast(organizationId, {
+            type: "info",
+            category: "recipe_action",
             title: step.config.message as string ?? `Recipe step: ${recipe.name}`,
             data: { document_id: documentId, recipe: recipe.name },
-          }).maybeSingle()
+            source: "workflow",
+          })
           results.push("notification_sent")
           break
         }

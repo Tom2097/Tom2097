@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
-import { createServiceClient } from '@/lib/supabase/service'
+import { broadcast } from '@/lib/notifications/engine'
 
 // Runs a catalog recipe (the vertical-specific recipe browser has no document
 // context to process, so this queues a real, visible notification rather
@@ -15,17 +15,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'recipe is required' }, { status: 400 })
     }
 
-    const db = createServiceClient()
-    const { error } = await db.from('notifications').insert({
-      organization_id: organizationId,
-      type: 'recipe_queued',
+    await broadcast(organizationId, {
+      type: 'info',
+      category: 'recipe_queued',
       title: `Recipe queued: ${recipe}`,
       data: { recipe, vertical: vertical ?? null, queued_by: user.id },
+      source: 'app',
     })
-
-    if (error) {
-      return NextResponse.json({ error: 'Failed to queue recipe' }, { status: 500 })
-    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

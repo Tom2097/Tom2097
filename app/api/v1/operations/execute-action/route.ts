@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
 import { createServiceClient } from '@/lib/supabase/service'
+import { broadcast } from '@/lib/notifications/engine'
 
 const NOTIFICATION_TYPE: Record<string, string> = {
   create_task: 'copilot_task',
@@ -62,16 +63,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, taskId: task.id })
     }
 
-    const { error } = await db.from('notifications').insert({
-      organization_id: organizationId,
-      type: NOTIFICATION_TYPE[action.type],
+    await broadcast(organizationId, {
+      type: 'info',
+      category: NOTIFICATION_TYPE[action.type],
       title: action.label || 'Copilot action',
       data: { details: action.details ?? null, triggered_by: user.id },
+      source: 'app',
     })
-
-    if (error) {
-      return NextResponse.json({ error: 'Failed to execute action' }, { status: 500 })
-    }
 
     return NextResponse.json({ success: true })
   } catch (error) {
