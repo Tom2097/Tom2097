@@ -16,13 +16,18 @@ const container: Variants = {
   },
 }
 
+// No "y" translate -- see the detailed comment in animated-group.tsx. A
+// lingering transform (which Framer Motion can't cleanly unset once a "y"
+// motion value has been touched) creates a permanent stacking context just
+// like a lingering filter does, silently trapping any positioned/z-indexed
+// descendant behind later sibling content.
 const word: Variants = {
-  hidden: { opacity: 0, y: 12, filter: 'blur(6px)' },
+  hidden: { opacity: 0, filter: 'blur(6px)' },
   visible: {
     opacity: 1,
-    y: 0,
     filter: 'blur(0px)',
     transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
+    transitionEnd: { filter: 'none' },
   },
 }
 

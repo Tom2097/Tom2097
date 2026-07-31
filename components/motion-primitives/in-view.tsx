@@ -9,9 +9,18 @@ interface InViewProps {
   delay?: number
 }
 
+// Opacity only -- no "y" translate. Framer Motion animates y via
+// `transform`, and it can't be cleanly unset back to "none" afterwards
+// (even a literal y: 0 target leaves transform: translateY(0px) applied).
+// A lingering transform other than "none" permanently creates a new CSS
+// stacking context, silently trapping any absolutely-positioned, z-indexed
+// descendant (a dropdown, popover, select menu) inside whatever section
+// this wraps -- it can never appear above a later sibling again. This is
+// used on ~50 pages, many with real dropdowns/popovers inside the wrapped
+// sections, so this isn't a one-page fix.
 const defaultVariants: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0 },
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
 }
 
 /**
