@@ -238,6 +238,23 @@ export function PredictiveModeling() {
     }
   }
 
+  // Exports the model's real record (config, status, metrics, training/
+  // deployment metadata) as a JSON file -- there's no model-serving backend
+  // to export trained weights/artifacts from, but this data is genuinely
+  // real (already loaded in state), so it's an honest "export" rather than
+  // a dead button.
+  const handleExportModel = (model: Model) => {
+    const blob = new Blob([JSON.stringify(model, null, 2)], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `${model.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-${model.id.slice(0, 8)}.json`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
   const getModelStatusBadge = (status: string) => {
     switch (status) {
       case 'draft': return <Badge variant="secondary">Draft</Badge>
@@ -611,7 +628,12 @@ export function PredictiveModeling() {
                           >
                             <Target className="h-4 w-4 mr-1" /> Predict
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled
+                            title="Live model monitoring is not available yet: this environment has no configured model-serving/inference backend."
+                          >
                             <Info className="h-4 w-4 mr-1" /> Monitor
                           </Button>
                         </div>
@@ -745,7 +767,7 @@ export function PredictiveModeling() {
                         <Target className="h-4 w-4 mr-1" /> Make Prediction
                       </Button>
                     )}
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={() => handleExportModel(currentModel)}>
                       <Save className="h-4 w-4 mr-1" /> Export Model
                     </Button>
                   </div>
