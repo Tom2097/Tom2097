@@ -6,12 +6,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Settings, Plus, LayoutDashboard, Shield, Boxes, Activity, Wifi, HeartPulse, Loader2 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Settings, Plus, LayoutDashboard, Shield, Boxes, Activity, Wifi, HeartPulse, Loader2, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { RoutingRules } from "@/components/digit/routing-rules"
 import { useI18n } from "@/components/providers/i18n-provider"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { InView } from "@/components/motion-primitives/in-view"
+import { toast } from "sonner"
 
 const verticalMeta: Record<string, { href: string | null; color: string; bg: string; icon: React.ReactNode }> = {
   operational: { href: "/operations", color: "text-indigo-500", bg: "bg-indigo-500/10", icon: <Wifi className="h-5 w-5" /> },
@@ -27,6 +38,8 @@ export default function ConfigurePage() {
   const [showWizard, setShowWizard] = useState(false)
   const [workspaces, setWorkspaces] = useState<Array<{ id: string; name: string; vertical: string }>>([])
   const [loadingWorkspaces, setLoadingWorkspaces] = useState(true)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const fetchWorkspaces = useCallback(async () => {
     try {
@@ -45,6 +58,23 @@ export default function ConfigurePage() {
     fetchWorkspaces()
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [fetchWorkspaces])
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setIsDeleting(true)
+    try {
+      const res = await fetch(`/api/v1/workspaces/${deleteTarget.id}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to delete workspace')
+      setWorkspaces((prev) => prev.filter((ws) => ws.id !== deleteTarget.id))
+      toast.success(t('configure.page.deleteSuccess', { name: deleteTarget.name }))
+      setDeleteTarget(null)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('configure.page.deleteFailed'))
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   if (showWizard) {
     return (
@@ -118,6 +148,14 @@ export default function ConfigurePage() {
                     <Button size="sm" variant="ghost" className="text-xs" onClick={() => setShowWizard(true)}>
                       <Settings className="h-3 w-3 mr-1" />{t('configure.page.reconfigure')}
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-xs text-destructive hover:text-destructive ml-auto"
+                      onClick={() => setDeleteTarget({ id: ws.id, name: ws.name })}
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />{t('configure.page.delete')}
+                    </Button>
                   </CardContent>
                 </Card>
               )
@@ -148,6 +186,27 @@ export default function ConfigurePage() {
         </TabsContent>
       </Tabs>
       </InView>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('configure.page.deleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('configure.page.deleteConfirmDesc', { name: deleteTarget?.name ?? '' })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>{t('configure.page.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? t('configure.page.deleting') : t('configure.page.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

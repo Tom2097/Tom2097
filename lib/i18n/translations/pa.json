@@ -1339,7 +1339,14 @@
       "reconfigure": "ਮੁੜ ਕਨਫ਼ਿਗਰ ਕਰੋ",
       "createNewWorkspace": "ਨਵਾਂ ਵਰਕਸਪੇਸ ਬਣਾਓ",
       "createWorkspaceDesc": "ਇੱਕ ਨए वरਟੀਕਲ ਲਈ ਵਰਕਸਪੇਸ ਸੈਟ ਅਪ ਕਰੋ",
-      "comingSoon": "ਡੈਸ਼ਬੋਰਡ ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ"
+      "comingSoon": "ਡੈਸ਼ਬੋਰਡ ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ",
+      "delete": "ਮਿਟਾਓ",
+      "deleting": "ਮਿਟਾਇਆ ਜਾ ਰਿਹਾ ਹੈ...",
+      "cancel": "ਰੱਦ ਕਰੋ",
+      "deleteConfirmTitle": "ਵਰਕਸਪੇਸ ਮਿਟਾਓ?",
+      "deleteConfirmDesc": "ਇਹ \"{name}\" ਅਤੇ ਇਸਦੀ ਸੰਰਚਨਾ ਨੂੰ ਸਥਾਈ ਤੌਰ 'ਤੇ ਮਿਟਾ ਦੇਵੇਗਾ। ਇਹ ਕਾਰਵਾਈ ਵਾਪਸ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ।",
+      "deleteSuccess": "\"{name}\" ਮਿਟਾ ਦਿੱਤਾ ਗਿਆ",
+      "deleteFailed": "ਵਰਕਸਪੇਸ ਮਿਟਾਉਣ ਵਿੱਚ ਅਸਫਲ"
     }
   },
   "bulk": {

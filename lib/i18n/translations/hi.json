@@ -1339,7 +1339,14 @@
       "reconfigure": "पुनः कॉन्फ़िगर करें",
       "createNewWorkspace": "नया वर्कस्पेस बनाएँ",
       "createWorkspaceDesc": "एक नए वर्टिकल के लिए वर्कस्पेस सेट अप करें",
-      "comingSoon": "डैशबोर्ड जल्द आ रहा है"
+      "comingSoon": "डैशबोर्ड जल्द आ रहा है",
+      "delete": "हटाएं",
+      "deleting": "हटाया जा रहा है...",
+      "cancel": "रद्द करें",
+      "deleteConfirmTitle": "वर्कस्पेस हटाएं?",
+      "deleteConfirmDesc": "इससे \"{name}\" और इसका कॉन्फ़िगरेशन स्थायी रूप से हट जाएगा। यह क्रिया वापस नहीं की जा सकती।",
+      "deleteSuccess": "\"{name}\" हटा दिया गया",
+      "deleteFailed": "वर्कस्पेस हटाने में विफल"
     }
   },
   "bulk": {

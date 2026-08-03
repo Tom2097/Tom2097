@@ -1339,7 +1339,14 @@
       "reconfigure": "Reconfigure",
       "createNewWorkspace": "Create New Workspace",
       "createWorkspaceDesc": "Set up a workspace for a new vertical",
-      "comingSoon": "Dashboard coming soon"
+      "comingSoon": "Dashboard coming soon",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "cancel": "Cancel",
+      "deleteConfirmTitle": "Delete workspace?",
+      "deleteConfirmDesc": "This will permanently delete \"{name}\" and its configuration. This action cannot be undone.",
+      "deleteSuccess": "\"{name}\" deleted",
+      "deleteFailed": "Failed to delete workspace"
     }
   },
   "bulk": {
