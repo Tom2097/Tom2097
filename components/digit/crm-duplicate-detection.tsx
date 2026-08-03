@@ -46,16 +46,9 @@ export function CrmDuplicateDetection() {
   }
 
   useEffect(() => {
-    fetch("/api/v1/ai/crm-query", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: "Scan CRM for duplicate contacts, accounts, deals, or leads. Return ONLY valid JSON array. Each item: {id: string, type: \"contact\"/\"account\"/\"deal\"/\"lead\", name: string, email?: string, phone?: string, matchScore: 0-100, existing: {name: string, email?: string, phone?: string}, fields: [{field: string, value1: string, value2: string, match: boolean}]}. No markdown.",
-      }),
-    }).then((r) => r.ok ? r.json() : Promise.reject()).then((data) => {
-      const parsed = JSON.parse(data.response)
-      setDuplicates(Array.isArray(parsed) ? parsed : [])
-    }).catch(() => setError("Could not detect duplicates"))
+    /* eslint-disable react-hooks/set-state-in-effect */
+    fetchDuplicates()
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   const handleMerge = async (id: string) => {

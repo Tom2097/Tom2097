@@ -16,11 +16,16 @@ interface SentimentItem {
   name: string; sentiment: number; trend: string; keywords: string[]
 }
 
+interface Playbook {
+  id: string; name: string; stages: string[]
+}
+
 export function CrmConversationIntelligence() {
   const [activeTab, setActiveTab] = useState<"suggest" | "playbook" | "sentiment">("suggest")
   const [feedback, setFeedback] = useState<Record<string, "up" | "down" | null>>({})
   const [templates, setTemplates] = useState<TemplateSuggestion[]>([])
   const [sentiments, setSentiments] = useState<SentimentItem[]>([])
+  const [playbooks, setPlaybooks] = useState<Playbook[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
@@ -30,7 +35,7 @@ export function CrmConversationIntelligence() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          query: "Generate conversation intelligence data. Return ONLY valid JSON with: templates (array of {id, name, scenario, suggested, objection, rebuttal}) and sentiments (array of {name, sentiment: 0-100, trend: \"up\"/\"down\", keywords: string[]}). No markdown.",
+          query: "Generate conversation intelligence data. Return ONLY valid JSON with: templates (array of {id, name, scenario, suggested, objection, rebuttal}), sentiments (array of {name, sentiment: 0-100, trend: \"up\"/\"down\", keywords: string[]}), and playbooks (array of {id, name, stages: string[]}). No markdown.",
         }),
       })
       if (!res.ok) throw new Error("Failed")
@@ -38,27 +43,19 @@ export function CrmConversationIntelligence() {
       const parsed = JSON.parse(data.response)
       if (parsed.templates) setTemplates(parsed.templates)
       if (parsed.sentiments) setSentiments(parsed.sentiments)
+      if (parsed.playbooks) setPlaybooks(parsed.playbooks)
     } catch {
       setError("Could not generate suggestions")
     } finally {
       setLoading(false)
     }
-     
   }, [])
 
   useEffect(() => {
-    fetch("/api/v1/ai/crm-query", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: "Generate conversation intelligence data. Return ONLY valid JSON with: templates (array of {id, name, scenario, suggested, objection, rebuttal}) and sentiments (array of {name, sentiment: 0-100, trend: \"up\"/\"down\", keywords: string[]}). No markdown.",
-      }),
-    }).then((r) => r.ok ? r.json() : Promise.reject()).then((data) => {
-      const parsed = JSON.parse(data.response)
-      if (parsed.templates) setTemplates(parsed.templates)
-      if (parsed.sentiments) setSentiments(parsed.sentiments)
-    }).catch(() => setError("Could not generate suggestions"))
-  }, [])
+    /* eslint-disable react-hooks/set-state-in-effect */
+    generateData()
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [generateData])
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
   if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={generateData} className="underline ml-1">Retry</button></div>
@@ -136,10 +133,7 @@ export function CrmConversationIntelligence() {
 
         {activeTab === "playbook" && (
           <motion.div key="playbook" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
-            {[
-              { id: "p1", name: "Cold Outreach Sequence", stages: ["Connect on LinkedIn", "Send value-first email", "Share relevant case study", "Personalized video message", "Break-up email"] },
-              { id: "p2", name: "Evaluation Defense", stages: ["Provide comparison matrix", "Offer sandbox access", "Schedule technical deep-dive", "Share ROI calculator", "Executive sponsorship call"] },
-            ].map((p, i) => (
+            {playbooks.map((p, i) => (
               <motion.div key={p.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                 className="p-3 rounded-xl border border-border/50"
               >
@@ -157,6 +151,7 @@ export function CrmConversationIntelligence() {
                 </div>
               </motion.div>
             ))}
+            {playbooks.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">No playbooks available yet</p>}
           </motion.div>
         )}
 

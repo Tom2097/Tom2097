@@ -258,9 +258,21 @@ export function CrmQuotes() {
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => updateStatus(quote.id, quote.status === "draft" ? "sent" : quote.status)}>
-                  {quote.status === "draft" ? <Send className="w-3.5 h-3.5" /> : quote.status === "sent" ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                </Button>
+                {(() => {
+                  const nextStatus = quote.status === "draft" ? "sent" : quote.status === "sent" ? "accepted" : null
+                  return (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      disabled={!nextStatus}
+                      title={quote.status === "draft" ? "Mark as sent" : quote.status === "sent" ? "Mark as accepted" : undefined}
+                      onClick={() => nextStatus && updateStatus(quote.id, nextStatus)}
+                    >
+                      {quote.status === "draft" ? <Send className="w-3.5 h-3.5" /> : quote.status === "sent" ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </Button>
+                  )
+                })()}
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
                   const blob = new Blob([`Title: ${quote.title}\nValue: ${formatCurrency(quote.value, quote.currency)}\nStatus: ${quote.status}\nContact: ${quote.contact}\nCompany: ${quote.company}`], { type: "text/plain" })
                   const url = URL.createObjectURL(blob)

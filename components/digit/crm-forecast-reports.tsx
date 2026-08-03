@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TrendingUp, DollarSign, Target, BarChart3, ArrowUp, ArrowDown, FileText, Download, Loader2, CheckCircle2 } from "lucide-react"
 import { LiveChart } from "@/components/digit/live-chart"
@@ -60,7 +59,6 @@ function sanitizeReasons(value: unknown): WinLossReason[] {
 }
 
 export function CrmForecastReports() {
-  const [period, setPeriod] = useState("q2")
   const [summary, setSummary] = useState<PipelineSummary | null>(null)
   const [winReasons, setWinReasons] = useState<WinLossReason[]>([])
   const [lossReasons, setLossReasons] = useState<WinLossReason[]>([])
@@ -115,7 +113,7 @@ export function CrmForecastReports() {
     const blob = new Blob([csv], { type: "text/csv" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
-    a.href = url; a.download = `forecast-${period}.csv`; a.click()
+    a.href = url; a.download = `forecast-${new Date().toISOString().slice(0, 10)}.csv`; a.click()
     URL.revokeObjectURL(url)
     setExporting(false)
   }
@@ -131,15 +129,6 @@ export function CrmForecastReports() {
           <p className="text-sm font-medium">Forecast & Reports</p>
         </div>
         <div className="flex items-center gap-2">
-          <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="q1">Q1 2026</SelectItem>
-              <SelectItem value="q2">Q2 2026</SelectItem>
-              <SelectItem value="q3">Q3 2026</SelectItem>
-              <SelectItem value="q4">Q4 2026</SelectItem>
-            </SelectContent>
-          </Select>
           <Button size="sm" variant="outline" className="h-8" onClick={handleExport} disabled={exporting}>{exporting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1" />}Export</Button>
         </div>
       </div>

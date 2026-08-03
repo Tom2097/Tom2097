@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Mail, Phone, Sparkles, ArrowRight, Star, Clock, MoreHorizontal, UserPlus, Loader2 } from "lucide-react"
+import { Mail, Phone, Sparkles, ArrowRight, Star, Clock, MoreHorizontal, UserPlus, Loader2, Archive, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
@@ -16,7 +16,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 interface Lead {
   id: string
@@ -155,6 +162,30 @@ export function CrmLeadInbox() {
     }
   }
 
+  const updateLeadStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch("/api/v1/crm/contacts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      })
+      if (!res.ok) throw new Error()
+      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)))
+    } catch {
+      toast.error("Failed to update lead")
+    }
+  }
+
+  const handleDeleteLead = async (id: string) => {
+    try {
+      const res = await fetch(`/api/v1/crm/contacts?id=${id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error()
+      setLeads((prev) => prev.filter((l) => l.id !== id))
+    } catch {
+      toast.error("Failed to delete lead")
+    }
+  }
+
   const filtered = leads
     .filter((l) => !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.company?.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => sortBy === "score" ? b.score - a.score : new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -260,16 +291,20 @@ export function CrmLeadInbox() {
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => lead.email && (window.location.href = `mailto:${lead.email}`)}><Mail className="w-4 h-4" /></Button>
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => lead.phone && (window.location.href = `tel:${lead.phone}`)}><Phone className="w-4 h-4" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => fetch("/api/v1/crm/contacts", {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ id: lead.id, status: "qualified" }),
-                }).catch(() => {})}><ArrowRight className="w-4 h-4" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => fetch("/api/v1/crm/contacts", {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ id: lead.id }),
-                }).catch(() => {})}><MoreHorizontal className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" title="Mark qualified" onClick={() => updateLeadStatus(lead.id, "active")}><ArrowRight className="w-4 h-4" /></Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="w-4 h-4" /></Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => updateLeadStatus(lead.id, "archived")}>
+                      <Archive className="w-3.5 h-3.5 mr-2" />Archive
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDeleteLead(lead.id)}>
+                      <Trash2 className="w-3.5 h-3.5 mr-2" />Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </Card>

@@ -6,6 +6,7 @@ import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Lightbulb, Target, Phone, Send, Calendar, TrendingUp, Star, Zap, MessageSquare, Mail, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface ActionSuggestion {
   id: string; deal: string; action: string; impact: "high" | "medium" | "low"
@@ -41,16 +42,9 @@ export function CrmNextBestAction() {
   }
 
   useEffect(() => {
-    fetch("/api/v1/ai/crm-query", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: "Generate 5 next best actions for my CRM deals. Return ONLY valid JSON array with objects having: id (string), deal (string), action (string), impact (\"high\"/\"medium\"/\"low\"), reason (string), channel (string), value (number). No markdown.",
-      }),
-    }).then((r) => r.ok ? r.json() : Promise.reject()).then((data) => {
-      const parsed = JSON.parse(data.response)
-      setActions(Array.isArray(parsed) ? parsed : [])
-    }).catch(() => setError("Could not generate suggestions"))
+    /* eslint-disable react-hooks/set-state-in-effect */
+    fetchActions()
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
@@ -95,13 +89,19 @@ export function CrmNextBestAction() {
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">{s.reason}</p>
                 </div>
-                <Button size="sm" variant="ghost" className="h-7 text-[10px] shrink-0" onClick={() => {
-                  fetch("/api/v1/ai/crm-query", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query: `Execute action for deal "${s.deal}": ${s.action}` }),
-                  }).catch(() => {})
-                  setActions((prev) => prev.filter((a) => a.id !== s.id))
+                <Button size="sm" variant="ghost" className="h-7 text-[10px] shrink-0" onClick={async () => {
+                  try {
+                    const res = await fetch("/api/v1/ai/crm-query", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ query: `Execute action for deal "${s.deal}": ${s.action}` }),
+                    })
+                    if (!res.ok) throw new Error()
+                    toast.success("Action logged")
+                    setActions((prev) => prev.filter((a) => a.id !== s.id))
+                  } catch {
+                    toast.error("Failed to execute action")
+                  }
                 }}>
                   <Send className="h-3 w-3 mr-1" />Do It
                 </Button>

@@ -4,7 +4,7 @@ import { DEFAULT_CHAT_MODEL, BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
 import { extractTenantContext } from "@/lib/multitenant/context.server"
 import { checkTenantRateLimit } from "@/lib/multitenant/rate-limit"
 import { createServiceClient } from "@/lib/supabase/service"
-import { getPipelineSummary, listContacts, logActivity } from "@/lib/crm/engine"
+import { getPipelineSummary, listContacts, getContact, logActivity } from "@/lib/crm/engine"
 import { createTask } from "@/lib/crm/extensions"
 import {
   computeNextBestActions,
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   const rateLimited = await checkTenantRateLimit(ctx.tenantId, 200, 20)
   if (rateLimited) return rateLimited
 
-  const { query } = await request.json().catch(() => ({ query: "" }))
+  const { query, contactId } = await request.json().catch(() => ({ query: "", contactId: undefined }))
   const q: string = query || ""
   const orgId = ctx.organizationId
   const db = createServiceClient()
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     if (/vertical industry|vertical buying/i.test(q)) return respond(await computeVerticalSignals(orgId))
     if (/event instrumentation/i.test(q)) {
       const funnel = await computeEventFunnel(orgId)
-      return respond({ funnel, retention: [], cohorts: [] })
+      return respond({ funnel })
     }
 
     // ---- Grounded generation ----
@@ -108,11 +108,11 @@ export async function POST(request: Request) {
         .in("type", ["call", "email", "meeting"])
         .order("created_at", { ascending: false })
         .limit(15)
-      if (!activities || activities.length === 0) return respond({ templates: [], sentiments: [] })
+      if (!activities || activities.length === 0) return respond({ templates: [], sentiments: [], playbooks: [] })
 
       const facts = activities.map((a, i) => `${i + 1}. [${a.type}] ${a.subject}: ${(a.body ?? "").slice(0, 300)}`).join("\n")
       const text = await groundedText(
-        `Generate conversation intelligence data. Return ONLY valid JSON with: templates (array of {id, name, scenario, suggested, objection, rebuttal} drawn from patterns in the logged interactions below) and sentiments (array of {name, sentiment: 0-100, trend: "up"/"down", keywords: string[]}, one per distinct interaction subject). No markdown.`,
+        `Generate conversation intelligence data. Return ONLY valid JSON with: templates (array of {id, name, scenario, suggested, objection, rebuttal} drawn from patterns in the logged interactions below), sentiments (array of {name, sentiment: 0-100, trend: "up"/"down", keywords: string[]}, one per distinct interaction subject), and playbooks (array of {id, name, stages: string[]} -- 2-3 outreach/deal playbooks whose stages reflect the actual interaction patterns seen below, not generic filler). No markdown.`,
         facts,
       )
       return NextResponse.json({ response: text })
@@ -138,7 +138,9 @@ export async function POST(request: Request) {
     }
 
     if (/nurture sequences/i.test(q)) {
-      const { contacts } = await listContacts(orgId, { status: "lead", limit: 3 })
+      const contacts = contactId
+        ? [await getContact(orgId, contactId)].filter((c): c is NonNullable<typeof c> => c !== null)
+        : (await listContacts(orgId, { status: "lead", limit: 3 })).contacts
       if (contacts.length === 0) return respond([])
       const facts = contacts.map((c, i) => `${i + 1}. id=${c.id}, name=${c.first_name} ${c.last_name}, title=${c.title ?? "unknown"}`).join("\n")
       const text = await groundedText(

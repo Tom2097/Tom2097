@@ -4,6 +4,15 @@ import { useState, useEffect } from "react"
 import { Phone, Mail, MessageSquare, Calendar, FileText, CheckCircle2, ArrowRight, Plus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toast } from "sonner"
+
+interface ContactOption {
+  id: string
+  first_name?: string
+  last_name?: string
+  email?: string
+}
 
 interface TimelineEvent {
   id: string; type: string; title: string; description: string | null; timestamp: string
@@ -32,6 +41,22 @@ export function CrmTimeline({ entityId, entityType }: { entityId?: string; entit
   const [showLogForm, setShowLogForm] = useState(false)
   const [logTitle, setLogTitle] = useState("")
   const [logDesc, setLogDesc] = useState("")
+  const [logContactId, setLogContactId] = useState("")
+  const [contactOptions, setContactOptions] = useState<ContactOption[]>([])
+
+  // When mounted without an entity (the org-wide Timeline tab), activity has to be
+  // attached to something -- crm_timeline_entries requires a non-null entity_id/type.
+  // Let the user pick a contact to log against instead of silently failing.
+  const needsEntityPicker = !entityId || !entityType
+
+  useEffect(() => {
+    if (!needsEntityPicker) return
+    fetch("/api/v1/crm/contacts?limit=100")
+      .then((r) => (r.ok ? r.json() : { contacts: [] }))
+      .then((data) => setContactOptions(data.contacts || data.data || []))
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -48,20 +73,31 @@ export function CrmTimeline({ entityId, entityType }: { entityId?: string; entit
 
   const handleLogActivity = async () => {
     if (!logTitle.trim()) return
+    const targetEntityId = entityId ?? logContactId
+    const targetEntityType = entityType ?? "contact"
+    if (!targetEntityId) {
+      toast.error("Select who this activity relates to")
+      return
+    }
     try {
       const res = await fetch("/api/v1/crm/timeline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ entityId, entityType, title: logTitle, description: logDesc }),
+        body: JSON.stringify({ entityId: targetEntityId, entityType: targetEntityType, title: logTitle, description: logDesc }),
       })
-      if (res.ok) {
-        const newEvent = await res.json()
-        setEvents((prev) => [newEvent, ...prev])
-        setLogTitle("")
-        setLogDesc("")
-        setShowLogForm(false)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to log activity")
       }
-    } catch { /* ignore */ }
+      const newEvent = await res.json()
+      setEvents((prev) => [newEvent, ...prev])
+      setLogTitle("")
+      setLogDesc("")
+      setLogContactId("")
+      setShowLogForm(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to log activity")
+    }
   }
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
@@ -76,6 +112,18 @@ export function CrmTimeline({ entityId, entityType }: { entityId?: string; entit
 
       {showLogForm && (
         <div className="mb-4 p-3 rounded-xl border border-border/50 bg-muted/30 space-y-2">
+          {needsEntityPicker && (
+            <Select value={logContactId} onValueChange={setLogContactId}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Relates to..." /></SelectTrigger>
+              <SelectContent>
+                {contactOptions.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {[c.first_name, c.last_name].filter(Boolean).join(" ") || c.email || "Unnamed"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <input value={logTitle} onChange={(e) => setLogTitle(e.target.value)} placeholder="Activity title..." className="w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
           <input value={logDesc} onChange={(e) => setLogDesc(e.target.value)} placeholder="Description (optional)..." className="w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
           <div className="flex gap-2">

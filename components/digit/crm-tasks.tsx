@@ -1,12 +1,26 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Circle, CheckCircle2, Clock, AlertCircle, MoreHorizontal, User, Trash2 } from "lucide-react"
+import { Plus, Circle, CheckCircle2, Clock, AlertCircle, MoreHorizontal, User, Trash2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 interface CrmTaskItem {
   id: string
@@ -39,12 +53,58 @@ export function CrmTasks() {
   const [error, setError] = useState("")
   const [filter, setFilter] = useState<string>("all")
 
-  useEffect(() => {
+  const [addOpen, setAddOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [newTitle, setNewTitle] = useState("")
+  const [newDescription, setNewDescription] = useState("")
+  const [newPriority, setNewPriority] = useState("medium")
+  const [newDueAt, setNewDueAt] = useState("")
+
+  const loadTasks = () =>
     fetch("/api/v1/crm/tasks")
       .then((r) => r.ok ? r.json() : Promise.reject("Failed"))
       .then((data) => { setTasks(data.tasks || []); setLoading(false) })
       .catch(() => { setError("Failed to load tasks"); setLoading(false) })
+
+  useEffect(() => {
+    loadTasks()
   }, [])
+
+  const resetForm = () => {
+    setNewTitle("")
+    setNewDescription("")
+    setNewPriority("medium")
+    setNewDueAt("")
+  }
+
+  const handleAddTask = async () => {
+    if (!newTitle.trim()) return
+    setSaving(true)
+    try {
+      const res = await fetch("/api/v1/crm/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          description: newDescription.trim() || null,
+          priority: newPriority,
+          due_at: newDueAt || null,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to create task")
+      }
+      setAddOpen(false)
+      resetForm()
+      toast.success("Task created")
+      loadTasks()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create task")
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const toggleComplete = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === "completed" ? "pending" : "completed"
@@ -78,7 +138,52 @@ export function CrmTasks() {
             </button>
           ))}
         </div>
-        <Button size="sm" className="gap-1 h-7 text-xs"><Plus className="w-3 h-3" /> Add Task</Button>
+        <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) resetForm() }}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="gap-1 h-7 text-xs"><Plus className="w-3 h-3" /> Add Task</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Task</DialogTitle>
+              <DialogDescription>Create a new CRM task.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="task-title">Title</Label>
+                <Input id="task-title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Follow up with prospect" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="task-description">Description</Label>
+                <Textarea id="task-description" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} rows={3} placeholder="Optional notes..." />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="task-priority">Priority</Label>
+                  <Select value={newPriority} onValueChange={setNewPriority}>
+                    <SelectTrigger id="task-priority"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="task-due">Due date</Label>
+                  <Input id="task-due" type="date" value={newDueAt} onChange={(e) => setNewDueAt(e.target.value)} />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
+              <Button onClick={handleAddTask} disabled={saving || !newTitle.trim()}>
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Task
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="space-y-2">

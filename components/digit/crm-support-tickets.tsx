@@ -66,6 +66,7 @@ export function CrmSupportTickets() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [priorityFilter, setPriorityFilter] = useState<string | null>(null)
+  const [newTicketOpen, setNewTicketOpen] = useState(false)
   const router = useRouter()
 
   const fetchTickets = useCallback(async () => {
@@ -150,6 +151,7 @@ export function CrmSupportTickets() {
           company_id: null,
           assigned_to: null
         })
+        setNewTicketOpen(false)
         fetchTickets()
       } else {
         toast.error(result.error || 'Failed to create support ticket')
@@ -278,7 +280,7 @@ export function CrmSupportTickets() {
             <CardTitle>Support Tickets</CardTitle>
             <CardDescription>Manage customer support requests and issues</CardDescription>
           </div>
-          <Dialog>
+          <Dialog open={newTicketOpen} onOpenChange={setNewTicketOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Ticket className="h-4 w-4 mr-2" /> New Ticket
@@ -360,14 +362,14 @@ export function CrmSupportTickets() {
                   <div className="space-y-2">
                     <Label htmlFor="ticket-contact">Contact</Label>
                     <Select
-                      value={newTicket.contact_id || ''}
-                      onValueChange={(value) => setNewTicket({...newTicket, contact_id: value})}
+                      value={newTicket.contact_id || 'none'}
+                      onValueChange={(value) => setNewTicket({...newTicket, contact_id: value === 'none' ? null : value})}
                     >
                       <SelectTrigger id="ticket-contact">
                         <SelectValue placeholder="Select contact" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {contacts.map(contact => (
                           <SelectItem key={contact.id} value={contact.id}>
                             {contact.first_name} {contact.last_name} ({contact.email})
@@ -379,14 +381,14 @@ export function CrmSupportTickets() {
                   <div className="space-y-2">
                     <Label htmlFor="ticket-assignee">Assignee</Label>
                     <Select
-                      value={newTicket.assigned_to || ''}
-                      onValueChange={(value) => setNewTicket({...newTicket, assigned_to: value})}
+                      value={newTicket.assigned_to || 'unassigned'}
+                      onValueChange={(value) => setNewTicket({...newTicket, assigned_to: value === 'unassigned' ? null : value})}
                     >
                       <SelectTrigger id="ticket-assignee">
                         <SelectValue placeholder="Select assignee" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Unassigned</SelectItem>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
                         {users.map(user => (
                           <SelectItem key={user.id} value={user.id}>
                             {user.name} ({user.email})
@@ -398,16 +400,19 @@ export function CrmSupportTickets() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setNewTicket({
-                  subject: '',
-                  description: '',
-                  status: 'open',
-                  priority: 'medium',
-                  category: '',
-                  contact_id: null,
-                  company_id: null,
-                  assigned_to: null
-                })}
+                <Button variant="outline" onClick={() => {
+                  setNewTicket({
+                    subject: '',
+                    description: '',
+                    status: 'open',
+                    priority: 'medium',
+                    category: '',
+                    contact_id: null,
+                    company_id: null,
+                    assigned_to: null
+                  })
+                  setNewTicketOpen(false)
+                }}
                 >
                   Cancel
                 </Button>
@@ -431,24 +436,24 @@ export function CrmSupportTickets() {
                 className="pl-9"
               />
             </div>
-            <Select value={statusFilter || ''} onValueChange={setStatusFilter}>
+            <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? null : v)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="open">Open</SelectItem>
                 <SelectItem value="in_progress">In Progress</SelectItem>
                 <SelectItem value="resolved">Resolved</SelectItem>
                 <SelectItem value="closed">Closed</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={priorityFilter || ''} onValueChange={setPriorityFilter}>
+            <Select value={priorityFilter || 'all'} onValueChange={(v) => setPriorityFilter(v === 'all' ? null : v)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Filter by priority" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Priorities</SelectItem>
+                <SelectItem value="all">All Priorities</SelectItem>
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="high">High</SelectItem>
@@ -509,7 +514,7 @@ export function CrmSupportTickets() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Dialog>
+                            <Dialog open={currentTicket?.id === ticket.id} onOpenChange={(open) => !open && setCurrentTicket(null)}>
                               <DialogTrigger asChild>
                                 <Button
                                   variant="ghost"
@@ -593,14 +598,14 @@ export function CrmSupportTickets() {
                                       <div className="space-y-2">
                                         <Label htmlFor="edit-ticket-contact">Contact</Label>
                                         <Select
-                                          value={currentTicket.contact_id || ''}
-                                          onValueChange={(value) => setCurrentTicket({...currentTicket, contact_id: value})}
+                                          value={currentTicket.contact_id || 'none'}
+                                          onValueChange={(value) => setCurrentTicket({...currentTicket, contact_id: value === 'none' ? null : value})}
                                         >
                                           <SelectTrigger id="edit-ticket-contact">
                                             <SelectValue placeholder="Select contact" />
                                           </SelectTrigger>
                                           <SelectContent>
-                                            <SelectItem value="">None</SelectItem>
+                                            <SelectItem value="none">None</SelectItem>
                                             {contacts.map(contact => (
                                               <SelectItem key={contact.id} value={contact.id}>
                                                 {contact.first_name} {contact.last_name} ({contact.email})
@@ -612,14 +617,14 @@ export function CrmSupportTickets() {
                                       <div className="space-y-2">
                                         <Label htmlFor="edit-ticket-assignee">Assignee</Label>
                                         <Select
-                                          value={currentTicket.assigned_to || ''}
-                                          onValueChange={(value) => setCurrentTicket({...currentTicket, assigned_to: value})}
+                                          value={currentTicket.assigned_to || 'unassigned'}
+                                          onValueChange={(value) => setCurrentTicket({...currentTicket, assigned_to: value === 'unassigned' ? null : value})}
                                         >
                                           <SelectTrigger id="edit-ticket-assignee">
                                             <SelectValue placeholder="Select assignee" />
                                           </SelectTrigger>
                                           <SelectContent>
-                                            <SelectItem value="">Unassigned</SelectItem>
+                                            <SelectItem value="unassigned">Unassigned</SelectItem>
                                             {users.map(user => (
                                               <SelectItem key={user.id} value={user.id}>
                                                 {user.name} ({user.email})

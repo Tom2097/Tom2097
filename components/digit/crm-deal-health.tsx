@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, CheckCircle2, Clock, TrendingUp, Zap, MessageSquare, Users, Target, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface DealHealthItem {
   id: string; deal: string; value: number; stage: string; risk: "high" | "medium" | "low"
@@ -18,6 +19,7 @@ export function CrmDealHealthRadar() {
   const [deals, setDeals] = useState<DealHealthItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [executing, setExecuting] = useState<string | null>(null)
 
   const fetchHealth = async () => {
     try {
@@ -95,14 +97,23 @@ export function CrmDealHealthRadar() {
                 <Clock className="h-3 w-3" />
                 {deal.daysSinceUpdate} days since last activity
               </div>
-              <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => {
-                fetch("/api/v1/ai/crm-query", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ query: `Execute next action for deal "${deal.deal}": ${deal.nextAction}` }),
-                }).catch(() => {})
+              <Button size="sm" variant="ghost" className="h-6 text-[10px]" disabled={executing === deal.id} onClick={async () => {
+                setExecuting(deal.id)
+                try {
+                  const res = await fetch("/api/v1/ai/crm-query", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query: `Execute next action for deal "${deal.deal}": ${deal.nextAction}` }),
+                  })
+                  if (!res.ok) throw new Error()
+                  toast.success("Action logged")
+                } catch {
+                  toast.error("Failed to execute action")
+                } finally {
+                  setExecuting(null)
+                }
               }}>
-                <Target className="h-3 w-3 mr-1" />{deal.nextAction}
+                {executing === deal.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Target className="h-3 w-3 mr-1" />}{deal.nextAction}
               </Button>
             </div>
           </motion.div>
