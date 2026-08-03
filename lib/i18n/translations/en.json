@@ -281,7 +281,7 @@
       "ratingPlaceholder": "Select a rating",
       "priorityPlaceholder": "Select priority",
       "requiredField": "This field is required",
-      "item": "item|items",
+      "item": "item",
       "positiveSentiment": "Positive sentiment",
       "avgResponseTime": "Avg response time",
       "categorization": "Categorization",
@@ -295,7 +295,9 @@
       "neutral": "Neutral",
       "negative": "Negative",
       "bugReports": "Bug Reports",
-      "featureRequests": "Feature Requests"
+      "featureRequests": "Feature Requests",
+      "heading": "Feedback",
+      "items": "items"
     }
   },
   "compliance": {

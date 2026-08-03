@@ -281,7 +281,7 @@
       "ratingPlaceholder": "एक रेटिंग चुनें",
       "priorityPlaceholder": "प्राथमिकता चुनें",
       "requiredField": "यह फ़ील्ड आवश्यक है",
-      "item": "आइटम|आइटम्स",
+      "item": "आइटम",
       "positiveSentiment": "सकारात्मक भावना",
       "avgResponseTime": "औसत प्रतिक्रिया समय",
       "categorization": "वर्गीकरण",
@@ -295,7 +295,9 @@
       "neutral": "तटस्थ",
       "negative": "नकारात्मक",
       "bugReports": "बग रिपोर्ट",
-      "featureRequests": "फीचर अनुरोध"
+      "featureRequests": "फीचर अनुरोध",
+      "heading": "फ़ीडबैक",
+      "items": "आइटम"
     }
   },
   "compliance": {

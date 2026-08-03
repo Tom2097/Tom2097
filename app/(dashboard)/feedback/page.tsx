@@ -222,9 +222,9 @@ export default function FeedbackPage() {
       {/* Header */}
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-           <h1 className="text-2xl font-bold text-foreground">{t("feedback.page.title")}</h1>
+           <h1 className="text-2xl font-bold text-foreground">{t("feedback.page.heading")}</h1>
            <p className="text-sm text-muted-foreground">
-             {total} {t("feedback.page.item", { count: total })} — {t("feedback.page.subtitle")}
+             {total} {total === 1 ? t("feedback.page.item") : t("feedback.page.items")} — {t("feedback.page.subtitle")}
            </p>
         </div>
         <div className="flex items-center gap-2">

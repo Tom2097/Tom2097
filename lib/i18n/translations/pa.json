@@ -281,7 +281,7 @@
       "ratingPlaceholder": "ਇੱਕ ਰੇਟਿੰਗ ਚੁਣੋ",
       "priorityPlaceholder": "ਤਰਜੀਹ ਚੁਣੋ",
       "requiredField": "ਇਹ ਫੀਲਡ ਲਾਜ਼ਮੀ ਹੈ",
-      "item": "ਆਈਟਮ|ਆਈਟਮਾਂ",
+      "item": "ਆਈਟਮ",
       "positiveSentiment": "ਸਕਾਰਾਤਮਕ ਭਾਵਨਾ",
       "avgResponseTime": "ਔਸਤ ਪ੍ਰਤੀਕਿਰਿਆ ਸਮਾਂ",
       "categorization": "ਵਰਗੀਕਰਣ",
@@ -295,7 +295,9 @@
       "neutral": "ਤਟਸਥ",
       "negative": "ਨਕਾਰਾਤਮਕ",
       "bugReports": "ਬੱਗ ਰਿਪੋਰਟਾਂ",
-      "featureRequests": "ਫੀਚਰ ਬੇਨਤੀਆਂ"
+      "featureRequests": "ਫੀਚਰ ਬੇਨਤੀਆਂ",
+      "heading": "ਫੀਡਬੈਕ",
+      "items": "ਆਈਟਮਾਂ"
     }
   },
   "compliance": {
