@@ -20,7 +20,8 @@ import {
   Trash2,
   X,
   Crown,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Plug
 } from "lucide-react"
 import { startRegistration } from "@simplewebauthn/browser"
 import { Card } from "@/components/ui/card"
@@ -55,6 +56,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useI18n } from "@/components/providers/i18n-provider"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
+import { ConnectorManager } from "@/components/digit/connector-manager"
 
 interface Profile {
   id: string
@@ -114,6 +116,50 @@ function SuccessBanner({ t }: { t: (key: string, params?: Record<string, string 
   )
 }
 
+const INTEGRATION_ERROR_MESSAGES: Record<string, string> = {
+  connector_not_found: "That connector no longer exists.",
+  not_oauth_connector: "This connector type doesn't use OAuth.",
+  google_not_configured: "Google integration isn't configured on this server yet.",
+  microsoft_not_configured: "Microsoft integration isn't configured on this server yet.",
+  slack_not_configured: "Slack integration isn't configured on this server yet.",
+  unknown_provider: "Unknown OAuth provider.",
+  oauth_denied: "Access was denied.",
+  missing_code: "The provider didn't return an authorization code.",
+  invalid_state: "This connection link has expired -- please try again.",
+  oauth_failed: "Couldn't complete the connection. Please try again.",
+}
+
+function IntegrationsBanner() {
+  const searchParams = useSearchParams()
+  const connected = searchParams?.get("connected")
+  const error = searchParams?.get("error")
+
+  if (!connected && !error) return null
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`flex items-center gap-3 p-4 rounded-lg border ${
+        error ? "bg-destructive/10 border-destructive/20 text-destructive" : "bg-green-500/10 border-green-500/20 text-green-600"
+      }`}
+    >
+      {error ? <AlertCircle className="w-5 h-5" /> : <Check className="w-5 h-5" />}
+      <span>{error ? INTEGRATION_ERROR_MESSAGES[error] ?? "Something went wrong." : "Connector connected successfully."}</span>
+    </motion.div>
+  )
+}
+
+function TabFromQuery({ onTab }: { onTab: (tab: string) => void }) {
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    const tab = searchParams?.get("tab")
+    if (tab) onTab(tab)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+  return null
+}
+
 export default function SettingsPage() {
   const { t } = useI18n();
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -125,6 +171,7 @@ export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [twoFactorAuth, setTwoFactorAuth] = useState(false)
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null)
+  const [activeTab, setActiveTab] = useState("subscription")
 
   // Invite state
   const [inviteEmail, setInviteEmail] = useState("")
@@ -642,8 +689,14 @@ export default function SettingsPage() {
       <Suspense fallback={null}>
         <SuccessBanner t={t} />
       </Suspense>
+      <Suspense fallback={null}>
+        <IntegrationsBanner />
+      </Suspense>
+      <Suspense fallback={null}>
+        <TabFromQuery onTab={setActiveTab} />
+      </Suspense>
 
-      <Tabs defaultValue="subscription" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="bg-muted/50 p-1">
           <TabsTrigger value="subscription" className="gap-2">
             <CreditCard className="w-4 h-4" />
@@ -656,6 +709,10 @@ export default function SettingsPage() {
           <TabsTrigger value="organization" className="gap-2">
             <Building2 className="w-4 h-4" />
             Organization
+          </TabsTrigger>
+          <TabsTrigger value="integrations" className="gap-2">
+            <Plug className="w-4 h-4" />
+            Integrations
           </TabsTrigger>
           <TabsTrigger value="security" className="gap-2">
             <Shield className="w-4 h-4" />
@@ -1108,6 +1165,13 @@ export default function SettingsPage() {
                 </div>
               )}
             </Card>
+          </motion.div>
+        </TabsContent>
+
+        {/* Integrations Tab */}
+        <TabsContent value="integrations" className="space-y-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <ConnectorManager />
           </motion.div>
         </TabsContent>
 

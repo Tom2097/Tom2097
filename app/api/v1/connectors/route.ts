@@ -1,10 +1,10 @@
 import { withAuth } from "@/lib/auth/with-auth"
-import { listConnectors, createConnector, deleteConnector } from "@/lib/connectors/engine"
+import { listConnectors, createConnector, deleteConnector, toPublicConnector } from "@/lib/connectors/engine"
 import { NextResponse } from "next/server"
 
 export const GET = withAuth(async (req, { organizationId }) => {
   const connectors = await listConnectors(organizationId)
-  return NextResponse.json({ connectors })
+  return NextResponse.json({ connectors: connectors.map(toPublicConnector) })
 })
 
 export const POST = withAuth(async (req, { organizationId, userId }) => {
@@ -16,7 +16,7 @@ export const POST = withAuth(async (req, { organizationId, userId }) => {
   if (!connector) {
     return NextResponse.json({ error: "Failed to create connector" }, { status: 500 })
   }
-  return NextResponse.json({ connector }, { status: 201 })
+  return NextResponse.json({ connector: toPublicConnector(connector) }, { status: 201 })
 })
 
 export const DELETE = withAuth(async (req, { organizationId }) => {

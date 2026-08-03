@@ -26,18 +26,20 @@ const steps = [
   { id: "review", title: "Review & Activate", icon: Rocket },
 ]
 
-// Only gmail/google_drive/slack have a real sync implementation
-// (lib/connectors/engine.ts) -- the rest are registered as "custom" so they
-// still show up as a real connector row, but need manual credential setup
-// via Settings > Integrations (no OAuth handshake happens from this wizard).
+// Gmail/Google Drive/Slack/SharePoint have real OAuth + sync implementations
+// (lib/connectors/engine.ts, lib/connectors/oauth.ts) -- Dropbox/Custom API
+// are registered as "custom" and need manual credential setup via
+// Settings > Integrations.
 const dataSourceTypes: Record<string, string> = {
   Gmail: "gmail",
   "Google Drive": "google_drive",
   Slack: "slack",
-  SharePoint: "custom",
+  SharePoint: "sharepoint",
   Dropbox: "custom",
   "Custom API": "custom",
 }
+
+const OAUTH_SOURCES = new Set(["Gmail", "Google Drive", "Slack", "SharePoint"])
 
 const verticals = [
   "Compliance",
@@ -64,6 +66,7 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<Record<string, "connecting" | "connected" | "error">>({})
+  const [connectorIds, setConnectorIds] = useState<Record<string, string>>({})
   const [formData, setFormData] = useState<Record<string, unknown>>({
     name: "",
     description: "",
@@ -90,6 +93,8 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
         body: JSON.stringify({ name: source, type: dataSourceTypes[source] ?? "custom", credentials: {}, settings: {} }),
       })
       if (!res.ok) throw new Error("Failed to connect")
+      const { connector } = await res.json()
+      if (connector?.id) setConnectorIds((prev) => ({ ...prev, [source]: connector.id }))
       setConnectionStatus((prev) => ({ ...prev, [source]: "connected" }))
     } catch {
       setConnectionStatus((prev) => ({ ...prev, [source]: "error" }))
@@ -234,18 +239,30 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
                         {connectionStatus[source] === "connected" && <Check className="h-3 w-3 text-green-500" />}
                         {connectionStatus[source] === "error" && <AlertCircle className="h-3 w-3 text-destructive" />}
                       </div>
-                      <Switch
-                        checked={((formData.dataSources as string[]) ?? []).includes(source)}
-                        onCheckedChange={(v) => {
-                          const current = (formData.dataSources as string[]) ?? []
-                          update("dataSources", v ? [...current, source] : current.filter((s) => s !== source))
-                          if (v) connectSource(source)
-                        }}
-                      />
+                      <div className="flex items-center gap-3">
+                        {connectionStatus[source] === "connected" && OAUTH_SOURCES.has(source) && connectorIds[source] && (
+                          <a
+                            href={`/api/v1/connectors/${connectorIds[source]}/oauth/start`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline"
+                          >
+                            Connect
+                          </a>
+                        )}
+                        <Switch
+                          checked={((formData.dataSources as string[]) ?? []).includes(source)}
+                          onCheckedChange={(v) => {
+                            const current = (formData.dataSources as string[]) ?? []
+                            update("dataSources", v ? [...current, source] : current.filter((s) => s !== source))
+                            if (v) connectSource(source)
+                          }}
+                        />
+                      </div>
                     </div>
                   ))}
                   <p className="text-xs text-muted-foreground">
-                    Gmail, Google Drive, and Slack are registered immediately; finish authenticating them afterward in Settings &gt; Integrations. Other sources are registered for manual credential setup.
+                    Gmail, Google Drive, Slack, and SharePoint are registered immediately -- click &quot;Connect&quot; next to each to sign in and grant access (or finish later in Settings &gt; Integrations). Dropbox and Custom API are registered for manual credential setup.
                   </p>
                 </div>
               )}

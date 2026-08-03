@@ -1,4 +1,4 @@
-export type ConnectorType = "gmail" | "google_drive" | "slack" | "custom"
+export type ConnectorType = "gmail" | "google_drive" | "slack" | "sharepoint" | "custom"
 
 export interface ConnectorConfig {
   id: string

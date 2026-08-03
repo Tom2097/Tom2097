@@ -43,6 +43,8 @@ interface Connector {
   name: string
   type: string
   enabled: boolean
+  connected: boolean
+  oauthProvider: "google" | "microsoft" | "slack" | null
   last_sync_at: string | null
   created_at: string
 }
@@ -51,6 +53,7 @@ const connectorIcons: Record<string, React.ElementType> = {
   gmail: Mail,
   google_drive: FolderOpen,
   slack: MessageSquare,
+  sharepoint: FolderOpen,
   custom: Globe,
 }
 
@@ -58,8 +61,13 @@ const connectorLabels: Record<string, string> = {
   gmail: "Gmail",
   google_drive: "Google Drive",
   slack: "Slack",
+  sharepoint: "SharePoint",
   custom: "Custom API",
 }
+
+// Types with a real OAuth flow -- these get a "Connect with..." redirect
+// button instead of a manual API key field.
+const OAUTH_TYPES = new Set(["gmail", "google_drive", "slack", "sharepoint"])
 
 export function ConnectorManager() {
   const [connectors, setConnectors] = useState<Connector[]>([])
@@ -83,15 +91,24 @@ export function ConnectorManager() {
   useEffect(() => { fetchConnectors() }, [])
 
   const handleCreate = async () => {
+    const isOAuth = OAUTH_TYPES.has(newConnector.type)
     const res = await fetch("/api/v1/connectors", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newConnector.name, type: newConnector.type, credentials: { api_key: newConnector.credentials } }),
+      body: JSON.stringify({
+        name: newConnector.name,
+        type: newConnector.type,
+        credentials: isOAuth ? {} : { api_key: newConnector.credentials },
+      }),
     })
     if (res.ok) {
+      const { connector } = await res.json()
       setAddOpen(false)
       setNewConnector({ name: "", type: "gmail", credentials: "" })
-      fetchConnectors()
+      await fetchConnectors()
+      if (isOAuth && connector?.id) {
+        window.location.href = `/api/v1/connectors/${connector.id}/oauth/start`
+      }
     }
   }
 
@@ -152,14 +169,25 @@ export function ConnectorManager() {
                 <Label>Name</Label>
                 <Input value={newConnector.name} onChange={(e) => setNewConnector(p => ({ ...p, name: e.target.value }))} placeholder="My Connector" />
               </div>
-              <div className="space-y-2">
-                <Label>API Key / Token</Label>
-                <Input value={newConnector.credentials} onChange={(e) => setNewConnector(p => ({ ...p, credentials: e.target.value }))} type="password" />
-              </div>
+              {OAUTH_TYPES.has(newConnector.type) ? (
+                <p className="text-xs text-muted-foreground">
+                  You&apos;ll be redirected to sign in and grant access after creating this connector -- no API key needed.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  <Label>API Key / Token</Label>
+                  <Input value={newConnector.credentials} onChange={(e) => setNewConnector(p => ({ ...p, credentials: e.target.value }))} type="password" />
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
-              <Button onClick={handleCreate} disabled={!newConnector.name || !newConnector.credentials}>Connect</Button>
+              <Button
+                onClick={handleCreate}
+                disabled={!newConnector.name || (!OAUTH_TYPES.has(newConnector.type) && !newConnector.credentials)}
+              >
+                {OAUTH_TYPES.has(newConnector.type) ? "Continue" : "Connect"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -169,7 +197,7 @@ export function ConnectorManager() {
         <div className="text-center py-12 text-muted-foreground">
           <Plug className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p>No connectors configured</p>
-          <p className="text-sm mt-2">Connect Gmail, Google Drive, or Slack to ingest data automatically</p>
+          <p className="text-sm mt-2">Connect Gmail, Google Drive, SharePoint, or Slack to ingest data automatically</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -190,9 +218,15 @@ export function ConnectorManager() {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-foreground">{connector.name}</p>
-                      <Badge variant={connector.enabled ? "default" : "secondary"} className="text-xs">
-                        {connector.enabled ? "Active" : "Disabled"}
-                      </Badge>
+                      {OAUTH_TYPES.has(connector.type) ? (
+                        <Badge variant={connector.connected ? "default" : "secondary"} className="text-xs">
+                          {connector.connected ? "Connected" : "Not connected"}
+                        </Badge>
+                      ) : (
+                        <Badge variant={connector.enabled ? "default" : "secondary"} className="text-xs">
+                          {connector.enabled ? "Active" : "Disabled"}
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {connectorLabels[connector.type] || connector.type}
@@ -201,9 +235,15 @@ export function ConnectorManager() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button size="icon" variant="ghost" onClick={() => handleSync(connector.id)} disabled={syncing === connector.id}>
-                    {syncing === connector.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                  </Button>
+                  {OAUTH_TYPES.has(connector.type) && !connector.connected ? (
+                    <Button size="sm" variant="outline" asChild>
+                      <a href={`/api/v1/connectors/${connector.id}/oauth/start`}>Connect</a>
+                    </Button>
+                  ) : (
+                    <Button size="icon" variant="ghost" onClick={() => handleSync(connector.id)} disabled={syncing === connector.id}>
+                      {syncing === connector.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                    </Button>
+                  )}
                   <Button size="icon" variant="ghost" onClick={() => handleDelete(connector.id)}>
                     <Trash2 className="w-4 h-4 text-destructive" />
                   </Button>
