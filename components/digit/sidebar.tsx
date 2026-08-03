@@ -186,7 +186,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                   <span className="flex items-center gap-2">
                     {t('sidebar.admin')}
                     <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                      Owner
+                      Founder
                     </span>
                   </span>
                 )}
@@ -206,7 +206,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                   <span className="flex items-center gap-2">
                     {t('sidebar.platformCapacity')}
                     <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                      Owner
+                      Founder
                     </span>
                   </span>
                 )}
