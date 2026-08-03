@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, Activity, Zap, Shield, Crown, Lock, ChevronRight, RefreshCw, AlertTriangle, BarChart2, TrendingUp, MessageSquare, Users, FileText } from 'lucide-react'
+import { ArrowRight, Activity, Zap, Shield, Crown, Lock, RefreshCw, AlertTriangle, BarChart2, TrendingUp, MessageSquare, Users, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -54,32 +54,6 @@ export default function DashboardContent({
 
   return (
     <div className="space-y-8">
-      {isTrialing && (
-        <Card className="p-4 border-amber-500/30 bg-amber-500/10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                <Crown className="w-5 h-5 text-amber-500" />
-              </div>
-              <div>
-                <p className="font-medium text-foreground">{t("dashboard.subscription.trial.title")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {subscription?.current_period_end
-                    ? `${t("dashboard.subscription.trial.ends")} ${new Date(subscription.current_period_end).toLocaleDateString()}`
-                    : t("dashboard.subscription.trial.upgradeToUnlock")}
-                </p>
-              </div>
-            </div>
-             <Button asChild>
-               <Link href="/pricing">
-                 {t("dashboard.subscription.trial.upgradeNow")}
-                 <ChevronRight className="w-4 h-4 ml-1" />
-               </Link>
-             </Button>
-          </div>
-        </Card>
-      )}
-
       {isActive && plan && (
         <Card className="p-4 border-chart-2/30 bg-chart-2/10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
