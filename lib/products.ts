@@ -82,7 +82,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     annualPriceInr: 15199900,
     interval: "month",
     features: [
-      "All 4 workspace modules",
+      "All 6 workspace modules",
       "Unlimited team members (fair-use)",
       "Custom AI actions/month",
       "Autonomous AI agents & simulation",
@@ -98,7 +98,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     limits: {
       users: -1,
       dataPoints: -1,
-      modules: 4,
+      modules: 6,
       apiCalls: -1,
     },
   },
