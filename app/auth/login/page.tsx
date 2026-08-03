@@ -122,7 +122,7 @@ function LoginForm() {
             <Logo size="md" />
           </div>
            <CardTitle className="text-2xl">{t("auth.login.welcomeBack")}</CardTitle>
-           <CardDescription>{t("auth.login.signInToDashboard")} <span className="text-[10px] opacity-30">v:native</span></CardDescription>
+           <CardDescription>{t("auth.login.signInToDashboard")}</CardDescription>
         </AnimatedGroup>
       </CardHeader>
       <form action="/api/auth/login" method="POST">
