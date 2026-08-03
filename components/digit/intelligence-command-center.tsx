@@ -72,8 +72,6 @@ interface AgentAction {
   targetEntity: string
   targetModule: string
   status: string
-  confidence: number
-  requiresApproval: boolean
   config?: Record<string, unknown>
 }
 
@@ -587,12 +585,6 @@ export function IntelligenceCommandCenter() {
                             </Badge>
                             <Badge variant="outline" className="text-xs">
                               {action.targetModule}
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className={cn("text-xs", action.confidence >= 0.8 ? "text-green-500" : "text-amber-500")}
-                            >
-                              {Math.round(action.confidence * 100)}%
                             </Badge>
                           </div>
                           <p className="text-sm font-medium">{action.type.replace(/_/g, " ")}</p>

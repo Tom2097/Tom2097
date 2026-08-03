@@ -373,6 +373,37 @@ export async function runDueChecks(limit = 200): Promise<RunChecksSummary> {
   return summary
 }
 
+/**
+ * Force-run every enabled monitor for a single org right now, regardless of
+ * its due schedule. Unlike runDueChecks (cron-only, scans every org -- a
+ * regular signed-in user must never trigger that, it's a cross-tenant
+ * amplification vector), this is what a user clicking "Run Monitor Scan" in
+ * the UI actually means: check my org's monitors now.
+ */
+export async function runOrgChecks(organizationId: string, limit = 200): Promise<RunChecksSummary> {
+  const { monitors } = await listMonitors(organizationId, { enabledOnly: true, limit })
+  const summary: RunChecksSummary = { processed: 0, up: 0, down: 0, degraded: 0, failed: 0, results: [] }
+
+  for (const monitor of monitors) {
+    try {
+      const outcome = await recordCheck(organizationId, monitor.id)
+      const status = outcome?.result.status ?? "down"
+      summary.processed++
+      if (status === "up") summary.up++
+      else if (status === "down") summary.down++
+      else if (status === "degraded") summary.degraded++
+      summary.results.push({ monitorId: monitor.id, organizationId, status })
+    } catch (e) {
+      summary.failed++
+      const message = e instanceof Error ? e.message : String(e)
+      logger.logError("[v0] runOrgChecks: monitor failed:", { monitorId: monitor.id, error: message })
+      summary.results.push({ monitorId: monitor.id, organizationId, status: "error", error: message })
+    }
+  }
+
+  return summary
+}
+
 /** Recent check history for a monitor (scoped to org). */
 export async function listChecks(
   organizationId: string,
