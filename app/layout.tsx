@@ -5,6 +5,7 @@ import './globals.css'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { I18nProvider } from '@/components/providers/i18n-provider'
 import { LanguageDetectionBanner } from '@/components/language-detection-banner'
+import { ThemeProvider } from '@/components/theme-provider'
 import { cookies } from 'next/headers'
 import { resolveLocale } from '@/lib/i18n/config'
 // import { QueryProvider } from '@/components/providers/query-provider'
@@ -42,14 +43,16 @@ export default async function RootLayout({
   const initialLocale = resolveLocale(cookieStore.get('NEXT_LOCALE')?.value)
 
   return (
-    <html lang={initialLocale} className="dark bg-background">
+    <html lang={initialLocale} className="bg-background" suppressHydrationWarning>
        <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-         <I18nProvider initialLocale={initialLocale}>
-           <ErrorBoundary>
-             <LanguageDetectionBanner />
-             {children}
-           </ErrorBoundary>
-         </I18nProvider>
+         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+           <I18nProvider initialLocale={initialLocale}>
+             <ErrorBoundary>
+               <LanguageDetectionBanner />
+               {children}
+             </ErrorBoundary>
+           </I18nProvider>
+         </ThemeProvider>
       </body>
     </html>
   )

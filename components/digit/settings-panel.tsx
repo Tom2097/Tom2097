@@ -2,24 +2,17 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useTheme } from "next-themes"
 import {
   Settings,
   X,
   User,
-  Bell,
   Palette,
-  Globe,
   Shield,
   Monitor,
   Moon,
   Sun,
-  Volume2,
-  VolumeX,
   Eye,
-  EyeOff,
-  Languages,
-  Clock,
-  Keyboard,
   Accessibility,
   ChevronRight,
   Check,
@@ -27,12 +20,12 @@ import {
   CreditCard,
   Building2,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Globe,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Slider } from "@/components/ui/slider"
 import {
@@ -46,6 +39,16 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { useI18n } from "@/components/providers/i18n-provider"
+import { LOCALE_LABELS, SUPPORTED_LOCALES, type Locale } from "@/lib/i18n/config"
+import {
+  ACCENT_PRESETS,
+  applyAppearancePrefs,
+  loadAppearancePrefs,
+  updateAppearancePref,
+  type AccentName,
+  type AppearancePrefs,
+} from "@/lib/preferences/appearance"
 
 interface UserProfile {
   full_name: string | null
@@ -53,82 +56,42 @@ interface UserProfile {
   avatar_url: string | null
 }
 
-// Settings configuration
 const themes = [
   { id: "dark", label: "Dark", icon: Moon },
   { id: "light", label: "Light", icon: Sun },
   { id: "system", label: "System", icon: Monitor },
 ]
 
-const languages = [
-  { id: "en", label: "English" },
-  { id: "es", label: "Spanish" },
-  { id: "fr", label: "French" },
-  { id: "de", label: "German" },
-  { id: "ja", label: "Japanese" },
-  { id: "zh", label: "Chinese" },
-]
-
-const timezones = [
-  { id: "UTC", label: "UTC (Coordinated Universal Time)" },
-  { id: "America/New_York", label: "Eastern Time (ET)" },
-  { id: "America/Los_Angeles", label: "Pacific Time (PT)" },
-  { id: "Europe/London", label: "London (GMT)" },
-  { id: "Europe/Paris", label: "Paris (CET)" },
-  { id: "Asia/Tokyo", label: "Tokyo (JST)" },
-]
-
-const keyboardShortcuts = [
-  { action: "Open AI Assistant", keys: ["Ctrl", "K"] },
-  { action: "Quick Search", keys: ["Ctrl", "/"] },
-  { action: "Toggle Sidebar", keys: ["Ctrl", "B"] },
-  { action: "Open Settings", keys: ["Ctrl", ","] },
-  { action: "Navigate Home", keys: ["G", "H"] },
-  { action: "Open Analytics", keys: ["G", "A"] },
-]
+const accentSwatchClass: Record<AccentName, string> = {
+  cyan: "bg-cyan-500",
+  blue: "bg-blue-500",
+  purple: "bg-purple-500",
+  pink: "bg-pink-500",
+  orange: "bg-orange-500",
+  green: "bg-green-500",
+}
 
 export function SettingsPanel() {
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
+  const { locale, setLocale } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("profile")
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isSigningOut, setIsSigningOut] = useState(false)
-  
-  // Settings state
-  const [settings, setSettings] = useState({
-    // Appearance
-    theme: "dark",
-    accentColor: "cyan",
-    compactMode: false,
-    animationsEnabled: true,
-    
-    // Notifications
-    emailNotifications: true,
-    pushNotifications: true,
-    soundEnabled: true,
-    desktopAlerts: true,
-    weeklyDigest: true,
-    
-    // Privacy
-    analyticsEnabled: true,
-    showOnlineStatus: true,
-    shareUsageData: false,
-    
-    // Accessibility
-    reducedMotion: false,
-    highContrast: false,
-    fontSize: 100,
-    
-    // Regional
-    language: "en",
-    timezone: "UTC",
-    dateFormat: "MM/DD/YYYY",
-    
-    // AI
-    aiSuggestions: true,
-    autoAnalysis: true,
-    voiceCommands: false,
-  })
+  const [prefs, setPrefs] = useState<AppearancePrefs>(loadAppearancePrefs)
+
+  // Apply whatever was saved from a previous session as soon as this
+  // (globally-mounted) component is available, not just while the panel is
+  // open -- so the effect holds across the whole app, not just this dialog.
+  useEffect(() => {
+    applyAppearancePrefs(prefs)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const setPref = <K extends keyof AppearancePrefs>(key: K, value: AppearancePrefs[K]) => {
+    setPrefs((current) => updateAppearancePref(current, key, value))
+  }
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -156,54 +119,6 @@ export function SettingsPanel() {
     await supabase.auth.signOut()
     router.push("/")
     router.refresh()
-  }
-
-  const [workspaceColors, setWorkspaceColors] = useState({
-    compliance: "teal",
-    resources: "blue",
-    performance: "amber",
-    operational: "indigo",
-  })
-
-  const updateSetting = <K extends keyof typeof settings>(key: K, value: typeof settings[K]) => {
-    setSettings(prev => {
-      const next = { ...prev, [key]: value }
-      // Persist accent color + theme to DB
-      if (key === "accentColor" || key === "theme") {
-        const persist = async () => {
-          const supabase = createClient()
-          const { data: { user } } = await supabase.auth.getUser()
-          if (user) {
-            await supabase.from("user_preferences").upsert({
-              user_id: user.id,
-              key: key === "accentColor" ? "accent_color" : "theme",
-              value,
-            }, { onConflict: "user_id,key" })
-          }
-        }
-        persist()
-      }
-      return next
-    })
-  }
-
-  const updateWorkspaceColor = (workspace: keyof typeof workspaceColors, color: string) => {
-    setWorkspaceColors(prev => {
-      const next = { ...prev, [workspace]: color }
-      const persist = async () => {
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          await supabase.from("workspace_config").upsert({
-            organization_id: user.id,
-            workspace,
-            accent_color: color,
-          }, { onConflict: "organization_id,workspace" })
-        }
-      }
-      persist()
-      return next
-    })
   }
 
   return (
@@ -305,21 +220,18 @@ export function SettingsPanel() {
 
               {/* Tabs */}
               <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col overflow-hidden">
-                <TabsList className="grid grid-cols-5 mx-4 mt-4 bg-muted/50">
-                  <TabsTrigger value="profile" className="text-xs px-2">
+                <TabsList className="grid grid-cols-3 mx-4 mt-4 bg-muted/50">
+                  <TabsTrigger value="profile" className="text-xs px-2 gap-1.5">
                     <User className="h-4 w-4" />
+                    Profile
                   </TabsTrigger>
-                  <TabsTrigger value="appearance" className="text-xs px-2">
+                  <TabsTrigger value="appearance" className="text-xs px-2 gap-1.5">
                     <Palette className="h-4 w-4" />
+                    Appearance
                   </TabsTrigger>
-                  <TabsTrigger value="notifications" className="text-xs px-2">
-                    <Bell className="h-4 w-4" />
-                  </TabsTrigger>
-                  <TabsTrigger value="accessibility" className="text-xs px-2">
+                  <TabsTrigger value="accessibility" className="text-xs px-2 gap-1.5">
                     <Accessibility className="h-4 w-4" />
-                  </TabsTrigger>
-                  <TabsTrigger value="shortcuts" className="text-xs px-2">
-                    <Keyboard className="h-4 w-4" />
+                    Accessibility
                   </TabsTrigger>
                 </TabsList>
 
@@ -328,7 +240,7 @@ export function SettingsPanel() {
                   <TabsContent value="profile" className="mt-0 space-y-4">
                     <div className="space-y-4">
                       <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Account</h3>
-                      
+
                       <Link href="/settings?tab=subscription" className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-3">
                           <CreditCard className="h-5 w-5 text-muted-foreground" />
@@ -356,7 +268,7 @@ export function SettingsPanel() {
                           <Shield className="h-5 w-5 text-muted-foreground" />
                           <div>
                             <p className="text-sm font-medium">Security</p>
-                            <p className="text-xs text-muted-foreground">Password & 2FA</p>
+                            <p className="text-xs text-muted-foreground">Password, 2FA & notifications</p>
                           </div>
                         </div>
                         <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -365,48 +277,31 @@ export function SettingsPanel() {
 
                     <div className="space-y-4 pt-4 border-t border-border">
                       <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Regional</h3>
-                      
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Languages className="h-5 w-5 text-muted-foreground" />
-                            <Label>Language</Label>
-                          </div>
-                          <Select value={settings.language} onValueChange={(v) => updateSetting("language", v)}>
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {languages.map(lang => (
-                                <SelectItem key={lang.id} value={lang.id}>{lang.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
 
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Clock className="h-5 w-5 text-muted-foreground" />
-                            <Label>Timezone</Label>
-                          </div>
-                          <Select value={settings.timezone} onValueChange={(v) => updateSetting("timezone", v)}>
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {timezones.map(tz => (
-                                <SelectItem key={tz.id} value={tz.id}>{tz.id}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Globe className="h-5 w-5 text-muted-foreground" />
+                          <Label>Language</Label>
                         </div>
+                        <Select value={locale} onValueChange={(v) => setLocale(v as Locale)}>
+                          <SelectTrigger className="w-40">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SUPPORTED_LOCALES.map((loc) => (
+                              <SelectItem key={loc} value={loc}>
+                                {`${LOCALE_LABELS[loc].flag} ${LOCALE_LABELS[loc].nativeName}`}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
                     <div className="pt-4 border-t border-border">
                       {profile ? (
-                        <Button 
-                          variant="destructive" 
+                        <Button
+                          variant="destructive"
                           className="w-full"
                           onClick={handleSignOut}
                           disabled={isSigningOut}
@@ -435,23 +330,23 @@ export function SettingsPanel() {
                     <div className="space-y-4">
                       <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Theme</h3>
                       <div className="grid grid-cols-3 gap-2">
-                        {themes.map(theme => (
+                        {themes.map((th) => (
                           <button
-                            key={theme.id}
-                            onClick={() => updateSetting("theme", theme.id)}
+                            key={th.id}
+                            onClick={() => setTheme(th.id)}
                             className={cn(
-                              "flex flex-col items-center gap-2 p-3 rounded-lg border transition-all",
-                              settings.theme === theme.id
+                              "relative flex flex-col items-center gap-2 p-3 rounded-lg border transition-all",
+                              theme === th.id
                                 ? "border-primary bg-primary/10"
                                 : "border-border bg-muted/30 hover:bg-muted/50"
                             )}
                           >
-                            <theme.icon className={cn(
+                            <th.icon className={cn(
                               "h-5 w-5",
-                              settings.theme === theme.id ? "text-primary" : "text-muted-foreground"
+                              theme === th.id ? "text-primary" : "text-muted-foreground"
                             )} />
-                            <span className="text-xs font-medium">{theme.label}</span>
-                            {settings.theme === theme.id && (
+                            <span className="text-xs font-medium">{th.label}</span>
+                            {theme === th.id && (
                               <Check className="h-3 w-3 text-primary absolute top-2 right-2" />
                             )}
                           </button>
@@ -460,160 +355,28 @@ export function SettingsPanel() {
                     </div>
 
                     <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Global Accent Color</h3>
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Accent Color</h3>
                       <div className="flex gap-2">
-                        {["cyan", "blue", "purple", "pink", "orange", "green"].map(color => (
+                        <button
+                          onClick={() => setPref("accentColor", "default")}
+                          title="Default"
+                          className={cn(
+                            "w-8 h-8 rounded-full border-2 transition-transform bg-primary",
+                            prefs.accentColor === "default" ? "scale-110 border-foreground" : "border-transparent"
+                          )}
+                        />
+                        {(Object.keys(ACCENT_PRESETS) as AccentName[]).map((name) => (
                           <button
-                            key={color}
-                            onClick={() => updateSetting("accentColor", color)}
+                            key={name}
+                            onClick={() => setPref("accentColor", name)}
+                            title={ACCENT_PRESETS[name].label}
                             className={cn(
                               "w-8 h-8 rounded-full border-2 transition-transform",
-                              settings.accentColor === color ? "scale-110 border-white" : "border-transparent",
-                              color === "cyan" && "bg-cyan-500",
-                              color === "blue" && "bg-blue-500",
-                              color === "purple" && "bg-purple-500",
-                              color === "pink" && "bg-pink-500",
-                              color === "orange" && "bg-orange-500",
-                              color === "green" && "bg-green-500"
+                              accentSwatchClass[name],
+                              prefs.accentColor === name ? "scale-110 border-foreground" : "border-transparent"
                             )}
                           />
                         ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Per-Workspace Colors</h3>
-                      {(Object.entries(workspaceColors) as [string, string][]).map(([workspace, color]) => (
-                        <div key={workspace} className="flex items-center justify-between">
-                          <span className="text-sm capitalize">{workspace}</span>
-                          <div className="flex gap-1">
-                            {["teal", "blue", "amber", "indigo", "purple", "emerald", "rose", "cyan"].map((c) => (
-                              <button
-                                key={c}
-                                onClick={() => updateWorkspaceColor(workspace as keyof typeof workspaceColors, c)}
-                                className={cn(
-                                  "w-5 h-5 rounded-full border transition-transform",
-                                  color === c ? "scale-125 border-foreground" : "border-transparent",
-                                  c === "teal" && "bg-teal-500", c === "blue" && "bg-blue-500",
-                                  c === "amber" && "bg-amber-500", c === "indigo" && "bg-indigo-500",
-                                  c === "purple" && "bg-purple-500", c === "emerald" && "bg-emerald-500",
-                                  c === "rose" && "bg-rose-500", c === "cyan" && "bg-cyan-500",
-                                )}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Display</h3>
-                      
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>Compact Mode</Label>
-                          <p className="text-xs text-muted-foreground">Reduce spacing and padding</p>
-                        </div>
-                        <Switch 
-                          checked={settings.compactMode} 
-                          onCheckedChange={(v) => updateSetting("compactMode", v)} 
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>Animations</Label>
-                          <p className="text-xs text-muted-foreground">Enable UI animations</p>
-                        </div>
-                        <Switch 
-                          checked={settings.animationsEnabled} 
-                          onCheckedChange={(v) => updateSetting("animationsEnabled", v)} 
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* Notifications Tab */}
-                  <TabsContent value="notifications" className="mt-0 space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Channels</h3>
-                      
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                        <div className="flex items-center gap-3">
-                          <Bell className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <Label>Email Notifications</Label>
-                            <p className="text-xs text-muted-foreground">Important updates via email</p>
-                          </div>
-                        </div>
-                        <Switch 
-                          checked={settings.emailNotifications} 
-                          onCheckedChange={(v) => updateSetting("emailNotifications", v)} 
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                        <div className="flex items-center gap-3">
-                          <Monitor className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <Label>Desktop Alerts</Label>
-                            <p className="text-xs text-muted-foreground">Browser notifications</p>
-                          </div>
-                        </div>
-                        <Switch 
-                          checked={settings.desktopAlerts} 
-                          onCheckedChange={(v) => updateSetting("desktopAlerts", v)} 
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                        <div className="flex items-center gap-3">
-                          {settings.soundEnabled ? (
-                            <Volume2 className="h-5 w-5 text-muted-foreground" />
-                          ) : (
-                            <VolumeX className="h-5 w-5 text-muted-foreground" />
-                          )}
-                          <div>
-                            <Label>Sound Effects</Label>
-                            <p className="text-xs text-muted-foreground">Play sounds for alerts</p>
-                          </div>
-                        </div>
-                        <Switch 
-                          checked={settings.soundEnabled} 
-                          onCheckedChange={(v) => updateSetting("soundEnabled", v)} 
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">AI Features</h3>
-                      
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                        <div className="flex items-center gap-3">
-                          <Sparkles className="h-5 w-5 text-primary" />
-                          <div>
-                            <Label>AI Suggestions</Label>
-                            <p className="text-xs text-muted-foreground">Proactive AI recommendations</p>
-                          </div>
-                        </div>
-                        <Switch 
-                          checked={settings.aiSuggestions} 
-                          onCheckedChange={(v) => updateSetting("aiSuggestions", v)} 
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                        <div className="flex items-center gap-3">
-                          <Sparkles className="h-5 w-5 text-cyan-500" />
-                          <div>
-                            <Label>Auto Analysis</Label>
-                            <p className="text-xs text-muted-foreground">Automatic data insights</p>
-                          </div>
-                        </div>
-                        <Switch 
-                          checked={settings.autoAnalysis} 
-                          onCheckedChange={(v) => updateSetting("autoAnalysis", v)} 
-                        />
                       </div>
                     </div>
                   </TabsContent>
@@ -622,15 +385,15 @@ export function SettingsPanel() {
                   <TabsContent value="accessibility" className="mt-0 space-y-6">
                     <div className="space-y-4">
                       <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Visual</h3>
-                      
+
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <Label>Font Size</Label>
-                          <span className="text-sm text-muted-foreground">{settings.fontSize}%</span>
+                          <span className="text-sm text-muted-foreground">{prefs.fontSize}%</span>
                         </div>
                         <Slider
-                          value={[settings.fontSize]}
-                          onValueChange={([v]) => updateSetting("fontSize", v)}
+                          value={[prefs.fontSize]}
+                          onValueChange={([v]) => setPref("fontSize", v)}
                           min={80}
                           max={120}
                           step={10}
@@ -646,9 +409,9 @@ export function SettingsPanel() {
                             <p className="text-xs text-muted-foreground">Increase color contrast</p>
                           </div>
                         </div>
-                        <Switch 
-                          checked={settings.highContrast} 
-                          onCheckedChange={(v) => updateSetting("highContrast", v)} 
+                        <Switch
+                          checked={prefs.highContrast}
+                          onCheckedChange={(v) => setPref("highContrast", v)}
                         />
                       </div>
 
@@ -660,64 +423,11 @@ export function SettingsPanel() {
                             <p className="text-xs text-muted-foreground">Minimize animations</p>
                           </div>
                         </div>
-                        <Switch 
-                          checked={settings.reducedMotion} 
-                          onCheckedChange={(v) => updateSetting("reducedMotion", v)} 
+                        <Switch
+                          checked={prefs.reducedMotion}
+                          onCheckedChange={(v) => setPref("reducedMotion", v)}
                         />
                       </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Privacy</h3>
-                      
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                        <div className="flex items-center gap-3">
-                          {settings.showOnlineStatus ? (
-                            <Eye className="h-5 w-5 text-muted-foreground" />
-                          ) : (
-                            <EyeOff className="h-5 w-5 text-muted-foreground" />
-                          )}
-                          <div>
-                            <Label>Online Status</Label>
-                            <p className="text-xs text-muted-foreground">Show when you&apos;re active</p>
-                          </div>
-                        </div>
-                        <Switch 
-                          checked={settings.showOnlineStatus} 
-                          onCheckedChange={(v) => updateSetting("showOnlineStatus", v)} 
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* Shortcuts Tab */}
-                  <TabsContent value="shortcuts" className="mt-0 space-y-4">
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Keyboard Shortcuts</h3>
-                      
-                      <div className="space-y-2">
-                        {keyboardShortcuts.map((shortcut, idx) => (
-                          <div 
-                            key={idx}
-                            className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
-                          >
-                            <span className="text-sm">{shortcut.action}</span>
-                            <div className="flex gap-1">
-                              {shortcut.keys.map((key, kidx) => (
-                                <Badge key={kidx} variant="secondary" className="font-mono text-xs">
-                                  {key}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-                      <p className="text-sm text-center">
-                        Press <Badge variant="secondary" className="font-mono mx-1">?</Badge> anywhere to view all shortcuts
-                      </p>
                     </div>
                   </TabsContent>
                 </div>
