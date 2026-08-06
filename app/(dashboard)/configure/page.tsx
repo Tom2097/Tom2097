@@ -151,7 +151,7 @@ export default function ConfigurePage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-xs text-destructive hover:text-destructive ml-auto"
+                      className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 ml-auto"
                       onClick={() => setDeleteTarget({ id: ws.id, name: ws.name })}
                     >
                       <Trash2 className="h-3 w-3 mr-1" />{t('configure.page.delete')}
