@@ -20,16 +20,40 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono"
 })
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getTranslator()
+  const title = t("root.metadata.title")
+  const description = t("root.metadata.description")
   return {
-    title: t("root.metadata.title"),
-    description: t("root.metadata.description"),
+    metadataBase: new URL(siteUrl),
+    title,
+    description,
     generator: 'v0.app',
     keywords: t("root.metadata.keywords").split(',').map((k) => k.trim()),
     icons: {
       icon: '/icon.svg',
       apple: '/icon.svg',
+    },
+    alternates: {
+      canonical: '/',
+    },
+    openGraph: {
+      title,
+      description,
+      url: siteUrl,
+      siteName: 'DigiT',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   }
 }
