@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
+import { enqueueJob } from "@/lib/jobs/queue"
 
 export type DomainEvent =
   | { type: "compliance.gap_detected"; organization_id: string; data: { gap_id: string; score: number; framework: string } }
@@ -22,10 +23,27 @@ export type DomainEvent =
   | { type: "compliance.audit_appended"; organization_id: string; data: { record_type: string; record_id: string; action: string; hash: string } }
   | { type: "resources.asset_tagged"; organization_id: string; data: { asset_id: string; tag_type: string; tag_id: string } }
   | { type: "resources.asset_scanned"; organization_id: string; data: { asset_id: string } }
+  | { type: "deal.won"; organization_id: string; data: { deal_id: string; title: string; value: number; contact_id: string | null; company_id: string | null; actor_id: string } }
+  | { type: "deal.stalled"; organization_id: string; data: { deal_id: string; title: string; days_stalled: number } }
+  | { type: "capa.created"; organization_id: string; data: { capa_id: string; severity: string; framework?: string | null } }
+  | { type: "inventory.low"; organization_id: string; data: { item_id: string; name: string; current_qty: number; reorder_point: number } }
 
 const SUBSCRIPTIONS_TABLE = "event_subscriptions"
 const EVENTS_TABLE = "domain_events"
+const JOB_SUBSCRIPTIONS_TABLE = "event_job_subscriptions"
 
+/**
+ * Publishes a real domain event. Two independent things can happen as a
+ * result, and publish() never waits on either of them to finish:
+ *  1. Any org-registered external webhook subscription gets POSTed to
+ *     (fire-and-forget, unchanged from before).
+ *  2. Any internal job subscription (event_job_subscriptions -- a
+ *     platform-wide, code-defined event_type -> job_type mapping) gets a
+ *     background_jobs row enqueued, to be run later by the poller. This is
+ *     what lets one module's action (e.g. CRM's deal.won) cause a
+ *     DIFFERENT module's logic (e.g. auto-provisioning) to run
+ *     automatically, asynchronously, outside the request that published it.
+ */
 export async function publish(event: DomainEvent): Promise<void> {
   try {
     const db = createServiceClient()
@@ -51,6 +69,16 @@ export async function publish(event: DomainEvent): Promise<void> {
           signal: AbortSignal.timeout(10000),
         }).catch(() => {})
       }
+    }
+
+    const { data: jobSubs } = await db
+      .from(JOB_SUBSCRIPTIONS_TABLE)
+      .select("job_type")
+      .eq("event_type", event.type)
+      .eq("enabled", true)
+
+    for (const jobSub of (jobSubs ?? []) as Array<{ job_type: string }>) {
+      await enqueueJob(event.organization_id, jobSub.job_type, { eventType: event.type, ...event.data })
     }
   } catch (err) {
     console.log("[v0] event bus publish failed:", err)

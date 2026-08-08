@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getAuthenticatedUser, getOrganizationId, handleAuthError } from '@/lib/auth/server-auth'
 import { createDeal, listDeals, updateDeal, getDeal, validateDeal } from '@/lib/crm/engine'
 import { recordCrmEvent } from '@/lib/crm/smart-layer'
+import { publish } from '@/lib/events/bus'
 import type { DealStage } from '@/lib/crm/types'
 
 export async function GET(request: NextRequest) {
@@ -53,6 +54,21 @@ export async function PATCH(request: NextRequest) {
     if (!deal) return NextResponse.json({ error: 'Deal not found' }, { status: 404 })
     if (patch.stage === 'won' && before?.stage !== 'won') {
       await recordCrmEvent(organizationId, 'deal_won', { dealId: deal.id })
+      // Real event bus dispatch -- event_job_subscriptions maps deal.won to
+      // the crm.auto_provision background job, so this automatically runs
+      // the 6-step onboarding chain without anyone clicking "Start".
+      await publish({
+        type: 'deal.won',
+        organization_id: organizationId,
+        data: {
+          deal_id: deal.id,
+          title: deal.title,
+          value: deal.value,
+          contact_id: deal.contact_id ?? null,
+          company_id: deal.company_id ?? null,
+          actor_id: user.id,
+        },
+      })
     }
     return NextResponse.json({ deal })
   } catch (error) {
