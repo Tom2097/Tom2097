@@ -1135,17 +1135,9 @@
         "title": "ਸੰਚਾਰ ਵਾਲੀਅਮ",
         "subtitle": "ਇਸ ਹਫਤੇ ਪ੍ਰੋਸੈਸ ਕੀਤੇ ਸੰਦੇਸ਼"
       },
-      "userEngagement": {
-        "title": "ਉਪਭੋਗਤਾ ਜੁੜाव",
-        "subtitle": "ਇਸ ਮਹੀਨੇ ਸਰਗਰਮ ਉਪਭੋਗਤਾ"
-      },
       "documentProcessing": {
         "title": "ਦਸਤਾਵੇਜ਼ ਪ੍ਰੋਸੈਸਿੰਗ",
         "subtitle": "ਇਸ ਮਹੀਨੇ ਪ੍ਰੋਸੈਸ ਕੀਤੇ ਦਸਤਾਵੇਜ਼"
-      },
-      "growthTrend": {
-        "title": "ਵਿਕਾਸ ਰੁਝਾਨ",
-        "subtitle": "ਮਹੀਨਾ-ਦਰ-ਮਹੀਨਾ ਵਿਕਾਸ"
       }
     },
     "modules": {

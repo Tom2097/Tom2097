@@ -1135,17 +1135,9 @@
         "title": "Communication Volume",
         "subtitle": "Messages processed this week"
       },
-      "userEngagement": {
-        "title": "User Engagement",
-        "subtitle": "Active users this month"
-      },
       "documentProcessing": {
         "title": "Document Processing",
         "subtitle": "Documents ingested this month"
-      },
-      "growthTrend": {
-        "title": "Growth Trend",
-        "subtitle": "MoM growth"
       }
     },
     "modules": {

@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
 import { createAuditEntry } from "@/lib/audit/append-only"
+import { createTask } from "@/lib/crm/extensions"
+import { CRM_ENTITY_TYPES, type CrmEntityType } from "@/lib/crm/types"
+import { broadcast } from "@/lib/notifications/engine"
 
 interface Agent {
   id: string
@@ -125,8 +128,15 @@ export async function executeAction(
     agent.workspace_id
   )
 
-  // Execute action (mock implementation)
-  const result = await mockActionExecution(agentId, action, parameters)
+  // Execute action for real -- see executeAgentAction() below.
+  const result = await executeAgentAction(
+    agentId,
+    action,
+    targetEntityId,
+    targetEntityType,
+    parameters,
+    agent.workspace_id
+  )
 
   // Update action status
   const { error: updateError } = await supabase
@@ -172,23 +182,85 @@ export async function executeAction(
 }
 
 /**
- * Mock action execution.
+ * Executes an agent's target action against real backing systems.
+ *
+ * Each case is honest about what actually happens:
+ *  - "escalate_issue" creates a real CRM task (and, where possible, a real
+ *    in-app notification) that a human will see -- there is no separate
+ *    "escalation" subsystem in this app, so a high-priority task is the real
+ *    thing an escalation maps to.
+ *  - "reroute_shipment" has no backing system: there is no shipment/logistics
+ *    routing concept anywhere in this codebase (only UI labels mentioning
+ *    "logistics"/"shipping"), so this honestly fails rather than fabricating
+ *    a route and ETA.
+ *  - "approve_refund" has a real refund code path (`processRefund` in
+ *    lib/billing/subscription-lifecycle.ts), but that function refunds and
+ *    cancels an organization's *entire subscription* -- it has no concept of
+ *    refunding an arbitrary amount against an arbitrary target entity, and it
+ *    requires a human userId this agent-action flow doesn't have. Calling it
+ *    here would either silently misuse it or require reinventing entity-level
+ *    refund semantics that don't exist yet, so this honestly fails instead of
+ *    pretending money moved.
  */
-async function mockActionExecution(
+async function executeAgentAction(
   agentId: string,
   action: string,
-  parameters: Record<string, unknown>
+  targetEntityId: string,
+  targetEntityType: string,
+  parameters: Record<string, unknown>,
+  workspaceId: string
 ): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
   console.log(`Agent ${agentId} executing action: ${action}`, parameters)
 
-  // Mock action logic
   switch (action) {
-    case "escalate_issue":
-      return { success: true, data: { escalationId: "esc_123", status: "created" } }
+    case "escalate_issue": {
+      const isCrmEntityType = (CRM_ENTITY_TYPES as readonly string[]).includes(targetEntityType)
+      const entityType = isCrmEntityType ? (targetEntityType as CrmEntityType) : null
+      const reason = typeof parameters.reason === "string" ? parameters.reason : undefined
+
+      try {
+        const task = await createTask(workspaceId, agentId, {
+          entity_type: entityType,
+          entity_id: entityType ? targetEntityId : null,
+          title: `Escalation: ${action} on ${targetEntityType} ${targetEntityId}`,
+          description:
+            reason ??
+            `Automated escalation raised by agent ${agentId}` +
+              (entityType ? "" : ` (target: ${targetEntityType} ${targetEntityId})`),
+          priority: "high",
+        })
+
+        await broadcast(workspaceId, {
+          title: "Issue escalated",
+          body: task.title,
+          type: "warning",
+          category: "escalation",
+          priority: "high",
+          source: "workflow",
+          data: { taskId: task.id, agentId },
+        })
+
+        return { success: true, data: { taskId: task.id, status: task.status } }
+      } catch (err) {
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : "Failed to escalate issue",
+        }
+      }
+    }
     case "reroute_shipment":
-      return { success: true, data: { newRoute: "alternative_route", eta: "2026-07-10T12:00:00Z" } }
+      return {
+        success: false,
+        error: "No real shipment-routing system exists yet -- this action cannot be performed.",
+      }
     case "approve_refund":
-      return { success: true, data: { refundId: "ref_456", amount: parameters.amount } }
+      return {
+        success: false,
+        error:
+          "No real entity-level refund system exists yet -- the only refund path (processRefund) " +
+          "cancels and refunds an organization's entire subscription and requires a human user " +
+          "context, so it cannot be safely triggered from an arbitrary agent action.",
+      }
     default:
       return { success: false, error: "Unknown action" }
   }

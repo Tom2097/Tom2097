@@ -5,3 +5,5 @@
  * any jobs, so every job_type it might see has a handler ready.
  */
 import "@/lib/crm/jobs"
+import "@/lib/compliance/jobs"
+import "@/lib/resources/jobs"

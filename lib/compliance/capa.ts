@@ -55,6 +55,11 @@ export async function createCapa(
   if (error) return null
   const capa = data as CapaRecord
   await publish({ type: "compliance.capa_created", organization_id: organizationId, data: { capa_id: capa.id, severity: capa.severity } })
+  // capa_records has no framework column (see supabase/migrations/20260715000000_operations_action_layer.sql
+  // and 20260720000000_critical_backfill.sql) -- this insert path never knows a framework, so it's always
+  // null here. Kept as a separate event (vs. reusing compliance.capa_created above) because it's the
+  // event_job_subscriptions-mapped type that drives the compliance.notify_capa background job (lib/compliance/jobs.ts).
+  await publish({ type: "capa.created", organization_id: organizationId, data: { capa_id: capa.id, severity: capa.severity, framework: null } })
   return capa
 }
 

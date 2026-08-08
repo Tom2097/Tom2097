@@ -26,6 +26,12 @@ export async function updateStock(organizationId: string, itemId: string, delta:
       type: "resources.low_stock", organization_id: organizationId,
       data: { item_id: itemId, current_qty: newQty, reorder_point: (item as InventoryItem).reorder_point },
     })
+    // event_job_subscriptions-mapped event (see migration) that drives the
+    // resources.notify_reorder background job (lib/resources/jobs.ts).
+    await publish({
+      type: "inventory.low", organization_id: organizationId,
+      data: { item_id: itemId, name: (item as InventoryItem).name, current_qty: newQty, reorder_point: (item as InventoryItem).reorder_point },
+    })
   }
   return data as InventoryItem ?? null
 }

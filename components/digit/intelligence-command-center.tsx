@@ -9,7 +9,7 @@ import {
   TrendingUp,
   TrendingDown,
   Target,
-  Shield,
+  Bot,
   Zap,
   Clock,
   CheckCircle2,
@@ -20,7 +20,6 @@ import {
   FileText,
   Users,
   DollarSign,
-  BarChart3,
   Network,
   PlayCircle,
   PauseCircle,
@@ -75,11 +74,19 @@ interface AgentAction {
   config?: Record<string, unknown>
 }
 
+interface Agent {
+  id: string
+  name: string
+  description: string
+  isActive: boolean
+}
+
 export function IntelligenceCommandCenter() {
   const [findings, setFindings] = useState<Finding[]>([])
   const [briefing, setBriefing] = useState<BriefingData | null>(null)
   const [monitorSummary, setMonitorSummary] = useState<MonitorSummary | null>(null)
   const [pendingActions, setPendingActions] = useState<AgentAction[]>([])
+  const [agents, setAgents] = useState<Agent[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isRunningMonitors, setIsRunningMonitors] = useState(false)
   const [isGeneratingBriefing, setIsGeneratingBriefing] = useState(false)
@@ -92,10 +99,12 @@ export function IntelligenceCommandCenter() {
       fetch("/api/v1/intelligence/findings?limit=20&ranked=true").then((r) => r.ok ? r.json() : null),
       fetch("/api/v1/intelligence/actions").then((r) => r.ok ? r.json() : null),
       fetch("/api/v1/intelligence/briefing").then((r) => r.ok ? r.json() : null),
-    ]).then(([findingsData, actionsData, briefingData]) => {
+      fetch("/api/v1/intelligence/agents").then((r) => r.ok ? r.json() : null),
+    ]).then(([findingsData, actionsData, briefingData, agentsData]) => {
       setFindings(findingsData?.findings || [])
       setPendingActions(actionsData?.actions || [])
       if (briefingData) setBriefing(briefingData)
+      setAgents(Array.isArray(agentsData) ? agentsData : [])
       setIsLoading(false)
     }).catch(() => setIsLoading(false))
   }, [])
@@ -333,24 +342,36 @@ export function IntelligenceCommandCenter() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { name: "Compliance Guardian", module: "compliance", status: "active", icon: Shield },
-                    { name: "Resource Optimizer", module: "resources", status: "active", icon: BarChart3 },
-                    { name: "Pipeline Protector", module: "crm", status: "active", icon: TrendingUp },
-                    { name: "Process Optimizer", module: "operations", status: "active", icon: Activity },
-                  ].map((agent) => (
-                    <div key={agent.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <agent.icon className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{agent.name}</span>
+                {isLoading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+                ) : agents.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No agents configured yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {agents.map((agent) => (
+                      <div key={agent.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Bot className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">{agent.name}</span>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-xs",
+                            agent.isActive
+                              ? "bg-green-500/10 text-green-500 border-green-500/20"
+                              : "bg-muted text-muted-foreground border-border",
+                          )}
+                        >
+                          {agent.isActive ? "Active" : "Inactive"}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="text-xs bg-green-500/10 text-green-500 border-green-500/20">
-                        Active
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

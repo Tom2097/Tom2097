@@ -1,7 +1,43 @@
-import { extractFields, INVOICE_SCHEMA } from "@/lib/extraction/engine"
+import { extractFields, extractLineItems, INVOICE_SCHEMA } from "@/lib/extraction/engine"
 import { createServiceClient } from "@/lib/supabase/service"
 import { createCapa } from "@/lib/compliance/capa"
-import { publish } from "@/lib/events/bus"
+import { listInventory, updateStock, type InventoryItem } from "@/lib/resources/inventory"
+
+/**
+ * Matches an extracted invoice/PO line item to a known inventory item.
+ * Only returns a match when it's unambiguous (a unique SKU or exact
+ * case-insensitive name match) -- anything fuzzier is left unmatched so we
+ * never guess and silently adjust the wrong item's stock.
+ */
+function matchInventoryItem(
+  lineItem: { description: string; sku?: string },
+  items: InventoryItem[],
+): InventoryItem | null {
+  const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+  if (lineItem.sku) {
+    const sku = lineItem.sku.trim().toLowerCase()
+    if (sku) {
+      const skuMatches = items.filter((i) => i.sku && i.sku.trim().toLowerCase() === sku)
+      if (skuMatches.length === 1) return skuMatches[0]
+    }
+  }
+
+  const desc = lineItem.description.trim().toLowerCase()
+  if (desc) {
+    const exactNameMatches = items.filter((i) => i.name.trim().toLowerCase() === desc)
+    if (exactNameMatches.length === 1) return exactNameMatches[0]
+  }
+
+  // A SKU embedded as a token inside the free-text description, e.g.
+  // "Widget A (SKU-123) x4".
+  const skuTokenMatches = items.filter(
+    (i) => i.sku && new RegExp(`\\b${escapeRegExp(i.sku.trim())}\\b`, "i").test(lineItem.description)
+  )
+  if (skuTokenMatches.length === 1) return skuTokenMatches[0]
+
+  return null
+}
 
 export async function autoCreateTasks(
   organizationId: string, documentId: string, content: string, classification: string,
@@ -10,7 +46,7 @@ export async function autoCreateTasks(
   const taskIds: string[] = []
   const db = createServiceClient()
 
-  if (classification === "legal" || classification === "complaint") {
+  if (classification === "legal" || classification === "complaint" || classification === "deviation") {
     const capa = await createCapa(organizationId, {
       title: `Auto-created from document ${documentId}`,
       description: content.slice(0, 1000), source: "auto_classify",
@@ -37,13 +73,25 @@ export async function autoCreateTasks(
         source_id: documentId,
       }).maybeSingle()
       taskIds.push("payable_created")
+
+      // This document produced an accounts_payable row -- i.e. it's a bill
+      // for goods/services the org received from a vendor -- so any line
+      // item we can confidently tie to an existing inventory item should
+      // increase that item's on-hand stock. Line items we can't cleanly
+      // match are left alone rather than guessed.
+      const lineItems = await extractLineItems(content.slice(0, 10000)).catch(() => [])
+      if (lineItems.length > 0) {
+        const inventoryItems = await listInventory(organizationId)
+        for (const lineItem of lineItems) {
+          if (!(lineItem.quantity > 0)) continue
+          const match = matchInventoryItem(lineItem, inventoryItems)
+          if (match) {
+            await updateStock(organizationId, match.id, lineItem.quantity)
+          }
+        }
+      }
     }
   }
-
-  await publish({
-    type: "operational.record_populated", organization_id: organizationId,
-    data: { entity_type: "task", entity_id: taskIds.join(","), source_document: documentId },
-  })
 
   return taskIds
 }

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { getTranslator } from "@/lib/i18n/server"
 import { createServiceClient } from '@/lib/supabase/service'
 import { createClient } from '@/lib/supabase/server'
-import { getDashboardStats, getRevenueMetrics, getOperationalMetrics, getRiskMetrics } from '@/lib/dashboard/queries'
+import { getDashboardStats, getRevenueMetrics, getOperationalMetrics, getRiskMetrics, getCommunicationVolume, getDocumentsProcessedThisMonth } from '@/lib/dashboard/queries'
 import { listMonitors } from '@/lib/monitoring/engine'
 import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
 import { forecastMetric } from '@/lib/analytics/forecasting'
@@ -77,7 +77,7 @@ export default async function DashboardPage() {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
   const db = createServiceClient()
-  const [stats, revenueData, operationalData, riskData, forecastData, anomalies, subResult, monitorsResult] = await Promise.all([
+  const [stats, revenueData, operationalData, riskData, forecastData, anomalies, subResult, monitorsResult, communicationVolume, documentsProcessed] = await Promise.all([
     getDashboardStats(orgId),
     getRevenueMetrics(orgId),
     getOperationalMetrics(orgId),
@@ -90,6 +90,8 @@ export default async function DashboardPage() {
       .eq('organization_id', orgId)
       .maybeSingle(),
     listMonitors(orgId, { enabledOnly: true, limit: 4 }).catch(() => ({ monitors: [], total: 0 })),
+    getCommunicationVolume(orgId),
+    getDocumentsProcessedThisMonth(orgId),
   ])
 
   const subscription = subResult.data as
@@ -107,6 +109,8 @@ export default async function DashboardPage() {
       subscription={subscription}
       operations={monitorsResult.monitors}
       activeOperationsCount={monitorsResult.total}
+      communicationVolume={communicationVolume}
+      documentsProcessed={documentsProcessed}
     />
   )
 }

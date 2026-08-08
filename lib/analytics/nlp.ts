@@ -47,7 +47,7 @@ export type EntityType =
 export type SentimentType = "positive" | "negative" | "neutral" | "mixed"
 
 // Text classification categories
-export type ClassificationCategory = 
+export type ClassificationCategory =
   | "business"
   | "technology"
   | "health"
@@ -61,6 +61,8 @@ export type ClassificationCategory =
   | "food"
   | "lifestyle"
   | "science"
+  | "complaint"
+  | "deviation"
   | "other"
 
 // Intent types
@@ -230,7 +232,7 @@ export interface TextDocument {
 
 const DEFAULT_OPTIONS: Required<Omit<NLPAnalysisOptions, "analysisType">> = {
   entities: ["PERSON", "ORGANIZATION", "LOCATION", "DATE", "MONEY", "EMAIL", "PHONE", "URL"],
-  classificationCategories: ["business", "technology", "health", "sports", "entertainment", "politics", "finance", "legal", "education", "travel", "food", "lifestyle", "science"],
+  classificationCategories: ["business", "technology", "health", "sports", "entertainment", "politics", "finance", "legal", "education", "travel", "food", "lifestyle", "science", "complaint", "deviation"],
   keywords: [],
   summaryLength: "medium",
   model: FAST_MODEL,
@@ -388,6 +390,8 @@ export async function classifyText(
 You are an expert text classifier. Classify the following text into the most appropriate category.
 
 Available categories: ${categories.join(', ')}
+- Use "complaint" for customer/vendor/employee grievances, dissatisfaction reports, or escalations about a product, service, or experience.
+- Use "deviation" for quality/process non-conformance reports -- documents describing a deviation from a specification, procedure, or standard (e.g. manufacturing deviations, inspection failures, out-of-spec results).
 
 Return ONLY a JSON object with this structure:
 {

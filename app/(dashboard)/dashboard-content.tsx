@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, Activity, Zap, Shield, Crown, Lock, RefreshCw, AlertTriangle, BarChart2, TrendingUp, MessageSquare, Users, FileText } from 'lucide-react'
+import { ArrowRight, Activity, Zap, Shield, Crown, Lock, RefreshCw, AlertTriangle, BarChart2, MessageSquare, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -26,6 +26,8 @@ interface DashboardContentProps {
   subscription: { plan_id: string; status: string; current_period_end: string | null } | null
   operations: any[]
   activeOperationsCount: number
+  communicationVolume: number
+  documentsProcessed: number
 }
 
 export default function DashboardContent({
@@ -38,6 +40,8 @@ export default function DashboardContent({
   subscription,
   operations,
   activeOperationsCount,
+  communicationVolume,
+  documentsProcessed,
 }: DashboardContentProps) {
   const { t } = useI18n()
   const router = useRouter()
@@ -316,23 +320,14 @@ export default function DashboardContent({
 
        <section>
           <h2 className="text-2xl font-bold text-foreground mb-6">{t("dashboard.keyMetrics.title")}</h2>
-          <div className="grid gap-6 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2">
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">{t("dashboard.keyMetrics.communicationVolume.title")}</h3>
                 <MessageSquare className="h-5 w-5 text-blue-500" />
               </div>
-              <div className="text-3xl font-bold">1,248</div>
+              <div className="text-3xl font-bold">{communicationVolume.toLocaleString()}</div>
               <p className="text-sm text-muted-foreground">{t("dashboard.keyMetrics.communicationVolume.subtitle")}</p>
-            </Card>
-
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">{t("dashboard.keyMetrics.userEngagement.title")}</h3>
-                <Users className="h-5 w-5 text-green-500" />
-              </div>
-              <div className="text-3xl font-bold">89%</div>
-              <p className="text-sm text-muted-foreground">{t("dashboard.keyMetrics.userEngagement.subtitle")}</p>
             </Card>
 
             <Card className="p-6">
@@ -340,17 +335,8 @@ export default function DashboardContent({
                 <h3 className="text-lg font-semibold">{t("dashboard.keyMetrics.documentProcessing.title")}</h3>
                 <FileText className="h-5 w-5 text-purple-500" />
               </div>
-              <div className="text-3xl font-bold">4,123</div>
+              <div className="text-3xl font-bold">{documentsProcessed.toLocaleString()}</div>
               <p className="text-sm text-muted-foreground">{t("dashboard.keyMetrics.documentProcessing.subtitle")}</p>
-            </Card>
-
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">{t("dashboard.keyMetrics.growthTrend.title")}</h3>
-                <TrendingUp className="h-5 w-5 text-orange-500" />
-              </div>
-              <div className="text-3xl font-bold">+18%</div>
-              <p className="text-sm text-muted-foreground">{t("dashboard.keyMetrics.growthTrend.subtitle")}</p>
             </Card>
           </div>
        </section>

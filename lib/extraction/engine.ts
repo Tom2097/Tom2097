@@ -1,4 +1,5 @@
-import { generateText } from "ai"
+import { generateText, generateObject } from "ai"
+import { z } from "zod"
 import { DEFAULT_CHAT_MODEL, BASE_SYSTEM_PROMPT } from "@/lib/ai/config"
 
 export interface ExtractedField {
@@ -81,4 +82,50 @@ If a field cannot be found, omit it from the array.`
   } catch {}
 
   return []
+}
+
+export interface ExtractedLineItem {
+  description: string
+  quantity: number
+  sku?: string
+}
+
+const LineItemsSchema = z.object({
+  items: z.array(
+    z.object({
+      description: z.string().describe("The item name/description exactly as written on the invoice or PO"),
+      quantity: z.number().describe("The quantity of this line item (a plain number, e.g. 4)"),
+      sku: z.string().nullable().describe("The SKU/item code for this line, if one is printed on the document, otherwise null"),
+    })
+  ),
+})
+
+/**
+ * Extracts a structured list of line items (description + quantity + SKU)
+ * from an invoice/PO, separately from extractFields()'s single free-text
+ * "line_items" field -- callers that need to match individual items against
+ * other records (e.g. inventory) need them split out, not as one blob.
+ */
+export async function extractLineItems(text: string): Promise<ExtractedLineItem[]> {
+  try {
+    const { object } = await generateObject({
+      model: DEFAULT_CHAT_MODEL,
+      schema: LineItemsSchema,
+      prompt: `${BASE_SYSTEM_PROMPT}
+
+Extract every line item from this invoice or purchase order as a structured list. Each entry should be one product/service line with its quantity and SKU if present. If there are no itemized line items, return an empty list -- do not invent one.
+
+Document text:
+"""
+${text.slice(0, 15000)}
+"""`,
+    })
+    return object.items.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      sku: item.sku ?? undefined,
+    }))
+  } catch {
+    return []
+  }
 }

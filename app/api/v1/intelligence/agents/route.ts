@@ -6,8 +6,9 @@ import {
   getAgent,
   getAuditTrail
 } from "@/lib/intelligence"
-import { getAuthenticatedUser } from "@/lib/auth/server-auth"
+import { getAuthenticatedUser, getOrganizationId } from "@/lib/auth/server-auth"
 import { hasWorkspaceAccess } from "@/lib/auth/rbac"
+import { createServiceClient } from "@/lib/supabase/service"
 
 /**
  * This route used to export POST_ACTION and GET_AUDIT alongside POST/GET --
@@ -69,8 +70,9 @@ export async function POST(request: Request) {
 }
 
 /**
- * GET: list agents in a workspace (?workspaceId=...), or fetch an agent's
- * audit trail when ?view=audit&agentId=... is given.
+ * GET: list agents in a workspace (?workspaceId=...), list every agent
+ * across all of the caller's workspaces (no `workspaceId`), or fetch an
+ * agent's audit trail when ?view=audit&agentId=... is given.
  */
 export async function GET(request: Request) {
   const user = await getAuthenticatedUser()
@@ -104,12 +106,51 @@ export async function GET(request: Request) {
 
   const workspaceId = searchParams.get("workspaceId")
 
-  if (!workspaceId || !(await hasWorkspaceAccess(user.id, workspaceId))) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  if (workspaceId) {
+    if (!(await hasWorkspaceAccess(user.id, workspaceId))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    try {
+      const agents = await listAgents(workspaceId)
+      return NextResponse.json(agents)
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : "Failed to list agents" },
+        { status: 400 }
+      )
+    }
   }
 
+  // No explicit workspaceId -- resolve every workspace under the caller's
+  // organization and aggregate their agents. `agents` is workspace_id-scoped
+  // (not organization_id-scoped), the same tenant-scoping gap documented in
+  // app/api/v1/intelligence/actions/route.ts for the sibling agent_actions
+  // table, so we mirror that route's approach here.
   try {
-    const agents = await listAgents(workspaceId)
+    const organizationId = await getOrganizationId(user.id)
+    const db = createServiceClient()
+    const { data: workspaces } = await db.from("workspaces").select("id").eq("organization_id", organizationId)
+    const workspaceIds = (workspaces ?? []).map((w) => w.id as string)
+
+    if (workspaceIds.length === 0) {
+      return NextResponse.json([])
+    }
+
+    const { data, error } = await db.from("agents").select("*").in("workspace_id", workspaceIds)
+    if (error) throw error
+
+    const agents = (data ?? []).map((agent: Record<string, unknown>) => ({
+      id: agent.id as string,
+      name: agent.name as string,
+      description: agent.description as string,
+      permissions: agent.permissions as string[],
+      workspaceId: agent.workspace_id as string,
+      isActive: agent.is_active as boolean,
+      createdAt: agent.created_at as string,
+      updatedAt: agent.updated_at as string,
+    }))
+
     return NextResponse.json(agents)
   } catch (error) {
     return NextResponse.json(

@@ -141,3 +141,47 @@ export async function getRiskMetrics(organizationId: string): Promise<RiskPoint[
     threshold: num(r.threshold),
   }))
 }
+
+/**
+ * Real message counts backing the dashboard's "Communication Volume" card --
+ * counts `documents` rows ingested from a messaging source (WhatsApp/email)
+ * in the last 7 days, the same `metadata->>source` convention used by
+ * app/api/v1/operations/metrics/route.ts's whatsappMessages/emailMessages
+ * counters.
+ */
+export async function getCommunicationVolume(organizationId: string): Promise<number> {
+  const db = createServiceClient()
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const { count, error } = await db
+    .from("documents")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", organizationId)
+    .or("metadata->>source.eq.whatsapp,metadata->>source.eq.email,metadata->>source.eq.email_attachment")
+    .gte("created_at", sevenDaysAgo)
+  if (error) {
+    console.log("[v0] getCommunicationVolume failed:", error.message)
+    return 0
+  }
+  return count ?? 0
+}
+
+/**
+ * Real document count backing the dashboard's "Document Processing" card --
+ * all `documents` rows ingested for the org since the start of the current
+ * calendar month, regardless of source.
+ */
+export async function getDocumentsProcessedThisMonth(organizationId: string): Promise<number> {
+  const db = createServiceClient()
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+  const { count, error } = await db
+    .from("documents")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", organizationId)
+    .gte("created_at", startOfMonth)
+  if (error) {
+    console.log("[v0] getDocumentsProcessedThisMonth failed:", error.message)
+    return 0
+  }
+  return count ?? 0
+}
