@@ -1,0 +1,25 @@
+-- Real guardrail columns for the `agents` table (the reachable one used by
+-- lib/intelligence/agents.ts and app/api/v1/intelligence/agents|actions,
+-- NOT the separate dead-code `intelligence_agents` table from
+-- 20260628_intelligence_brain.sql, which already has its own
+-- confidence_threshold/requires_approval columns).
+--
+-- requires_approval is the real, enforced guardrail: executeAction() now
+-- inserts a "pending_approval" agent_actions row and does NOT call
+-- executeAgentAction() until a human approves it via
+-- POST /api/v1/intelligence/actions { action: "approve" }.
+--
+-- confidence_threshold is stored for future use but is intentionally NOT
+-- independently enforced anywhere yet: no code path in this codebase
+-- computes a real per-action confidence score for an agent_actions row (the
+-- "confidence" scores that do exist -- lib/intelligence/confidence.ts,
+-- intelligence_findings.confidence, etc. -- belong to the separate
+-- AI-Intelligence findings/causal-chain system and have no relationship to
+-- an individual agent_actions row). Comparing confidence_threshold against a
+-- number nobody computes would be fake guardrail code, so this column exists
+-- so a future real confidence-scoring pass has somewhere honest to plug in.
+--
+-- requires_approval defaults to TRUE (fail closed) since this is the safety
+-- gate the architecture brief asks for before any agent acts autonomously.
+ALTER TABLE agents ADD COLUMN IF NOT EXISTS confidence_threshold FLOAT NOT NULL DEFAULT 0.7;
+ALTER TABLE agents ADD COLUMN IF NOT EXISTS requires_approval BOOLEAN NOT NULL DEFAULT TRUE;

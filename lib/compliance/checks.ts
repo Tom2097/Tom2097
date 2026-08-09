@@ -46,6 +46,16 @@ export async function runScheduledChecks(organizationId: string): Promise<{ expi
         console.error("[v0] cert_expiring notification failed:", (err as Error).message)
       }
       await publish({ type: "compliance.cert_expiring", organization_id: organizationId, data: { cert_id: cert.id, days_remaining: daysRemaining } })
+      // check.expiring is the brief's blueprint-named event for this same
+      // detection (compliance.cert_expiring above predates it and has no
+      // event_job_subscriptions row, so nothing ever consumed it as a job --
+      // verified via grep before adding this). Published only for certs that
+      // are genuinely still-expiring (daysRemaining > 0), not ones already
+      // expired (handled in the branch above), so it fires once per check
+      // run per still-expiring cert -- same re-notify-every-run cadence this
+      // function already used for compliance.cert_expiring/broadcast above,
+      // not a new spam source.
+      await publish({ type: "check.expiring", organization_id: organizationId, data: { cert_id: cert.id, days_remaining: daysRemaining } })
     }
   }
 

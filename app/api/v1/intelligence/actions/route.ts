@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getAuthenticatedUser, getOrganizationId, handleAuthError } from "@/lib/auth/server-auth"
 import { createServiceClient } from "@/lib/supabase/service"
+import { executeApprovedAction } from "@/lib/intelligence"
 
 /**
  * `agent_actions` (see supabase/migrations/20260731000000_intelligence_remaining.sql)
@@ -86,17 +87,47 @@ export async function POST(request: Request) {
       const actionId = typeof body.actionId === "string" ? body.actionId : undefined
       if (!actionId) return NextResponse.json({ error: "actionId is required" }, { status: 400 })
 
+      // Only transition rows that are actually awaiting a decision -- guards
+      // against re-approving (and therefore re-executing, see below) an
+      // action that already ran or was already approved.
       const { data, error } = await db
         .from("agent_actions")
         .update({ status: "approved" })
         .eq("id", actionId)
         .in("workspace_id", workspaceIdList)
+        .in("status", ["pending", "pending_approval"])
         .select()
         .maybeSingle()
 
       if (error) throw error
-      if (!data) return NextResponse.json({ error: "Action not found" }, { status: 404 })
-      return NextResponse.json(data)
+      if (!data) {
+        const { data: existing } = await db
+          .from("agent_actions")
+          .select("id, status")
+          .eq("id", actionId)
+          .in("workspace_id", workspaceIdList)
+          .maybeSingle()
+        if (!existing) return NextResponse.json({ error: "Action not found" }, { status: 404 })
+        return NextResponse.json(
+          { error: `Action cannot be approved from its current status (${existing.status})` },
+          { status: 409 }
+        )
+      }
+
+      // Approval is the human-in-the-loop gate for agents created with
+      // requires_approval = true (see executeAction() in
+      // lib/intelligence/agents.ts) -- actually run the action now that a
+      // human has signed off, instead of leaving "approved" as a status
+      // label with no effect.
+      try {
+        const executed = await executeApprovedAction(actionId)
+        return NextResponse.json(executed)
+      } catch (execError) {
+        return NextResponse.json(
+          { error: execError instanceof Error ? execError.message : "Failed to execute approved action" },
+          { status: 500 }
+        )
+      }
     }
 
     if (body.action === "auto-assign") {

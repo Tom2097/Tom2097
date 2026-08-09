@@ -6,12 +6,14 @@ export type DomainEvent =
   | { type: "compliance.capa_created"; organization_id: string; data: { capa_id: string; severity: string } }
   | { type: "compliance.capa_closed"; organization_id: string; data: { capa_id: string } }
   | { type: "compliance.cert_expiring"; organization_id: string; data: { cert_id: string; days_remaining: number } }
+  | { type: "check.expiring"; organization_id: string; data: { cert_id: string; days_remaining: number } }
   | { type: "resources.asset_created"; organization_id: string; data: { asset_id: string; category: string } }
   | { type: "resources.low_stock"; organization_id: string; data: { item_id: string; current_qty: number; reorder_point: number } }
   | { type: "resources.maintenance_due"; organization_id: string; data: { asset_id: string; due_date: string } }
   | { type: "performance.anomaly_detected"; organization_id: string; data: { metric: string; deviation: number; severity: string } }
   | { type: "performance.threshold_breached"; organization_id: string; data: { metric: string; value: number; threshold: number } }
   | { type: "performance.report_generated"; organization_id: string; data: { report_id: string; report_type: string } }
+  | { type: "objective.at_risk"; organization_id: string; data: { objective_id: string; title: string; pacing_pct: number } }
   | { type: "operational.document_ingested"; organization_id: string; data: { document_id: string; classification: string } }
   | { type: "operational.record_populated"; organization_id: string; data: { entity_type: string; entity_id: string; source_document: string } }
   | { type: "workflow.started"; organization_id: string; data: { workflow_id: string; execution_id: string; trigger_type: string } }
@@ -27,6 +29,8 @@ export type DomainEvent =
   | { type: "deal.stalled"; organization_id: string; data: { deal_id: string; title: string; days_stalled: number } }
   | { type: "capa.created"; organization_id: string; data: { capa_id: string; severity: string; framework?: string | null } }
   | { type: "inventory.low"; organization_id: string; data: { item_id: string; name: string; current_qty: number; reorder_point: number } }
+  | { type: "insight.generated"; organization_id: string; data: { finding_id: string; title: string; source_event_type: string } }
+  | { type: "risk.flagged"; organization_id: string; data: { finding_id: string; title: string; monetary_risk: number; source_event_type: string } }
 
 const SUBSCRIPTIONS_TABLE = "event_subscriptions"
 const EVENTS_TABLE = "domain_events"

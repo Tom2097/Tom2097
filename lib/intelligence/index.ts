@@ -17,6 +17,7 @@ export {
 export {
   createAgent,
   executeAction,
+  executeApprovedAction,
   listAgents,
   getAgent,
   getAuditTrail

@@ -11,6 +11,8 @@ interface Agent {
   permissions: string[]
   workspaceId: string
   isActive: boolean
+  confidenceThreshold: number
+  requiresApproval: boolean
   createdAt: string
   updatedAt: string
 }
@@ -22,7 +24,7 @@ interface AgentAction {
   targetEntityId: string
   targetEntityType: string
   parameters: Record<string, unknown>
-  status: "pending" | "completed" | "failed"
+  status: "pending" | "pending_approval" | "approved" | "completed" | "failed"
   result?: Record<string, unknown>
   createdAt: string
   completedAt: string | null
@@ -70,6 +72,8 @@ export async function createAgent(
     permissions: data.permissions,
     workspaceId: data.workspace_id,
     isActive: data.is_active,
+    confidenceThreshold: data.confidence_threshold,
+    requiresApproval: data.requires_approval,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
   }
@@ -100,6 +104,30 @@ export async function executeAction(
     throw new Error("Agent lacks permission for this action")
   }
 
+  // ---- Guardrails (architecture brief: "confidence thresholds,
+  // human-in-the-loop... before any agent acts autonomously") ----
+  //
+  // requires_approval is the real, enforced gate: when set, the action is
+  // recorded as "pending_approval" and executeAgentAction() is NOT called
+  // here. It only runs once a human approves it via
+  // POST /api/v1/intelligence/actions { action: "approve", actionId } (see
+  // that route), which calls executeApprovedAction() below. Agents default
+  // to requires_approval = true (fail closed); an explicit opt-out is
+  // needed to get the old always-execute-immediately behavior back.
+  //
+  // confidence_threshold exists as a column on `agents` but is deliberately
+  // NOT compared against anything here. No code path in this codebase
+  // computes a real per-action confidence score for an agent_actions row --
+  // the only "confidence" numbers that exist (lib/intelligence/confidence.ts,
+  // intelligence_findings.confidence, CRM lead scoring, etc.) belong to
+  // unrelated subsystems and say nothing about whether *this* action is
+  // correct. Enforcing a threshold against a number nobody computes would be
+  // exactly the kind of fabricated guardrail this fix is supposed to avoid,
+  // so confidence_threshold is stored (for a future real confidence-scoring
+  // pass to plug into) but only requires_approval is actually enforced.
+  const requiresApproval = Boolean(agent.requires_approval)
+  const initialStatus = requiresApproval ? "pending_approval" : "pending"
+
   // Create action record
   const { data, error } = await supabase
     .from("agent_actions")
@@ -109,7 +137,7 @@ export async function executeAction(
       target_entity_id: targetEntityId,
       target_entity_type: targetEntityType,
       parameters,
-      status: "pending",
+      status: initialStatus,
       workspace_id: agent.workspace_id
     }])
     .select()
@@ -123,10 +151,27 @@ export async function executeAction(
     data.id,
     "INSERT",
     null,
-    { action, targetEntityId, targetEntityType, parameters },
+    { action, targetEntityId, targetEntityType, parameters, status: initialStatus },
     agentId,
     agent.workspace_id
   )
+
+  if (requiresApproval) {
+    // Do not execute. The action sits at "pending_approval" until a human
+    // approves it -- see executeApprovedAction() below.
+    return {
+      id: data.id,
+      agentId: data.agent_id,
+      action: data.action,
+      targetEntityId: data.target_entity_id,
+      targetEntityType: data.target_entity_type,
+      parameters: data.parameters,
+      status: "pending_approval",
+      result: undefined,
+      createdAt: data.created_at,
+      completedAt: null,
+    }
+  }
 
   // Execute action for real -- see executeAgentAction() below.
   const result = await executeAgentAction(
@@ -182,6 +227,85 @@ export async function executeAction(
 }
 
 /**
+ * Runs a previously-approved agent action for real. This is the other half
+ * of the human-in-the-loop guardrail in executeAction(): approving an action
+ * (POST /api/v1/intelligence/actions { action: "approve", actionId }) used
+ * to just flip agent_actions.status to "approved" with no further effect --
+ * that route now calls this function immediately afterward so approval
+ * actually causes the action to run.
+ *
+ * Works for any agent_actions row currently in "approved" status, not only
+ * ones created through executeAction()'s requires_approval branch -- e.g.
+ * rows inserted directly by the "auto-assign" command in
+ * app/api/v1/intelligence/actions/route.ts, which bypasses executeAction()
+ * entirely, also become real once a human approves them.
+ */
+export async function executeApprovedAction(actionId: string): Promise<AgentAction> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from("agent_actions")
+    .select("*")
+    .eq("id", actionId)
+    .single()
+
+  if (error || !data) throw new Error("Action not found")
+  if (data.status !== "approved") {
+    throw new Error(`Action is not in an approved state (status: ${data.status})`)
+  }
+
+  const result = await executeAgentAction(
+    data.agent_id,
+    data.action,
+    data.target_entity_id,
+    data.target_entity_type,
+    (data.parameters as Record<string, unknown>) ?? {},
+    data.workspace_id
+  )
+
+  const { error: updateError } = await supabase
+    .from("agent_actions")
+    .update({
+      status: result.success ? "completed" : "failed",
+      result: result.success ? result.data : { error: result.error },
+      completed_at: new Date().toISOString(),
+    })
+    .eq("id", actionId)
+
+  if (updateError) console.error("Failed to update action status:", updateError)
+
+  // Audit log
+  await createAuditEntry(
+    "agent_actions",
+    actionId,
+    "UPDATE",
+    { status: "approved" },
+    {
+      action: data.action,
+      targetEntityId: data.target_entity_id,
+      targetEntityType: data.target_entity_type,
+      status: result.success ? "completed" : "failed",
+      result: result.success ? result.data : { error: result.error }
+    },
+    data.agent_id,
+    data.workspace_id
+  )
+
+  return {
+    id: actionId,
+    agentId: data.agent_id,
+    action: data.action,
+    targetEntityId: data.target_entity_id,
+    targetEntityType: data.target_entity_type,
+    parameters: data.parameters,
+    status: result.success ? "completed" : "failed",
+    result: result.success ? result.data : { error: result.error },
+    createdAt: data.created_at,
+    completedAt: new Date().toISOString(),
+  }
+}
+
+/**
  * Executes an agent's target action against real backing systems.
  *
  * Each case is honest about what actually happens:
@@ -219,7 +343,23 @@ async function executeAgentAction(
       const reason = typeof parameters.reason === "string" ? parameters.reason : undefined
 
       try {
-        const task = await createTask(workspaceId, agentId, {
+        // createTask()/broadcast() both need a real organization_id --
+        // agents are workspace_id-scoped, a different id space entirely, so
+        // resolve the workspace's actual org first rather than passing
+        // workspaceId straight through (that silently tagged the task with
+        // a nonexistent org and made broadcast() deliver to zero recipients).
+        const supabase = await createClient()
+        const { data: workspace, error: workspaceError } = await supabase
+          .from("workspaces")
+          .select("organization_id")
+          .eq("id", workspaceId)
+          .single()
+        if (workspaceError || !workspace?.organization_id) {
+          throw new Error(`Could not resolve organization for workspace ${workspaceId}`)
+        }
+        const organizationId = workspace.organization_id as string
+
+        const task = await createTask(organizationId, agentId, {
           entity_type: entityType,
           entity_id: entityType ? targetEntityId : null,
           title: `Escalation: ${action} on ${targetEntityType} ${targetEntityId}`,
@@ -230,7 +370,7 @@ async function executeAgentAction(
           priority: "high",
         })
 
-        await broadcast(workspaceId, {
+        await broadcast(organizationId, {
           title: "Issue escalated",
           body: task.title,
           type: "warning",
@@ -285,6 +425,8 @@ export async function listAgents(workspaceId: string): Promise<Agent[]> {
     permissions: agent.permissions as string[],
     workspaceId: agent.workspace_id as string,
     isActive: agent.is_active as boolean,
+    confidenceThreshold: agent.confidence_threshold as number,
+    requiresApproval: agent.requires_approval as boolean,
     createdAt: agent.created_at as string,
     updatedAt: agent.updated_at as string,
   }))
@@ -310,6 +452,8 @@ export async function getAgent(agentId: string): Promise<Agent | null> {
     permissions: data.permissions,
     workspaceId: data.workspace_id,
     isActive: data.is_active,
+    confidenceThreshold: data.confidence_threshold,
+    requiresApproval: data.requires_approval,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
   }
@@ -335,7 +479,7 @@ export async function getAuditTrail(agentId: string): Promise<AgentAction[]> {
     targetEntityId: action.target_entity_id as string,
     targetEntityType: action.target_entity_type as string,
     parameters: action.parameters as Record<string, unknown>,
-    status: action.status as "pending" | "completed" | "failed",
+    status: action.status as "pending" | "pending_approval" | "approved" | "completed" | "failed",
     result: action.result as Record<string, unknown> | undefined,
     createdAt: action.created_at as string,
     completedAt: action.completed_at as string | null,

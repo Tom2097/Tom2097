@@ -7,3 +7,5 @@
 import "@/lib/crm/jobs"
 import "@/lib/compliance/jobs"
 import "@/lib/resources/jobs"
+import "@/lib/analytics/jobs"
+import "@/lib/intelligence/reasoning"
