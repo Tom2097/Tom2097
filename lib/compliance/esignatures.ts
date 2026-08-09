@@ -1,6 +1,9 @@
 import { createHash } from "crypto"
 import { createServiceClient } from "@/lib/supabase/service"
 import { publish } from "@/lib/events/bus"
+import { startWorkflowRun } from "@/lib/hitl/workflow-runs"
+import { raiseHAR } from "@/lib/hitl/har"
+import { registerContinuation } from "@/lib/hitl/continuations"
 
 export interface SignatureRequest {
   id: string
@@ -84,6 +87,84 @@ export async function createSignatureRequest(
 
   return req
 }
+
+/**
+ * Founder's Tier 1 authority-gate decision: e-signature / contract
+ * finalization. The gate sits before the request is SENT to the external
+ * signer, not before signDocument() -- signDocument is the external
+ * signer's own act (no internal actor to route a HAR to, and gating it
+ * wouldn't stop anything: the document has already gone out by then). This
+ * is the real, internally-actionable control point: an authorized person
+ * must approve sending a document out for a legally-binding signature.
+ *
+ * On approval the "esignature_send" continuation (registered below) calls
+ * createSignatureRequest for real; on rejection nothing is sent.
+ */
+export async function requestSignatureWithApproval(
+  organizationId: string,
+  documentId: string,
+  requesterId: string,
+  signerEmail: string,
+  signerName: string | null = null,
+  signerPhone: string | null = null,
+  message: string | null = null,
+  expiresInDays: number = 30,
+): Promise<{ request: SignatureRequest | null; pendingApproval: boolean }> {
+  const db = createServiceClient()
+  const { data: document } = await db
+    .from("documents")
+    .select("id, name")
+    .eq("id", documentId)
+    .eq("organization_id", organizationId)
+    .maybeSingle()
+  if (!document) return { request: null, pendingApproval: false }
+
+  const run = await startWorkflowRun(
+    organizationId,
+    "esignature_send",
+    { document_id: documentId, signer_email: signerEmail, signer_name: signerName, signer_phone: signerPhone, message, expires_in_days: expiresInDays },
+    requesterId,
+  )
+  if (!run) return { request: null, pendingApproval: false }
+
+  await raiseHAR({
+    organizationId,
+    workflowRunId: run.id,
+    stepKey: "esignature_send_signoff",
+    type: "approve",
+    triggerClass: "authority_gate",
+    reason: `Send "${document.name}" to ${signerEmail} for signature?`,
+    contextSummary: message ? `Message to signer: ${message}` : null,
+    triggeredBy: requesterId,
+    assigneeRole: "owner",
+    priority: "high",
+  })
+
+  return { request: null, pendingApproval: true }
+}
+
+registerContinuation("esignature_send", async (run, har) => {
+  if (har.decision !== "approve") return // rejected or edited -- never send
+  const ctx = run.context as {
+    document_id?: string
+    signer_email?: string
+    signer_name?: string | null
+    signer_phone?: string | null
+    message?: string | null
+    expires_in_days?: number
+  }
+  if (!ctx.document_id || !ctx.signer_email || !run.triggered_by) return
+  await createSignatureRequest(
+    run.organization_id,
+    ctx.document_id,
+    run.triggered_by,
+    ctx.signer_email,
+    ctx.signer_name ?? null,
+    ctx.signer_phone ?? null,
+    ctx.message ?? null,
+    ctx.expires_in_days ?? 30,
+  )
+})
 
 export async function signDocument(
   organizationId: string,

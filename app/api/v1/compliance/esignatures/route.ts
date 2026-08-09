@@ -2,7 +2,7 @@
 
 import { type NextRequest, NextResponse } from "next/server"
 import { withAuth } from "@/lib/auth/with-auth"
-import { createSignatureRequest, listSignatureRequests, type SignatureRequest } from "@/lib/compliance/esignatures"
+import { requestSignatureWithApproval, listSignatureRequests, type SignatureRequest } from "@/lib/compliance/esignatures"
 import { appendComplianceAudit } from "@/lib/compliance/audit-trail"
 import { getClientIp } from "@/lib/auth/audit"
 
@@ -21,7 +21,10 @@ export const POST = withAuth(async (req: NextRequest, { organizationId, userId }
     return NextResponse.json({ error: "documentId and signerEmail are required" }, { status: 400 })
   }
 
-  const request = await createSignatureRequest(
+  // Sending a document out for a legally-binding signature is an authority
+  // gate (founder's Tier 1 decision) -- requestSignatureWithApproval pauses
+  // for sign-off instead of sending immediately.
+  const { request, pendingApproval } = await requestSignatureWithApproval(
     organizationId,
     documentId,
     userId,
@@ -31,6 +34,10 @@ export const POST = withAuth(async (req: NextRequest, { organizationId, userId }
     message ?? null,
     typeof expiresInDays === "number" ? expiresInDays : 30,
   )
+
+  if (pendingApproval) {
+    return NextResponse.json({ pendingApproval: true, message: "Sending requires sign-off; a request has been raised." })
+  }
 
   if (!request) {
     return NextResponse.json({ error: "Failed to create signature request" }, { status: 400 })

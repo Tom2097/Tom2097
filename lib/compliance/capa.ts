@@ -1,5 +1,8 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { publish } from "@/lib/events/bus"
+import { startWorkflowRun } from "@/lib/hitl/workflow-runs"
+import { raiseHAR } from "@/lib/hitl/har"
+import { registerContinuation } from "@/lib/hitl/continuations"
 
 export type CapaStatus = "open" | "investigation" | "action" | "verification" | "closed"
 export type CapaSeverity = "minor" | "major" | "critical"
@@ -89,6 +92,68 @@ export async function transitionCapa(
   }
   return data as CapaRecord
 }
+
+/**
+ * Founder's Tier 1 authority-gate decision: closing a major/critical CAPA
+ * requires human sign-off. Reuses this codebase's own already-established
+ * severity threshold (lib/compliance/jobs.ts's compliance.notify_capa
+ * treats major/critical the same way) rather than inventing a new one --
+ * minor CAPAs close immediately, exactly as transitionCapa always did.
+ *
+ * On approval the "capa_closure" continuation (registered below) calls
+ * transitionCapa for real; on rejection the CAPA is simply left as-is
+ * (still in "verification"), since there's nothing to undo.
+ */
+export async function requestCapaClosure(
+  organizationId: string,
+  capaId: string,
+  notes: string | null,
+  userId: string,
+): Promise<{ closed: CapaRecord | null; pendingApproval: boolean }> {
+  const db = createServiceClient()
+  const { data: capaRow } = await db.from("capa_records").select("*").eq("id", capaId).eq("organization_id", organizationId).maybeSingle()
+  if (!capaRow) return { closed: null, pendingApproval: false }
+  const capa = capaRow as CapaRecord
+
+  if (!canTransition(capa.status, "closed")) {
+    return { closed: null, pendingApproval: false }
+  }
+
+  if (capa.severity === "minor") {
+    const closed = await transitionCapa(organizationId, capaId, "closed", notes, userId)
+    return { closed, pendingApproval: false }
+  }
+
+  const run = await startWorkflowRun(organizationId, "capa_closure", { capa_id: capaId, notes }, userId)
+  if (!run) return { closed: null, pendingApproval: false }
+
+  await raiseHAR({
+    organizationId,
+    workflowRunId: run.id,
+    stepKey: "capa_closure_signoff",
+    type: "approve",
+    triggerClass: "authority_gate",
+    reason: `Close ${capa.severity} CAPA "${capa.title}"?`,
+    contextSummary: notes ? `Closing notes: ${notes}` : null,
+    triggeredBy: userId,
+    assigneeRole: "owner",
+    priority: capa.severity === "critical" ? "urgent" : "high",
+  })
+
+  return { closed: null, pendingApproval: true }
+}
+
+registerContinuation("capa_closure", async (run, har) => {
+  if (har.decision !== "approve") return // rejected or edited -- CAPA stays as-is, nothing to finalize
+  const capaId = run.context.capa_id as string | undefined
+  const notes = (run.context.notes as string | null) ?? null
+  // closed_by is the approver (har.acted_by), not the original requester
+  // (run.triggered_by) -- they're the one who actually authorized the
+  // closure; the requester's identity is already preserved separately via
+  // the HAR's triggered_by and the har_actions audit trail.
+  if (!capaId || !har.acted_by) return
+  await transitionCapa(run.organization_id, capaId, "closed", notes, har.acted_by)
+})
 
 export async function listCapa(organizationId: string, status?: CapaStatus): Promise<CapaRecord[]> {
   const db = createServiceClient()
