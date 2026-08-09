@@ -15,6 +15,7 @@ import { RealTimeChart } from '@/components/digit/real-time-chart'
 import { modules } from '@/lib/modules'
 import { getPlanById, formatPrice } from '@/lib/products'
 import { useI18n } from '@/components/providers/i18n-provider'
+import { HarWidget } from '@/components/hitl/har-widget'
 
 interface DashboardContentProps {
   stats: any
@@ -58,6 +59,7 @@ export default function DashboardContent({
 
   return (
     <div className="space-y-8">
+      <HarWidget />
       {isActive && plan && (
         <Card className="p-4 border-chart-2/30 bg-chart-2/10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

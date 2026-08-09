@@ -57,7 +57,8 @@
     "pricing": "मूल्य निर्धारण और योजनाएं",
     "configureWorkspace": "वर्कस्पेस कॉन्फ़िगर करें",
     "recommendedForYou": "आपके लिए अनुशंसित",
-    "allModules": "सभी मॉड्यूल"
+    "allModules": "सभी मॉड्यूल",
+    "approvals": "अनुमोदन"
   },
   "benchmarks": {
     "page": {
@@ -1147,6 +1148,10 @@
       "viewAll": "सभी सिस्टम देखें",
       "upgradeToUnlock": "अनलॉक करने के लिए अपग्रेड करें",
       "viewPlans": "योजनाएं देखें"
+    },
+    "harWidget": {
+      "waiting": "{count} आपकी प्रतीक्षा में",
+      "review": "समीक्षा करें"
     }
   },
   "training": {
@@ -2563,6 +2568,41 @@
       "privacy": "गोपनीयता",
       "terms": "शर्तें",
       "copyright": "© 2026 DigiT. सर्वाधिकार सुरक्षित।"
+    }
+  },
+  "approvals": {
+    "page": {
+      "title": "अनुमोदन",
+      "subtitle": "आपकी प्रतीक्षा में क्या है — स्वीकृत, अस्वीकृत, प्रत्यायित या विस्तृत करें।",
+      "loadFailed": "अनुमोदन लोड करने में विफल",
+      "actionFailed": "कार्रवाई रिकॉर्ड करने में विफल",
+      "actionRecorded": "कार्रवाई दर्ज की गई",
+      "emptyTitle": "आपके लिए कुछ भी लंबित नहीं है",
+      "emptyBody": "जैसे ही किसी पर आपके निर्णय की आवश्यकता होगी, नई अनुरोध यहां दिखेंगे।",
+      "authorityGate": "अधिकार गेट",
+      "capabilityGap": "जानकारी गायब",
+      "due": "नियत",
+      "aiSuggests": "AI सुझाव देता है:",
+      "confidence": "विश्वास",
+      "approve": "स्वीकृत करें",
+      "reject": "अस्वीकृत करें",
+      "delegate": "प्रत्यायित करें",
+      "escalate": "विस्तृत करें",
+      "rejectDialog": {
+        "title": "इस अनुरोध को अस्वीकृत करें",
+        "description": "कारण आवश्यक है और ऑडिट ट्रेल पर दर्ज किया जाएगा।",
+        "reasonLabel": "कारण",
+        "cancel": "रद्द करें",
+        "confirm": "अस्वीकृत करें"
+      },
+      "delegateDialog": {
+        "title": "इस अनुरोध को प्रत्यायित करें",
+        "description": "इसे अपनी टीम के किसी और को सौंपें।",
+        "selectLabel": "इसे भेजें",
+        "selectPlaceholder": "टीम सदस्य चुनें",
+        "cancel": "रद्द करें",
+        "confirm": "प्रत्यायित करें"
+      }
     }
   }
 }

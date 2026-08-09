@@ -31,6 +31,10 @@ export type DomainEvent =
   | { type: "inventory.low"; organization_id: string; data: { item_id: string; name: string; current_qty: number; reorder_point: number } }
   | { type: "insight.generated"; organization_id: string; data: { finding_id: string; title: string; source_event_type: string } }
   | { type: "risk.flagged"; organization_id: string; data: { finding_id: string; title: string; monetary_risk: number; source_event_type: string } }
+  | { type: "human.action.requested"; organization_id: string; data: { har_id: string; workflow_run_id: string | null; trigger_class: string; reason: string } }
+  | { type: "human.action.assigned"; organization_id: string; data: { har_id: string; assignee_user_id: string; assignee_role: string | null } }
+  | { type: "human.action.notified"; organization_id: string; data: { har_id: string; channel: string } }
+  | { type: "human.action.completed"; organization_id: string; data: { har_id: string; workflow_run_id: string | null; decision: string } }
 
 const SUBSCRIPTIONS_TABLE = "event_subscriptions"
 const EVENTS_TABLE = "domain_events"

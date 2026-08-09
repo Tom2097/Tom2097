@@ -57,7 +57,8 @@
     "pricing": "Pricing & Plans",
     "configureWorkspace": "Configure Workspace",
     "recommendedForYou": "Recommended for you",
-    "allModules": "All modules"
+    "allModules": "All modules",
+    "approvals": "Approvals"
   },
   "benchmarks": {
     "page": {
@@ -1147,6 +1148,10 @@
       "viewAll": "View All Systems",
       "upgradeToUnlock": "Upgrade to unlock",
       "viewPlans": "View Plans"
+    },
+    "harWidget": {
+      "waiting": "{count} waiting on you",
+      "review": "Review"
     }
   },
   "training": {
@@ -2563,6 +2568,41 @@
       "privacy": "Privacy",
       "terms": "Terms",
       "copyright": "© 2026 DigiT. All rights reserved."
+    }
+  },
+  "approvals": {
+    "page": {
+      "title": "Approvals",
+      "subtitle": "What's waiting on you — approve, reject, delegate, or escalate.",
+      "loadFailed": "Failed to load approvals",
+      "actionFailed": "Failed to record action",
+      "actionRecorded": "Action recorded",
+      "emptyTitle": "Nothing waiting on you",
+      "emptyBody": "New requests will show up here as soon as something needs your decision.",
+      "authorityGate": "Authority gate",
+      "capabilityGap": "Missing info",
+      "due": "Due",
+      "aiSuggests": "AI suggests:",
+      "confidence": "confidence",
+      "approve": "Approve",
+      "reject": "Reject",
+      "delegate": "Delegate",
+      "escalate": "Escalate",
+      "rejectDialog": {
+        "title": "Reject this request",
+        "description": "A reason is required and will be recorded on the audit trail.",
+        "reasonLabel": "Reason",
+        "cancel": "Cancel",
+        "confirm": "Reject"
+      },
+      "delegateDialog": {
+        "title": "Delegate this request",
+        "description": "Hand this off to someone else on your team.",
+        "selectLabel": "Delegate to",
+        "selectPlaceholder": "Select a team member",
+        "cancel": "Cancel",
+        "confirm": "Delegate"
+      }
     }
   }
 }

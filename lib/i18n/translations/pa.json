@@ -57,7 +57,8 @@
     "pricing": "ਕੀਮਤ ਅਤੇ ਯੋਜਨਾਵਾਂ",
     "configureWorkspace": "ਵਰਕਸਪੇਸ ਕਨਫ਼ਿਗਰ ਕਰੋ",
     "recommendedForYou": "ਤੁਹਾਡੇ ਲਈ ਸਿਫ਼ਾਰਸ਼ੀ",
-    "allModules": "ਸਾਰੇ ਮੋਡੀਊਲ"
+    "allModules": "ਸਾਰੇ ਮੋਡੀਊਲ",
+    "approvals": "प्रवानगीं"
   },
   "benchmarks": {
     "page": {
@@ -1147,6 +1148,10 @@
       "viewAll": "ਸਾਰੇ ਸਿਸਟਮ ਵੇਖੋ",
       "upgradeToUnlock": "ਅਨਲੌਕ ਕਰਨ ਲਈ ਅਪਗ੍ਰੇਡ ਕਰੋ",
       "viewPlans": "ਯੋਜਨਾਵਾਂ ਵੇਖੋ"
+    },
+    "harWidget": {
+      "waiting": "{count} तुहाडे लई उडीक रहीं",
+      "review": "समीखिआ करो"
     }
   },
   "training": {
@@ -2563,6 +2568,41 @@
       "privacy": "ਗੋਪਨੀਯਤਾ",
       "terms": "ਸ਼ਰਤਾਂ",
       "copyright": "© 2026 DigiT. ਸਾਰੇ ਅਧਿਕਾਰ ਸੁਰੱਖਿਅਤ।"
+    }
+  },
+  "approvals": {
+    "page": {
+      "title": "प्रवानगीं",
+      "subtitle": "तुहाडे लई की उडीक रहिआ है — प्रवानगी, अस्वीकार, सौंपो जां वधाओ।",
+      "loadFailed": "प्रवानगीं लोड करन विघन",
+      "actionFailed": "कारवाई रिकॉरड करन विघन",
+      "actionRecorded": "कारवाई दरज कीती गई",
+      "emptyTitle": "तुहाडे लई कुझ वी बकाया नहीं",
+      "emptyBody": "जिवें ही किसे नूं तुहाडे फैसले दी लोड़ होवेगी, नवें बेनती इथे दिखनगे।",
+      "authorityGate": "अथॉरिटी गेट",
+      "capabilityGap": "गुडडों जाणकारी",
+      "due": "बकाया",
+      "aiSuggests": "AI दी सिफारिश:",
+      "confidence": "भरोसा",
+      "approve": "प्रवानगी",
+      "reject": "अस्वीकार",
+      "delegate": "सौंपो",
+      "escalate": "वधाओ",
+      "rejectDialog": {
+        "title": "इस बेनती नूं अस्वीकार करो",
+        "description": "कारन लोड़īਂदा है अते ऑडिट ट्रेल उते दरज कीता जावेगा।",
+        "reasonLabel": "कारन",
+        "cancel": "रद करो",
+        "confirm": "अस्वीकार"
+      },
+      "delegateDialog": {
+        "title": "इस बेनती नूं सौंपो",
+        "description": "इसनूं आपणी टीम दे किसे होर नूं सौंपो।",
+        "selectLabel": "इसनूं सौंपो",
+        "selectPlaceholder": "टीम मेंबर चुणो",
+        "cancel": "रद करो",
+        "confirm": "सौंपो"
+      }
     }
   }
 }
