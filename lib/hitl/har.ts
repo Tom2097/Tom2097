@@ -46,15 +46,31 @@ export interface RaiseHarInput {
  * null assignee and status stays "open" -- raising a control must never
  * fail the workflow step it exists to protect.
  */
+// Founder's Tier 1 decision: default timeout behavior is "escalate to the
+// owner", not "hold indefinitely" -- so every HAR gets a real due_at unless
+// the caller sets one explicitly, matching the spec's own escalation-ladder
+// figure (its "+24h escalate to manager" rung is the last hop before
+// expiry; Tier 0 has no expiry tier yet, so 24h is where the one-hop
+// owner-escalation this app actually has fires).
+const DEFAULT_SLA_HOURS = 24
+
 export async function raiseHAR(input: RaiseHarInput): Promise<HumanActionRequest | null> {
   const db = createServiceClient()
 
   let assigneeUserId = input.assigneeUserId ?? null
   let resolvedRole: AssignableRole | null = input.assigneeRole ?? null
-  let hopType: "initial" | "fallback" = "initial"
+  let hopType: "initial" | "fallback" | "self" = "initial"
+  const slaHours = input.slaHours ?? DEFAULT_SLA_HOURS
+  const dueAt = input.dueAt ?? new Date(Date.now() + slaHours * 60 * 60 * 1000).toISOString()
 
   if (!assigneeUserId && input.assigneeRole) {
-    const resolved = await resolveAssignee(input.organizationId, input.assigneeRole, input.triggeredBy ?? undefined)
+    // allowSelfFallback: a solo-owner org (or the last remaining holder of
+    // this role) must still get a real assignee -- actOnHAR's matching
+    // self-approval exception is what makes assigning it to the triggering
+    // user themselves safe, rather than leaving the HAR unassigned forever.
+    const resolved = await resolveAssignee(input.organizationId, input.assigneeRole, input.triggeredBy ?? undefined, {
+      allowSelfFallback: true,
+    })
     if (resolved) {
       assigneeUserId = resolved.userId
       resolvedRole = resolved.resolvedRole
@@ -79,8 +95,8 @@ export async function raiseHAR(input: RaiseHarInput): Promise<HumanActionRequest
       assignee_role: resolvedRole,
       assignee_user_id: assigneeUserId,
       priority: input.priority ?? "normal",
-      due_at: input.dueAt ?? null,
-      sla_hours: input.slaHours ?? null,
+      due_at: dueAt,
+      sla_hours: slaHours,
       status: "open",
     })
     .select("*")
@@ -105,7 +121,12 @@ export async function raiseHAR(input: RaiseHarInput): Promise<HumanActionRequest
       assigned_role: resolvedRole,
       assigned_user_id: assigneeUserId,
       hop_type: hopType,
-      reason: hopType === "fallback" ? "role had no eligible assignee; fell back to owner" : null,
+      reason:
+        hopType === "fallback"
+          ? "role had no eligible assignee; fell back to owner"
+          : hopType === "self"
+            ? "no one else eligible; assigned to the triggering user (self-approval last resort)"
+            : null,
     })
 
     await publish({
@@ -218,12 +239,23 @@ export async function actOnHAR(input: ActOnHarInput): Promise<ActOnHarResult> {
 
   // Separation of duties (spec section 4): the user who triggered the
   // underlying step can never be the one who acts on it, regardless of who
-  // it's currently assigned to.
+  // it's currently assigned to -- UNLESS no other eligible person exists
+  // for this HAR's role (a single-person org, or the last remaining holder
+  // of the assignee role). That's the founder's Tier 1 decision: strict
+  // whenever a real choice exists, a flagged last resort otherwise, never
+  // silently indistinguishable from a real second-person approval
+  // (self_approved on the audit row is what preserves that distinction).
+  let selfApproved = false
   if (har.triggered_by && har.triggered_by === input.actorId) {
-    return { success: false, error: "You cannot act on a request you triggered" }
+    const roleToCheck = (har.assignee_role as AssignableRole | null) ?? "owner"
+    const anyoneElse = await resolveAssignee(input.organizationId, roleToCheck, input.actorId)
+    if (anyoneElse) {
+      return { success: false, error: "You cannot act on a request you triggered" }
+    }
+    selfApproved = true
   }
 
-  if (har.assignee_user_id && har.assignee_user_id !== input.actorId) {
+  if (!selfApproved && har.assignee_user_id && har.assignee_user_id !== input.actorId) {
     return { success: false, error: "This request is assigned to someone else" }
   }
 
@@ -244,6 +276,7 @@ export async function actOnHAR(input: ActOnHarInput): Promise<ActOnHarResult> {
     action: input.action,
     reason: input.reason ?? null,
     channel,
+    self_approved: selfApproved,
   })
 
   if (input.action === "delegate") {
@@ -344,4 +377,83 @@ export async function actOnHAR(input: ActOnHarInput): Promise<ActOnHarResult> {
   }
 
   return { success: false, error: "Unknown action" }
+}
+
+/**
+ * Scheduled sweep (mirrors subscription-lifecycle.ts's expireAllDueTrials
+ * and dunning.ts's retryAllDueDunning): the founder's Tier 1 default --
+ * "escalate to the owner" when nobody responds before due_at, never
+ * auto-approve. Skips HARs already assigned to the owner (there's nowhere
+ * further to escalate to in Tier 0's one-hop ladder -- it just stays
+ * escalated/overdue until acted on or manually re-routed).
+ *
+ * actor_id is null on the har_actions row this inserts -- a system timeout
+ * isn't "a named person decided" (20260902000000 made the column
+ * nullable specifically for this).
+ */
+export async function escalateOverdueHARs(): Promise<{ processed: number; escalated: number }> {
+  const db = createServiceClient()
+
+  const { data: overdue } = await db
+    .from("human_action_requests")
+    .select("*")
+    .in("status", ["open", "notified"])
+    .not("due_at", "is", null)
+    .lte("due_at", new Date().toISOString())
+
+  const rows = (overdue ?? []) as HumanActionRequest[]
+  let escalated = 0
+
+  for (const har of rows) {
+    if (har.assignee_role === "owner") continue
+
+    const resolved = await resolveAssignee(har.organization_id, "owner", har.triggered_by ?? undefined)
+    if (!resolved) continue
+
+    await db
+      .from("human_action_requests")
+      .update({ assignee_user_id: resolved.userId, assignee_role: "owner", status: "escalated" })
+      .eq("id", har.id)
+
+    await db.from("har_assignments").insert({
+      har_id: har.id,
+      organization_id: har.organization_id,
+      assigned_role: "owner",
+      assigned_user_id: resolved.userId,
+      hop_type: "escalation",
+      reason: "SLA timeout -- auto-escalated",
+    })
+
+    await db.from("har_actions").insert({
+      har_id: har.id,
+      organization_id: har.organization_id,
+      actor_id: null,
+      action: "escalate",
+      reason: "SLA timeout -- auto-escalated",
+      channel: "system",
+      self_approved: false,
+    })
+
+    await createNotification(har.organization_id, {
+      user_id: resolved.userId,
+      title: "Escalated: action needed (SLA expired)",
+      body: har.reason,
+      type: "warning",
+      category: "hitl",
+      priority: "high",
+      action_url: `/approvals/${har.id}`,
+      data: { har_id: har.id },
+      source: "system",
+    })
+
+    await publish({
+      type: "human.action.escalated",
+      organization_id: har.organization_id,
+      data: { har_id: har.id, escalated_to: resolved.userId, reason: "sla_timeout" },
+    })
+
+    escalated++
+  }
+
+  return { processed: rows.length, escalated }
 }

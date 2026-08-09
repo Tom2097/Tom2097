@@ -35,6 +35,7 @@ export type DomainEvent =
   | { type: "human.action.assigned"; organization_id: string; data: { har_id: string; assignee_user_id: string; assignee_role: string | null } }
   | { type: "human.action.notified"; organization_id: string; data: { har_id: string; channel: string } }
   | { type: "human.action.completed"; organization_id: string; data: { har_id: string; workflow_run_id: string | null; decision: string } }
+  | { type: "human.action.escalated"; organization_id: string; data: { har_id: string; escalated_to: string; reason: string } }
 
 const SUBSCRIPTIONS_TABLE = "event_subscriptions"
 const EVENTS_TABLE = "domain_events"

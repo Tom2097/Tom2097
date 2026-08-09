@@ -76,7 +76,7 @@ export interface HarAssignment {
   assigned_role: string | null
   assigned_user_id: string | null
   assigned_by: string | null
-  hop_type: "initial" | "delegation" | "escalation" | "fallback"
+  hop_type: "initial" | "delegation" | "escalation" | "fallback" | "self"
   reason: string | null
   created_at: string
 }
@@ -85,9 +85,10 @@ export interface HarAction {
   id: string
   har_id: string
   organization_id: string
-  actor_id: string
+  actor_id: string | null
   action: HarDecision
   reason: string | null
   channel: string
+  self_approved: boolean
   created_at: string
 }
