@@ -1,5 +1,4 @@
-import { generateObject } from "ai"
-import { z } from "zod"
+import { generateText } from "ai"
 import { createServiceClient } from "@/lib/supabase/service"
 import { registerJobHandler } from "@/lib/jobs/handlers"
 import { mistralFastModel } from "@/lib/ai/mistral"
@@ -43,37 +42,56 @@ import { publish } from "@/lib/events/bus"
  * classification call, not an interactive user-facing generation, so the
  * cheaper model is the right tradeoff (same choice lib/document-processing/
  * analyze.ts makes for its background document classification call).
+ *
+ * Uses generateText + an explicit JSON shape in the prompt, NOT
+ * generateObject -- verified directly against the real Mistral API that
+ * generateObject's automatic schema-to-tool-call conversion is not reliably
+ * enforced through this app's OpenAI-compatible adapter for this model
+ * ("responseFormat"/structuredOutputs unsupported per the ai SDK's own
+ * runtime warning): the model silently ignored the Zod schema's field names
+ * and returned its own shape instead, failing validation every time. This
+ * matches lib/analytics/nlp.ts's classifyText(), the proven-working pattern
+ * already used elsewhere in this codebase for exactly this reason.
  */
 
 const RECENT_EVENTS_LIMIT = 8
 
-const ReasoningSchema = z.object({
-  worthFlagging: z
-    .boolean()
-    .describe(
-      "True ONLY if this event, in light of the recent event history below, represents a genuine cross-workspace risk or insight a human should see -- NOT true for routine, expected, or isolated activity with no cross-workspace signal.",
-    ),
-  reasoning: z
-    .string()
-    .describe(
-      "1-3 sentences explaining the judgment, grounded ONLY in the real event and history provided below. Never invent facts, deals, documents, or amounts that are not listed.",
-    ),
-  title: z
-    .string()
-    .max(200)
-    .describe("A short, human-readable title for the finding. Only meaningful when worthFlagging is true."),
-  riskLevel: z
-    .enum(["low", "medium", "high"])
-    .describe("How severe this is if worthFlagging is true. Ignored otherwise."),
-  estimatedMonetaryRisk: z
-    .number()
-    .min(0)
-    .describe(
-      "A monetary risk estimate, DERIVED from real numeric values present in the event or recent history (e.g. a deal's value, an inventory shortfall). Use 0 if no real number in the data below supports an estimate -- never invent a precise-sounding figure with no basis.",
-    ),
-})
+type RiskLevel = "low" | "medium" | "high"
 
-type Reasoning = z.infer<typeof ReasoningSchema>
+interface Reasoning {
+  worthFlagging: boolean
+  reasoning: string
+  title: string
+  riskLevel: RiskLevel
+  estimatedMonetaryRisk: number
+}
+
+const RISK_LEVELS: RiskLevel[] = ["low", "medium", "high"]
+
+/** Defensive parse of the model's free-text JSON reply -- there is no
+ *  enforced schema on it (see the file header). Any missing/malformed field
+ *  falls back to the safe, honest default (not worth flagging), never a
+ *  fabricated guess. */
+function parseReasoning(responseText: string): Reasoning {
+  const fallback: Reasoning = { worthFlagging: false, reasoning: "", title: "", riskLevel: "low", estimatedMonetaryRisk: 0 }
+  try {
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) return fallback
+    const parsed = JSON.parse(jsonMatch[0])
+    const riskLevel: RiskLevel = RISK_LEVELS.includes(parsed.riskLevel) ? parsed.riskLevel : "low"
+    const monetary = Number(parsed.estimatedMonetaryRisk)
+    return {
+      worthFlagging: parsed.worthFlagging === true,
+      reasoning: typeof parsed.reasoning === "string" ? parsed.reasoning : "",
+      title: typeof parsed.title === "string" ? parsed.title : "",
+      riskLevel,
+      estimatedMonetaryRisk: Number.isFinite(monetary) && monetary > 0 ? monetary : 0,
+    }
+  } catch (err) {
+    console.warn("[v0] intelligence.reason_about_event: failed to parse model response:", err)
+    return fallback
+  }
+}
 
 // Deterministic risk-level -> confidence/impact mapping (matching the
 // pattern lib/compliance/jobs.ts already uses for its own severity-based
@@ -148,14 +166,22 @@ registerJobHandler("intelligence.reason_about_event", async (organizationId, pay
 
   let object: Reasoning
   try {
-    const result = await generateObject({
+    const result = await generateText({
       model: mistralFastModel,
-      schema: ReasoningSchema,
-      system: `${BASE_SYSTEM_PROMPT}\nYou are the AI Intelligence workspace's cross-workspace reasoning brain. You are shown ONE real event that just happened somewhere in the platform, plus a short real recent event history for the same organization. Judge causally, from these real facts ONLY -- never invent deals, documents, amounts, or events that are not listed below. Most individual events are routine and NOT worth flagging; only set worthFlagging=true when this event, in light of the recent history, points to a genuine cross-workspace risk or insight a human should see (e.g. a pattern spanning multiple modules, or a risk this event implies when combined with recent ones). Do not flag isolated, expected, routine activity just because it happened.`,
-      prompt: `New event:\n${eventText}\n\nRecent event history for this organization (most recent first):\n${historyText}\n\nShould this be flagged as a cross-workspace insight or risk?`,
+      system: `${BASE_SYSTEM_PROMPT}\nYou are the AI Intelligence workspace's cross-workspace reasoning brain. You are shown ONE real event that just happened somewhere in the platform, plus a short real recent event history for the same organization. Judge causally, from these real facts ONLY -- never invent deals, documents, amounts, or events that are not listed below. Most individual events are routine and NOT worth flagging; only set worthFlagging=true when this event, in light of the recent history, points to a genuine cross-workspace risk or insight a human should see (e.g. a pattern spanning multiple modules, or a risk this event implies when combined with recent ones). Do not flag isolated, expected, routine activity just because it happened.
+
+Return ONLY a JSON object with this exact structure:
+{
+  "worthFlagging": boolean,
+  "reasoning": "1-3 sentences explaining the judgment, grounded ONLY in the real event/history given",
+  "title": "a short human-readable title, only meaningful when worthFlagging is true",
+  "riskLevel": "low" | "medium" | "high",
+  "estimatedMonetaryRisk": number (derived from a real number in the event/history, e.g. a deal's value; use 0 if nothing supports an estimate -- never invent a precise-sounding figure)
+}`,
+      prompt: `New event:\n${eventText}\n\nRecent event history for this organization (most recent first):\n${historyText}\n\nShould this be flagged as a cross-workspace insight or risk? Respond with the JSON object only.`,
       temperature: 0.3,
     })
-    object = result.object
+    object = parseReasoning(result.text)
   } catch (err) {
     // A transient model/API failure shouldn't be treated as "not worth
     // flagging" -- but it also shouldn't take down the poller run. Log and
