@@ -3,7 +3,7 @@ import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Check, CreditCard, Clock, AlertCircle, Loader2, Shield, Gift, XCircle } from "lucide-react"
+import { CreditCard, Clock, AlertCircle, Loader2, Shield, Gift, XCircle } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -13,10 +13,6 @@ import { createClient } from "@/lib/supabase/client"
 import { getPlanById, formatPrice } from "@/lib/products"
 import { createBillingPortalSession } from "@/app/actions/stripe"
 import { useRouter } from "next/navigation"
-import { isWithinRefundWindowClient } from "@/lib/billing/subscription-lifecycle-client"
-import { trackRefundRequested } from "@/lib/analytics/billing-events"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,8 +29,10 @@ interface SubscriptionData {
   status: string
   current_period_end: string | null
   trial_ends_at: string | null
-  billing_interval: "month" | "year" | null
   cancel_at_period_end: boolean | null
+  billing_mode: "one_time" | "split" | null
+  is_founding: boolean | null
+  locked_price_cents: number | null
 }
 
 export default function BillingSettingsPage() {
@@ -42,10 +40,6 @@ export default function BillingSettingsPage() {
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [refundReason, setRefundReason] = useState("")
-  const [isRequestingRefund, setIsRequestingRefund] = useState(false)
-  const [refundRequested, setRefundRequested] = useState(false)
-  const [withinRefundWindow, setWithinRefundWindow] = useState(false)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
   const [cancelError, setCancelError] = useState<string | null>(null)
@@ -74,14 +68,12 @@ export default function BillingSettingsPage() {
 
         const { data: sub } = await supabase
           .from("subscriptions")
-          .select("plan_id, status, current_period_end, trial_ends_at, billing_interval, cancel_at_period_end")
+          .select("plan_id, status, current_period_end, trial_ends_at, cancel_at_period_end, billing_mode, is_founding, locked_price_cents")
           .eq("organization_id", profile.organization_id)
           .single()
 
         if (sub) {
           setSubscription(sub)
-          const withinWindow = await isWithinRefundWindowClient(profile.organization_id)
-          setWithinRefundWindow(withinWindow)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : t("settings.billing.failedToLoad"))
@@ -101,45 +93,6 @@ export default function BillingSettingsPage() {
       }
     } catch (err) {
       setError(t("settings.billing.failedPortal"))
-    }
-  }
-
-  const handleRequestRefund = async () => {
-    if (!subscription || !withinRefundWindow) return
-
-    try {
-      setIsRequestingRefund(true)
-      setError(null)
-
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("organization_id")
-        .eq("id", user?.id)
-        .single()
-
-      if (!user || !profile?.organization_id) {
-        throw new Error(t("settings.billing.authRequired"))
-      }
-
-      const response = await fetch('/api/v1/billing/refund', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: refundReason }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || t("settings.billing.failedRefund"))
-      }
-
-      await trackRefundRequested(profile.organization_id, user.id, subscription.plan_id, refundReason)
-      setRefundRequested(true)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("settings.billing.failedRefund"))
-    } finally {
-      setIsRequestingRefund(false)
     }
   }
 
@@ -171,7 +124,7 @@ export default function BillingSettingsPage() {
 
   const plan = subscription ? getPlanById(subscription.plan_id) : null
   const isTrial = subscription?.status === "trialing"
-  const isMonthly = subscription?.billing_interval === "month"
+  const isSplit = subscription?.billing_mode === "split"
 
   if (loading) {
     return (
@@ -265,9 +218,9 @@ export default function BillingSettingsPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-foreground">
-                    {plan ? formatPrice(plan.priceInCents) : "-"}
+                    {subscription?.locked_price_cents ? formatPrice(subscription.locked_price_cents) : plan ? formatPrice(plan.priceInCents) : "-"}
                   </p>
-                  <p className="text-sm text-muted-foreground">{t("settings.billing.perMonth")}</p>
+                  <p className="text-sm text-muted-foreground">/year</p>
                 </div>
               </div>
             </Card>
@@ -296,86 +249,35 @@ export default function BillingSettingsPage() {
             </Card>
           </motion.div>
 
-          {/* Refund Section */}
-          {isMonthly && !isTrial && (
+          {/* Refund policy (Pricing & Payments Build Spec v1.0, section 5:
+              no refunds on cancellation or sign-off -- access continues to
+              the end of the paid term). Replaces the old 30-day
+              monthly-refund-window UI, which no longer reflects this
+              product's policy. */}
+          {!isTrial && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <Card className="p-6 mb-8">
-                <h3 className="text-lg font-semibold text-foreground mb-4">{t("settings.billing.refundRequest")}</h3>
-                
-                {refundRequested ? (
-                  <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-4 h-4 text-emerald-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">{t("settings.billing.refundReceived")}</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Your refund request has been received. Processing may take 3-5 business days.
-                        </p>
-                      </div>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-4 h-4 text-muted-foreground" />
                   </div>
-                ) : withinRefundWindow ? (
-                  <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      You can request a full refund within 30 days of your first payment. After this period, refunds are not available.
+                  <div>
+                    <p className="font-medium text-foreground">No refunds</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Cancelling doesn&apos;t refund any amount already charged -- access continues until the end of your paid term. Your data can be exported in full at any time, including after you leave.
                     </p>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="refund-reason">{t("settings.billing.refundReasonLabel")}</Label>
-                      <Textarea
-                        id="refund-reason"
-                        placeholder={t("settings.billing.refundReasonPlaceholder")}
-                        value={refundReason}
-                        onChange={(e) => setRefundReason(e.target.value)}
-                        className="min-h-[100px]"
-                      />
-                    </div>
-                    
-                    <Button
-                      onClick={handleRequestRefund}
-                      disabled={isRequestingRefund}
-                      className="gap-2"
-                    >
-                      {isRequestingRefund ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <Shield className="w-4 h-4" />
-                          Request Refund
-                        </>
-                      )}
-                    </Button>
                   </div>
-                ) : (
-                  <div className="p-4 rounded-lg bg-muted/30">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                        <AlertCircle className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">{t("settings.billing.refundWindowExpired")}</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Refunds are only available within 30 days of your first payment. You are no longer eligible for a refund.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                </div>
               </Card>
             </motion.div>
           )}
 
           {/* Cancel Subscription */}
-          {subscription && subscription.status !== "cancelled" && subscription.status !== "refunded" && (
+          {subscription && subscription.status !== "canceled" && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -405,8 +307,8 @@ export default function BillingSettingsPage() {
                 ) : (
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                      Cancelling stops future renewals. You&apos;ll keep access until the end of your current billing
-                      period{isMonthly ? "" : " (yearly plans require a minimum 3-month commitment before they can be cancelled)"}.
+                      Cancelling stops future renewal. You&apos;ll keep access until the end of your current 12-month term
+                      {isSplit ? " -- any remaining instalments for this term are still due" : ""}. No amount already paid is refunded.
                     </p>
                     {cancelError && (
                       <p className="text-sm text-destructive">{cancelError}</p>
@@ -458,16 +360,21 @@ export default function BillingSettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">{t("settings.billing.plan")}</span>
-                  <span className="font-medium text-foreground">{plan?.name || "-"}</span>
+                  <span className="font-medium text-foreground flex items-center gap-2">
+                    {plan?.name || "-"}
+                    {subscription?.is_founding && (
+                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">Founding rate</Badge>
+                    )}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("settings.billing.billingCycle")}</span>
-                  <span className="font-medium text-foreground">{isMonthly ? t("settings.billing.monthly") : t("settings.billing.annual")}</span>
+                  <span className="text-muted-foreground">Payment</span>
+                  <span className="font-medium text-foreground">{isSplit ? "12 monthly instalments" : "Paid in full, annually"}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Price</span>
                   <span className="font-medium text-foreground">
-                    {plan ? formatPrice(plan.priceInCents) : "-"}/month
+                    {subscription?.locked_price_cents ? formatPrice(subscription.locked_price_cents) : "-"}/year
                   </span>
                 </div>
               </div>

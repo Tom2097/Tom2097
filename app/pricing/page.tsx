@@ -1,569 +1,148 @@
 "use client"
 
-import React, { useState, useEffect, Suspense } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Check, Zap, Building2, Rocket, ChevronRight, Star, X, Loader2, Info } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Check, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { pricingTiers, addOns, platformModules, currencies, inrPrices, type PricingTier } from "@/lib/subscription-data"
-import { Checkout } from "@/components/checkout"
-import { createClient } from "@/lib/supabase/client"
-import { getCookie } from "@/lib/i18n/cookies"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
-import type { User } from "@supabase/supabase-js"
 import { Logo } from "@/components/digit/logo"
 import { useI18n } from "@/components/providers/i18n-provider"
 import { AuroraBackground } from "@/components/digit/aurora-background"
+import { SUBSCRIPTION_PLANS, formatPrice } from "@/lib/products"
 
-const tierIcons = {
-  starter: Rocket,
-  professional: Zap,
-  enterprise: Building2,
-}
+const plan = SUBSCRIPTION_PLANS[0]
 
-// Same brand triad used on the homepage/bento grid, brightened for
-// contrast against the dark background (see components/digit/landing-page.tsx).
-const TRIAD = ["#3ce0e2", "#3b7cf5", "#00c875"]
-
-// Component that uses useSearchParams
-function CanceledBanner() {
+export default function PricingPage() {
   const { t } = useI18n()
-  const searchParams = useSearchParams()
-  const canceled = searchParams?.get("canceled")
-
-  if (!canceled) return null
-
-  return (
-    <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-3">
-      <p className="text-center text-sm text-amber-600">
-        {t("pricing.canceled")}
-      </p>
-    </div>
-  )
-}
-
-const PricingCard = React.memo(function PricingCard({
-  tier,
-  index,
-  isAnnual,
-  currency,
-  onSelect,
-}: {
-  tier: PricingTier
-  index: number
-  isAnnual: boolean
-  currency: string
-  onSelect: (tierId: string) => void
-}) {
-  const { t } = useI18n()
-  const TierIcon = tierIcons[tier.id as keyof typeof tierIcons]
-  const curr = currencies.find(c => c.code === currency) || currencies[0]
-
-  const getPrice = () => {
-    if (currency === "INR") {
-      const p = inrPrices[tier.id]
-      if (!p) return tier.monthlyPrice
-      return isAnnual ? Math.round(p.annual / 12) : p.monthly
-    }
-    return isAnnual ? tier.annualPrice : tier.monthlyPrice
-  }
-
-  const getYearlyTotal = () => {
-    if (currency === "INR") {
-      const p = inrPrices[tier.id]
-      return p ? p.annual : tier.annualPrice * 12
-    }
-    return getPrice() * 12
-  }
-
-  const price = getPrice()
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-    >
-      <Card
-        className={`relative p-8 h-full flex flex-col transition-all duration-300 hover:shadow-xl ${
-          tier.highlighted
-            ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
-            : "border-border/50 bg-card/50 hover:border-primary/50"
-        }`}
-      >
-        {tier.highlighted && (
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-            <Badge className="bg-primary text-primary-foreground">{t("pricing.card.mostPopular")}</Badge>
-          </div>
-        )}
-
-        <div className="mb-6">
-          <div
-            className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
-              tier.highlighted ? "bg-primary/20" : "bg-muted"
-            }`}
-          >
-            <TierIcon className={`w-6 h-6 ${tier.highlighted ? "text-primary" : "text-muted-foreground"}`} />
-          </div>
-          <h3 className="text-2xl font-bold text-foreground mb-2">{tier.name}</h3>
-          <p className="text-sm text-muted-foreground">{tier.description}</p>
-        </div>
-
-        <div className="mb-6">
-          <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-bold text-foreground">{curr.symbol}{price.toLocaleString("en-IN")}</span>
-            <span className="text-muted-foreground">{t("pricing.card.perMonth")}</span>
-          </div>
-          {isAnnual && (
-            <p className="text-sm text-chart-2 mt-1">
-              {t("pricing.card.billedAnnually")} ({curr.symbol}{getYearlyTotal().toLocaleString("en-IN")}/{t("pricing.card.year")})
-            </p>
-          )}
-          {currency === "INR" && curr.gstRate && (
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("pricing.card.gst", { rate: curr.gstRate })}
-            </p>
-          )}
-        </div>
-
-        <div className="flex-1 mb-8">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
-            {t("pricing.card.whatsIncluded")}
-          </p>
-          <ul className="space-y-3">
-            {tier.features.map((feature, i) => (
-              <li key={i} className="flex items-start gap-3">
-                <Check
-                  className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                    tier.highlighted ? "text-primary" : "text-chart-2"
-                  }`}
-                />
-                <span className="text-sm text-foreground">{feature}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <Button
-          className={`w-full ${
-            tier.highlighted
-              ? "bg-primary hover:bg-primary/90"
-              : tier.id === "enterprise"
-              ? "bg-foreground text-background hover:bg-foreground/90"
-              : ""
-          }`}
-          variant={tier.highlighted ? "default" : tier.id === "enterprise" ? "default" : "outline"}
-          onClick={() => onSelect(tier.id)}
-        >
-          {tier.cta}
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </Button>
-      </Card>
-    </motion.div>
-  )
-})
-
-function PricingContent() {
-  const { t } = useI18n()
-  const [isAnnual, setIsAnnual] = useState(true)
-  const [currency, setCurrency] = useState(() =>
-    typeof document !== 'undefined' && getCookie('NEXT_REGION') === 'IN' ? 'INR' : 'USD'
-  )
-  const [selectedTier, setSelectedTier] = useState<string | null>(null)
-  const [showCheckout, setShowCheckout] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
-  const [loadingUser, setLoadingUser] = useState(true)
-  const [discountCode, setDiscountCode] = useState("")
-  const [discountError, setDiscountError] = useState("")
-  const [discountValid, setDiscountValid] = useState(false)
-  const router = useRouter()
+  const [slots, setSlots] = useState<{ remaining: number; total: number } | null>(null)
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      setLoadingUser(false)
-    })
+    fetch("/api/v1/billing/v2/founding-slots")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setSlots({ remaining: data.slotsRemaining, total: data.slotsTotal }))
+      .catch(() => {})
   }, [])
 
-  const [addonStatus, setAddonStatus] = useState<Record<string, "loading" | "done" | "error">>({})
-  const [addonError, setAddonError] = useState<string | null>(null)
-
-  const handleAddAddon = async (addonId: string) => {
-    if (!user) {
-      router.push(`/auth/sign-up`)
-      return
-    }
-    setAddonStatus((prev) => ({ ...prev, [addonId]: "loading" }))
-    setAddonError(null)
-    try {
-      const res = await fetch("/api/v1/billing/addons", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ addonId }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? "Failed to add")
-      setAddonStatus((prev) => ({ ...prev, [addonId]: "done" }))
-    } catch (err) {
-      setAddonStatus((prev) => ({ ...prev, [addonId]: "error" }))
-      setAddonError(err instanceof Error ? err.message : "Failed to add")
-    }
-  }
-
-  const handleSelectPlan = (tierId: string) => {
-    if (!user) {
-      router.push(`/auth/sign-up?plan=${tierId}`)
-      return
-    }
-    if (currency === "INR") {
-      // Razorpay checkout — redirect
-      window.location.href = `/api/v1/billing/create-session?plan=${tierId}&provider=razorpay&redirect=/settings`
-      return
-    }
-    setSelectedTier(tierId)
-    setShowCheckout(true)
-  }
+  const isFoundingAvailable = slots !== null && slots.remaining > 0
 
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
       <AuroraBackground />
 
-      {/* Header */}
-      <header className="relative border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
+      <header className="relative z-10 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Logo size="md" link />
-          <nav className="hidden md:flex items-center gap-6">
-             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-               {t("common.dashboard")}
-             </Link>
-             <Link href="/pricing" className="text-sm text-foreground font-medium">
-               {t("navigation.pricing")}
-             </Link>
-             {loadingUser ? (
-               <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-             ) : user ? (
-               <Button size="sm" asChild>
-                 <Link href="/settings">{t("common.settings")}</Link>
-               </Button>
-             ) : (
-               <>
-                 <Button variant="outline" size="sm" asChild>
-                   <Link href="/auth/login">{t("auth.pricing.signIn")}</Link>
-                 </Button>
-                 <Button size="sm" asChild>
-                   <Link href="/auth/sign-up">{t("auth.pricing.startFreeTrial")}</Link>
-                 </Button>
-               </>
-             )}
-          </nav>
+          <Link href="/" className="flex items-center gap-3">
+            <Logo size="md" />
+          </Link>
+          <Button variant="outline" asChild>
+            <Link href="/auth/login">{t("pricing.header.login") || "Log in"}</Link>
+          </Button>
         </div>
       </header>
 
-      {/* Canceled Banner */}
-      <Suspense fallback={null}>
-        <CanceledBanner />
-      </Suspense>
+      <div className="relative z-10 container mx-auto px-6 py-16 max-w-3xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-10"
+        >
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">One platform. One price.</h1>
+          <p className="text-lg text-muted-foreground">Every module, every AI capability, no tiers to compare.</p>
+        </motion.div>
 
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="container mx-auto px-6 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Badge variant="secondary" className="mb-4">
-              <Star className="w-3 h-3 mr-1" />
-              {t("pricing.hero.trustedBy")}
-            </Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              {t("pricing.hero.titlePrefix")}{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-chart-2">
-                {t("pricing.hero.titleHighlight")}
-              </span>
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-              {t("pricing.hero.subtitle")}
-            </p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+          <Card className="p-8 md:p-10 border-primary/30 relative overflow-hidden">
+            {isFoundingAvailable && (
+              <Badge className="absolute top-6 right-6 bg-primary/10 text-primary border-primary/30">
+                <Sparkles className="w-3 h-3 mr-1" />
+                Founding offer
+              </Badge>
+            )}
 
-            {/* Billing Toggle */}
-            <div className="flex items-center justify-center gap-4 mb-12 flex-wrap">
-              <div className="flex items-center gap-4">
-                <span className={`text-sm ${!isAnnual ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                  {t("pricing.toggle.monthly")}
-                </span>
-                <Switch
-                  checked={isAnnual}
-                  onCheckedChange={setIsAnnual}
-                  className="data-[state=checked]:bg-primary"
-                />
-                <span className={`text-sm ${isAnnual ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                  {t("pricing.toggle.annual")}
-                </span>
-                {isAnnual && (
-                  <>
-                    <Badge variant="secondary" className="bg-chart-2/20 text-chart-2 border-chart-2/30">
-                      {t("pricing.toggle.save")}
-                    </Badge>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge
-                          variant="secondary"
-                          className="bg-amber-500/10 text-amber-600 border-amber-500/30 cursor-help"
-                        >
-                          <Info className="w-3 h-3 mr-1" />
-                          {t("pricing.toggle.commitment")}
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-sm">
-                          {t("pricing.toggle.commitmentTooltip")}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </>
-                )}
-              </div>
-              <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1">
-                {currencies.map((c) => (
-                  <button
-                    key={c.code}
-                    onClick={() => setCurrency(c.code)}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                      currency === c.code
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {c.label}
-                  </button>
-                ))}
-              </div>
+            <h2 className="text-xl font-semibold text-foreground mb-1">{plan.name}</h2>
+            <p className="text-sm text-muted-foreground mb-6">{plan.description}</p>
+
+            <div className="flex items-baseline gap-3 mb-2">
+              {isFoundingAvailable ? (
+                <>
+                  <span className="text-5xl font-bold text-foreground">{formatPrice(1_000_000)}</span>
+                  <span className="text-muted-foreground">/year</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-5xl font-bold text-foreground">{formatPrice(plan.priceInCents)}</span>
+                  <span className="text-muted-foreground">/year</span>
+                </>
+              )}
             </div>
-          </motion.div>
-        </div>
-      </section>
 
-      {/* Pricing Cards */}
-      <section className="py-12 px-6">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {pricingTiers.map((tier, index) => (
-              <PricingCard
-                key={tier.id}
-                tier={tier}
-                index={index}
-                isAnnual={isAnnual}
-                currency={currency}
-                onSelect={handleSelectPlan}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+            {isFoundingAvailable ? (
+              <p className="text-sm text-muted-foreground mb-6">
+                Public price {formatPrice(plan.priceInCents)}/year. Locked for as long as you stay, for our first 50 customers.{" "}
+                <span className="font-medium text-primary">{slots?.remaining} of {slots?.total} founding slots left.</span>
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground mb-6">
+                Pay in full, or split into 12 monthly instalments. A 12-month commitment either way.
+              </p>
+            )}
 
-      {/* Add-ons Section */}
-      <section className="py-20 px-6 bg-muted/30">
-        <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">{t("pricing.addons.title")}</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              {t("pricing.addons.subtitle")}
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-            {addOns.map((addon, index) => (
-              <motion.div
-                key={addon.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Card className="p-6 border-border/50 bg-card/50 hover:border-primary/50 transition-all duration-300 flex flex-col">
-                  <h3 className="font-semibold text-foreground mb-2">{addon.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{addon.description}</p>
-                  <div className="flex items-baseline gap-1 mb-4">
-                    <span className="text-2xl font-bold text-foreground">${addon.price}</span>
-                    <span className="text-xs text-muted-foreground">/{addon.unit}</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-auto"
-                    disabled={addonStatus[addon.id] === "loading" || addonStatus[addon.id] === "done"}
-                    onClick={() => handleAddAddon(addon.id)}
-                  >
-                    {addonStatus[addon.id] === "loading" ? (
-                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                    ) : addonStatus[addon.id] === "done" ? (
-                      <Check className="h-3 w-3 mr-1" />
-                    ) : null}
-                    {addonStatus[addon.id] === "done" ? t("pricing.addons.added") : t("pricing.addons.addToPlan")}
-                  </Button>
-                  {addonStatus[addon.id] === "error" && (
-                    <p className="text-xs text-destructive mt-2">{addonError}</p>
-                  )}
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Platform Modules */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">{t("pricing.modules.title")}</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              {t("pricing.modules.subtitle")}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-4xl mx-auto">
-            {platformModules.map((module, index) => (
-              <motion.div
-                key={module.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-              >
-                <Card className="p-4 text-center border-border/50 bg-card/50 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 cursor-pointer">
-                  <div
-                    className="w-10 h-10 rounded-lg mx-auto mb-3 flex items-center justify-center"
-                    style={{ backgroundColor: `${TRIAD[index % TRIAD.length]}1a` }}
-                  >
-                    <div
-                      className="w-5 h-5 rounded"
-                      style={{ backgroundColor: TRIAD[index % TRIAD.length] }}
-                    />
-                  </div>
-                  <p className="text-sm font-medium text-foreground">{module.name}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border/50 py-12 px-6">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <Logo size="sm" />
-              <span className="text-sm text-muted-foreground">
-                {t("pricing.footer.copyright")}
-              </span>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-8">
+              <span>{isFoundingAvailable ? "2-month free trial" : "1-month free trial"}</span>
+              <span aria-hidden>·</span>
+              <span>No card charged until trial ends</span>
+              <span aria-hidden>·</span>
+              <span>Cancel anytime during trial</span>
             </div>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <Link href="/privacy" className="hover:text-foreground transition-colors">
-                {t("pricing.footer.privacy")}
-              </Link>
-              <Link href="/terms" className="hover:text-foreground transition-colors">
-                {t("pricing.footer.terms")}
-              </Link>
-              <Link href="/security" className="hover:text-foreground transition-colors">
-                {t("pricing.footer.security")}
-              </Link>
-              <Link href="/status" className="hover:text-foreground transition-colors">
-                {t("pricing.footer.status")}
-              </Link>
+
+            <Button size="lg" className="w-full mb-8" asChild>
+              <Link href="/checkout">Start free trial</Link>
+            </Button>
+
+            <div className="space-y-3">
+              {plan.features.map((feature) => (
+                <div key={feature} className="flex items-start gap-3">
+                  <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                  <span className="text-sm text-foreground">{feature}</span>
+                </div>
+              ))}
             </div>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-10 text-center text-sm text-muted-foreground space-y-2"
+        >
+          <p>No refunds after the trial ends -- access continues for your full paid term. Full data export, always available.</p>
+          <p>
+            Questions?{" "}
+            <a href="mailto:hello@digit-ai.org" className="text-primary hover:underline">
+              hello@digit-ai.org
+            </a>
+          </p>
+        </motion.div>
+      </div>
+
+      <footer className="relative z-10 border-t border-border/50 py-12 px-6">
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <Logo size="sm" />
+            <span className="text-sm text-muted-foreground">© {new Date().getFullYear()} DigiT</span>
+          </div>
+          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link href="/security" className="hover:text-foreground transition-colors">Security</Link>
+            <Link href="/status" className="hover:text-foreground transition-colors">Status</Link>
           </div>
         </div>
       </footer>
-
-      {/* Checkout Modal (USD / Stripe) */}
-      {showCheckout && selectedTier && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-          <Card className="max-w-2xl w-full max-h-[90vh] overflow-auto">
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <h3 className="text-lg font-semibold">
-                {t("pricing.checkout.subscribeTo", { plan: pricingTiers.find((tier) => tier.id === selectedTier)?.name ?? "" })}
-              </h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  setShowCheckout(false)
-                  setSelectedTier(null)
-                  setDiscountCode("")
-                  setDiscountError("")
-                  setDiscountValid(false)
-                }}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="p-4 border-b border-border space-y-3">
-              <div className="flex items-center gap-2">
-                <Input
-                  placeholder={t("pricing.checkout.discountPlaceholder")}
-                  value={discountCode}
-                  onChange={(e) => {
-                    setDiscountCode(e.target.value.toUpperCase())
-                    setDiscountError("")
-                    setDiscountValid(false)
-                  }}
-                  className="flex-1 text-sm"
-                />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    if (!discountCode) return
-                    fetch("/api/v1/billing/discounts", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ code: discountCode, plan: selectedTier }),
-                    })
-                      .then(async (r) => {
-                        const data = await r.json()
-                        if (r.ok && data.valid) {
-                          setDiscountValid(true)
-                          setDiscountError("")
-                        } else {
-                          setDiscountValid(false)
-                          setDiscountError(data.error || data.reason || "Invalid code")
-                        }
-                      })
-                      .catch(() => { setDiscountError(t("pricing.checkout.failedToValidate")) })
-                  }}
-                >
-                  {t("pricing.checkout.apply")}
-                </Button>
-              </div>
-              {discountError && <p className="text-xs text-destructive">{discountError}</p>}
-              {discountValid && <p className="text-xs text-chart-2">{t("pricing.checkout.discountApplied")}</p>}
-            </div>
-            <div className="p-0">
-              <Checkout
-                planId={selectedTier}
-                discountCode={discountValid ? discountCode : undefined}
-                onClose={() => {
-                  setShowCheckout(false)
-                  setSelectedTier(null)
-                  setDiscountCode("")
-                  setDiscountError("")
-                  setDiscountValid(false)
-                }}
-              />
-            </div>
-          </Card>
-        </div>
-      )}
     </div>
   )
-}
-
-export default function PricingPage() {
-  return <PricingContent />
 }
