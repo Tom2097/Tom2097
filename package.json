@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint . --cache --cache-location .eslintcache",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify:tenant-isolation": "node scripts/verify-tenant-isolation.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.51",
