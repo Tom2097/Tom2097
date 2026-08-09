@@ -3,7 +3,7 @@ import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Check, CreditCard, Clock, AlertCircle, Loader2, Shield, Gift } from "lucide-react"
+import { Check, CreditCard, Clock, AlertCircle, Loader2, Shield, Gift, XCircle } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,16 @@ import { isWithinRefundWindowClient } from "@/lib/billing/subscription-lifecycle
 import { trackRefundRequested } from "@/lib/analytics/billing-events"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface SubscriptionData {
   plan_id: string
@@ -24,6 +34,7 @@ interface SubscriptionData {
   current_period_end: string | null
   trial_ends_at: string | null
   billing_interval: "month" | "year" | null
+  cancel_at_period_end: boolean | null
 }
 
 export default function BillingSettingsPage() {
@@ -35,6 +46,9 @@ export default function BillingSettingsPage() {
   const [isRequestingRefund, setIsRequestingRefund] = useState(false)
   const [refundRequested, setRefundRequested] = useState(false)
   const [withinRefundWindow, setWithinRefundWindow] = useState(false)
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
+  const [cancelError, setCancelError] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -60,7 +74,7 @@ export default function BillingSettingsPage() {
 
         const { data: sub } = await supabase
           .from("subscriptions")
-          .select("plan_id, status, current_period_end, trial_ends_at, billing_interval")
+          .select("plan_id, status, current_period_end, trial_ends_at, billing_interval, cancel_at_period_end")
           .eq("organization_id", profile.organization_id)
           .single()
 
@@ -126,6 +140,32 @@ export default function BillingSettingsPage() {
       setError(err instanceof Error ? err.message : t("settings.billing.failedRefund"))
     } finally {
       setIsRequestingRefund(false)
+    }
+  }
+
+  const handleCancelSubscription = async () => {
+    try {
+      setIsCancelling(true)
+      setCancelError(null)
+
+      const response = await fetch('/api/v1/billing/subscription/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cancel' }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to cancel subscription')
+      }
+
+      setSubscription((prev) => (prev ? { ...prev, cancel_at_period_end: true } : prev))
+      setCancelDialogOpen(false)
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : 'Failed to cancel subscription')
+    } finally {
+      setIsCancelling(false)
     }
   }
 
@@ -198,6 +238,11 @@ export default function BillingSettingsPage() {
                     <Badge className="bg-primary/10 text-primary">
                       {subscription?.status}
                     </Badge>
+                    {subscription?.cancel_at_period_end && (
+                      <Badge variant="outline" className="text-muted-foreground border-muted-foreground/30">
+                        Cancels at period end
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                     {subscription?.current_period_end && (
@@ -328,6 +373,79 @@ export default function BillingSettingsPage() {
               </Card>
             </motion.div>
           )}
+
+          {/* Cancel Subscription */}
+          {subscription && subscription.status !== "cancelled" && subscription.status !== "refunded" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.35 }}
+            >
+              <Card className="p-6 mb-8">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Cancel Subscription</h3>
+
+                {subscription.cancel_at_period_end ? (
+                  <div className="p-4 rounded-lg bg-muted/30">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-foreground">Cancellation scheduled</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Your subscription will remain active until{" "}
+                          {subscription.current_period_end
+                            ? new Date(subscription.current_period_end).toLocaleDateString()
+                            : "the end of your current billing period"}
+                          , after which it will not renew.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Cancelling stops future renewals. You&apos;ll keep access until the end of your current billing
+                      period{isMonthly ? "" : " (yearly plans require a minimum 3-month commitment before they can be cancelled)"}.
+                    </p>
+                    {cancelError && (
+                      <p className="text-sm text-destructive">{cancelError}</p>
+                    )}
+                    <Button
+                      variant="outline"
+                      onClick={() => setCancelDialogOpen(true)}
+                      className="gap-2 text-destructive hover:text-destructive"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      Cancel Subscription
+                    </Button>
+                  </div>
+                )}
+              </Card>
+            </motion.div>
+          )}
+
+          <AlertDialog open={cancelDialogOpen} onOpenChange={(open) => !isCancelling && setCancelDialogOpen(open)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Cancel your subscription?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  You&apos;ll keep access until the end of your current billing period, then your subscription will not
+                  renew. This does not issue a refund for the current period.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isCancelling}>Keep Subscription</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleCancelSubscription}
+                  disabled={isCancelling}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {isCancelling ? "Cancelling..." : "Cancel Subscription"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           {/* Billing Information */}
           <motion.div

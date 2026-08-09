@@ -6,6 +6,7 @@ import { claimWebhookEvent, completeWebhookEvent, failWebhookEvent } from "./ide
 import type { BillingPlan } from "./types"
 import { logger } from "@/lib/logging"
 import { razorpaySettlementStatus } from "./payout-status"
+import { recordFailedPayment } from "./dunning"
 
 const razorpayAuth = Buffer.from(
   `${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`
@@ -286,6 +287,25 @@ export async function handleRazorpayWebhook(
               error_message: payment.error_description as string,
             })
             if (eventError) throw eventError
+
+            // Same dunning wiring as the Stripe webhook's invoice.payment_failed
+            // case -- sets status to "past_due" and schedules a retry via
+            // lib/billing/dunning.ts instead of leaving the subscription's
+            // status untouched (it was never updated here before).
+            const { data: sub } = await supabase
+              .from("subscriptions")
+              .select("id")
+              .eq("organization_id", orgId)
+              .single()
+            if (sub) {
+              await recordFailedPayment(
+                sub.id,
+                orgId,
+                typeof payment.amount === "number" ? payment.amount / 100 : 0,
+                "inr",
+                payment.error_description as string | undefined,
+              )
+            }
           }
         }
         break

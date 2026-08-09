@@ -4,6 +4,7 @@ import { claimWebhookEvent, completeWebhookEvent, failWebhookEvent } from "@/lib
 import { recordDiscountUse } from "@/lib/billing/discounts"
 import { getPlanIdFromStripePriceId } from "@/lib/products"
 import { stripePayoutStatus } from "@/lib/billing/payout-status"
+import { recordFailedPayment } from "@/lib/billing/dunning"
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
 import type Stripe from "stripe"
@@ -189,17 +190,23 @@ export async function POST(req: Request) {
 
       const { data, error: subscriptionReadError } = await supabase
         .from("subscriptions")
-        .select("organization_id")
+        .select("id, organization_id")
         .eq("stripe_customer_id", customerId)
         .single()
       if (subscriptionReadError) throw subscriptionReadError
 
       if (data?.organization_id) {
-        const { error: subscriptionUpdateError } = await supabase
-          .from("subscriptions")
-          .update({ status: "past_due" })
-          .eq("organization_id", data.organization_id)
-        if (subscriptionUpdateError) throw subscriptionUpdateError
+        // recordFailedPayment (lib/billing/dunning.ts) sets status to
+        // "past_due" itself and logs a dunning_attempts row with a
+        // scheduled next_attempt_at -- this replaces the bare status
+        // update that used to happen here with no retry schedule at all.
+        await recordFailedPayment(
+          data.id,
+          data.organization_id,
+          invoice.amount_due / 100,
+          "usd",
+          invoice.last_finalization_error?.message,
+        )
 
         const { error: billingEventError } = await supabase.from("billing_events").insert({
           organization_id: data.organization_id,

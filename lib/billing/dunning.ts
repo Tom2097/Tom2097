@@ -175,6 +175,46 @@ export async function recordSuccessfulPayment(
     .eq("status", "failed")
 }
 
+/**
+ * Scheduled sweep (mirrors subscription-lifecycle.ts's expireAllDueTrials):
+ * finds every past_due subscription whose latest dunning_attempts row has a
+ * next_attempt_at that's now due, and retries each. A subscription with no
+ * dunning_attempts row yet (past_due some other way, e.g. a manual status
+ * edit) has no retry scheduled and is correctly skipped here -- retries only
+ * ever start from a recordFailedPayment() call.
+ */
+export async function retryAllDueDunning(): Promise<{ processed: number; recovered: number }> {
+  const supabase = await createServiceClient()
+
+  const { data: dueAttempts } = await supabase
+    .from("dunning_attempts")
+    .select("subscription_id, organization_id, attempt_number, next_attempt_at, status")
+    .eq("status", "failed")
+    .not("next_attempt_at", "is", null)
+    .lte("next_attempt_at", new Date().toISOString())
+    .order("attempt_number", { ascending: false })
+
+  const rows = dueAttempts ?? []
+
+  // Only the latest attempt per subscription is actionable -- a
+  // subscription can have several historical failed rows, but retrying it
+  // more than once per sweep would double-count attempts.
+  const latestBySubscription = new Map<string, { organization_id: string }>()
+  for (const row of rows) {
+    if (!latestBySubscription.has(row.subscription_id)) {
+      latestBySubscription.set(row.subscription_id, { organization_id: row.organization_id })
+    }
+  }
+
+  let recovered = 0
+  for (const [subscriptionId, { organization_id }] of latestBySubscription) {
+    const result = await retryDunning(subscriptionId, organization_id)
+    if (result.success) recovered++
+  }
+
+  return { processed: latestBySubscription.size, recovered }
+}
+
 export async function getDunningStatus(
   organizationId: string
 ): Promise<{
