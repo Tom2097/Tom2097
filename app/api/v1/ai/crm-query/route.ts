@@ -46,6 +46,22 @@ async function groundedText(prompt: string, facts: string): Promise<string> {
   return result.text.trim()
 }
 
+/**
+ * The model is repeatedly told "No markdown" / "No markdown, no backticks"
+ * for the three JSON-expecting groundedText() calls below, but LLMs
+ * routinely wrap JSON in ```json fences anyway regardless of instruction --
+ * the same behavior already worked around elsewhere in this codebase
+ * (lib/intelligence/reasoning.ts, lib/analytics/nlp.ts). Without this, the
+ * frontend's JSON.parse(response) either throws or (worse) the raw fenced
+ * string gets rendered as-is in the UI. Strips a leading/trailing ```
+ * or ```json fence if present; a response with no fence passes through
+ * unchanged.
+ */
+function stripJsonFences(text: string): string {
+  const fenced = text.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?```$/)
+  return fenced ? fenced[1].trim() : text
+}
+
 export async function GET() {
   return NextResponse.json([])
 }
@@ -115,7 +131,7 @@ export async function POST(request: Request) {
         `Generate conversation intelligence data. Return ONLY valid JSON with: templates (array of {id, name, scenario, suggested, objection, rebuttal} drawn from patterns in the logged interactions below), sentiments (array of {name, sentiment: 0-100, trend: "up"/"down", keywords: string[]}, one per distinct interaction subject), and playbooks (array of {id, name, stages: string[]} -- 2-3 outreach/deal playbooks whose stages reflect the actual interaction patterns seen below, not generic filler). No markdown.`,
         facts,
       )
-      return NextResponse.json({ response: text })
+      return NextResponse.json({ response: stripJsonFences(text) })
     }
 
     if (/daily briefing/i.test(q)) {
@@ -134,7 +150,7 @@ export async function POST(request: Request) {
         `Generate a daily briefing for a founder. Return ONLY valid JSON array with 5 objects covering: 1) Revenue Pulse, 2) Deals Needing Attention, 3) Team Performance, 4) Market Signals, 5) Operational Health. Each object: title (string), priority ("high"/"medium"/"low"), content (string paragraph), actionItems (array of strings). No markdown, no backticks.`,
         factsText,
       )
-      return NextResponse.json({ response: text })
+      return NextResponse.json({ response: stripJsonFences(text) })
     }
 
     if (/nurture sequences/i.test(q)) {
@@ -147,7 +163,7 @@ export async function POST(request: Request) {
         `Generate WhatsApp nurture sequences for these real CRM prospects only (use their given id as the sequence id, their given name as "prospect"). Return ONLY valid JSON array. Each item: {id: string, name: string, prospect: string, steps: [{day: number, channel: string, subject: string, content: string, delay: string}]}. No markdown.`,
         facts,
       )
-      return NextResponse.json({ response: text })
+      return NextResponse.json({ response: stripJsonFences(text) })
     }
 
     // ---- Small talk / greetings: respond naturally, don't force a pipeline dump ----
