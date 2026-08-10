@@ -11,10 +11,12 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Logo } from "@/components/digit/logo"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { formatPrice, SUBSCRIPTION_PLANS } from "@/lib/products"
+import { COUNTRIES } from "@/lib/countries"
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "")
 const plan = SUBSCRIPTION_PLANS[0]
@@ -123,7 +125,18 @@ export default function CheckoutPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="country">Country</Label>
-                <Input id="country" value={details.country} onChange={(e) => setDetails((d) => ({ ...d, country: e.target.value.toUpperCase() }))} placeholder="US" maxLength={2} />
+                <Select value={details.country} onValueChange={(v) => setDetails((d) => ({ ...d, country: v }))}>
+                  <SelectTrigger id="country" className="w-full">
+                    <SelectValue placeholder="Select a country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRIES.map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {!isFounding && (
