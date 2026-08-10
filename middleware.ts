@@ -1,5 +1,13 @@
-import type { NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
+
+// digit-ai.in is a second domain pointed at the same app, permanently
+// redirected to the canonical digit-ai.org (founder's call: one canonical
+// URL, no duplicate-content SEO issues, no cross-domain auth-cookie
+// complications). Checked before session handling runs at all -- a request
+// that's about to be redirected away has no reason to pay for a Supabase
+// session lookup first.
+const REDIRECT_HOSTS = new Set(['digit-ai.in', 'www.digit-ai.in'])
 
 export const config = {
   matcher: [
@@ -30,6 +38,12 @@ function parseAcceptLanguage(header: string | null): string[] {
 }
 
 export async function middleware(request: NextRequest) {
+  const host = request.headers.get('host')?.split(':')[0].toLowerCase()
+  if (host && REDIRECT_HOSTS.has(host)) {
+    const target = new URL(request.nextUrl.pathname + request.nextUrl.search, 'https://digit-ai.org')
+    return NextResponse.redirect(target, 308)
+  }
+
   // Auth/session handling runs first: it fail-closed redirects unauthenticated
   // requests away from protected pages (see lib/supabase/middleware.ts) and
   // refreshes the Supabase session cookie. Previously this function existed
