@@ -8,14 +8,12 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Logo } from "@/components/digit/logo"
-import { useI18n } from "@/components/providers/i18n-provider"
 import { AuroraBackground } from "@/components/digit/aurora-background"
 import { SUBSCRIPTION_PLANS, formatPrice } from "@/lib/products"
 
 const plan = SUBSCRIPTION_PLANS[0]
 
 export default function PricingPage() {
-  const { t } = useI18n()
   const [slots, setSlots] = useState<{ remaining: number; total: number } | null>(null)
 
   useEffect(() => {
@@ -37,7 +35,7 @@ export default function PricingPage() {
             <Logo size="md" />
           </Link>
           <Button variant="outline" asChild>
-            <Link href="/auth/login">{t("pricing.header.login") || "Log in"}</Link>
+            <Link href="/auth/login">Log in</Link>
           </Button>
         </div>
       </header>
