@@ -2188,7 +2188,8 @@
       "users": "Users",
       "roles": "Roles",
       "payouts": "Payouts",
-      "security": "Security"
+      "security": "Security",
+      "visitors": "Visitors"
     },
     "dashboard": {
       "title": "Platform Dashboard",
@@ -2305,6 +2306,29 @@
         "status": "Status",
         "arrivalDate": "Arrival Date",
         "reference": "Reference"
+      }
+    },
+    "visitors": {
+      "title": "Site Visitors",
+      "subtitle": "Real traffic to the public site -- who's visiting, and from where.",
+      "loadFailed": "Failed to load visitor data",
+      "totalVisits": "Total Visits",
+      "uniqueVisitors": "Unique Visitors",
+      "last24h": "Last 24 Hours",
+      "byCountry": "By Country",
+      "byCountryDesc": "Visits in the last 100 recorded, grouped by country",
+      "topPages": "Top Pages",
+      "topPagesDesc": "Most-visited pages",
+      "recentTitle": "Recent Visits",
+      "recentDesc": "The 30 most recent page views",
+      "empty": "No visits recorded yet.",
+      "direct": "Direct",
+      "table": {
+        "when": "When",
+        "page": "Page",
+        "location": "Location",
+        "referrer": "Referrer",
+        "device": "Device"
       }
     }
   },

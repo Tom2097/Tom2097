@@ -5,6 +5,7 @@ import './globals.css'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { I18nProvider } from '@/components/providers/i18n-provider'
 import { LanguageDetectionBanner } from '@/components/language-detection-banner'
+import { VisitorTracker } from '@/components/analytics/visitor-tracker'
 import { ThemeProvider } from '@/components/theme-provider'
 import { cookies } from 'next/headers'
 import { resolveLocale } from '@/lib/i18n/config'
@@ -73,6 +74,7 @@ export default async function RootLayout({
            <I18nProvider initialLocale={initialLocale}>
              <ErrorBoundary>
                <LanguageDetectionBanner />
+               <VisitorTracker />
                {children}
              </ErrorBoundary>
            </I18nProvider>

@@ -13,6 +13,7 @@ import {
   Activity,
   Loader2,
   Wallet,
+  Globe2,
 } from "lucide-react"
 
 // Same key + fetcher as components/digit/sidebar.tsx's owner-check --
@@ -30,6 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: t("platformAdmin.layout.users"), href: "/platform/admin/users", icon: Users },
     { label: t("platformAdmin.layout.roles"), href: "/platform/admin/roles", icon: Shield },
     { label: t("platformAdmin.layout.payouts"), href: "/platform/admin/payouts", icon: Wallet },
+    { label: t("platformAdmin.layout.visitors"), href: "/platform/admin/visitors", icon: Globe2 },
     { label: t("platformAdmin.layout.security"), href: "/platform/admin/security", icon: Activity },
   ]
   const { data: ownerData, isLoading } = useSWR<{ isOwner: boolean }>("/api/platform/owner-check", fetcher)
