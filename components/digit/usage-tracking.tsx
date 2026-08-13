@@ -162,7 +162,7 @@ export function UsageTracking({ plan, usage, className }: UsageTrackingProps) {
                 Consider upgrading your plan to avoid service interruptions.
               </p>
               <Button size="sm" variant="outline" className="mt-3" asChild>
-                <Link href="/pricing">Upgrade Plan</Link>
+                <Link href="/settings/billing">Upgrade Plan</Link>
               </Button>
             </div>
           </div>

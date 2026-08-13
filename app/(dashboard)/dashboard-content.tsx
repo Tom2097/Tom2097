@@ -83,7 +83,7 @@ export default function DashboardContent({
                </Button>
                {plan.id !== 'enterprise' && (
                  <Button size="sm" asChild>
-                   <Link href="/pricing">{t("dashboard.subscription.active.upgrade")}</Link>
+                   <Link href="/settings/billing">{t("dashboard.subscription.active.upgrade")}</Link>
                  </Button>
                )}
             </div>
@@ -374,7 +374,7 @@ export default function DashboardContent({
                 <Lock className="w-8 h-8 text-muted-foreground mb-2" />
                  <p className="text-sm font-medium text-muted-foreground">{t("dashboard.modules.upgradeToUnlock")}</p>
                  <Button size="sm" variant="outline" className="mt-3" asChild>
-                   <Link href="/pricing">{t("dashboard.modules.viewPlans")}</Link>
+                   <Link href="/settings/billing">{t("dashboard.modules.viewPlans")}</Link>
                  </Button>
               </div>
               <ModuleCard

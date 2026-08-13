@@ -759,7 +759,7 @@ export default function SettingsPage() {
                     </Button>
                   ) : (
                     <Button asChild>
-                      <Link href="/pricing">
+                      <Link href="/checkout">
                         Upgrade Plan
                         <ChevronRight className="w-4 h-4 ml-1" />
                       </Link>
@@ -840,7 +840,7 @@ export default function SettingsPage() {
                   </ul>
                   {subscription?.plan_id !== plan.id && (
                     <Button variant="outline" className="w-full" asChild>
-                      <Link href="/pricing">
+                      <Link href="/checkout">
                         {!subscription?.plan_id ? t("settings.subscription.startTrial") : t("settings.subscription.upgrade")}
                       </Link>
                     </Button>

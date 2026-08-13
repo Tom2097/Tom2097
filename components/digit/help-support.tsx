@@ -80,7 +80,7 @@ const categories = ["All", "Getting Started", "Features", "AI Features", "Billin
 const quickLinks = [
   { title: "Intelligence", icon: Sparkles, href: "/intelligence", description: "AI-powered insights and analytics" },
   { title: "Settings", icon: Headphones, href: "/settings", description: "Manage account and preferences" },
-  { title: "Pricing", icon: ExternalLink, href: "/pricing", description: "Compare plans and features", external: true },
+  { title: "Pricing", icon: ExternalLink, href: "/#pricing", description: "Compare plans and features", external: true },
   { title: "Security", icon: CheckCircle2, href: "/security", description: "Security overview and compliance" },
 ]
 
@@ -90,7 +90,7 @@ const helpTopics = [
   { title: "Operations Dashboard", category: "Documentation", icon: Book, href: "/operations" },
   { title: "CRM Workspace", category: "Features", icon: MessageCircle, href: "/crm" },
   { title: "Invite Team Members", category: "Team", icon: MessageCircle, href: "/settings" },
-  { title: "Upgrade Subscription", category: "Billing", icon: ExternalLink, href: "/pricing" },
+  { title: "Upgrade Subscription", category: "Billing", icon: ExternalLink, href: "/settings/billing" },
   { title: "Compliance Center", category: "Security", icon: FileQuestion, href: "/compliance" },
   { title: "Export Reports", category: "Features", icon: Book, href: "/analytics" },
   { title: "Performance Metrics", category: "Features", icon: Video, href: "/performance" },

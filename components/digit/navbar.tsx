@@ -53,7 +53,7 @@ const searchItems = [
    // Pages
    { type: 'page', title: 'Dashboard', description: 'Overview and key metrics', icon: LayoutDashboard, href: '/', category: 'Pages' },
    { type: 'page', title: 'Configure Workspace', description: 'Workspace settings and preferences', icon: Settings, href: '/configure', category: 'Pages' },
-   { type: 'page', title: 'Pricing', description: 'Plans and subscriptions', icon: FileText, href: '/pricing', category: 'Pages' },
+   { type: 'page', title: 'Pricing', description: 'Plans and subscriptions', icon: FileText, href: '/settings/billing', category: 'Pages' },
   // Features
   { type: 'feature', title: 'Revenue Forecast', description: 'Predictive revenue analysis', icon: BarChart3, href: '/#revenue', category: 'Features' },
   { type: 'feature', title: 'Team Management', description: 'Manage team members and roles', icon: Users, href: '/settings?tab=team', category: 'Features' },

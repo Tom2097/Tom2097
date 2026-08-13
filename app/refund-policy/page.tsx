@@ -25,7 +25,7 @@ export default function RefundPolicyPage() {
             <Logo size="md" />
           </Link>
           <Button variant="outline" asChild>
-            <Link href="/pricing">View Plans</Link>
+            <Link href="/#pricing">View Plans</Link>
           </Button>
         </div>
       </header>

@@ -228,10 +228,10 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
             {!isCollapsed && <span>{t('sidebar.approvals')}</span>}
           </Link>
           <Link
-            href="/pricing"
+            href="/settings/billing"
             className={cn(
               "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
-              pathname === '/pricing'
+              pathname === '/settings/billing'
                 ? "bg-primary/10 text-primary digit-glow-sm"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}

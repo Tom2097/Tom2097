@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
   const plan = planId ? getPlanById(planId) : undefined
   if (!plan) {
-    return NextResponse.redirect(`${origin}/pricing?error=invalid_plan`)
+    return NextResponse.redirect(`${origin}/?error=invalid_plan#pricing`)
   }
 
   try {
@@ -35,11 +35,11 @@ export async function GET(request: NextRequest) {
         features: plan.features,
       },
       `${origin}${redirectPath}`,
-      `${origin}/pricing?canceled=true`,
+      `${origin}/?canceled=true#pricing`,
     )
 
     if (!checkoutUrl) {
-      return NextResponse.redirect(`${origin}/pricing?error=checkout_failed`)
+      return NextResponse.redirect(`${origin}/?error=checkout_failed#pricing`)
     }
 
     return NextResponse.redirect(checkoutUrl)
@@ -49,8 +49,8 @@ export async function GET(request: NextRequest) {
     // already authenticated. Send them back to pricing with a clear flag
     // instead, matching this route's existing error-flag redirects above.
     if (error instanceof Error && error.message === 'OwnerRequired') {
-      return NextResponse.redirect(`${origin}/pricing?error=owner_required`)
+      return NextResponse.redirect(`${origin}/?error=owner_required#pricing`)
     }
-    return NextResponse.redirect(`${origin}/auth/login?redirect=/pricing`)
+    return NextResponse.redirect(`${origin}/auth/login?redirect=/`)
   }
 }

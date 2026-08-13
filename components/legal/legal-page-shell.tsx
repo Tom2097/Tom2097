@@ -22,7 +22,7 @@ export function LegalPageShell({ title, description, lastUpdated, children }: Le
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
           <Logo size="sm" link />
           <Link
-            href="/pricing"
+            href="/#pricing"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
