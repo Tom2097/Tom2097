@@ -29,16 +29,17 @@ interface BillingDetails {
   country: string
 }
 
-/** Spec section 1: sign-up -> billing details -> confirm a payment method
- *  (zero money taken) -> trial activates only on that confirmation. */
+/** Sign-up -> billing details -> confirm a payment method (zero money
+ *  taken) -> trial activates only on that confirmation. Annual is charged
+ *  once at trial end; monthly is a real recurring Stripe subscription the
+ *  customer can cancel anytime (see lib/billing/signup-stripe.ts). */
 export default function CheckoutPage() {
   const router = useRouter()
   const [step, setStep] = useState<Step>("loading")
   const [error, setError] = useState<string | null>(null)
   const [details, setDetails] = useState<BillingDetails>({ legalName: "", billingEmail: "", country: "US" })
-  const [billingMode, setBillingMode] = useState<"one_time" | "split">("one_time")
+  const [billingInterval, setBillingInterval] = useState<"year" | "month">("year")
   const [clientSecret, setClientSecret] = useState<string | null>(null)
-  const [slotsRemaining, setSlotsRemaining] = useState<number | null>(null)
 
   useEffect(() => {
     const check = async () => {
@@ -51,11 +52,6 @@ export default function CheckoutPage() {
       setStep("details")
     }
     check()
-
-    fetch("/api/v1/billing/v2/founding-slots")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setSlotsRemaining(data.slotsRemaining))
-      .catch(() => {})
   }, [router])
 
   const submitDetails = useCallback(async () => {
@@ -84,8 +80,6 @@ export default function CheckoutPage() {
     }
   }, [details])
 
-  const isFounding = slotsRemaining !== null && slotsRemaining > 0
-
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -107,13 +101,25 @@ export default function CheckoutPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="text-2xl font-bold text-foreground mb-2">Start your free trial</h1>
             <p className="text-muted-foreground mb-6">
-              {isFounding
-                ? `Founding rate ${formatPrice(1_000_000)}/year, locked for as long as you stay. 2-month trial.`
-                : `${formatPrice(plan.priceInCents)}/year. 1-month trial.`}
-              {" "}Your card is authorized now but not charged until the trial ends.
+              {formatPrice(plan.annualPriceInCents)}/year or {formatPrice(plan.priceInCents)}/month, cancel anytime.
+              {" "}1-month free trial. Your card is authorized now but not charged until the trial ends.
             </p>
 
             <Card className="p-6 space-y-4">
+              <div className="space-y-2">
+                <Label>Billing</Label>
+                <RadioGroup value={billingInterval} onValueChange={(v) => setBillingInterval(v as "year" | "month")}>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="year" id="year" />
+                    <Label htmlFor="year" className="font-normal">Annual -- {formatPrice(plan.annualPriceInCents)}/year</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="month" id="month" />
+                    <Label htmlFor="month" className="font-normal">Monthly -- {formatPrice(plan.priceInCents)}/month, cancel anytime</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="legalName">Company legal name</Label>
                 <Input id="legalName" value={details.legalName} onChange={(e) => setDetails((d) => ({ ...d, legalName: e.target.value }))} />
@@ -139,23 +145,6 @@ export default function CheckoutPage() {
                 </Select>
               </div>
 
-              {!isFounding && (
-                <div className="space-y-2">
-                  <Label>Payment</Label>
-                  <RadioGroup value={billingMode} onValueChange={(v) => setBillingMode(v as "one_time" | "split")}>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="one_time" id="one_time" />
-                      <Label htmlFor="one_time" className="font-normal">Pay in full -- {formatPrice(plan.priceInCents)}</Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="split" id="split" />
-                      <Label htmlFor="split" className="font-normal">Split into 12 monthly instalments</Label>
-                    </div>
-                  </RadioGroup>
-                  <p className="text-xs text-muted-foreground">Either way, it&apos;s a 12-month commitment -- not a monthly subscription you can stop early.</p>
-                </div>
-              )}
-
               {error && <p className="text-sm text-destructive">{error}</p>}
 
               <Button className="w-full" onClick={submitDetails}>Continue to payment</Button>
@@ -166,7 +155,7 @@ export default function CheckoutPage() {
         {step === "payment" && clientSecret && (
           <Elements stripe={stripePromise} options={{ clientSecret }}>
             <PaymentStep
-              billingMode={billingMode}
+              billingInterval={billingInterval}
               onSuccess={() => setStep("success")}
               onError={(msg) => setError(msg)}
             />
@@ -190,11 +179,11 @@ export default function CheckoutPage() {
 }
 
 function PaymentStep({
-  billingMode,
+  billingInterval,
   onSuccess,
   onError,
 }: {
-  billingMode: "one_time" | "split"
+  billingInterval: "year" | "month"
   onSuccess: () => void
   onError: (msg: string) => void
 }) {
@@ -222,7 +211,7 @@ function PaymentStep({
       const res = await fetch("/api/v1/billing/v2/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ setupIntentId: setupIntent.id, billingMode }),
+        body: JSON.stringify({ setupIntentId: setupIntent.id, billingInterval }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to activate trial")
@@ -232,7 +221,7 @@ function PaymentStep({
     } finally {
       setSubmitting(false)
     }
-  }, [stripe, elements, billingMode, onSuccess, onError])
+  }, [stripe, elements, billingInterval, onSuccess, onError])
 
   return (
     <Card className="p-6 space-y-4">

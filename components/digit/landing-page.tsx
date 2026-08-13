@@ -1,6 +1,7 @@
 import Link from "next/link"
 import {
   ArrowRight,
+  Check,
   Users,
   LayoutGrid,
   Activity,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
 import { Logo } from "@/components/digit/logo"
 import { getTranslator } from "@/lib/i18n/server"
 import { TextEffect } from "@/components/motion-primitives/text-effect"
@@ -21,6 +23,9 @@ import { InView } from "@/components/motion-primitives/in-view"
 import { AuroraBackground } from "@/components/digit/aurora-background"
 import { HeroSignalPanel } from "@/components/digit/hero-signal-panel"
 import { WaveDivider } from "@/components/digit/wave-divider"
+import { SUBSCRIPTION_PLANS, formatPrice } from "@/lib/products"
+
+const plan = SUBSCRIPTION_PLANS[0]
 
 // Brightened from the logo's literal #1a56db for the blue slot -- verified
 // against WCAG contrast: the logo's blue only reached 3.3:1 on the dark
@@ -54,7 +59,7 @@ export async function LandingPage() {
             <Logo size="md" />
             <nav className="flex items-center gap-3">
               <Link
-                href="/pricing"
+                href="#pricing"
                 className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
               >
                 {t("navigation.pricing")}
@@ -89,7 +94,7 @@ export async function LandingPage() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/pricing">{t("landing.hero.ctaSecondary")}</Link>
+                <Link href="#pricing">{t("landing.hero.ctaSecondary")}</Link>
               </Button>
             </div>
           </AnimatedGroup>
@@ -134,6 +139,48 @@ export async function LandingPage() {
           </div>
         </section>
 
+        {/* Pricing */}
+        <section id="pricing" className="container mx-auto px-6 py-16 scroll-mt-20">
+          <InView className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="text-3xl font-bold text-foreground">One platform. One price.</h2>
+            <p className="mt-3 text-muted-foreground">Every module, every AI capability, no tiers to compare.</p>
+          </InView>
+
+          <InView className="mx-auto max-w-md">
+            <Card className="p-8 md:p-10 border-primary/30 relative overflow-hidden">
+              <h3 className="text-xl font-semibold text-foreground mb-1">{plan.name}</h3>
+              <p className="text-sm text-muted-foreground mb-6">{plan.description}</p>
+
+              <div className="flex items-baseline gap-3">
+                <span className="text-5xl font-bold text-foreground">{formatPrice(plan.annualPriceInCents)}</span>
+                <span className="text-muted-foreground">/year</span>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                or {formatPrice(plan.priceInCents)}/month, cancel anytime.
+              </p>
+
+              <div className="flex items-center gap-4 text-sm text-muted-foreground my-6">
+                <span>1-month free trial</span>
+                <span aria-hidden>·</span>
+                <span>No card charged until trial ends</span>
+              </div>
+
+              <Button size="lg" className="w-full mb-8" asChild>
+                <Link href="/checkout">Start free trial</Link>
+              </Button>
+
+              <div className="space-y-3">
+                {plan.features.map((feature) => (
+                  <div key={feature} className="flex items-start gap-3">
+                    <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                    <span className="text-sm text-foreground">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </InView>
+        </section>
+
         {/* CTA */}
         <section className="container mx-auto px-6 py-20">
           <InView className="mx-auto max-w-4xl">
@@ -155,7 +202,7 @@ export async function LandingPage() {
           <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
             <Logo size="sm" />
             <nav className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-              <Link href="/pricing" className="transition-colors hover:text-foreground">
+              <Link href="#pricing" className="transition-colors hover:text-foreground">
                 {t("navigation.pricing")}
               </Link>
               <Link href="/security" className="transition-colors hover:text-foreground">

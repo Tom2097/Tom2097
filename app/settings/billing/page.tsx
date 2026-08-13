@@ -31,6 +31,7 @@ interface SubscriptionData {
   trial_ends_at: string | null
   cancel_at_period_end: boolean | null
   billing_mode: "one_time" | "split" | null
+  billing_interval: "year" | "month" | null
   is_founding: boolean | null
   locked_price_cents: number | null
 }
@@ -68,7 +69,7 @@ export default function BillingSettingsPage() {
 
         const { data: sub } = await supabase
           .from("subscriptions")
-          .select("plan_id, status, current_period_end, trial_ends_at, cancel_at_period_end, billing_mode, is_founding, locked_price_cents")
+          .select("plan_id, status, current_period_end, trial_ends_at, cancel_at_period_end, billing_mode, billing_interval, is_founding, locked_price_cents")
           .eq("organization_id", profile.organization_id)
           .single()
 
@@ -125,6 +126,7 @@ export default function BillingSettingsPage() {
   const plan = subscription ? getPlanById(subscription.plan_id) : null
   const isTrial = subscription?.status === "trialing"
   const isSplit = subscription?.billing_mode === "split"
+  const isMonthly = subscription?.billing_interval === "month"
 
   if (loading) {
     return (
@@ -218,9 +220,9 @@ export default function BillingSettingsPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-foreground">
-                    {subscription?.locked_price_cents ? formatPrice(subscription.locked_price_cents) : plan ? formatPrice(plan.priceInCents) : "-"}
+                    {subscription?.locked_price_cents ? formatPrice(subscription.locked_price_cents) : plan ? formatPrice(plan.annualPriceInCents) : "-"}
                   </p>
-                  <p className="text-sm text-muted-foreground">/year</p>
+                  <p className="text-sm text-muted-foreground">/{isMonthly ? "month" : "year"}</p>
                 </div>
               </div>
             </Card>
@@ -240,7 +242,7 @@ export default function BillingSettingsPage() {
                   Manage Billing
                 </Button>
                 <Button variant="outline" asChild>
-                  <Link href="/pricing" className="gap-2">
+                  <Link href="/#pricing" className="gap-2">
                     <CreditCard className="w-4 h-4" />
                     Change Plan
                   </Link>
@@ -307,8 +309,9 @@ export default function BillingSettingsPage() {
                 ) : (
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                      Cancelling stops future renewal. You&apos;ll keep access until the end of your current 12-month term
-                      {isSplit ? " -- any remaining instalments for this term are still due" : ""}. No amount already paid is refunded.
+                      {isMonthly
+                        ? "Cancelling stops future renewal. You'll keep access until the end of your current billing period. No amount already paid is refunded."
+                        : `Cancelling stops future renewal. You'll keep access until the end of your current 12-month term${isSplit ? " -- any remaining instalments for this term are still due" : ""}. No amount already paid is refunded.`}
                     </p>
                     {cancelError && (
                       <p className="text-sm text-destructive">{cancelError}</p>
@@ -369,12 +372,14 @@ export default function BillingSettingsPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Payment</span>
-                  <span className="font-medium text-foreground">{isSplit ? "12 monthly instalments" : "Paid in full, annually"}</span>
+                  <span className="font-medium text-foreground">
+                    {isMonthly ? "Monthly, cancel anytime" : isSplit ? "12 monthly instalments" : "Paid in full, annually"}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Price</span>
                   <span className="font-medium text-foreground">
-                    {subscription?.locked_price_cents ? formatPrice(subscription.locked_price_cents) : "-"}/year
+                    {subscription?.locked_price_cents ? formatPrice(subscription.locked_price_cents) : "-"}/{isMonthly ? "month" : "year"}
                   </span>
                 </div>
               </div>

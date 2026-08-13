@@ -1,33 +1,28 @@
-// Pricing & Payments Build Spec v1.0: a single all-inclusive product,
-// replacing the old starter/professional/enterprise tiers (clean cutover --
-// no real customers were on the old model). The SubscriptionPlan shape and
-// exported helpers are kept identical to what they were so every existing
-// consumer (checkout, entitlements, revenue analytics, signup, the
-// Stripe/Razorpay webhooks) keeps compiling against a catalog that now just
+// A single all-inclusive product, sold either annually or month-to-month --
+// replacing the old starter/professional/enterprise tiers AND the later
+// $13,000/$10,000-founding-tier annual-only model (clean re-price both
+// times: no real customers were ever on either old model -- verified
+// directly against production, zero subscriptions rows have a
+// stripe_subscription_id or locked_price_cents set). The SubscriptionPlan
+// shape and exported helpers are kept identical to what they were so every
+// existing consumer (checkout, entitlements, revenue analytics, signup, the
+// Stripe/Razorpay webhooks) keeps compiling against a catalog that still
 // happens to have one entry.
 //
 // The ACTUAL price a given org pays is never read from this catalog at
 // charge time -- it's locked on subscriptions.locked_price_cents at
-// confirmation (see lib/billing/signup.ts), exactly as the spec requires
-// ("never recompute the price at charge time from a live counter"). This
-// file only holds the two public price points and the constants that
-// depend on them.
+// confirmation (see lib/billing/signup.ts), so a future price change here
+// never retroactively changes what an existing subscriber owes.
 
-export const LIST_PRICE_CENTS = 1_300_000 // USD 13,000/year, public list price -- never changes publicly
-export const FOUNDING_PRICE_CENTS = 1_000_000 // USD 10,000/year, first 50 customers, locked for as long as they stay
-export const FOUNDING_SLOT_COUNT = 50
-export const FOUNDING_TRIAL_DAYS = 60 // 2 months
-export const STANDARD_TRIAL_DAYS = 30 // 1 month
-export const INSTALMENT_COUNT = 12
+export const ANNUAL_PRICE_CENTS = 49_900 // USD 499/year
+export const MONTHLY_PRICE_CENTS = 4_449 // USD 44.49/month, cancel anytime
+export const STANDARD_TRIAL_DAYS = 30 // 1 month, both intervals
 
-// FX-derived placeholder (13,000 * ~83), NOT a confirmed real INR price --
-// the spec assumes a single USD price worldwide and flags regional pricing
-// as an open question (Section 7, #8). Razorpay (kept for Indian domestic
-// collection per the spec's own provider recommendation) needs SOME INR
-// number to charge; this is here so that path doesn't hard-fail, but it
-// needs a real decision before it's trusted for actual invoicing.
-export const LIST_PRICE_INR_PAISE = 107_900_000 // ~INR 10,79,000 -- PLACEHOLDER, confirm real price
-export const FOUNDING_PRICE_INR_PAISE = 83_000_000 // ~INR 8,30,000 -- PLACEHOLDER, confirm real price
+// FX-derived placeholder (499 * ~83), NOT a confirmed real INR price.
+// Razorpay (kept for Indian domestic collection) needs SOME INR number to
+// charge; this is here so that path doesn't hard-fail, but it needs a real
+// decision before it's trusted for actual invoicing.
+export const ANNUAL_PRICE_INR_PAISE = 4_141_700 // ~INR 41,417 -- PLACEHOLDER, confirm real price
 
 export interface SubscriptionPlan {
   id: string
@@ -53,10 +48,10 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     id: "digit_annual",
     name: "DigiT",
     description: "The full platform, every module, every AI capability, one price.",
-    priceInCents: LIST_PRICE_CENTS,
-    annualPriceInCents: LIST_PRICE_CENTS,
-    priceInr: LIST_PRICE_INR_PAISE,
-    annualPriceInr: LIST_PRICE_INR_PAISE,
+    priceInCents: MONTHLY_PRICE_CENTS,
+    annualPriceInCents: ANNUAL_PRICE_CENTS,
+    priceInr: ANNUAL_PRICE_INR_PAISE,
+    annualPriceInr: ANNUAL_PRICE_INR_PAISE,
     interval: "year",
     features: [
       "All 6 workspace modules",
@@ -114,6 +109,7 @@ export function formatPrice(cents: number): string {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(cents / 100)
 }
 

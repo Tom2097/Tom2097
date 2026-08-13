@@ -56,11 +56,17 @@ export async function issueInvoice(
 }
 
 /**
- * Spec section 1, step 6: "the charge fires automatically at trial end --
- * the full year for one-time payers, or the first instalment for split
- * payers." Scheduled sweep (mirrors trials/run-due, dunning/run-due):
- * finds every trialing subscription whose trial_ends_at has passed and
- * charges it.
+ * "The charge fires automatically at trial end -- the full year for
+ * annual payers." Scheduled sweep (mirrors trials/run-due, dunning/run-due):
+ * finds every trialing ANNUAL subscription whose trial_ends_at has passed
+ * and charges it via a one-time PaymentIntent.
+ *
+ * Explicitly excludes billing_interval = "month": those are real Stripe
+ * Subscription objects (created at signup by
+ * lib/billing/signup-stripe.ts's createMonthlyStripeSubscription, with
+ * Stripe's own trial_end set to the same timestamp) that Stripe bills
+ * automatically -- if this swept them too, every monthly customer would be
+ * double-charged at trial end (once here, once by Stripe).
  */
 export async function chargeAllDueTrials(): Promise<{ processed: number; charged: number; failed: number }> {
   const db = createServiceClient()
@@ -68,6 +74,7 @@ export async function chargeAllDueTrials(): Promise<{ processed: number; charged
     .from("subscriptions")
     .select("id, organization_id, stripe_customer_id, locked_price_cents, billing_mode, is_founding")
     .eq("status", "trialing")
+    .neq("billing_interval", "month")
     .lte("trial_ends_at", new Date().toISOString())
 
   const rows = (due ?? []) as SubscriptionRow[]

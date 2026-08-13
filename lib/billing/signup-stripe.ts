@@ -1,6 +1,7 @@
 import "server-only"
 import { getStripe } from "@/lib/stripe"
 import { createServiceClient } from "@/lib/supabase/service"
+import { MONTHLY_PRICE_CENTS } from "@/lib/products"
 
 /**
  * Gets or creates the Stripe customer for an org, reusing the same
@@ -100,4 +101,64 @@ export async function confirmSetupIntentAndSavePaymentMethod(
   })
 
   return { paymentMethodId: pm.id, type: pm.type, last4 }
+}
+
+/**
+ * Stripe's Subscription price_data requires a real Product id (unlike a
+ * one-off Checkout line item, which accepts inline product_data) -- looked
+ * up by a stable metadata tag rather than created fresh every signup, so
+ * repeat monthly signups all land on the same Product instead of spawning
+ * a new one each time. products.list is a strongly-consistent read (unlike
+ * the search API, which can lag ~1min behind a just-created object), so
+ * the only realistic race is two *simultaneous* first-ever monthly
+ * signups both creating one -- harmless (a stray extra Product, not a
+ * stray extra charge), and self-corrects on the next signup either way.
+ */
+async function getOrCreateDigitProductId(stripe: Awaited<ReturnType<typeof getStripe>>): Promise<string> {
+  const existing = await stripe.products.list({ active: true, limit: 100 })
+  const found = existing.data.find((p) => p.metadata?.app === "digit_monthly")
+  if (found) return found.id
+  const product = await stripe.products.create({ name: "DigiT", metadata: { app: "digit_monthly" } })
+  return product.id
+}
+
+/**
+ * Creates a real, Stripe-managed recurring monthly Subscription -- unlike
+ * the annual plan (a manual PaymentIntent charged once at trial end by
+ * lib/billing/charge.ts's chargeAllDueTrials sweep), "cancel anytime"
+ * monthly billing needs Stripe's own subscription lifecycle: automatic
+ * monthly invoicing, retries on failed payment, and self-serve
+ * cancellation (already wired in lib/billing/subscription-lifecycle.ts's
+ * cancelSubscription()). trial_end mirrors the trialEndsAt this org's
+ * subscriptions row was just given by activateTrial(), so Stripe's own
+ * trial and this app's DB-tracked trial end at the same instant. The
+ * `metadata.organization_id` is required -- app/api/webhooks/stripe/route.ts's
+ * customer.subscription.updated/deleted and invoice.paid/payment_failed
+ * handlers key off it to find which org a given Stripe event belongs to.
+ */
+export async function createMonthlyStripeSubscription(
+  organizationId: string,
+  customerId: string,
+  paymentMethodId: string,
+  trialEndsAt: Date,
+): Promise<string> {
+  const stripe = await getStripe()
+  const productId = await getOrCreateDigitProductId(stripe)
+  const subscription = await stripe.subscriptions.create({
+    customer: customerId,
+    items: [
+      {
+        price_data: {
+          currency: "usd",
+          product: productId,
+          unit_amount: MONTHLY_PRICE_CENTS,
+          recurring: { interval: "month" },
+        },
+      },
+    ],
+    default_payment_method: paymentMethodId,
+    trial_end: Math.floor(trialEndsAt.getTime() / 1000),
+    metadata: { organization_id: organizationId },
+  })
+  return subscription.id
 }
