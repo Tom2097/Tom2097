@@ -735,6 +735,18 @@
       "upgrade": "Upgrade",
       "usageLimits": "Usage & Limits"
     },
+    "billing": {
+      "title": "Billing",
+      "subtitle": "Manage your subscription and payment details",
+      "plan": "Plan",
+      "billingActions": "Billing Actions",
+      "billingInformation": "Billing Information",
+      "errorTitle": "Something went wrong",
+      "failedToLoad": "Failed to load billing information",
+      "failedPortal": "Failed to open billing portal",
+      "noOrganization": "No organization found",
+      "retry": "Retry"
+    },
     "team": {
       "title": "Team Members",
       "description": "Manage who has access to your organization",
