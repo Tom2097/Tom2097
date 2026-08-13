@@ -35,6 +35,7 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
+import type { RealPrediction } from "@/lib/analytics/predictions"
 
 interface IndustryInsight {
   id: string
@@ -119,6 +120,7 @@ export function IndustryIntelligenceHub() {
   const [insights, setInsights] = useState<IndustryInsight[]>([])
   const [benchmarks, setBenchmarks] = useState<IndustryBenchmark[]>([])
   const [learningStats, setLearningStats] = useState<AILearningStats | null>(null)
+  const [predictions, setPredictions] = useState<RealPrediction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [activeTab, setActiveTab] = useState("insights")
@@ -127,11 +129,16 @@ export function IndustryIntelligenceHub() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [findingsRes, briefingRes, aggregateRes] = await Promise.all([
+        const [findingsRes, briefingRes, aggregateRes, predictionsRes] = await Promise.all([
           fetch("/api/v1/intelligence/findings?limit=10"),
           fetch("/api/v1/intelligence/briefing"),
           fetch("/api/v1/intelligence/aggregate"),
+          fetch("/api/v1/intelligence/predictions"),
         ])
+        if (predictionsRes.ok) {
+          const data = await predictionsRes.json()
+          setPredictions(data.predictions || [])
+        }
         let dataPointsScanned = 0
         if (aggregateRes.ok) {
           const data = await aggregateRes.json()
@@ -512,66 +519,69 @@ export function IndustryIntelligenceHub() {
           </Card>
         </TabsContent>
 
-        {/* Predictions Tab -- JUDGMENT CALL: this used to be a fully
-            hardcoded array (fake revenue/churn/acquisition numbers) labeled
-            "AI-Powered Predictions" and "Machine learning forecasts based on
-            your data" -- none of it was derived from this org's real data,
-            and there is no real forecasting pipeline in this codebase to
-            back genuine numbers here (same gap documented in
-            lib/ai/model-training.ts). Rather than invent a new "real"
-            calculation that itself might mislead, this is honestly relabeled
-            as an illustrative example rather than a live AI output. */}
+        {/* Predictions Tab -- real pipeline (lib/analytics/predictions.ts):
+            revenue/acquisition trends from a real linear regression over
+            actual closed-won deal history, deals-at-risk from real deal
+            activity data, and an operational health score from real
+            compliance/resource/performance data. No card here is invented --
+            one with too little history to project from says so plainly
+            (insufficientData) instead of showing a plausible-looking
+            placeholder number. */}
         <TabsContent value="predictions" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="w-5 h-5 text-primary" />
-                Example Forecasts
-                <Badge variant="secondary" className="ml-2">Illustrative, not live data</Badge>
+                Predictions
               </CardTitle>
               <CardDescription>
-                A sample of the kind of forecast this tab could show once a real forecasting pipeline is connected.
-                The figures below are placeholders, not generated from your organization&apos;s data.
+                Derived from your organization&apos;s real deal, compliance, and resource data.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {[
-                { label: "Q3 Revenue Forecast (example)", value: "+12.5%", confidence: 85, trend: "up" },
-                { label: "Customer Acquisition, next 90 days (example)", value: "234 new", confidence: 78, trend: "up" },
-                { label: "Churn Risk, high priority (example)", value: "23 accounts", confidence: 92, trend: "down" },
-                { label: "Market Opportunity Score (example)", value: "8.4/10", confidence: 81, trend: "up" }
-              ].map((prediction, index) => (
-                <motion.div
-                  key={prediction.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 border border-border/50"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "w-10 h-10 rounded-lg flex items-center justify-center",
-                      prediction.trend === "up" ? "bg-green-500/10" : "bg-yellow-500/10"
-                    )}>
-                      {prediction.trend === "up" ? (
-                        <TrendingUp className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              {predictions.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">No prediction data available yet.</p>
+              ) : (
+                predictions.map((prediction, index) => (
+                  <motion.div
+                    key={prediction.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 border border-border/50"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={cn(
+                        "w-10 h-10 rounded-lg flex items-center justify-center",
+                        prediction.insufficientData ? "bg-muted" : prediction.trend === "up" ? "bg-green-500/10" : "bg-yellow-500/10"
+                      )}>
+                        {prediction.insufficientData ? (
+                          <Clock className="w-5 h-5 text-muted-foreground" />
+                        ) : prediction.trend === "up" ? (
+                          <TrendingUp className="w-5 h-5 text-green-500" />
+                        ) : (
+                          <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium">{prediction.label}</p>
+                        <p className="text-xs text-muted-foreground">{prediction.basis}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={cn("text-xl font-bold", prediction.insufficientData && "text-muted-foreground text-sm")}>
+                        {prediction.value}
+                      </p>
+                      {!prediction.insufficientData && (
+                        <>
+                          <p className="text-xs text-muted-foreground mt-0.5">{prediction.confidence}% confidence</p>
+                          <Progress value={prediction.confidence} className="w-20 h-1 mt-1" />
+                        </>
                       )}
                     </div>
-                    <div>
-                      <p className="font-medium">{prediction.label}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Example confidence: {prediction.confidence}%
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold">{prediction.value}</p>
-                    <Progress value={prediction.confidence} className="w-20 h-1 mt-1" />
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))
+              )}
             </CardContent>
           </Card>
         </TabsContent>
