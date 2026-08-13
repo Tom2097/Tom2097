@@ -3,14 +3,14 @@ import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { CreditCard, Clock, AlertCircle, Loader2, Shield, Gift, XCircle } from "lucide-react"
+import { CreditCard, Clock, AlertCircle, Loader2, Shield, Gift, XCircle, ArrowUpCircle } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
-import { getPlanById, formatPrice } from "@/lib/products"
+import { getPlanById, formatPrice, ANNUAL_PRICE_CENTS, MONTHLY_PRICE_CENTS } from "@/lib/products"
 import { createBillingPortalSession } from "@/app/actions/stripe"
 import { useRouter } from "next/navigation"
 import {
@@ -44,6 +44,9 @@ export default function BillingSettingsPage() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
   const [cancelError, setCancelError] = useState<string | null>(null)
+  const [switchDialogOpen, setSwitchDialogOpen] = useState(false)
+  const [isSwitching, setIsSwitching] = useState(false)
+  const [switchError, setSwitchError] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -123,10 +126,43 @@ export default function BillingSettingsPage() {
     }
   }
 
+  const handleSwitchToAnnual = async () => {
+    try {
+      setIsSwitching(true)
+      setSwitchError(null)
+
+      const response = await fetch('/api/v1/billing/switch-to-annual', { method: 'POST' })
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to switch to annual')
+      }
+
+      setSubscription((prev) =>
+        prev
+          ? {
+              ...prev,
+              billing_interval: "year",
+              billing_mode: "one_time",
+              locked_price_cents: ANNUAL_PRICE_CENTS,
+              status: "active",
+              trial_ends_at: null,
+            }
+          : prev,
+      )
+      setSwitchDialogOpen(false)
+    } catch (err) {
+      setSwitchError(err instanceof Error ? err.message : 'Failed to switch to annual')
+    } finally {
+      setIsSwitching(false)
+    }
+  }
+
   const plan = subscription ? getPlanById(subscription.plan_id) : null
   const isTrial = subscription?.status === "trialing"
   const isSplit = subscription?.billing_mode === "split"
   const isMonthly = subscription?.billing_interval === "month"
+  const annualSavingsCents = MONTHLY_PRICE_CENTS * 12 - ANNUAL_PRICE_CENTS
 
   if (loading) {
     return (
@@ -193,6 +229,9 @@ export default function BillingSettingsPage() {
                     <Badge className="bg-primary/10 text-primary">
                       {subscription?.status}
                     </Badge>
+                    <Badge variant="outline">
+                      {isMonthly ? "Monthly plan" : "Annual plan"}
+                    </Badge>
                     {subscription?.cancel_at_period_end && (
                       <Badge variant="outline" className="text-muted-foreground border-muted-foreground/30">
                         Cancels at period end
@@ -241,15 +280,60 @@ export default function BillingSettingsPage() {
                   <CreditCard className="w-4 h-4" />
                   Manage Billing
                 </Button>
-                <Button variant="outline" asChild>
-                  <Link href="/#pricing" className="gap-2">
-                    <CreditCard className="w-4 h-4" />
-                    Change Plan
-                  </Link>
-                </Button>
               </div>
             </Card>
           </motion.div>
+
+          {/* Switch to Annual -- the one real "upgrade" now that there's a
+              single plan with two billing intervals instead of tiers.
+              Annual -> monthly isn't offered here since it costs more
+              overall, not a real upgrade path. */}
+          {isMonthly && subscription && (subscription.status === "trialing" || subscription.status === "active") && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+            >
+              <Card className="p-6 mb-8 border-primary/30">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <ArrowUpCircle className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">Switch to annual</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {formatPrice(ANNUAL_PRICE_CENTS)}/year instead of {formatPrice(MONTHLY_PRICE_CENTS)}/month -- save{" "}
+                        {formatPrice(annualSavingsCents)}/year. Charged now, new 12-month term starts today.
+                      </p>
+                      {switchError && <p className="text-sm text-destructive mt-2">{switchError}</p>}
+                    </div>
+                  </div>
+                  <Button onClick={() => setSwitchDialogOpen(true)} className="shrink-0">
+                    Switch to annual
+                  </Button>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
+          <AlertDialog open={switchDialogOpen} onOpenChange={(open) => !isSwitching && setSwitchDialogOpen(open)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Switch to the annual plan?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {formatPrice(ANNUAL_PRICE_CENTS)} will be charged to your card on file right now, your monthly
+                  subscription will be cancelled, and a new 12-month term starts today.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isSwitching}>Stay monthly</AlertDialogCancel>
+                <AlertDialogAction onClick={handleSwitchToAnnual} disabled={isSwitching}>
+                  {isSwitching ? "Switching..." : `Charge ${formatPrice(ANNUAL_PRICE_CENTS)} and switch`}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           {/* Refund policy (Pricing & Payments Build Spec v1.0, section 5:
               no refunds on cancellation or sign-off -- access continues to
