@@ -168,6 +168,7 @@ export interface TenantRegistrationData {
   companyName?: string
   industry?: string
   role?: string
+  userId: string
 }
 
 export interface TenantOnboardingResponse {

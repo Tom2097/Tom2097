@@ -152,6 +152,13 @@ async function ensureUserProfile(
         return { needsOnboarding: !winnerProfile.onboarding_completed_at }
       }
     }
+
+    // Any other failure (not the two-tabs race handled above) still leaves
+    // an org with no owner -- roll it back rather than orphaning it.
+    const { error: cleanupError } = await db.from("organizations").delete().eq("id", org.id)
+    if (cleanupError) {
+      console.error("[auth] Failed to clean up orphaned organization after profile error:", { error: cleanupError })
+    }
     console.error("[auth] Failed to create profile:", { error: profileError })
     return { redirect: buildRedirect(`/auth/error?reason=${encodeURIComponent("Failed to create profile")}`) }
   }

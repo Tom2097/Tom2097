@@ -87,6 +87,8 @@ export async function POST(request: Request) {
 
     if (profileError) {
       console.error("[v0] Error creating profile:", profileError)
+      // Don't leave a userless org behind for a failed/retried signup.
+      await db.from("organizations").delete().eq("id", organizationId)
       return NextResponse.json(
         { error: "Failed to create profile" },
         { status: 500 }

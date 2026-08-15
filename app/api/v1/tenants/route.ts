@@ -110,6 +110,7 @@ export async function POST(request: NextRequest) {
       fullName,
       companyName: body.companyName,
       industry: body.industry,
+      userId,
     }
 
     const tenantResponse = await registerNewTenant(registrationData)

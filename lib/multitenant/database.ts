@@ -93,16 +93,23 @@ export async function registerNewTenant(
 
     console.log(`[v0] Created organization: ${organizationId}`)
 
-    // 2. The profile should have been created by the auth trigger
-    // But we can verify it exists
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select("id, organization_id")
-      .eq("organization_id", organizationId)
-      .single()
+    // 2. Create the profile linking the just-signed-up auth user to this org.
+    // No DB trigger does this -- it has to happen here, and if it fails the
+    // organization row above must be rolled back rather than left orphaned.
+    const { error: profileError } = await supabase.from("profiles").insert({
+      id: registrationData.userId,
+      email: registrationData.email,
+      full_name: registrationData.fullName,
+      organization_id: organizationId,
+      role: registrationData.role || "owner",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
 
-    if (profileError || !profileData) {
-      console.warn("[v0] Profile not auto-created by trigger, this may be a configuration issue")
+    if (profileError) {
+      console.error("[v0] Error creating profile:", profileError)
+      await supabase.from("organizations").delete().eq("id", organizationId)
+      return null
     }
 
     // 3. Initialize onboarding progress
@@ -119,6 +126,8 @@ export async function registerNewTenant(
 
     if (onboardingError) {
       console.error("[v0] Error creating onboarding progress:", onboardingError)
+      await supabase.from("profiles").delete().eq("id", registrationData.userId)
+      await supabase.from("organizations").delete().eq("id", organizationId)
       return null
     }
 
@@ -171,7 +180,7 @@ export async function registerNewTenant(
     return {
       tenantId: organizationId,
       organizationId,
-      userId: "", // Will be populated from auth context
+      userId: registrationData.userId,
       jwtToken: "", // Will be populated from session
       organization: {
         id: organizationId,
