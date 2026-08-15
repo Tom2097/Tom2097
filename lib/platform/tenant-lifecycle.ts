@@ -6,11 +6,12 @@ import { createAuditEntry } from "@/lib/audit/append-only"
 export interface TenantInfo {
   id: string
   name: string
-  plan: string
-  status: "active" | "suspended" | "trialing" | "deprovisioned"
+  slug: string
+  created_at: string
+  owner_email: string | null
   userCount: number
-  createdAt: string
-  email?: string
+  subscription: { plan_id: string; status: string } | null
+  status: "active" | "suspended" | "trialing" | "deprovisioned"
 }
 
 export async function listTenants(): Promise<TenantInfo[]> {
@@ -18,9 +19,9 @@ export async function listTenants(): Promise<TenantInfo[]> {
   const { data, error } = await supabase
     .from("organizations")
     .select(`
-      id, name, created_at, status,
+      id, name, slug, created_at, status,
       subscriptions (plan_id, status),
-      profiles!inner (id)
+      profiles!inner (id, email, role)
     `)
     .order("created_at", { ascending: false })
 
@@ -32,17 +33,20 @@ export async function listTenants(): Promise<TenantInfo[]> {
     return []
   }
   if (!data) return []
-  
+
   return data.map((org: Record<string, unknown>) => {
     const subs = (org.subscriptions as Record<string, unknown>[]) || []
     const profiles = (org.profiles as Record<string, unknown>[]) || []
+    const owner = profiles.find((p) => p.role === "owner") || profiles[0]
     return {
       id: org.id as string,
       name: org.name as string,
-      plan: subs[0]?.plan_id as string || "free",
-      status: (subs[0]?.status as string) === "active" ? "active" : (org.status as string) || "active",
+      slug: org.slug as string,
+      created_at: org.created_at as string,
+      owner_email: (owner?.email as string) || null,
       userCount: profiles.length,
-      createdAt: org.created_at as string,
+      subscription: subs[0] ? { plan_id: subs[0].plan_id as string, status: subs[0].status as string } : null,
+      status: (org.status as string) as TenantInfo["status"] || "active",
     } as TenantInfo
   })
 }

@@ -14,7 +14,7 @@ interface Tenant {
   name: string
   slug: string
   created_at: string
-  owner_id: string
+  owner_email: string | null
   userCount: number
   subscription: { plan_id: string; status: string } | null
   status?: string
@@ -82,7 +82,7 @@ export default function AdminTenantsPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">{tenant.name}</p>
-                    <p className="text-xs text-muted-foreground">{tenant.slug}</p>
+                    <p className="text-xs text-muted-foreground">{tenant.owner_email || tenant.slug}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
