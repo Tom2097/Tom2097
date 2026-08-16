@@ -64,6 +64,12 @@ export async function LandingPage() {
               >
                 {t("navigation.pricing")}
               </Link>
+              <Link
+                href="/blog"
+                className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
+              >
+                Blog
+              </Link>
               <Button variant="outline" size="sm" asChild>
                 <Link href="/auth/login">{t("landing.header.signIn")}</Link>
               </Button>
@@ -204,6 +210,9 @@ export async function LandingPage() {
             <nav className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
               <Link href="#pricing" className="transition-colors hover:text-foreground">
                 {t("navigation.pricing")}
+              </Link>
+              <Link href="/blog" className="transition-colors hover:text-foreground">
+                Blog
               </Link>
               <Link href="/security" className="transition-colors hover:text-foreground">
                 {t("landing.footer.security")}
