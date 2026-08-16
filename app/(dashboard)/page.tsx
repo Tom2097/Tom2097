@@ -8,8 +8,49 @@ import { detectAnomalies } from '@/lib/analytics/anomaly-detection'
 import { forecastMetric } from '@/lib/analytics/forecasting'
 import { LandingPage } from '@/components/digit/landing-page'
 import DashboardContent from './dashboard-content'
+import { ANNUAL_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '@/lib/products'
 
 export const dynamic = 'force-dynamic'
+
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://digit-ai.org'
+
+// Organization + SoftwareApplication structured data for the public marketing
+// homepage -- gives search engines a machine-readable summary of who DigiT
+// is and what it costs, for rich results (pricing snippets, knowledge panel).
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: 'DigiT',
+      url: siteUrl,
+      logo: `${siteUrl}/icon.svg`,
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'DigiT',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      description: 'DigiT is an intelligent enterprise operations platform that learns from your business, automates workflows, and enables better decision-making.',
+      offers: [
+        {
+          '@type': 'Offer',
+          name: 'Annual',
+          price: (ANNUAL_PRICE_CENTS / 100).toFixed(2),
+          priceCurrency: 'USD',
+          url: `${siteUrl}/checkout`,
+        },
+        {
+          '@type': 'Offer',
+          name: 'Monthly',
+          price: (MONTHLY_PRICE_CENTS / 100).toFixed(2),
+          priceCurrency: 'USD',
+          url: `${siteUrl}/checkout`,
+        },
+      ],
+    },
+  ],
+}
 
 async function Err({ msg, detail, uid, oid }: { msg: string; detail?: string; uid?: string; oid?: string }) {
   const { t } = await getTranslator()
@@ -36,7 +77,15 @@ export default async function DashboardPage() {
     // (every other page redirects to /auth/login before rendering) -- so
     // it doubles as the public marketing homepage instead of bouncing
     // straight to the login form.
-    return <LandingPage />
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+        <LandingPage />
+      </>
+    )
   }
 
   const serviceDb = createServiceClient()

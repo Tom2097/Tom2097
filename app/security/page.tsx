@@ -7,6 +7,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("legal.security.metadata.title"),
     description: t("legal.security.metadata.description"),
+    alternates: { canonical: "/security" },
   }
 }
 

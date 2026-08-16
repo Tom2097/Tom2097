@@ -2058,6 +2058,12 @@
         "contentBefore": "We welcome responsible disclosure. If you believe you have found a security vulnerability, please contact our security team at",
         "contentAfter": ". We investigate all legitimate reports promptly."
       }
+    },
+    "refundPolicy": {
+      "metadata": {
+        "title": "Refund Policy | DigiT",
+        "description": "DigiT's refund policy -- when you're eligible for a refund, how to request one, and how long it takes."
+      }
     }
   },
   "admin": {
