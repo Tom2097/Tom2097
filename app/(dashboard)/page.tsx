@@ -98,16 +98,12 @@ export default async function DashboardPage() {
     return <Err msg="Profile not found" detail={profileErr?.message} uid={user.id} />
   }
 
-  // Brand-new self-signups are meant to see the /onboarding questionnaire
-  // before the dashboard (app/auth/callback/route.ts redirects there
-  // directly when it can), but the standard email-confirmation flow signs
-  // the user out before a redirect there is possible -- so this is the real
-  // gate: anyone who reaches the dashboard without having completed
-  // onboarding gets sent there instead. Invited users have
-  // onboarding_completed_at set at profile-creation time, so they're never
-  // redirected. Existing accounts from before this flag existed are
-  // backfilled (see the 20260824000001 migration) so this never re-triggers
-  // for already-onboarded users.
+  // onboarding_completed_at is now set at profile-creation time for every
+  // path (self-signup, OAuth, invited) -- see app/auth/callback/route.ts's
+  // ensureUserProfile() -- so the /onboarding questionnaire is no longer a
+  // mandatory gate here. This check mainly protects existing accounts from
+  // before that flag existed (backfilled via the 20260824000001 migration)
+  // and any future path that legitimately needs the questionnaire.
   if (!profile.onboarding_completed_at) {
     redirect("/onboarding")
   }

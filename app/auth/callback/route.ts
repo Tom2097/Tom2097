@@ -118,6 +118,14 @@ async function ensureUserProfile(
   // Invited users never hit this path -- they join an existing org above
   // with whatever role the inviter picked (admin/member/viewer; owner is
   // never invited-as).
+  //
+  // onboarding_completed_at is set immediately, same as invited users get
+  // above -- the questionnaire wizard used to be a mandatory gate here, but
+  // it added 3+ extra screens (including an "identity verification" step
+  // asking for a government ID) between signup and actually seeing the
+  // product, which is exactly the kind of friction a self-serve trial can't
+  // afford. app/onboarding/* still exists and works if someone navigates to
+  // it manually; it's just no longer forced.
   const { error: profileError } = await db
     .from("profiles")
     .insert({
@@ -126,6 +134,7 @@ async function ensureUserProfile(
       full_name: (user.user_metadata?.full_name || "") as string,
       organization_id: org.id,
       role: "owner",
+      onboarding_completed_at: new Date().toISOString(),
     })
 
   if (profileError) {
@@ -185,7 +194,7 @@ async function ensureUserProfile(
     console.error("[auth] Failed to create subscription:", { error: subError })
   }
 
-  return { needsOnboarding: true }
+  return { needsOnboarding: false }
 }
 
 export async function GET(request: Request) {
@@ -250,19 +259,14 @@ export async function GET(request: Request) {
         }
       }
       // Signup confirmation establishes a session as a side effect of
-      // verifying the token, but the user never went through a deliberate
-      // login step -- and since this link is often opened on a different
-      // device/browser than the one they intend to actually use, sign them
-      // out here and have them log in properly rather than silently
-      // landing them in the dashboard on whatever device confirmed it. This
-      // is also why a brand-new signup can't be routed to /onboarding right
-      // here -- there's no session left to carry them there. Instead
-      // app/(dashboard)/page.tsx checks the same onboarding_completed_at
-      // flag on their next real, authenticated login and redirects them then.
-      if (type === "signup") {
-        await supabase.auth.signOut()
-        return buildRedirect("/auth/login?confirmed=true")
-      }
+      // verifying the token. Every mainstream self-serve product (Vercel,
+      // Linear, Stripe, ...) lands you straight in the app from this click
+      // rather than forcing a second manual email+password entry -- keep
+      // the session and go straight to the dashboard instead of signing
+      // out. (The forced-relogin theory was that this link is sometimes
+      // opened on a different device than the one you signed up on, but
+      // that's the uncommon case, and it cost every single self-signup an
+      // extra full page + manual login to protect against it.)
       // Invited users have no password yet -- keep the session (like
       // recovery) and send them to set one, same as a password reset.
       if (type === "invite") {

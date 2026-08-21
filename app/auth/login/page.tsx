@@ -14,6 +14,8 @@ import { AuroraBackground } from "@/components/digit/aurora-background"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { startAuthentication } from "@simplewebauthn/browser"
 import { useI18n } from "@/components/providers/i18n-provider"
+import { createClient } from "@/lib/supabase/client"
+import { GoogleIcon } from "@/components/auth/google-icon"
 
 function LoginForm() {
   const { t } = useI18n()
@@ -27,6 +29,7 @@ function LoginForm() {
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
   const [passkeyError, setPasskeyError] = useState<string | null>(null)
   const [passkeyAvailable, setPasskeyAvailable] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const searchParams = useSearchParams()
   const redirect = searchParams?.get("redirect") || "/"
   const errorParam = searchParams?.get("error")
@@ -111,6 +114,20 @@ function LoginForm() {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true)
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirect)}` },
+    })
+    // On success the browser navigates away to Google immediately -- this
+    // only returns for us to handle if the request itself failed to start.
+    if (error) {
+      setIsGoogleLoading(false)
+    }
+  }
+
   // TODO: re-enable new device verification once email system is configured
   // if (isNewDevice && email) { ... }
 
@@ -163,6 +180,18 @@ function LoginForm() {
             </div>
           )}
 
+          {/* Google Sign-In */}
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-12 gap-3 border-border/50 hover:border-primary/40 hover:bg-primary/5 transition-all"
+            onClick={handleGoogleSignIn}
+            disabled={isGoogleLoading}
+          >
+            {isGoogleLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <GoogleIcon />}
+            <span className="font-medium">{isGoogleLoading ? t("auth.login.authenticating") : "Continue with Google"}</span>
+          </Button>
+
           {/* Passkey / Biometric Login */}
           {passkeyAvailable && (
             <>
@@ -189,17 +218,17 @@ function LoginForm() {
                   {passkeyError}
                 </div>
               )}
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border/50" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">{t("auth.login.orContinueWithEmail")}</span>
-                </div>
-              </div>
             </>
           )}
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border/50" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">{t("auth.login.orContinueWithEmail")}</span>
+            </div>
+          </div>
 
           <div className="space-y-2">
              <Label htmlFor="email">{t("auth.login.email")}</Label>
