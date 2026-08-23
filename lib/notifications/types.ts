@@ -2,9 +2,10 @@
  * Module #8: Notification System — shared types.
  *
  * Mirrors the public.notifications and public.notification_preferences tables.
- * Channels are extensible; only in_app is delivered synchronously today. The
- * email channel is represented in preferences so future delivery can honor it
- * without a schema change.
+ * Channels are extensible; in_app and push are delivered synchronously
+ * (push via lib/notifications/push.ts, no-op until Firebase is configured).
+ * The email channel is represented in preferences so future delivery can
+ * honor it without a schema change.
  */
 
 export const NOTIFICATION_TYPES = ["info", "success", "warning", "error", "system"] as const
@@ -13,7 +14,7 @@ export type NotificationType = (typeof NOTIFICATION_TYPES)[number]
 export const PRIORITIES = ["low", "normal", "high", "urgent"] as const
 export type Priority = (typeof PRIORITIES)[number]
 
-export const CHANNELS = ["in_app", "email"] as const
+export const CHANNELS = ["in_app", "push", "email"] as const
 export type Channel = (typeof CHANNELS)[number]
 
 export const SOURCES = ["app", "workflow", "system", "api"] as const

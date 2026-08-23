@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
+import { sendPushToUser } from "./push"
 import {
   CHANNELS,
   NOTIFICATION_TYPES,
@@ -77,14 +78,15 @@ function normalize(input: NotificationInput | BroadcastInput): NormalizedRow {
 }
 
 /**
- * Return the subset of recipients who have the in_app channel enabled for the
- * given category. Opt-out model: only users with an explicit enabled=false row
- * for (category, in_app) are excluded.
+ * Return the subset of recipients who have the given channel enabled for the
+ * given category. Opt-out model: only users with an explicit enabled=false
+ * row for (category, channel) are excluded.
  */
 async function filterByPreference(
   organizationId: string,
   userIds: string[],
   category: string,
+  channel: Channel = "in_app",
 ): Promise<string[]> {
   if (userIds.length === 0) return []
   const db = createServiceClient()
@@ -93,7 +95,7 @@ async function filterByPreference(
     .select("user_id")
     .eq("organization_id", organizationId)
     .eq("category", category)
-    .eq("channel", "in_app")
+    .eq("channel", channel)
     .eq("enabled", false)
     .in("user_id", userIds)
   if (error) {
@@ -102,6 +104,23 @@ async function filterByPreference(
   }
   const disabled = new Set((data ?? []).map((r: { user_id: string }) => r.user_id))
   return userIds.filter((id) => !disabled.has(id))
+}
+
+/** Fire-and-forget push delivery to whichever recipients haven't opted out of the push channel for this category. Never throws -- push is a best-effort side channel, not the source of truth. */
+async function pushToAllowedRecipients(
+  organizationId: string,
+  userIds: string[],
+  category: string,
+  notification: NormalizedRow,
+): Promise<void> {
+  try {
+    const allowed = await filterByPreference(organizationId, userIds, category, "push")
+    await Promise.all(
+      allowed.map((uid) => sendPushToUser(uid, { title: notification.title, body: notification.body, data: notification.data })),
+    )
+  } catch (err) {
+    console.error("[v0] push delivery failed:", err instanceof Error ? err.message : String(err))
+  }
 }
 
 /** Create a single notification for one recipient. Returns the row, or null if suppressed by preference. */
@@ -123,6 +142,7 @@ export async function createNotification(
     console.log("[v0] createNotification failed:", error.message)
     throw new Error("failed to create notification")
   }
+  void pushToAllowedRecipients(organizationId, [input.user_id], base.category, base)
   return data as Notification
 }
 
@@ -170,6 +190,7 @@ export async function broadcast(
     console.log("[v0] broadcast insert failed:", error.message)
     throw new Error("failed to broadcast notification")
   }
+  void pushToAllowedRecipients(organizationId, allowed, base.category, base)
   return { delivered: rows.length }
 }
 

@@ -1,11 +1,15 @@
 allowBuilds:
+  '@firebase/util': true
   '@swc/core': true
   esbuild: true
+  protobufjs: true
   sharp: true
   unrs-resolver: true
 onlyBuiltDependencies:
+  - "@firebase/util"
   - "@swc/core"
   - esbuild
+  - protobufjs
   - sharp
   - unrs-resolver
 overrides:
