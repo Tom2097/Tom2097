@@ -12,8 +12,7 @@ import { AlertCircle, Loader2, Eye, EyeOff, Check, X, Shield } from "lucide-reac
 import { Logo } from "@/components/digit/logo"
 import { AuroraBackground } from "@/components/digit/aurora-background"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
-import { createClient } from "@/lib/supabase/client"
-import { GoogleIcon } from "@/components/auth/google-icon"
+import { GoogleIdentityButton } from "@/components/auth/google-identity-button"
 
 function getPasswordStrength(password: string, t: (key: string) => string) {
   let score = 0
@@ -52,7 +51,6 @@ function SignUpForm() {
   const [companyName, setCompanyName] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   // The pricing/checkout pages send the plan a visitor picked as
@@ -107,21 +105,6 @@ function SignUpForm() {
     }
   }
 
-  const handleGoogleSignUp = async () => {
-    setIsGoogleLoading(true)
-    const supabase = createClient()
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/` },
-    })
-    // On success the browser navigates away to Google immediately -- this
-    // only returns for us to handle if the request itself failed to start.
-    if (oauthError) {
-      setError(oauthError.message)
-      setIsGoogleLoading(false)
-    }
-  }
-
   return (
     <div className="relative min-h-screen bg-background flex items-center justify-center p-4">
       <AuroraBackground />
@@ -147,16 +130,7 @@ function SignUpForm() {
               </div>
             )}
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-12 gap-3 border-border/50 hover:border-primary/40 hover:bg-primary/5 transition-all"
-              onClick={handleGoogleSignUp}
-              disabled={isGoogleLoading || isLoading}
-            >
-              {isGoogleLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <GoogleIcon />}
-              <span className="font-medium">{isGoogleLoading ? t("auth.signUp.creatingAccount") : "Continue with Google"}</span>
-            </Button>
+            <GoogleIdentityButton onError={setError} />
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

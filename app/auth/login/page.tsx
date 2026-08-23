@@ -14,8 +14,7 @@ import { AuroraBackground } from "@/components/digit/aurora-background"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { startAuthentication } from "@simplewebauthn/browser"
 import { useI18n } from "@/components/providers/i18n-provider"
-import { createClient } from "@/lib/supabase/client"
-import { GoogleIcon } from "@/components/auth/google-icon"
+import { GoogleIdentityButton } from "@/components/auth/google-identity-button"
 
 function LoginForm() {
   const { t } = useI18n()
@@ -29,7 +28,7 @@ function LoginForm() {
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
   const [passkeyError, setPasskeyError] = useState<string | null>(null)
   const [passkeyAvailable, setPasskeyAvailable] = useState(false)
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [googleError, setGoogleError] = useState<string | null>(null)
   const searchParams = useSearchParams()
   const redirect = searchParams?.get("redirect") || "/"
   const errorParam = searchParams?.get("error")
@@ -114,20 +113,6 @@ function LoginForm() {
     }
   }
 
-  const handleGoogleSignIn = async () => {
-    setIsGoogleLoading(true)
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirect)}` },
-    })
-    // On success the browser navigates away to Google immediately -- this
-    // only returns for us to handle if the request itself failed to start.
-    if (error) {
-      setIsGoogleLoading(false)
-    }
-  }
-
   // TODO: re-enable new device verification once email system is configured
   // if (isNewDevice && email) { ... }
 
@@ -181,16 +166,13 @@ function LoginForm() {
           )}
 
           {/* Google Sign-In */}
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-12 gap-3 border-border/50 hover:border-primary/40 hover:bg-primary/5 transition-all"
-            onClick={handleGoogleSignIn}
-            disabled={isGoogleLoading}
-          >
-            {isGoogleLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <GoogleIcon />}
-            <span className="font-medium">{isGoogleLoading ? t("auth.login.authenticating") : "Continue with Google"}</span>
-          </Button>
+          <GoogleIdentityButton redirectTo={redirect} onError={setGoogleError} />
+          {googleError && (
+            <div className="flex items-center gap-2 text-sm text-destructive" role="alert">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {googleError}
+            </div>
+          )}
 
           {/* Passkey / Biometric Login */}
           {passkeyAvailable && (
