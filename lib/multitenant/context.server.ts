@@ -1,6 +1,6 @@
 "use server"
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getBearerToken } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { NextRequest } from 'next/server'
 import type { TenantContextMiddleware } from './types'
@@ -11,13 +11,20 @@ export async function extractTenantContext(
 ): Promise<TenantContextMiddleware | null> {
   try {
     const supabase = await createClient()
+
+    // A native mobile client (no cookies) presents its Supabase access
+    // token as a Bearer header instead -- validate that specific token if
+    // present, otherwise fall back to the cookie-based browser session.
+    // (resolveApiKeyAuth() in withAuth() already claimed any dk_-prefixed
+    // key before this ever runs, so no collision with that mechanism.)
+    const bearerToken = await getBearerToken()
     const serviceDb = createServiceClient()
 
     // 1. Verify the session against the auth server (not just decode a token).
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser()
+    } = bearerToken ? await supabase.auth.getUser(bearerToken) : await supabase.auth.getUser()
 
     if (userError || !user) {
       console.error('[v0] extractTenantContext: no user', { error: userError?.message, hasUser: !!user })

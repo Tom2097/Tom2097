@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr"
 import type { SupabaseClient } from "@supabase/supabase-js"
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 
 // This file must only be imported in Server Components or Route Handlers
 
@@ -22,6 +22,24 @@ function createMockClient(): SupabaseClient {
     rpc: async () => ({ data: null, error: { message: "Supabase not configured" } }),
     from: () => mkChain(),
   } as unknown as SupabaseClient
+}
+
+// Native mobile clients (Flutter, React Native, ...) hold their Supabase
+// session as an access token in device storage and send it as
+// "Authorization: Bearer <token>" -- they can't participate in the
+// cookie-based session @supabase/ssr expects, since there's no browser to
+// hold the cookie. This lets callers of createClient() (via
+// supabase.auth.getUser(token)) validate that token directly against
+// Supabase's auth server instead of only ever reading cookies. dk_-prefixed
+// values are the separate internal API-key mechanism (lib/auth/api-key.ts)
+// and are never a Supabase JWT, so they're excluded here.
+export async function getBearerToken(): Promise<string | null> {
+  const hdrs = await headers()
+  const authHeader = hdrs.get("authorization")
+  if (!authHeader?.startsWith("Bearer ")) return null
+  const token = authHeader.slice("Bearer ".length).trim()
+  if (!token || token.startsWith("dk_")) return null
+  return token
 }
 
 export async function createClient(): Promise<SupabaseClient> {

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getBearerToken } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { NextResponse } from 'next/server'
 import { isPlatformAdmin } from '@/lib/auth/rbac'
@@ -7,7 +7,13 @@ import { expireTrialIfDue } from '@/lib/billing/subscription-lifecycle'
 
 export async function getAuthenticatedUser() {
   const supabase = await createClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
+  // A native mobile client (no cookies) presents its Supabase access token
+  // as a Bearer header instead -- validate that specific token if present,
+  // otherwise fall back to the cookie-based browser session.
+  const bearerToken = await getBearerToken()
+  const { data: { user }, error } = bearerToken
+    ? await supabase.auth.getUser(bearerToken)
+    : await supabase.auth.getUser()
 
   if (error || !user) {
     throw new Error('Unauthorized')
