@@ -4,14 +4,14 @@ import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Bell, 
-  Search, 
-  MessageSquare, 
-  User, 
-  LogOut, 
-  Settings, 
-  HelpCircle,
+import { formatDistanceToNow } from 'date-fns'
+import {
+  Bell,
+  Search,
+  MessageSquare,
+  User,
+  LogOut,
+  Settings,
   BarChart3,
   Users,
   LayoutGrid,
@@ -23,7 +23,10 @@ import {
   Clock,
   ArrowRight,
   Command,
-  LayoutDashboard
+  LayoutDashboard,
+  CheckCheck,
+  BellOff,
+  Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,6 +42,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { createClient } from '@/lib/supabase/client'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
+import type { Notification } from '@/lib/notifications/types'
 import { useI18n } from '@/components/providers/i18n-provider'
 
 // Search items database
@@ -88,6 +92,9 @@ export function Navbar({ onOpenAI }: NavbarProps) {
   const [showSearchDropdown, setShowSearchDropdown] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [notifLoading, setNotifLoading] = useState(false)
+  const [notifLoaded, setNotifLoaded] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
@@ -184,6 +191,53 @@ export function Navbar({ onOpenAI }: NavbarProps) {
       onOpenAI()
     } else if (!item.href.startsWith('#')) {
       router.push(item.href)
+    }
+  }
+
+  const fetchNotifications = async () => {
+    setNotifLoading(true)
+    try {
+      const res = await fetch('/api/v1/notifications?limit=5')
+      if (res.ok) {
+        const data = await res.json()
+        setNotifications(data.notifications ?? [])
+      }
+    } catch {
+      // Leave the previously loaded list in place on transient failures.
+    } finally {
+      setNotifLoading(false)
+      setNotifLoaded(true)
+    }
+  }
+
+  const handleNotificationsOpenChange = (open: boolean) => {
+    if (open && !notifLoaded) {
+      fetchNotifications()
+    }
+  }
+
+  const handleNotificationClick = async (notification: Notification) => {
+    const wasUnread = !notification.read_at
+    setNotifications(prev =>
+      prev.map(n => (n.id === notification.id ? { ...n, read_at: n.read_at ?? new Date().toISOString() } : n))
+    )
+    if (wasUnread) {
+      setUnreadCount(prev => Math.max(0, prev - 1))
+      fetch(`/api/v1/notifications/${notification.id}`, { method: 'PATCH' }).catch(() => {})
+    }
+    if (notification.action_url) {
+      router.push(notification.action_url)
+    }
+  }
+
+  const handleMarkAllRead = async (e: Event) => {
+    e.preventDefault()
+    setNotifications(prev => prev.map(n => (n.read_at ? n : { ...n, read_at: new Date().toISOString() })))
+    setUnreadCount(0)
+    try {
+      await fetch('/api/v1/notifications/read-all', { method: 'POST' })
+    } catch {
+      // Best-effort; the badge will re-sync next load if this failed.
     }
   }
 
@@ -350,7 +404,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
         </Button>
 
         {/* Notifications */}
-        <DropdownMenu>
+        <DropdownMenu onOpenChange={handleNotificationsOpenChange}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
@@ -363,20 +417,55 @@ export function Navbar({ onOpenAI }: NavbarProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+            <div className="flex items-center justify-between px-2 py-1.5">
+              <DropdownMenuLabel className="p-0">Notifications</DropdownMenuLabel>
+              {unreadCount > 0 && (
+                <DropdownMenuItem
+                  onSelect={handleMarkAllRead}
+                  className="w-auto gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground focus:text-foreground"
+                >
+                  <CheckCheck className="h-3.5 w-3.5" />
+                  Mark all read
+                </DropdownMenuItem>
+              )}
+            </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-              <span className="font-medium">AI Model Updated</span>
-              <span className="text-xs text-muted-foreground">Predictive analytics model v2.4 deployed</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-              <span className="font-medium">High Risk Alert</span>
-              <span className="text-xs text-muted-foreground">Performance workspace detected an anomaly</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-              <span className="font-medium">Data Sync Complete</span>
-              <span className="text-xs text-muted-foreground">12M records synchronized across all modules</span>
-            </DropdownMenuItem>
+            {notifLoading ? (
+              <div className="flex items-center justify-center gap-2 p-6 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading...
+              </div>
+            ) : notifications.length > 0 ? (
+              <div className="max-h-96 overflow-y-auto">
+                {notifications.map((notification) => (
+                  <DropdownMenuItem
+                    key={notification.id}
+                    onSelect={() => handleNotificationClick(notification)}
+                    className="flex flex-col items-start gap-1 p-3"
+                  >
+                    <div className="flex w-full items-center gap-2">
+                      {!notification.read_at && (
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                      )}
+                      <span className={`flex-1 truncate font-medium ${notification.read_at ? 'text-muted-foreground' : ''}`}>
+                        {notification.title}
+                      </span>
+                      <span className="shrink-0 text-[10px] text-muted-foreground">
+                        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                      </span>
+                    </div>
+                    {notification.body && (
+                      <span className="text-xs text-muted-foreground line-clamp-2">{notification.body}</span>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2 p-6 text-center text-sm text-muted-foreground">
+                <BellOff className="h-6 w-6 text-muted-foreground/50" />
+                You&apos;re all caught up
+              </div>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
 
