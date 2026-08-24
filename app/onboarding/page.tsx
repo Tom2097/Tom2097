@@ -29,7 +29,8 @@ import {
   Plane,
   MoreHorizontal,
   MessageSquare,
-  Shield
+  Shield,
+  LogOut
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -38,6 +39,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { Logo } from "@/components/digit/logo"
+import { createClient } from "@/lib/supabase/client"
 import {
   QUESTIONNAIRE_STEPS,
   INDUSTRIES,
@@ -188,6 +191,13 @@ export default function OnboardingPage() {
     }
   }
 
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push("/")
+    router.refresh()
+  }
+
   const step = QUESTIONNAIRE_STEPS[currentStep - 1]
 
   return (
@@ -200,6 +210,19 @@ export default function OnboardingPage() {
       </div>
 
       <div className="relative z-10 container max-w-4xl mx-auto px-4 py-8">
+        {/* Header -- this page has no persistent nav, so it needs its own way out */}
+        <div className="flex items-center justify-between mb-6">
+          <Logo size="sm" link />
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign out
+          </button>
+        </div>
+
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
