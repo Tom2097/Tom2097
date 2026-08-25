@@ -33,9 +33,6 @@ export default async function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{report.platform.tenants.used}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {t("platformAdmin.dashboard.limit")}: {report.limits.maxTenants}
-              </p>
             </CardContent>
           </Card>
           <Card>
