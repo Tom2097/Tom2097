@@ -66,23 +66,27 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<!-- Supabase OAuth (Google sign-in) redirect deep link, matching
-	     AuthService.signInWithGoogle()'s redirectTo. TODO(google-oauth):
-	     once a real Google OAuth client exists, also add this exact
-	     redirect URL to Supabase Dashboard -> Authentication -> URL
-	     Configuration -> Redirect URLs. If a native Google Sign-In SDK is
-	     added later instead of this browser-based flow, this app will
-	     additionally need an iOS OAuth client ID from Google Cloud Console
-	     keyed to CFBundleIdentifier above (its REVERSED_CLIENT_ID would
-	     also need registering as a URL scheme here). -->
+	<!-- Native Google Sign-In (see lib/services/auth_service.dart) requires
+	     this URL scheme even though the iOS client ID itself is passed via
+	     Dart code (AuthService._ensureGoogleInitialized) rather than a
+	     GIDClientID key here -- the google_sign_in_ios plugin's own README
+	     confirms this step is still required in that configuration.
+	     TODO(google-oauth-ios): once an iOS OAuth client exists in Google
+	     Cloud Console (Credentials -> Create Credentials -> OAuth client ID
+	     -> iOS, bundle ID org.digitai.digitMobile), replace the scheme
+	     below with that client's REVERSED_CLIENT_ID (the client ID with
+	     components reversed and prefixed, e.g. a client ID of
+	     "123-abc.apps.googleusercontent.com" becomes
+	     "com.googleusercontent.apps.123-abc") and put the plain client ID
+	     into _iosClientId in auth_service.dart. -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>org.digitai.digitmobile.auth</string>
+			<string>org.digitai.digitMobile.google</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>org.digitai.digitmobile</string>
+				<string>com.googleusercontent.apps.TODO-REPLACE-WITH-IOS-CLIENT-ID</string>
 			</array>
 		</dict>
 	</array>

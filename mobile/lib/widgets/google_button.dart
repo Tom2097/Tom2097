@@ -6,11 +6,11 @@ import '../theme/app_theme.dart';
 /// (components/auth/google-icon.tsx + the Button variant="outline" used on
 /// both app/auth/login/page.tsx and app/auth/sign-up/page.tsx).
 ///
-/// TODO(google-oauth): tapping this calls AuthService.signInWithGoogle(),
-/// which is fully wired to Supabase's OAuth flow but will not complete
-/// until a mobile-capable Google OAuth client is configured -- see the
-/// detailed TODO on AuthService.signInWithGoogle in
-/// lib/services/auth_service.dart.
+/// Tapping this calls AuthService.signInWithGoogle(), which uses the native
+/// account picker (see lib/services/auth_service.dart). Requires the
+/// Android/iOS OAuth clients described there to exist in Google Cloud
+/// Console -- until then, authenticate() fails with a
+/// GoogleSignInException (usually clientConfigurationError).
 class GoogleButton extends StatelessWidget {
   const GoogleButton({
     super.key,

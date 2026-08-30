@@ -29,17 +29,6 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Supabase OAuth (Google sign-in) redirect deep link, matching
-                 AuthService.signInWithGoogle()'s redirectTo. See the TODO on
-                 that method (lib/services/auth_service.dart) for the
-                 remaining Supabase Dashboard / Google Cloud config needed
-                 before this flow can actually complete. -->
-            <intent-filter android:autoVerify="false">
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="org.digitai.digitmobile" android:host="login-callback"/>
-            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../services/api_client.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/aurora_background.dart';
 import '../../widgets/digit_logo.dart';
 import '../../widgets/google_button.dart';
+import '../home/home_shell.dart';
 import 'sign_up_success_screen.dart';
 
 /// Password strength scoring, ported 1:1 from
@@ -134,11 +137,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _signUpWithGoogle() async {
-    setState(() => _isGoogleLoading = true);
+    setState(() {
+      _isGoogleLoading = true;
+      _error = null;
+    });
     try {
-      await AuthService.signInWithGoogle();
+      final response = await AuthService.signInWithGoogle();
+      if (response.session == null) {
+        throw const AuthException('Google sign-up failed. Please try again.');
+      }
+
+      // Mirrors app/api/auth/google-post-signin/route.ts on the web: creates
+      // the organization/profile for this brand-new user.
+      await ApiClient.post('/api/auth/google-post-signin');
+
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeShell()),
+        (route) => false,
+      );
+    } on GoogleSignInException catch (e) {
+      if (e.code != GoogleSignInExceptionCode.canceled) {
+        setState(() => _error = 'Google sign-up failed. Please try again.');
+      }
+    } on AuthException catch (e) {
+      setState(() => _error = e.message);
     } catch (e) {
-      setState(() => _error = 'Google sign-in is not available yet.');
+      setState(() => _error = 'Google sign-up failed. Please try again.');
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }

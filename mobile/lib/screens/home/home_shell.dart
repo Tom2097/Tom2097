@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
 import 'dashboard_screen.dart';
+import 'settings_screen.dart';
 
 /// Authenticated app shell: a bottom nav bar over an [IndexedStack].
-/// Dashboard is the only real tab for v1; the rest are placeholders so
-/// adding real tabs later is just a matter of swapping the placeholder
-/// widget out of [_tabs].
+/// Dashboard and Settings are real for v1; Notifications is still a
+/// placeholder pending the push-notification work (backend already ready,
+/// see lib/notifications/push.ts on the web side -- the Flutter side needs
+/// device registration + a real notification list screen next).
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -20,7 +22,7 @@ class _HomeShellState extends State<HomeShell> {
   static const _tabs = [
     DashboardScreen(),
     _ComingSoonTab(label: 'Notifications', icon: Icons.notifications_outlined),
-    _ComingSoonTab(label: 'Settings', icon: Icons.settings_outlined),
+    SettingsScreen(),
   ];
 
   @override
