@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,6 +11,12 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: '.env');
+
+  // Reads android/app/google-services.json and
+  // ios/Runner/GoogleService-Info.plist automatically -- both registered
+  // against the same Firebase project (digit-89527) the web backend's
+  // lib/notifications/push.ts already sends through.
+  await Firebase.initializeApp();
 
   await Supabase.initialize(
     url: Env.supabaseUrl,

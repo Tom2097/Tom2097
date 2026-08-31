@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../services/push_service.dart';
 import '../../theme/app_theme.dart';
 import 'dashboard_screen.dart';
+import 'notifications_screen.dart';
 import 'settings_screen.dart';
 
-/// Authenticated app shell: a bottom nav bar over an [IndexedStack].
-/// Dashboard and Settings are real for v1; Notifications is still a
-/// placeholder pending the push-notification work (backend already ready,
-/// see lib/notifications/push.ts on the web side -- the Flutter side needs
-/// device registration + a real notification list screen next).
+/// Authenticated app shell: a bottom nav bar over an [IndexedStack]. All
+/// three tabs are real -- Dashboard, real Notifications backed by the same
+/// GET /api/v1/notifications the website's bell uses, and Settings.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -21,9 +21,18 @@ class _HomeShellState extends State<HomeShell> {
 
   static const _tabs = [
     DashboardScreen(),
-    _ComingSoonTab(label: 'Notifications', icon: Icons.notifications_outlined),
+    NotificationsScreen(),
     SettingsScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Registering here (rather than immediately after sign-in) means it
+    // also covers a returning user who already had a session on launch --
+    // every path that reaches the authenticated shell ends up here.
+    PushService.registerDevice();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,33 +67,6 @@ class _HomeShellState extends State<HomeShell> {
         child: Icon(isActive ? filled : outlined),
       ),
       label: label,
-    );
-  }
-}
-
-class _ComingSoonTab extends StatelessWidget {
-  const _ComingSoonTab({required this.label, required this.icon});
-
-  final String label;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(label)),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 40, color: AppColors.mutedForeground),
-            const SizedBox(height: 12),
-            Text(
-              '$label coming soon',
-              style: const TextStyle(color: AppColors.mutedForeground),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/api_client.dart';
 import '../../services/auth_service.dart';
+import '../../services/push_service.dart';
 import '../../theme/app_theme.dart';
 import '../auth/login_screen.dart';
 
@@ -51,6 +52,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _logout() async {
+    await PushService.unregisterDevice();
     await AuthService.signOut();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(

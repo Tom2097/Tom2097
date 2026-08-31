@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "759137674946",
+    "project_id": "digit-89527",
+    "storage_bucket": "digit-89527.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:759137674946:android:7fdfda7e31274a95b07d5b",
+        "android_client_info": {
+          "package_name": "org.digitai.digit_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLzm9ZgakigzgcUXZaOdlIemRJb-Xiv7w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

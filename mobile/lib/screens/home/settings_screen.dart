@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../services/auth_service.dart';
+import '../../services/push_service.dart';
 import '../../theme/app_theme.dart';
 import '../auth/login_screen.dart';
 
@@ -47,6 +48,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (confirmed != true) return;
 
+    await PushService.unregisterDevice();
     await AuthService.signOut();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
