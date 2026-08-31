@@ -49,6 +49,18 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Lets firebase_messaging wake the app to handle a push notification
+	     that arrives while it's backgrounded/terminated. Also requires the
+	     "Push Notifications" capability (Runner.entitlements, added
+	     alongside this) and, once an Apple Developer account exists, an
+	     APNs key uploaded to Firebase Console -> Project Settings -> Cloud
+	     Messaging -> Apple app configuration -- Firebase relays push to iOS
+	     via APNs under the hood, and won't deliver anything on iOS without
+	     that key regardless of how correct this app's own config is. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
