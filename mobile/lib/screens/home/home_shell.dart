@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../services/push_service.dart';
 import '../../theme/app_theme.dart';
+import 'crm_screen.dart';
 import 'dashboard_screen.dart';
 import 'notifications_screen.dart';
 import 'settings_screen.dart';
 
 /// Authenticated app shell: a bottom nav bar over an [IndexedStack]. All
-/// three tabs are real -- Dashboard, real Notifications backed by the same
-/// GET /api/v1/notifications the website's bell uses, and Settings.
+/// four tabs are real -- Dashboard, CRM (the first real product module,
+/// backed by GET /api/v1/crm/pipeline + /api/v1/crm/deals), Notifications
+/// (same GET /api/v1/notifications the website's bell uses), and Settings.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -21,6 +23,7 @@ class _HomeShellState extends State<HomeShell> {
 
   static const _tabs = [
     DashboardScreen(),
+    CrmScreen(),
     NotificationsScreen(),
     SettingsScreen(),
   ];
@@ -43,8 +46,9 @@ class _HomeShellState extends State<HomeShell> {
         onTap: (i) => setState(() => _index = i),
         items: [
           _navItem(Icons.dashboard_outlined, Icons.dashboard, 'Dashboard', 0),
-          _navItem(Icons.notifications_outlined, Icons.notifications, 'Alerts', 1),
-          _navItem(Icons.settings_outlined, Icons.settings, 'Settings', 2),
+          _navItem(Icons.people_alt_outlined, Icons.people_alt, 'CRM', 1),
+          _navItem(Icons.notifications_outlined, Icons.notifications, 'Alerts', 2),
+          _navItem(Icons.settings_outlined, Icons.settings, 'Settings', 3),
         ],
       ),
     );
