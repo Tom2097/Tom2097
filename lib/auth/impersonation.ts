@@ -1,11 +1,27 @@
 "use server"
 
 import { createServiceClient } from "@/lib/supabase/service"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, getBearerToken } from "@/lib/supabase/server"
 import { isCurrentUserPlatformOwner, isPlatformOwnerEmail } from "@/lib/platform/owner"
 import { createAuditEntry } from "@/lib/audit/append-only"
 import { createNotification } from "@/lib/notifications/engine"
 import { randomUUID } from "crypto"
+
+/**
+ * Resolves the caller's identity from either the session cookie (browser) or
+ * an Authorization: Bearer <token> header (mobile/API clients, no cookies).
+ * Every plain `createClient().auth.getUser()` call in this file used to skip
+ * the Bearer case, so a token-authenticated caller always looked signed-out
+ * here even though the same token worked fine on other routes.
+ */
+async function getSessionUser() {
+  const supabase = await createClient()
+  const bearerToken = await getBearerToken()
+  const {
+    data: { user },
+  } = bearerToken ? await supabase.auth.getUser(bearerToken) : await supabase.auth.getUser()
+  return user
+}
 
 export interface ImpersonationSession {
   id: string
@@ -69,7 +85,7 @@ export async function startImpersonation(
   const supabase = await createServiceClient()
 
   // Get admin user
-  const { data: { user: adminUser } } = await (await createClient()).auth.getUser()
+  const adminUser = await getSessionUser()
   if (!adminUser) {
     return { error: "Not authenticated" }
   }
@@ -231,7 +247,7 @@ export async function grantImpersonationConsent(sessionId: string): Promise<{ su
   }
 
   // Verify the consent is being granted by the target user
-  const { data: { user } } = await (await createClient()).auth.getUser()
+  const user = await getSessionUser()
   if (!user || user.id !== session.target_user_id) {
     return { success: false, error: "Only the target user can grant consent" }
   }
@@ -262,7 +278,7 @@ export async function denyImpersonationConsent(sessionId: string): Promise<{ suc
     return { success: false, error: "Session not found" }
   }
 
-  const { data: { user } } = await (await createClient()).auth.getUser()
+  const user = await getSessionUser()
   if (!user || user.id !== session.target_user_id) {
     return { success: false, error: "Only the target user can deny consent" }
   }
@@ -355,7 +371,7 @@ export async function endImpersonation(sessionId: string): Promise<{ success: bo
   }
 
   // Log audit event
-  const { data: { user: adminUser } } = await (await createClient()).auth.getUser()
+  const adminUser = await getSessionUser()
   if (adminUser) {
     const auditEntry = createAuditEntry(
       "impersonation_sessions",
@@ -373,9 +389,9 @@ export async function endImpersonation(sessionId: string): Promise<{ success: bo
 }
 
 export async function getActiveImpersonationSession(): Promise<ImpersonationSession | null> {
-  const supabase = await createClient()
+  const supabase = await createServiceClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getSessionUser()
   if (!user) return null
 
   // Only a truly "active" (consented) session counts here -- a pending
