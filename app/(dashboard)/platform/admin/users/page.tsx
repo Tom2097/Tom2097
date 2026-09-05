@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Users as UsersIcon, Loader2, Eye } from "lucide-react"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { InView } from "@/components/motion-primitives/in-view"
+import { toast } from "sonner"
 
 interface PlatformUser {
   id: string
@@ -38,13 +39,19 @@ export default function AdminUsersPage() {
       const res = await fetch("/api/v1/admin/impersonate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ action: "start", targetUserId: userId, reason: "Platform admin support" }),
       })
-      if (!res.ok) throw new Error("Failed")
       const data = await res.json()
-      window.open(data.url, "_blank")
-    } catch { /* silent */ }
-    finally { setImpersonating(null) }
+      if (res.ok) {
+        toast.success("Impersonation session started")
+      } else {
+        toast.error(data.error || "Failed to start impersonation")
+      }
+    } catch {
+      toast.error("Failed to start impersonation")
+    } finally {
+      setImpersonating(null)
+    }
   }
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><UsersIcon className="w-8 h-8 animate-spin text-primary" /></div>
