@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service"
 import { createClient } from "@/lib/supabase/server"
 import { isCurrentUserPlatformOwner, isPlatformOwnerEmail } from "@/lib/platform/owner"
 import { createAuditEntry } from "@/lib/audit/append-only"
+import { createNotification } from "@/lib/notifications/engine"
 import { randomUUID } from "crypto"
 
 export interface ImpersonationSession {
@@ -154,6 +155,22 @@ export async function startImpersonation(
         targetProfile.organization_id
       )
       await supabase.from("audit_log_entries").insert(auditEntry)
+
+      // The target user has no other way to learn a request exists -- the
+      // consent flow is meaningless without this, since nothing else surfaces
+      // pending_consent rows to them.
+      if (targetProfile.organization_id) {
+        await createNotification(targetProfile.organization_id, {
+          user_id: targetProfile.id,
+          title: "Support access request",
+          body: `${adminUser.email ?? "A platform admin"} is requesting temporary access to your account (${reason}). Approve or deny it.`,
+          type: "warning",
+          category: "security",
+          priority: "urgent",
+          source: "system",
+          data: { kind: "impersonation_consent", sessionId: pendingId },
+        }).catch((err) => console.error("[impersonation] failed to notify target user:", err))
+      }
     }
 
     return {
@@ -229,6 +246,90 @@ export async function grantImpersonationConsent(sessionId: string): Promise<{ su
   }
 
   return { success: true }
+}
+
+/** Lets the target of a pending request refuse it outright, rather than just letting it expire. */
+export async function denyImpersonationConsent(sessionId: string): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createServiceClient()
+
+  const { data: session } = await supabase
+    .from("impersonation_sessions")
+    .select("*")
+    .eq("id", sessionId)
+    .single()
+
+  if (!session) {
+    return { success: false, error: "Session not found" }
+  }
+
+  const { data: { user } } = await (await createClient()).auth.getUser()
+  if (!user || user.id !== session.target_user_id) {
+    return { success: false, error: "Only the target user can deny consent" }
+  }
+
+  const { error } = await supabase
+    .from("impersonation_sessions")
+    .update({ status: "denied", ended_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq("id", sessionId)
+
+  if (error) {
+    return { success: false, error: error.message }
+  }
+
+  const auditEntry = createAuditEntry(
+    "impersonation_sessions",
+    sessionId,
+    "UPDATE",
+    { status: session.status },
+    { status: "denied" },
+    user.id,
+    session.target_organization_id
+  )
+  await supabase.from("audit_log_entries").insert(auditEntry)
+
+  return { success: true }
+}
+
+export interface PendingImpersonationRequest {
+  id: string
+  adminEmail: string | null
+  adminName: string | null
+  reason: string
+  startedAt: string
+  expiresAt: string
+}
+
+/** Lists the caller's own pending (not yet consented, not expired) impersonation requests. */
+export async function listPendingImpersonationRequests(userId: string): Promise<PendingImpersonationRequest[]> {
+  const supabase = await createServiceClient()
+
+  const { data: sessions } = await supabase
+    .from("impersonation_sessions")
+    .select("id, admin_user_id, reason, started_at, expires_at")
+    .eq("target_user_id", userId)
+    .eq("status", "pending_consent")
+    .eq("consent_granted", false)
+    .is("ended_at", null)
+    .gt("expires_at", new Date().toISOString())
+    .order("started_at", { ascending: false })
+
+  if (!sessions || sessions.length === 0) return []
+
+  const adminIds = [...new Set(sessions.map((s) => s.admin_user_id as string))]
+  const { data: admins } = await supabase.from("profiles").select("id, email, full_name").in("id", adminIds)
+  const adminById = new Map((admins ?? []).map((a) => [a.id, a]))
+
+  return sessions.map((s) => {
+    const admin = adminById.get(s.admin_user_id as string)
+    return {
+      id: s.id as string,
+      adminEmail: admin?.email ?? null,
+      adminName: admin?.full_name ?? null,
+      reason: s.reason as string,
+      startedAt: s.started_at as string,
+      expiresAt: s.expires_at as string,
+    }
+  })
 }
 
 export async function endImpersonation(sessionId: string): Promise<{ success: boolean; error?: string }> {

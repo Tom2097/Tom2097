@@ -7,6 +7,7 @@ import { AIAssistant } from '@/components/digit/ai-assistant'
 import { HelpSupport } from '@/components/digit/help-support'
 import { SettingsPanel } from '@/components/digit/settings-panel'
 import { AuroraBackground } from '@/components/digit/aurora-background'
+import { ImpersonationConsentDialog } from '@/components/auth/impersonation-consent-dialog'
 import { cn } from '@/lib/utils'
 
 export function DashboardChrome({
@@ -50,6 +51,9 @@ export function DashboardChrome({
 
       {/* Help & Support */}
       <HelpSupport />
+
+      {/* Impersonation consent gate */}
+      <ImpersonationConsentDialog />
     </div>
   )
 }
