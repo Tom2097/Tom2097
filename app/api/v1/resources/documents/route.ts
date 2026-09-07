@@ -78,18 +78,22 @@ export const POST = withAuth(async (req: NextRequest, { organizationId, userId }
   }
 
   const db = createServiceClient()
+  // The live "documents" table columns are storage_path/mime_type/size_bytes/
+  // uploaded_by, not the file_path/file_type/file_size/created_by this insert
+  // used to write -- every create silently 500'd (PGRST204 "column not
+  // found"). Request field names are left as-is since nothing calls this yet.
   const { data, error } = await db
     .from("documents")
     .insert({
       organization_id: organizationId,
       name: validation.data.name,
       description: validation.data.description,
-      file_path: validation.data.file_path,
-      file_type: validation.data.file_type,
-      file_size: validation.data.file_size,
+      storage_path: validation.data.file_path,
+      mime_type: validation.data.file_type,
+      size_bytes: validation.data.file_size,
       tags: validation.data.tags || [],
       metadata: validation.data.metadata || {},
-      created_by: userId,
+      uploaded_by: userId,
     })
     .select()
     .single()

@@ -25,10 +25,14 @@ export const GET = withAuth(async (req: NextRequest, { organizationId, userId, p
     return NextResponse.json({ error: "Document not found" }, { status: 404 })
   }
 
-  // Generate signed URL from Supabase Storage
+  // Generate signed URL from Supabase Storage. The live "documents" table
+  // column is storage_path -- the resources_module migration that defined
+  // this route's expected shape (file_path) never actually matched
+  // production (see 20260715000000_operations_action_layer.sql's note that
+  // the checked-in migrations are known out of sync with the live schema).
   const { data, error: downloadError } = await db.storage
     .from("documents")
-    .createSignedUrl(document.file_path, 3600) // 1 hour expiry
+    .createSignedUrl(document.storage_path, 3600) // 1 hour expiry
 
   if (downloadError || !data?.signedUrl) {
     return NextResponse.json({ error: "Failed to generate download link" }, { status: 500 })
