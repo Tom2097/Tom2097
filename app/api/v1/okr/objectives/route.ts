@@ -1,6 +1,20 @@
 import { NextResponse } from 'next/server'
 import { extractTenantContext } from '@/lib/multitenant/context.server'
-import { createObjective } from '@/lib/analytics/okr'
+import { createObjective, listObjectives } from '@/lib/analytics/okr'
+
+// GET /api/v1/okr/objectives -- list objectives for the caller's org. The web
+// Performance page (app/(dashboard)/performance/page.tsx) reads listObjectives()
+// directly as a server component and never needed this over HTTP; the mobile
+// app has no in-process equivalent, so it does.
+export async function GET() {
+  const ctx = await extractTenantContext()
+  if (!ctx?.organizationId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const objectives = await listObjectives(ctx.organizationId)
+  return NextResponse.json({ objectives })
+}
 
 export async function POST(request: Request) {
   const ctx = await extractTenantContext()
