@@ -7,6 +7,7 @@ import '../auth/login_screen.dart';
 import 'crm_screen.dart';
 import 'operations_screen.dart';
 import 'performance_screen.dart';
+import 'resources_screen.dart';
 
 class _Module {
   const _Module({required this.icon, required this.label, required this.description, required this.builder});
@@ -41,6 +42,12 @@ class DashboardScreen extends StatelessWidget {
       label: 'Performance',
       description: 'Objectives & key results',
       builder: (_) => const PerformanceScreen(),
+    ),
+    _Module(
+      icon: Icons.folder_outlined,
+      label: 'Resources',
+      description: 'Documents & knowledge base',
+      builder: (_) => const ResourcesScreen(),
     ),
   ];
 
