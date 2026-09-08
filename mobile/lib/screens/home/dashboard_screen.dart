@@ -6,6 +6,7 @@ import '../../theme/app_theme.dart';
 import '../auth/login_screen.dart';
 import 'compliance_screen.dart';
 import 'crm_screen.dart';
+import 'feedback_screen.dart';
 import 'operations_screen.dart';
 import 'performance_screen.dart';
 import 'resources_screen.dart';
@@ -55,6 +56,12 @@ class DashboardScreen extends StatelessWidget {
       label: 'Compliance',
       description: 'Scores & CAPA records',
       builder: (_) => const ComplianceScreen(),
+    ),
+    _Module(
+      icon: Icons.forum_outlined,
+      label: 'Feedback',
+      description: 'Requests, bugs & votes',
+      builder: (_) => const FeedbackScreen(),
     ),
   ];
 
