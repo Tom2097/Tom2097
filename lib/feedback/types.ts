@@ -45,8 +45,9 @@ export interface FeedbackComment {
   id: string
   organization_id: string
   feedback_id: string
-  submitted_by: string | null
-  text: string
+  author_id: string | null
+  body: string
+  is_internal: boolean
   created_at: string
 }
 

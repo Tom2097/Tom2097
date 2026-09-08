@@ -183,12 +183,18 @@ export async function deleteFeedback(
   return (data?.length ?? 0) > 0
 }
 
-/** Create a comment on feedback. */
+/**
+ * Create a comment on feedback. The live feedback_comments table columns
+ * are author_id/body/is_internal, not the submitted_by/text this insert
+ * used to write (20260826000000_feedback_tables.sql's CREATE TABLE IF NOT
+ * EXISTS was a no-op against a table that already existed with a different
+ * shape) -- every comment attempt 500'd with PGRST204.
+ */
 export async function createComment(
   organizationId: string,
   feedbackId: string,
-  submittedBy: string,
-  text: string,
+  authorId: string,
+  body: string,
 ): Promise<FeedbackComment> {
   const db = createServiceClient()
   const { data, error } = await db
@@ -196,8 +202,8 @@ export async function createComment(
     .insert({
       organization_id: organizationId,
       feedback_id: feedbackId,
-      submitted_by: submittedBy,
-      text,
+      author_id: authorId,
+      body,
     })
     .select("*")
     .single()
