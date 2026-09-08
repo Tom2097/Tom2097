@@ -1,0 +1,11 @@
+-- feedback_votes has two identical triggers both calling
+-- sync_feedback_vote_count() -- trg_feedback_vote_count (pre-existing,
+-- untracked in any migration) and trg_feedback_votes_sync (added by
+-- 20260826000000_feedback_tables.sql, unaware the job was already done).
+-- Every vote insert/delete fires the sync function twice, so
+-- feedback.vote_count double-counts every vote in production right now,
+-- on both the web Feedback page and the mobile Feedback module.
+--
+-- Kept trg_feedback_votes_sync (the migration-tracked one) and dropped the
+-- untracked duplicate.
+DROP TRIGGER IF EXISTS trg_feedback_vote_count ON feedback_votes;
