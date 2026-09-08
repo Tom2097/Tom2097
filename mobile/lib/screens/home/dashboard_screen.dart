@@ -4,6 +4,7 @@ import '../../services/auth_service.dart';
 import '../../services/push_service.dart';
 import '../../theme/app_theme.dart';
 import '../auth/login_screen.dart';
+import 'analytics_screen.dart';
 import 'compliance_screen.dart';
 import 'crm_screen.dart';
 import 'feedback_screen.dart';
@@ -62,6 +63,12 @@ class DashboardScreen extends StatelessWidget {
       label: 'Feedback',
       description: 'Requests, bugs & votes',
       builder: (_) => const FeedbackScreen(),
+    ),
+    _Module(
+      icon: Icons.insights_outlined,
+      label: 'AI Analytics',
+      description: 'Metrics, anomalies & ask AI',
+      builder: (_) => const AnalyticsScreen(),
     ),
   ];
 
