@@ -160,7 +160,9 @@ class _MetricsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final totalEvents = metrics['totalEvents'] as num? ?? 0;
     final uniqueUsers = metrics['uniqueUsers'] as num? ?? 0;
-    final growthRate = metrics['growthRate'] as num? ?? 0;
+    // growthRate is a raw fraction (0.25 == 25% growth), unlike retentionRate
+    // which the backend already returns pre-scaled to 0-100.
+    final growthRate = (metrics['growthRate'] as num? ?? 0) * 100;
     final retentionRate = metrics['retentionRate'] as num? ?? 0;
 
     return GridView.count(
