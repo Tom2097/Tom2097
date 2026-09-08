@@ -8,6 +8,7 @@ import 'analytics_screen.dart';
 import 'compliance_screen.dart';
 import 'crm_screen.dart';
 import 'feedback_screen.dart';
+import 'intelligence_screen.dart';
 import 'operations_screen.dart';
 import 'performance_screen.dart';
 import 'resources_screen.dart';
@@ -69,6 +70,12 @@ class DashboardScreen extends StatelessWidget {
       label: 'AI Analytics',
       description: 'Metrics, anomalies & ask AI',
       builder: (_) => const AnalyticsScreen(),
+    ),
+    _Module(
+      icon: Icons.psychology_outlined,
+      label: 'AI Intelligence',
+      description: 'Briefing & findings',
+      builder: (_) => const IntelligenceScreen(),
     ),
   ];
 
