@@ -38,6 +38,7 @@ export default function BillingPlansPage() {
   const { t } = useI18n()
 
   const [trial, setTrial] = useState<OrgTrial | null>(null)
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [discountCode, setDiscountCode] = useState('')
   const [discountValid, setDiscountValid] = useState<boolean | null>(null)
@@ -55,7 +56,10 @@ export default function BillingPlansPage() {
           throw new Error(data.error || t('billingPlans.page.errors.loadFailed'))
         }
         const data = await res.json()
-        if (!cancelled) setTrial(data.trial)
+        if (!cancelled) {
+          setTrial(data.trial)
+          setSubscriptionStatus(data.subscriptionStatus ?? null)
+        }
       } catch (error) {
         if (!cancelled) toast.error(error instanceof Error ? error.message : t('billingPlans.page.errors.loadFailed'))
       } finally {
@@ -117,7 +121,9 @@ export default function BillingPlansPage() {
     )
   }
 
-  const hasSubscription = !!trial && trial.status !== 'expired' && trial.status !== 'cancelled'
+  const hasSubscription = trial
+    ? trial.status !== 'expired' && trial.status !== 'cancelled'
+    : ['trialing', 'active', 'past_due'].includes(subscriptionStatus ?? '')
 
   return (
     <div className="space-y-6">

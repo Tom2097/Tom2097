@@ -21,7 +21,7 @@ interface OrgTrial {
  * reflected fake state that had nothing to do with what the org was
  * entitled to.
  */
-async function getRealTrialStatus(organizationId: string): Promise<OrgTrial | null> {
+async function getRealTrialStatus(organizationId: string): Promise<{ trial: OrgTrial | null; subscriptionStatus: string | null }> {
   const supabase = await createServiceClient()
 
   const { data: sub } = await supabase
@@ -30,8 +30,15 @@ async function getRealTrialStatus(organizationId: string): Promise<OrgTrial | nu
     .eq('organization_id', organizationId)
     .maybeSingle()
 
-  if (!sub || !sub.trial_ends_at) {
-    return null
+  // Also report the raw subscription status: older subscriptions rows can be
+  // "trialing"/"active" without a trial_ends_at, and returning only
+  // `trial: null` for those made /billing/plans offer "Start Free Trial" to
+  // an org that is already subscribed.
+  if (!sub) {
+    return { trial: null, subscriptionStatus: null }
+  }
+  if (!sub.trial_ends_at) {
+    return { trial: null, subscriptionStatus: sub.status }
   }
 
   let status: OrgTrial['status']
@@ -59,12 +66,15 @@ async function getRealTrialStatus(organizationId: string): Promise<OrgTrial | nu
   )
 
   return {
-    orgId: organizationId,
-    planId: sub.plan_id,
-    startedAt: sub.current_period_start,
-    expiresAt: sub.trial_ends_at,
-    status,
-    daysRemaining,
+    trial: {
+      orgId: organizationId,
+      planId: sub.plan_id,
+      startedAt: sub.current_period_start,
+      expiresAt: sub.trial_ends_at,
+      status,
+      daysRemaining,
+    },
+    subscriptionStatus: sub.status,
   }
 }
 
@@ -93,8 +103,8 @@ export async function GET(_request: NextRequest) {
     // platform-admin use case for this route calls it with an override, so
     // it's removed rather than gated.
     const organizationId = await getOrganizationId(user.id)
-    const trial = await getRealTrialStatus(organizationId)
-    return NextResponse.json({ trial })
+    const { trial, subscriptionStatus } = await getRealTrialStatus(organizationId)
+    return NextResponse.json({ trial, subscriptionStatus })
   } catch (error) {
     return handleAuthError(error as Error)
   }
