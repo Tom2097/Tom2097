@@ -4,7 +4,7 @@ import { useState } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { ArrowLeftRight } from "lucide-react"
+import { ArrowLeftRight, FileText } from "lucide-react"
 
 interface DocSummary {
   id: string; name: string; content?: string
@@ -34,8 +34,12 @@ function computeDiff(left: string, right: string): DiffLine[] {
 }
 
 export function CompareView({ documents }: { documents: DocSummary[] }) {
-  const [leftId, setLeftId] = useState(documents[0]?.id ?? "")
-  const [rightId, setRightId] = useState(documents[1]?.id ?? "")
+  // The feed loads after mount, so defaults are derived at render time
+  // rather than captured once in useState (which stayed "" forever).
+  const [pickedLeftId, setLeftId] = useState("")
+  const [pickedRightId, setRightId] = useState("")
+  const leftId = pickedLeftId || documents[0]?.id || ""
+  const rightId = pickedRightId || documents[1]?.id || ""
 
   const left = documents.find((d) => d.id === leftId)
   const right = documents.find((d) => d.id === rightId)
@@ -46,6 +50,20 @@ export function CompareView({ documents }: { documents: DocSummary[] }) {
     added: "bg-green-500/10",
     removed: "bg-red-500/10",
     modified: "bg-yellow-500/10",
+  }
+
+  // Used to fall back to three hardcoded sample invoices/contracts, so a
+  // real org with no documents was shown fake files to compare.
+  if (documents.length < 2) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/60 py-12 text-center">
+        <FileText className="h-8 w-8 text-muted-foreground" />
+        <div>
+          <p className="font-medium text-foreground">Nothing to compare yet</p>
+          <p className="text-sm text-muted-foreground">Ingest at least two documents to compare them side by side.</p>
+        </div>
+      </div>
+    )
   }
 
   return (

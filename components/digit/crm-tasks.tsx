@@ -206,7 +206,7 @@ export function CrmTasks() {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0"><MoreHorizontal className="w-3 h-3" /></Button>
+                <Button aria-label="Task actions" variant="ghost" size="icon" className="h-6 w-6 shrink-0"><MoreHorizontal className="w-3 h-3" /></Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => toggleComplete(task.id, task.status)}>

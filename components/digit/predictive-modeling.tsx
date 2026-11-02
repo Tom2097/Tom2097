@@ -532,7 +532,7 @@ export function PredictiveModeling() {
                     <Button size="sm" variant="outline" onClick={() => setCurrentModel(model)}>
                       <Info className="h-4 w-4 mr-1" /> Details
                     </Button>
-                    <Button
+                    <Button aria-label="Delete model"
                       size="sm"
                       variant="ghost"
                       onClick={() => handleDeleteModel(model.id)}

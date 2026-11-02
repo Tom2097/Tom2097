@@ -363,7 +363,7 @@ export function OperationalReports() {
                data={reportData.rows as Record<string, string | number>[]}
                dataKey={Object.keys(reportData.rows[0] || {})[1]}
                type="bar"
-               color="hsl(var(--primary))"
+               color="var(--primary)"
                xAxisKey={reportData.columns[0]}
             />
           </ChartContainer>
@@ -376,7 +376,7 @@ export function OperationalReports() {
                data={reportData.rows as Record<string, string | number>[]}
                dataKey={Object.keys(reportData.rows[0] || {})[1]}
                type="line"
-               color="hsl(var(--primary))"
+               color="var(--primary)"
                xAxisKey={reportData.columns[0]}
             />
           </ChartContainer>
@@ -389,7 +389,7 @@ export function OperationalReports() {
                data={reportData.rows as Record<string, string | number>[]}
                dataKey={Object.keys(reportData.rows[0] || {})[1]}
                type="area"
-               color="hsl(var(--primary))"
+               color="var(--primary)"
                xAxisKey={reportData.columns[0]}
             />
           </ChartContainer>
@@ -637,7 +637,7 @@ export function OperationalReports() {
                                 </Button>
                                 <Dialog onOpenChange={(open) => { if (!open) setScheduleRecipients('') }}>
                                   <DialogTrigger asChild>
-                                    <Button size="sm" variant="ghost" onClick={() => { setCurrentReport(report); setScheduleRecipients('') }}>
+                                    <Button aria-label="Schedule report" size="sm" variant="ghost" onClick={() => { setCurrentReport(report); setScheduleRecipients('') }}>
                                       <Settings className="h-4 w-4" />
                                     </Button>
                                   </DialogTrigger>
@@ -715,7 +715,7 @@ export function OperationalReports() {
                                     </DialogFooter>
                                   </DialogContent>
                                 </Dialog>
-                                <Button
+                                <Button aria-label="Delete report"
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => handleDeleteReport(report.id)}

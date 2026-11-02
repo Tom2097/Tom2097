@@ -38,13 +38,23 @@ export async function getCheckoutSessionPlanId(sessionId: string): Promise<strin
   }
 }
 
-export async function createBillingPortalSession() {
+// Returns a result instead of throwing for the expected "can't open the
+// portal" cases. In production, Next.js replaces any error thrown from a
+// server action with a generic 500, so the old throws reached the client
+// as an opaque failure and /settings/billing swapped the whole page for a
+// "Failed to open billing portal" screen -- which is exactly what every
+// trialing org without a Stripe customer yet hit.
+export type BillingPortalResult =
+  | { url: string; reason?: undefined; message?: undefined }
+  | { url: null; reason: "not_logged_in" | "no_organization" | "not_owner" | "no_billing_account"; message: string }
+
+export async function createBillingPortalSession(): Promise<BillingPortalResult> {
   const stripe = await getStripe()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    throw new Error("You must be logged in")
+    return { url: null, reason: "not_logged_in", message: "You must be logged in" }
   }
 
   const { data: profile } = await supabase
@@ -54,13 +64,13 @@ export async function createBillingPortalSession() {
     .single()
 
   if (!profile?.organization_id) {
-    throw new Error("No organization found")
+    return { url: null, reason: "no_organization", message: "No organization found" }
   }
 
   // Owner-only: the billing portal exposes payment methods, invoices, and
   // cancellation -- see createCheckoutSession()'s matching check above.
   if (profile.role !== "owner") {
-    throw new Error("Only the organization owner can manage billing")
+    return { url: null, reason: "not_owner", message: "Only the organization owner can manage billing" }
   }
 
   const { data: subscription } = await supabase
@@ -70,7 +80,7 @@ export async function createBillingPortalSession() {
     .single()
 
   if (!subscription?.stripe_customer_id) {
-    throw new Error("No billing account found")
+    return { url: null, reason: "no_billing_account", message: "No billing account yet -- add a payment method to set one up." }
   }
 
   try {
@@ -88,7 +98,7 @@ export async function createBillingPortalSession() {
         .from("subscriptions")
         .update({ stripe_customer_id: null })
         .eq("organization_id", profile.organization_id)
-      throw new Error("Your billing account could not be found. Please start a new subscription.")
+      return { url: null, reason: "no_billing_account", message: "Your billing account could not be found. Please start a new subscription." }
     }
     throw err
   }

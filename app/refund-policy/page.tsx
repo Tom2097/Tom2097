@@ -77,7 +77,7 @@ export default function RefundPolicyPage() {
                       <div>
                         <h3 className="font-semibold text-foreground">Trial Period</h3>
                         <p className="text-muted-foreground mt-1">
-                          All monthly plans include a 7-day free trial. You won&apos;t be charged until day 8.
+                          Every plan, monthly or annual, includes a 1-month free trial. You won&apos;t be charged until the trial ends.
                         </p>
                       </div>
                     </div>

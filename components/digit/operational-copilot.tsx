@@ -139,7 +139,7 @@ export function OperationalCopilot() {
         <div className="p-3 border-t border-border">
           <form onSubmit={(e) => { e.preventDefault(); sendMessage() }} className="flex gap-2">
             <Input placeholder="Ask me to process a document, extract data, or run a workflow..." value={input} onChange={(e) => setInput(e.target.value)} className="text-sm" />
-            <Button type="submit" size="icon" disabled={loading || !input.trim()}>
+            <Button aria-label="Send message" type="submit" size="icon" disabled={loading || !input.trim()}>
               <Send className="h-4 w-4" />
             </Button>
           </form>

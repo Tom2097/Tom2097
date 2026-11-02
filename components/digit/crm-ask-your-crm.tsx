@@ -93,7 +93,7 @@ export function CrmAskYourCrm() {
                   {msg.chart && (
                     <div className="mt-2 p-2 rounded-lg border border-border/50 bg-card min-w-0">
                       <div className="h-[200px]">
-                        <LiveChart data={msg.chart.data} dataKey={msg.chart.dataKey} type={msg.chart.type} height={200} color="hsl(var(--chart-2))" />
+                        <LiveChart data={msg.chart.data} dataKey={msg.chart.dataKey} type={msg.chart.type} height={200} color="var(--chart-2)" />
                       </div>
                     </div>
                   )}
@@ -131,7 +131,7 @@ export function CrmAskYourCrm() {
         <div className="p-3 border-t border-border shrink-0">
           <form onSubmit={(e) => { e.preventDefault(); sendMessage() }} className="flex gap-2">
             <Input placeholder="Ask about your CRM data..." value={input} onChange={(e) => setInput(e.target.value)} className="text-sm" />
-            <Button type="submit" size="icon" disabled={loading || !input.trim()}><Send className="h-4 w-4" /></Button>
+            <Button aria-label="Send question" type="submit" size="icon" disabled={loading || !input.trim()}><Send className="h-4 w-4" /></Button>
           </form>
         </div>
       </CardContent>

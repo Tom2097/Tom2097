@@ -12,11 +12,11 @@ export function ComplianceScoreChart({ data }: ComplianceScoreChartProps) {
   const chartConfig = {
     score: {
       label: "Score",
-      color: "hsl(var(--chart-1))",
+      color: "var(--chart-1)",
     },
     gaps: {
       label: "Gaps",
-      color: "hsl(var(--chart-2))",
+      color: "var(--chart-2)",
     },
   }
 

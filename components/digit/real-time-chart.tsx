@@ -47,7 +47,7 @@ export function RealTimeChart({
         <circle cx={props.cx} cy={props.cy} r={6} fill="#ef4444" />
       )
     }
-    return <circle cx={props.cx} cy={props.cy} r={3} fill="hsl(var(--chart-1))" />
+    return <circle cx={props.cx} cy={props.cy} r={3} fill="var(--chart-1)" />
   }, [getAnomalyForPoint])
 
   const anomalyAnnotations = useMemo(() => {
@@ -66,7 +66,7 @@ export function RealTimeChart({
   }, [anomalies, data])
 
   const chartConfig = useMemo(() => ({
-    value: { label: dataKey, color: "hsl(var(--chart-1))" },
+    value: { label: dataKey, color: "var(--chart-1)" },
   }), [dataKey])
 
   const commonProps = useMemo(() => ({
@@ -81,8 +81,8 @@ export function RealTimeChart({
           <AreaChart {...commonProps}>
             <defs>
               <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1} />
+                <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.1} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" />
@@ -93,7 +93,7 @@ export function RealTimeChart({
             <Area
               type="monotone"
               dataKey={dataKey}
-              stroke="hsl(var(--chart-1))"
+              stroke="var(--chart-1)"
               fillOpacity={1}
               fill="url(#colorValue)"
             />
@@ -101,7 +101,7 @@ export function RealTimeChart({
               <Area
                 type="monotone"
                 dataKey="forecast"
-                stroke="hsl(var(--chart-2))"
+                stroke="var(--chart-2)"
                 strokeDasharray="5 5"
                 fillOpacity={0}
                 dot={false}
@@ -121,7 +121,7 @@ export function RealTimeChart({
             <Line
               type="monotone"
               dataKey={dataKey}
-              stroke="hsl(var(--chart-1))"
+              stroke="var(--chart-1)"
               strokeWidth={2}
               dot={dotRenderer}
             />
@@ -137,7 +137,7 @@ export function RealTimeChart({
             <ChartLegend content={<ChartLegendContent />} />
             <Bar
               dataKey={dataKey}
-              fill="hsl(var(--chart-1))"
+              fill="var(--chart-1)"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>

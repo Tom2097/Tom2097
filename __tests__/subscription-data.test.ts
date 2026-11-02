@@ -2,8 +2,9 @@ import { describe, it, expect } from "vitest"
 import { pricingTiers, addOns, platformModules } from "@/lib/subscription-data"
 
 describe("pricingTiers", () => {
-  it("has three tiers", () => {
-    expect(pricingTiers.length).toBe(3)
+  it("mirrors the single plan catalog", () => {
+    expect(pricingTiers.length).toBe(1)
+    expect(pricingTiers[0].id).toBe("digit_annual")
   })
 
   it("each tier has required fields", () => {
@@ -15,12 +16,11 @@ describe("pricingTiers", () => {
     }
   })
 
-  it("starter has lowest monthly price", () => {
-    expect(pricingTiers[0].monthlyPrice).toBeLessThan(pricingTiers[1].monthlyPrice)
-  })
-
-  it("enterprise has highest monthly price", () => {
-    expect(pricingTiers[2].monthlyPrice).toBeGreaterThan(pricingTiers[1].monthlyPrice)
+  it("derives limits from the plan instead of a 1-user/1-module placeholder", () => {
+    expect(pricingTiers[0].limits.users).toBe("unlimited")
+    expect(pricingTiers[0].limits.modules).toBe("all")
+    expect(pricingTiers[0].monthlyPrice).toBe(44.49)
+    expect(pricingTiers[0].annualPrice).toBe(499)
   })
 })
 

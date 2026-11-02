@@ -198,7 +198,7 @@ export function CrmPipelineBoard() {
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">New Deal</h3>
-                <Button variant="ghost" size="icon" onClick={() => setNewDealOpen(false)}><X className="h-4 w-4" /></Button>
+                <Button aria-label="Close" variant="ghost" size="icon" onClick={() => setNewDealOpen(false)}><X className="h-4 w-4" /></Button>
               </div>
               <div className="space-y-3">
                 <Input placeholder="Deal title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />

@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
-import { ArrowRight, ArrowLeft, Check, Loader2, Building2, User, Shield, Key, Camera, Upload, AlertTriangle } from "lucide-react"
+import { ArrowRight, ArrowLeft, Check, Loader2, Building2, User, Shield, Key, Camera, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -425,19 +425,6 @@ export default function SecureOnboardingPage() {
                        />
                       </div>
                     </div>
-                    {data.governmentIdType && (
-                      <div className="space-y-2">
-                        <Label>Upload ID (Optional)</Label>
-                        <div className="flex gap-2">
-                         <Button variant="outline" className="gap-2">
-                           <Upload className="w-4 h-4" /> {t("auth.onboarding.uploadFront")}
-                         </Button>
-                         <Button variant="outline" className="gap-2">
-                           <Upload className="w-4 h-4" /> {t("auth.onboarding.uploadBack")}
-                         </Button>
-                        </div>
-                      </div>
-                    )}
                     <div className="text-center">
                        <Button
                          onClick={() => setIsCapturingPhoto(true)}

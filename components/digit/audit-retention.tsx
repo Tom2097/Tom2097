@@ -287,7 +287,7 @@ export function AuditRetention() {
                           />
                         </TableCell>
                         <TableCell>
-                          <Button
+                          <Button aria-label="Remove policy"
                             variant="ghost"
                             size="sm"
                             onClick={() => removePolicy(policy.id)}

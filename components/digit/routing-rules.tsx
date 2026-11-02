@@ -186,7 +186,7 @@ export function RoutingRules() {
                        → {workspace ? `${workspace.name} (${workspace.vertical})` : target}
                      </div>
                    </div>
-                   <Button
+                   <Button aria-label="Remove category rule"
                      variant="ghost"
                      size="sm"
                      onClick={() => removeCategoryRule(category)}
@@ -240,7 +240,7 @@ export function RoutingRules() {
                        → {workspace ? `${workspace.name} (${workspace.vertical})` : target}
                      </div>
                    </div>
-                   <Button
+                   <Button aria-label="Remove intent rule"
                      variant="ghost"
                      size="sm"
                      onClick={() => removeIntentRule(intent)}

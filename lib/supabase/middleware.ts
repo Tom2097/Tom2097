@@ -9,8 +9,21 @@ export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  const protectedPaths = ['/analytics', '/crm', '/operations', '/performance', '/resources', '/compliance', '/settings']
-  const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
+  // Every signed-in-only page. This used to list just the first 7 modules,
+  // so the rest of the (dashboard) group -- /intelligence, /approvals,
+  // /feedback, /bulk, /dsar, ... -- rendered app chrome (and, for
+  // /intelligence, placeholder metrics) to signed-out visitors instead of
+  // sending them to log in. Matched per path segment so e.g. "/billing"
+  // can't swallow an unrelated "/billing-faq".
+  const protectedPaths = [
+    '/analytics', '/approvals', '/benchmarks', '/billing', '/bulk', '/compliance',
+    '/configure', '/crm', '/design-partner', '/driver-analysis', '/dsar', '/esign',
+    '/feedback', '/healthcare', '/intelligence', '/materialized-views', '/onboarding',
+    '/operations', '/performance', '/platform', '/predictive-maintenance', '/recordings',
+    '/resources', '/settings', '/simulate', '/skill-matrix', '/training',
+  ]
+  const pathname = request.nextUrl.pathname
+  const isProtectedPath = protectedPaths.some(path => pathname === path || pathname.startsWith(`${path}/`))
 
   // Fail closed: if auth is not configured we cannot verify any session, so
   // protected pages and the authenticated API surface must be blocked rather

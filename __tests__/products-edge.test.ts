@@ -11,7 +11,7 @@ describe("SUBSCRIPTION_PLANS pricing consistency", () => {
 
 describe("getPlanById edge cases", () => {
   it("is case-sensitive", () => {
-    expect(getPlanById("Starter")).toBeUndefined()
-    expect(getPlanById("starter")).toBeDefined()
+    expect(getPlanById("DIGIT_ANNUAL")).toBeUndefined()
+    expect(getPlanById("digit_annual")).toBeDefined()
   })
 })

@@ -141,7 +141,8 @@
       "alerts": "alerts",
       "today": "today",
       "nodes": "nodes",
-      "comingSoon": "{feature} — coming soon"
+      "comingSoon": "{feature} — coming soon",
+      "idle": "Idle"
     }
   },
   "resources": {
@@ -647,7 +648,12 @@
       "delete": "Delete",
       "deleteConfirm": "Are you sure you want to delete this contact?",
       "error": "An error occurred",
-      "unnamedContact": "Unnamed contact"
+      "unnamedContact": "Unnamed contact",
+      "allStatuses": "All statuses",
+      "emailContact": "Email contact",
+      "callContact": "Call contact",
+      "moreActions": "More actions",
+      "noStatusMatches": "No contacts with this status."
     },
     "aiSdr": {
       "title": "AI SDR — Research Assistant",
@@ -722,7 +728,7 @@
         "trialing": "trialing"
       },
       "price": "{{price}}/month",
-      "trialPeriod": "7-day free trial with full access",
+      "trialPeriod": "1-month free trial with full access",
       "planFeatures": "Plan Features",
       "nextBillingDate": "Next billing date: {{date}}",
       "cancelAtPeriodEnd": "Cancels at end of billing period",
@@ -957,7 +963,12 @@
       "encrypted": "Your data is encrypted and secure",
       "alreadyHaveAccount": "Already have an account?",
       "signIn": "Sign in",
-      "termsAgree": "By signing up, you agree to our Terms of Service and Privacy Policy"
+      "termsAgree": "By signing up, you agree to our Terms of Service and Privacy Policy",
+      "termsBefore": "By signing up, you agree to our ",
+      "termsLink": "Terms of Service",
+      "termsMiddle": " and ",
+      "privacyLink": "Privacy Policy",
+      "termsAfter": "."
     },
     "signUpSuccess": {
       "checkYourEmail": "Check your email",
@@ -1071,7 +1082,7 @@
     },
     "subscription": {
       "trial": {
-        "title": "You're on a 7-day free trial",
+        "title": "You're on a 1-month free trial",
         "ends": "Trial ends",
         "upgradeToUnlock": "Upgrade to unlock all features",
         "upgradeNow": "Upgrade Now"
@@ -1793,7 +1804,7 @@
   "billingPlans": {
     "page": {
       "title": "Billing & Plans",
-      "subtitle": "Manage your subscription, trials, and discounts",
+      "subtitle": "Your plan, free trial and discount codes",
       "freeTrialActive": "Free Trial Active",
       "daysRemaining": "{count} days remaining",
       "expiringToday": "Expiring today",
@@ -1806,7 +1817,7 @@
       "discount": "discount",
       "claimFoundingPlan": "Claim Founding Plan",
       "discountCode": "Discount Code",
-      "discountCodeDesc": "Enter a promo or founder discount code",
+      "discountCodeDesc": "Have a promo code? Check it here.",
       "enterDiscountCode": "Enter discount code",
       "apply": "Apply",
       "applying": "Applying...",
@@ -1885,7 +1896,12 @@
         "onPremise": "On-premise option",
         "aiAnalysis": "AI-powered analysis",
         "realTimeMonitoring": "Real-time monitoring"
-      }
+      },
+      "perYear": "/year",
+      "orMonthly": "or {price}/month, cancel anytime",
+      "manageSubscription": "Manage subscription",
+      "trialNote": "Every subscription starts with a 1-month free trial. No card is charged until the trial ends.",
+      "discountValidNote": "Valid code: {discount}% off. Email support@digit-ai.org with this code to have it applied to your subscription."
     }
   },
   "pricing": {
@@ -1894,7 +1910,7 @@
       "trustedBy": "Trusted by 500+ Enterprises",
       "titlePrefix": "Simple, Transparent",
       "titleHighlight": "Pricing",
-      "subtitle": "Choose the plan that scales with your business. All plans include a 7-day free trial with full access to features."
+      "subtitle": "One plan, every module. Every subscription starts with a 1-month free trial with full access to all features."
     },
     "toggle": {
       "monthly": "Monthly",
@@ -1990,7 +2006,7 @@
         "heading": "2. Accounts and Subscriptions",
         "intro": "You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. Subscriptions renew automatically unless canceled.",
         "monthlyLabel": "Monthly Plans:",
-        "monthlyText": "Monthly subscriptions include a 7-day free trial. You will not be charged until day 8. You may request a full refund within 30 days of your first payment. After this period, refunds are not available.",
+        "monthlyText": "Monthly subscriptions include a 1-month free trial. You will not be charged until the trial ends. You may request a full refund within 30 days of your first payment. After this period, refunds are not available.",
         "yearlyLabel": "Yearly Plans:",
         "yearlyText": "Yearly subscriptions are non-refundable. Yearly plans require a 3-month minimum commitment. You can cancel after 3 months, but no refund will be issued for any unused portion of the subscription.",
         "refundText": "Fees are billed in advance. You can request a refund for monthly plans within the 30-day window by visiting",
@@ -2410,11 +2426,11 @@
       "annual": "Annual",
       "trialPeriod": "Trial Period",
       "subtotal": "Subtotal",
-      "freeFor7Days": "Free for 7 days",
+      "freeFor7Days": "Free for 1 month",
       "tax": "Tax",
       "calculatedAtCheckout": "Calculated at checkout",
       "total": "Total",
-      "trialTitle": "7-Day Free Trial",
+      "trialTitle": "1-Month Free Trial",
       "guaranteeTitle": "30-Day Money Back",
       "annualPlanTitle": "Annual Plan",
       "cancelAnytimeTrial": "Cancel anytime during trial. No questions asked.",
@@ -2447,7 +2463,8 @@
       "downloadReceipt": "Download Receipt",
       "stillProcessingTitle": "Still processing your payment",
       "stillProcessingDesc": "This can take a minute. We're confirming your subscription with our payment provider -- check back shortly and your plan details will appear here.",
-      "stillProcessingEmail": "We'll also send a confirmation to {email}."
+      "stillProcessingEmail": "We'll also send a confirmation to {email}.",
+      "viewBilling": "View billing & invoices"
     }
   },
   "onboarding": {

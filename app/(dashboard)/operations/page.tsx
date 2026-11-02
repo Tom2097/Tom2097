@@ -22,12 +22,6 @@ import { Inbox, Beaker, BookTemplate, Columns, ArrowLeftRight, Brain, FileSearch
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { InView } from "@/components/motion-primitives/in-view"
 
-const sampleDocuments = [
-  { id: "doc-1", name: "Invoice_Acme_2024.pdf", content: "INVOICE #INV-001\nDate: 2024-01-15\nVendor: Acme Corp\nTotal: $12,500.00\nItems:\n  - Widget A x 50: $5,000\n  - Widget B x 30: $7,500" },
-  { id: "doc-2", name: "Contract_ABC_License.pdf", content: "SOFTWARE LICENSE AGREEMENT\nParty: ABC Software Inc.\nTerm: 12 months\nFee: $24,000/year\nAuto-renew: Yes\nGoverning Law: Delaware" },
-  { id: "doc-3", name: "Inspection_Report_Q1.pdf", content: "INSPECTION REPORT\nFacility: Plant 7\nDate: 2024-03-01\nInspector: J. Smith\nFindings: 3 minor, 1 major\nCorrective actions: Pending" },
-]
-
 export default function OperationsPage() {
   const { t } = useI18n()
   const [selectedDoc, setSelectedDoc] = useState<{ id: string; name: string; content?: string; extracted_entities?: Record<string, unknown> } | null>(null)
@@ -277,7 +271,7 @@ export default function OperationsPage() {
             </TabsContent>
 
             <TabsContent value="compare" className="mt-4">
-              <CompareView documents={feedItems.length > 0 ? feedItems : sampleDocuments} />
+              <CompareView documents={feedItems} />
             </TabsContent>
 
             <TabsContent value="intelligence" className="mt-4">

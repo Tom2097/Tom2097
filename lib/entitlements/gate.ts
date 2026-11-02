@@ -1,4 +1,4 @@
-import { getPlanById } from "@/lib/products"
+import { resolvePlan } from "@/lib/products"
 
 export type FeatureId =
   | "ai_intelligence"
@@ -48,7 +48,7 @@ const ALL_FEATURES: FeatureId[] = [
  * tiers themselves.
  */
 export function getEntitlements(tierId: string): FeatureId[] {
-  const plan = getPlanById(tierId)
+  const plan = resolvePlan(tierId)
   if (!plan) return []
   return ALL_FEATURES
 }

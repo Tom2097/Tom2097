@@ -399,7 +399,7 @@ export default function FeedbackPage() {
                 <XAxis dataKey="name" fontSize={12} />
                 <YAxis fontSize={12} allowDecimals={false} />
                 <ChartTooltip />
-                <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="value" fill="var(--primary)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>

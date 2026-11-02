@@ -97,7 +97,7 @@ export function OcrResults({ result, documentName, onReRun, reRunning }: OcrResu
               <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleCopy}>
                 {copied ? <Check className="w-4 h-4 text-chart-2" /> : <Copy className="w-4 h-4" />}
               </Button>
-              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleDownload}>
+              <Button aria-label="Download results" size="icon" variant="ghost" className="h-8 w-8" onClick={handleDownload}>
                 <Download className="w-4 h-4" />
               </Button>
             </div>

@@ -325,7 +325,7 @@ export default function RecommendationsPage() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button
+                                    <Button aria-label="Mark as helpful"
                                       size="sm"
                                       variant={feedback[rec.moduleId] === "helpful" ? "default" : "ghost"}
                                       className="h-8 w-8 p-0"
@@ -343,7 +343,7 @@ export default function RecommendationsPage() {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Button
+                                    <Button aria-label="Mark as not helpful"
                                       size="sm"
                                       variant={feedback[rec.moduleId] === "not-helpful" ? "destructive" : "ghost"}
                                       className="h-8 w-8 p-0"

@@ -178,7 +178,7 @@ export function SettingsPanel() {
                     <p className="text-xs text-muted-foreground">Customize your experience</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+                <Button aria-label="Close settings" variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
                   <X className="h-5 w-5" />
                 </Button>
               </div>

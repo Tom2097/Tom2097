@@ -193,7 +193,7 @@ export function UsageMonitor() {
               <AlertTriangle className="h-5 w-5" /> Usage Limits Exceeded
             </CardTitle>
             <CardDescription>
-              You have exceeded your plan&apos;s usage limits. Consider upgrading your plan or reducing usage.
+              You have exceeded your plan&apos;s fair-use limits. Contact support to have them raised.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -210,9 +210,14 @@ export function UsageMonitor() {
                 </div>
               ))}
             </div>
+            {/* Was "Reduce Usage" + "Upgrade Plan", neither with a handler.
+                There's a single plan now (no tier to upgrade to), so the
+                real path for an org that outgrows the fair-use limits is
+                support. */}
             <div className="mt-4 flex gap-2">
-              <Button variant="outline">Reduce Usage</Button>
-              <Button>Upgrade Plan</Button>
+              <Button asChild>
+                <a href="mailto:support@digit-ai.org?subject=Raise%20usage%20limits">Contact support to raise limits</a>
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -233,7 +238,7 @@ export function UsageMonitor() {
                   dataKey="usage"
                   type="line"
                   height={100}
-                  color="hsl(var(--primary))"
+                  color="var(--primary)"
                 />
               </ChartContainer>
             </div>

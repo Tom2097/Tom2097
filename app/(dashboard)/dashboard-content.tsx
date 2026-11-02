@@ -13,7 +13,7 @@ import { ChartContainer } from '@/components/digit/live-chart'
 import { LiveChart } from '@/components/digit/live-chart'
 import { RealTimeChart } from '@/components/digit/real-time-chart'
 import { modules } from '@/lib/modules'
-import { getPlanById, formatPrice } from '@/lib/products'
+import { resolvePlan, formatPrice } from '@/lib/products'
 import { useI18n } from '@/components/providers/i18n-provider'
 import { HarWidget } from '@/components/hitl/har-widget'
 
@@ -51,7 +51,7 @@ export default function DashboardContent({
   const isTrialing = subscription?.status === 'trialing'
   const isActive = subscription?.status === 'active'
   const hasSubscription = isTrialing || isActive
-  const plan = subscription ? getPlanById(subscription.plan_id) : null
+  const plan = subscription ? resolvePlan(subscription.plan_id) : null
 
   const accessibleModuleCount = plan?.limits.modules || 1
   const accessibleModules = modules.slice(0, accessibleModuleCount)

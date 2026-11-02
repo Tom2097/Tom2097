@@ -405,7 +405,7 @@ export function IndustryIntelligenceHub() {
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-muted-foreground">Helpful?</span>
-                                <Button
+                                <Button aria-label="Mark as helpful"
                                   size="sm"
                                   variant={feedback[insight.id] === "helpful" ? "default" : "ghost"}
                                   className="h-7 w-7 p-0"
@@ -413,7 +413,7 @@ export function IndustryIntelligenceHub() {
                                 >
                                   <ThumbsUp className="w-3 h-3" />
                                 </Button>
-                                <Button
+                                <Button aria-label="Mark as not helpful"
                                   size="sm"
                                   variant={feedback[insight.id] === "not-helpful" ? "destructive" : "ghost"}
                                   className="h-7 w-7 p-0"

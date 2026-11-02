@@ -12,10 +12,15 @@ export default async function AdminPlatformLayout({
   children,
 }: AdminPlatformLayoutProps) {
   const { t } = await getTranslator()
-  const user = await getAuthenticatedUser()
-  
-  if (!user) {
-    redirect("/login")
+  // getAuthenticatedUser() throws (it never returns null) when there's no
+  // session, so the old `if (!user) redirect("/login")` was unreachable: a
+  // signed-out visitor got a 500 "Something went wrong" page instead -- and
+  // /login doesn't exist anyway (the route is /auth/login).
+  let user
+  try {
+    user = await getAuthenticatedUser()
+  } catch {
+    redirect("/auth/login")
   }
   
   const isAdmin = await isPlatformAdmin(user.id)

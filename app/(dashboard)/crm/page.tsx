@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation'
-import { Users, Target, Phone, Mail, FileText, Heart, BarChart3, Sparkles, Zap, AlertTriangle, MessageSquare, Copy, UserPlus, Sun, Globe, DollarSign, TrendingUp as TrendingUpIcon, Layers, Ticket, RefreshCw, BarChart2, MessageCircle, Brain, Activity } from 'lucide-react'
+import { Users, Target, Phone, Mail, FileText, Heart, BarChart3, Sparkles, Zap, AlertTriangle, MessageSquare, Copy, UserPlus, Sun, Globe, DollarSign, TrendingUp as TrendingUpIcon, Layers, Ticket, BarChart2, MessageCircle, Brain, Activity } from 'lucide-react'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
 import { ChartContainer } from '@/components/digit/live-chart'
 import { LiveChart } from '@/components/digit/live-chart'
 import { RealTimeChart } from '@/components/digit/real-time-chart'
-import { Button } from '@/components/ui/button'
+import { RefreshButton } from '@/components/digit/refresh-button'
 import { Badge } from '@/components/ui/badge'
 import { CrmContactsManager, type CrmContactRow } from '@/components/digit/crm-contacts-manager'
 import { CrmLeadInbox } from '@/components/digit/crm-lead-inbox'
@@ -113,10 +113,7 @@ export default async function CRMPage() {
            <h2 className="text-2xl font-bold text-foreground">{t("crm.page.intelligenceTitle")}</h2>
            <p className="text-sm text-muted-foreground">{t("crm.page.intelligenceSubtitle")}</p>
          </div>
-         <Button variant="ghost" size="sm" className="gap-1 text-sm">
-           <RefreshCw className="h-3 w-3" />
-           {t("crm.page.refresh")}
-         </Button>
+         <RefreshButton label={t("crm.page.refresh")} />
        </div>
 
        {/* Metrics */}

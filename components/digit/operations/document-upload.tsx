@@ -213,7 +213,7 @@ export function DocumentUpload() {
                 <p className="truncate text-sm text-foreground">{doc.name}</p>
                 <p className="text-xs text-muted-foreground">{fmtSize(doc.file_size)} &middot; {fmtDate(doc.created_at)}</p>
               </div>
-              <button onClick={() => deleteDoc(doc.id)} className="shrink-0 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+              <button aria-label="Delete document" onClick={() => deleteDoc(doc.id)} className="shrink-0 text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
             </div>
           ))}
         </div>
@@ -229,7 +229,7 @@ export function DocumentUpload() {
         <div className="rounded-lg border border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5">
           <div className="flex items-center justify-between border-b border-emerald-500/20 px-4 py-3">
             <div className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-emerald-500" /><span className="text-sm font-medium text-foreground">Report</span></div>
-            <button onClick={() => setReport(null)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            <button aria-label="Close report" onClick={() => setReport(null)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
           </div>
           <div className="p-4 space-y-3">
             <p className="text-sm text-muted-foreground">{report.summary}</p>

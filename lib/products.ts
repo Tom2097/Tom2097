@@ -80,6 +80,22 @@ export function getPlanById(id: string): SubscriptionPlan | undefined {
 }
 
 /**
+ * Resolves the plan an EXISTING subscription row is on. There is only one
+ * product, but subscriptions rows created under the old catalogs (or by the
+ * old trial flow) still carry legacy plan ids like "pro", "pro-trial" or
+ * "enterprise" that getPlanById() doesn't know -- which made the dashboard
+ * lock 5 of 6 modules, Settings render "{trialing} Plan", and entitlements
+ * deny every gated feature for those orgs. Any non-empty plan id on a real
+ * subscription therefore resolves to the one real plan. Use getPlanById()
+ * (strict) for validating untrusted input, and this for reading a
+ * subscription that already exists.
+ */
+export function resolvePlan(id: string | null | undefined): SubscriptionPlan | undefined {
+  if (!id) return undefined
+  return getPlanById(id) ?? SUBSCRIPTION_PLANS[0]
+}
+
+/**
  * Validates an untrusted, caller-supplied plan id against the real plan
  * catalog, falling back to the single real plan rather than trusting it
  * blindly. Kept even though there's only one plan now -- signup/callback

@@ -90,12 +90,12 @@ export function CrmConversationIntelligence() {
                     <Badge variant="secondary" className="text-[10px]">{t.scenario}</Badge>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
+                    <Button aria-label="Mark as helpful" size="sm" variant="ghost" className="h-6 w-6 p-0"
                       onClick={() => setFeedback((prev) => ({ ...prev, [t.id]: prev[t.id] === "up" ? null : "up" }))}
                     >
                       <ThumbsUp className={cn("h-3 w-3", feedback[t.id] === "up" && "text-green-500 fill-green-500")} />
                     </Button>
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
+                    <Button aria-label="Mark as not helpful" size="sm" variant="ghost" className="h-6 w-6 p-0"
                       onClick={() => setFeedback((prev) => ({ ...prev, [t.id]: prev[t.id] === "down" ? null : "down" }))}
                     >
                       <ThumbsDown className={cn("h-3 w-3", feedback[t.id] === "down" && "text-red-500 fill-red-500")} />

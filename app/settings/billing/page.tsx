@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
-import { getPlanById, formatPrice, ANNUAL_PRICE_CENTS, MONTHLY_PRICE_CENTS } from "@/lib/products"
+import { resolvePlan, formatPrice, ANNUAL_PRICE_CENTS, MONTHLY_PRICE_CENTS } from "@/lib/products"
 import { createBillingPortalSession } from "@/app/actions/stripe"
 import { useRouter } from "next/navigation"
 import {
@@ -47,6 +47,8 @@ export default function BillingSettingsPage() {
   const [switchDialogOpen, setSwitchDialogOpen] = useState(false)
   const [isSwitching, setIsSwitching] = useState(false)
   const [switchError, setSwitchError] = useState<string | null>(null)
+  const [portalError, setPortalError] = useState<string | null>(null)
+  const [openingPortal, setOpeningPortal] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -90,13 +92,28 @@ export default function BillingSettingsPage() {
   }, [router])
 
   const handleManageBilling = async () => {
+    setPortalError(null)
+    setOpeningPortal(true)
     try {
-      const { url } = await createBillingPortalSession()
-      if (url) {
-        window.location.href = url
+      const result = await createBillingPortalSession()
+      if (result.url !== null) {
+        window.location.href = result.url
+        return
       }
-    } catch (err) {
-      setError(t("settings.billing.failedPortal"))
+      if (result.reason === "no_billing_account") {
+        // A trial without a Stripe customer yet has nothing to manage in the
+        // portal -- send them to checkout to add a payment method instead of
+        // failing.
+        router.push("/checkout")
+        return
+      }
+      setPortalError(result.message)
+    } catch {
+      // Inline, not setError(): setError() replaces the entire page with an
+      // error screen, which is far too heavy for a failed button click.
+      setPortalError(t("settings.billing.failedPortal"))
+    } finally {
+      setOpeningPortal(false)
     }
   }
 
@@ -158,7 +175,7 @@ export default function BillingSettingsPage() {
     }
   }
 
-  const plan = subscription ? getPlanById(subscription.plan_id) : null
+  const plan = subscription ? resolvePlan(subscription.plan_id) : null
   const isTrial = subscription?.status === "trialing"
   const isSplit = subscription?.billing_mode === "split"
   const isMonthly = subscription?.billing_interval === "month"
@@ -276,11 +293,17 @@ export default function BillingSettingsPage() {
             <Card className="p-6 mb-8">
               <h3 className="text-lg font-semibold text-foreground mb-6">{t("settings.billing.billingActions")}</h3>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button onClick={handleManageBilling} className="gap-2">
-                  <CreditCard className="w-4 h-4" />
+                <Button onClick={handleManageBilling} className="gap-2" disabled={openingPortal}>
+                  {openingPortal ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
                   Manage Billing
                 </Button>
               </div>
+              {portalError && (
+                <p className="mt-3 flex items-center gap-2 text-sm text-destructive">
+                  <AlertCircle className="w-4 h-4" />
+                  {portalError}
+                </p>
+              )}
             </Card>
           </motion.div>
 

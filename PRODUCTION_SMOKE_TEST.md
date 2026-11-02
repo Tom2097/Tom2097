@@ -42,19 +42,20 @@ This document provides step-by-step instructions to verify that the complete sig
 
 ---
 
-## Test Case 3: Navigate to Pricing and Select a Plan
+## Test Case 3: Pricing and Checkout Entry
+
+There is a single plan: **DigiT -- $499/year or $44.49/month**, with a **1-month free trial**. There is no `/pricing` page; pricing is the `#pricing` section of the homepage.
 
 ### Steps:
-1. Click the **"Pricing"** link or navigate to `/pricing`
-2. Review the three plans shown: **Free**, **Pro**, **Enterprise**
-3. Click **"Upgrade"** on the **Pro** plan (or any paid plan)
-4. Verify you are taken to the **Checkout** page at `/checkout/[planId]`
+1. On the homepage click **"Pricing"** in the nav (or **"View pricing"**) -- the page scrolls to the pricing section
+2. Verify it shows one plan at **$499/year or $44.49/month** and "1-month free trial"
+3. Click **"Start free trial"** on the pricing card
+4. Signed out: you land on `/auth/login?redirect=/checkout`. Signed in: you land on `/checkout`
 
 ### Expected Outcome:
-- ✅ Pricing page loads cleanly
-- ✅ Clicking upgrade takes you to `/checkout/pro` (or equivalent)
-- ✅ No errors or blank pages
-- ❌ If checkout page shows an error or is blank, note the exact message
+- ✅ Pricing shows the single DigiT plan and a 1-month trial (no Free/Pro/Enterprise tiers, no "7-day" wording)
+- ✅ "Start free trial" reaches checkout (directly or via login)
+- ❌ If any page still mentions Starter/Professional/Enterprise tiers or a 7-day trial, note where
 
 ---
 
@@ -65,7 +66,7 @@ This document provides step-by-step instructions to verify that the complete sig
 2. Scroll down to the **Stripe payment form**
 3. Enter **Stripe test card details:**
    - Card Number: `4242 4242 4242 4242`
-   - Expiry: Any future date (e.g., `12/25`)
+   - Expiry: Any future date (e.g., `12/30`)
    - CVC: Any 3 digits (e.g., `123`)
    - ZIP: Any 5 digits (e.g., `12345`)
 4. Click **"Complete Payment"** or **"Subscribe"**
@@ -86,6 +87,8 @@ This document provides step-by-step instructions to verify that the complete sig
 1. From the success page, click **"Go to Dashboard"** or navigate to `/` while logged in
 2. Verify the **main dashboard** loads with real data:
    - Subscription card shows your active plan
+   - "Enterprise AI Modules" says you have access to **6 of 6** modules (none locked)
+   - Settings shows "**DigiT Plan**" (not "{trialing} Plan") and "1-month free trial"
    - Revenue/activity charts are visible
    - No errors in the browser console
 3. Navigate to **CRM** (`/crm`) — should show "No contacts yet" (honest empty state, not fake data)
@@ -170,12 +173,12 @@ When reporting results, provide:
 Test Date: [date]
 Browser: [Chrome/Safari/Firefox + version]
 Account Email: [test email used]
-Plan Selected: [Free/Pro/Enterprise]
+Billing Interval: [Annual / Monthly]
 
 Test Case Results:
 1. Signup: ✅ / ❌ [notes]
 2. Navbar Auth: ✅ / ❌ [notes]
-3. Pricing: ✅ / ❌ [notes]
+3. Pricing & Checkout Entry: ✅ / ❌ [notes]
 4. Checkout Payment: ✅ / ❌ [notes]
 5. Dashboard: ✅ / ❌ [notes]
 6. Email: ✅ / ❌ [notes]

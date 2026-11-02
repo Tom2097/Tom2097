@@ -50,11 +50,11 @@ export function ExtraSeatsPurchase() {
 
       <div className="flex items-center gap-6 mb-6">
         <div className="flex items-center gap-3">
-          <Button size="icon" variant="outline" onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1}>
+          <Button aria-label="Decrease seats" size="icon" variant="outline" onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1}>
             <Minus className="w-4 h-4" />
           </Button>
           <span className="text-2xl font-bold text-foreground w-12 text-center">{quantity}</span>
-          <Button size="icon" variant="outline" onClick={() => setQuantity(Math.min(100, quantity + 1))} disabled={quantity >= 100}>
+          <Button aria-label="Increase seats" size="icon" variant="outline" onClick={() => setQuantity(Math.min(100, quantity + 1))} disabled={quantity >= 100}>
             <Plus className="w-4 h-4" />
           </Button>
         </div>

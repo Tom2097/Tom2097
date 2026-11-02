@@ -244,7 +244,7 @@ export function ConnectorManager() {
                       {syncing === connector.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                     </Button>
                   )}
-                  <Button size="icon" variant="ghost" onClick={() => handleDelete(connector.id)}>
+                  <Button aria-label="Delete connector" size="icon" variant="ghost" onClick={() => handleDelete(connector.id)}>
                     <Trash2 className="w-4 h-4 text-destructive" />
                   </Button>
                 </div>

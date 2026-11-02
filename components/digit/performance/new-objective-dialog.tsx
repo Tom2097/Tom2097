@@ -27,6 +27,10 @@ export function NewObjectiveDialog({ label }: { label: string }) {
       setError("Name, start date, and end date are required")
       return
     }
+    if (form.end_date < form.start_date) {
+      setError("End date must be on or after the start date")
+      return
+    }
     setSaving(true)
     setError(null)
     try {
@@ -60,8 +64,8 @@ export function NewObjectiveDialog({ label }: { label: string }) {
         </DialogHeader>
         <div className="space-y-3">
           <div>
-            <Label htmlFor="obj-name">Name</Label>
-            <Input id="obj-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Increase quarterly revenue" />
+            <Label htmlFor="obj-name">Name <span className="text-destructive">*</span></Label>
+            <Input id="obj-name" required aria-required="true" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Increase quarterly revenue" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -75,12 +79,12 @@ export function NewObjectiveDialog({ label }: { label: string }) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="obj-start">Start date</Label>
-              <Input id="obj-start" type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
+              <Label htmlFor="obj-start">Start date <span className="text-destructive">*</span></Label>
+              <Input id="obj-start" type="date" required aria-required="true" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
             </div>
             <div>
-              <Label htmlFor="obj-end">End date</Label>
-              <Input id="obj-end" type="date" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
+              <Label htmlFor="obj-end">End date <span className="text-destructive">*</span></Label>
+              <Input id="obj-end" type="date" required aria-required="true" min={form.start_date || undefined} value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
             </div>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}

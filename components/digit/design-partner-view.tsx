@@ -251,7 +251,7 @@ export function DesignPartnerView() {
                         <TableCell className="text-sm">{partner.lastTouchpoint}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            <Button size="sm" variant="outline" onClick={() => {
+                            <Button aria-label="Add note" size="sm" variant="outline" onClick={() => {
                               setSelectedPartner(partner)
                               setNotesDialogOpen(true)
                             }}>

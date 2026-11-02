@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   HelpCircle, 
@@ -39,8 +39,8 @@ const faqs: FAQItem[] = [
     category: "Getting Started"
   },
   {
-    question: "What's included in each subscription plan?",
-    answer: "Starter includes 1 module, 5 users, and 100K data points. Professional includes 3 modules, 25 users, and 1M data points with API access. Enterprise includes all 6 modules, unlimited users, and custom integrations.",
+    question: "What's included in my subscription?",
+    answer: "There is one plan, DigiT, at $499/year or $44.49/month (cancel anytime). It includes all 6 workspace modules, unlimited team members (fair use), every AI capability, the Integration Hub and API, and SSO. Every subscription starts with a 1-month free trial.",
     category: "Billing"
   },
   {
@@ -50,17 +50,17 @@ const faqs: FAQItem[] = [
   },
   {
     question: "Can I invite team members?",
-    answer: "Yes! Go to Settings > Team and click 'Invite Member'. You can assign roles (Admin, Analyst, Viewer) to control access levels. Your plan determines the maximum number of team members.",
+    answer: "Yes! Go to Settings > Team and click 'Invite Member'. You can assign roles (Admin, Analyst, Viewer) to control access levels. Your plan includes unlimited team members (fair use).",
     category: "Team Management"
   },
   {
     question: "How secure is my data?",
-    answer: "DigiT is SOC 2 Type II certified, GDPR compliant, and uses AES-256 encryption for data at rest and TLS 1.3 for data in transit. We never share your data with third parties.",
+    answer: "All data is encrypted in transit with TLS and at rest with AES-256. Row-level security keeps each organization's data isolated, and privileged actions are recorded in an audit log. See the Security page for details.",
     category: "Security"
   },
   {
-    question: "How do I upgrade my plan?",
-    answer: "Go to Settings > Subscription and click 'Upgrade Plan'. You can also visit the Pricing page to compare plans. Upgrades take effect immediately and are prorated.",
+    question: "How do I manage my subscription?",
+    answer: "Go to Settings > Billing. From there you can add a payment method, switch from monthly to annual billing, or cancel. There is a single plan, so there are no tiers to upgrade between.",
     category: "Billing"
   },
   {
@@ -80,7 +80,7 @@ const categories = ["All", "Getting Started", "Features", "AI Features", "Billin
 const quickLinks = [
   { title: "Intelligence", icon: Sparkles, href: "/intelligence", description: "AI-powered insights and analytics" },
   { title: "Settings", icon: Headphones, href: "/settings", description: "Manage account and preferences" },
-  { title: "Pricing", icon: ExternalLink, href: "/#pricing", description: "Compare plans and features", external: true },
+  { title: "Pricing", icon: ExternalLink, href: "/#pricing", description: "Plan and pricing details", external: true },
   { title: "Security", icon: CheckCircle2, href: "/security", description: "Security overview and compliance" },
 ]
 
@@ -90,7 +90,7 @@ const helpTopics = [
   { title: "Operations Dashboard", category: "Documentation", icon: Book, href: "/operations" },
   { title: "CRM Workspace", category: "Features", icon: MessageCircle, href: "/crm" },
   { title: "Invite Team Members", category: "Team", icon: MessageCircle, href: "/settings" },
-  { title: "Upgrade Subscription", category: "Billing", icon: ExternalLink, href: "/settings/billing" },
+  { title: "Manage Subscription", category: "Billing", icon: ExternalLink, href: "/settings/billing" },
   { title: "Compliance Center", category: "Security", icon: FileQuestion, href: "/compliance" },
   { title: "Export Reports", category: "Features", icon: Book, href: "/analytics" },
   { title: "Performance Metrics", category: "Features", icon: Video, href: "/performance" },
@@ -102,6 +102,14 @@ const helpTopics = [
 
 export function HelpSupport() {
   const [isOpen, setIsOpen] = useState(false)
+
+  // Custom slide-over (not a Radix Sheet), so it had no Escape handling.
+  useEffect(() => {
+    if (!isOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setIsOpen(false) }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [isOpen])
   const [activeTab, setActiveTab] = useState<"home" | "faq" | "contact" | "chat">("home")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
@@ -238,6 +246,9 @@ export function HelpSupport() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 400 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Help & Support"
               className="fixed right-0 top-0 z-50 h-full w-full max-w-md border-l border-border bg-background shadow-2xl"
             >
               {/* Header */}
@@ -251,7 +262,7 @@ export function HelpSupport() {
                     <p className="text-xs text-muted-foreground">We&apos;re here to help</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+                <Button variant="ghost" size="icon" aria-label="Close help" onClick={() => setIsOpen(false)}>
                   <X className="h-5 w-5" />
                 </Button>
               </div>
@@ -650,7 +661,7 @@ export function HelpSupport() {
                     {/* Chat Input */}
                     <div className="border-t border-border pt-4">
                       <div className="flex gap-2">
-                        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => {
+                        <Button aria-label="Attach file" variant="ghost" size="icon" className="shrink-0" onClick={() => {
                           const input = document.createElement("input")
                           input.type = "file"
                           input.onchange = async (e) => {
@@ -671,7 +682,7 @@ export function HelpSupport() {
                           onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
                           className="flex-1"
                         />
-                        <Button size="icon" onClick={handleSendChat}>
+                        <Button aria-label="Send message" size="icon" onClick={handleSendChat}>
                           <Send className="h-4 w-4" />
                         </Button>
                       </div>
@@ -791,7 +802,7 @@ export function HelpSupport() {
                                         ({(file.size / 1024).toFixed(1)} KB)
                                       </span>
                                     </div>
-                                    <button
+                                    <button aria-label="Remove attachment"
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation()

@@ -1,5 +1,6 @@
 'use client'
 
+import { MarkdownText } from "@/components/digit/markdown-text"
 import { useState, useRef, useEffect } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
@@ -145,7 +146,9 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
                         ? "bg-secondary text-secondary-foreground"
                         : "bg-primary text-primary-foreground"
                     )}>
-                      <div className="whitespace-pre-wrap break-words">{text}</div>
+                      {message.role === 'assistant'
+                        ? <MarkdownText text={text} />
+                        : <div className="whitespace-pre-wrap break-words">{text}</div>}
                     </div>
                   </div>
                 )

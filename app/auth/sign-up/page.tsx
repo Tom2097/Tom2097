@@ -313,7 +313,11 @@ function SignUpForm() {
               </Link>
             </p>
             <p className="text-xs text-muted-foreground text-center">
-              {t("auth.signUp.termsAgree")}
+              {t("auth.signUp.termsBefore")}
+              <Link href="/terms" target="_blank" className="underline hover:text-foreground">{t("auth.signUp.termsLink")}</Link>
+              {t("auth.signUp.termsMiddle")}
+              <Link href="/privacy" target="_blank" className="underline hover:text-foreground">{t("auth.signUp.privacyLink")}</Link>
+              {t("auth.signUp.termsAfter")}
             </p>
           </CardFooter>
         </form>

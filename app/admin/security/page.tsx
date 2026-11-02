@@ -368,7 +368,7 @@ export default function SecurityPage() {
                         {new Date(entry.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon-sm" onClick={() => removeAllowlistEntry(entry.id)}>
+                        <Button aria-label="Remove allowlist entry" variant="ghost" size="icon-sm" onClick={() => removeAllowlistEntry(entry.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </TableCell>
@@ -429,7 +429,7 @@ export default function SecurityPage() {
                           {session.user_agent?.slice(0, 50) || "—"}
                         </TableCell>
                         <TableCell>
-                          <Button variant="ghost" size="icon-sm" onClick={() => revokeSession(session.id)}>
+                          <Button aria-label="Revoke session" variant="ghost" size="icon-sm" onClick={() => revokeSession(session.id)}>
                             <LogOut className="h-4 w-4 text-destructive" />
                           </Button>
                         </TableCell>

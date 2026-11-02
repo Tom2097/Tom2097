@@ -98,6 +98,20 @@ export function DocumentFeed({ onSelectDoc }: DocumentFeedProps) {
 
   if (loading) return <div className="p-8 text-center text-muted-foreground text-sm">Loading feed...</div>
 
+  // Without this the tab rendered a completely blank panel for any org that
+  // hasn't ingested a document yet.
+  if (items.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/60 py-12 text-center">
+        <FileText className="h-8 w-8 text-muted-foreground" />
+        <div>
+          <p className="font-medium text-foreground">No documents yet</p>
+          <p className="text-sm text-muted-foreground">Upload a file, forward an email, or add a URL above and it will appear here.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <TooltipProvider>
       <div className="divide-y divide-border">

@@ -342,7 +342,7 @@ export function CrmSalesAnalytics() {
                      dataKey="value"
                     type="bar"
                     height={300}
-                    color="hsl(var(--primary))"
+                    color="var(--primary)"
                      xAxisKey="stage"
                   />
                 </ChartContainer>
@@ -457,7 +457,7 @@ export function CrmSalesAnalytics() {
                     dataKey="accuracy"
                     type="line"
                     height={300}
-                    color="hsl(var(--primary))"
+                    color="var(--primary)"
                     xAxisKey="period"
                   />
                 </ChartContainer>
@@ -505,7 +505,7 @@ export function CrmSalesAnalytics() {
                     dataKey="count"
                     type="line"
                     height={300}
-                    color="hsl(var(--primary))"
+                    color="var(--primary)"
                     xAxisKey="date"
                   />
                 </ChartContainer>
@@ -524,7 +524,7 @@ export function CrmSalesAnalytics() {
                     dataKey="value"
                     type="area"
                     height={300}
-                    color="hsl(var(--primary))"
+                    color="var(--primary)"
                     xAxisKey="date"
                   />
                 </ChartContainer>

@@ -331,7 +331,7 @@ export default function SimulatePage() {
                   {pendingChanges.map((change, i) => (
                     <div key={i} className="flex items-center justify-between rounded bg-muted/50 px-3 py-1.5 text-sm">
                       <span><strong>{change.field}</strong>: {String(change.oldValue)} → {String(change.newValue)}</span>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveChange(i)}>
+                      <Button aria-label="Remove change" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveChange(i)}>
                         <Trash2 className="h-3 w-3 text-destructive" />
                       </Button>
                     </div>

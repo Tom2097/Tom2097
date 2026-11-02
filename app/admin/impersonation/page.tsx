@@ -170,7 +170,7 @@ export default function ImpersonationPage() {
                     placeholder={t("admin.impersonation.targetEmailPlaceholder")}
                     onKeyDown={(e) => e.key === "Enter" && searchUser()}
                   />
-                  <Button variant="outline" onClick={searchUser} type="button">
+                  <Button aria-label="Search user" variant="outline" onClick={searchUser} type="button">
                     <Search className="h-4 w-4" />
                   </Button>
                 </div>

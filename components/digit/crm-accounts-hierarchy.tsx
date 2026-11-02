@@ -23,7 +23,7 @@ function AccountNodeView({ node, depth = 0 }: { node: AccountNode; depth?: numbe
     <div>
       <div
         className={`flex items-center gap-2 p-2.5 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors ${depth > 0 ? "ml-6" : ""}`}
-        style={{ borderLeft: depth > 0 ? "2px solid hsl(var(--border))" : undefined }}
+        style={{ borderLeft: depth > 0 ? "2px solid var(--border)" : undefined }}
         onClick={() => node.children && setExpanded(!expanded)}
       >
         {node.children ? (
@@ -200,7 +200,7 @@ export function CrmAccountsHierarchy() {
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">New Account</h3>
-                <Button variant="ghost" size="icon" onClick={() => { setAddOpen(false); resetForm() }}><X className="h-4 w-4" /></Button>
+                <Button aria-label="Close" variant="ghost" size="icon" onClick={() => { setAddOpen(false); resetForm() }}><X className="h-4 w-4" /></Button>
               </div>
               <div className="space-y-3">
                 {formError && (

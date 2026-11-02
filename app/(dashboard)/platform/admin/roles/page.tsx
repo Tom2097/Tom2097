@@ -344,7 +344,7 @@ export default function RolesPage() {
                       <div className="flex gap-2">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button
+                            <Button aria-label="Edit role"
                               variant="ghost"
                               size="sm"
                               onClick={() => setCurrentRole(role)}
@@ -419,7 +419,7 @@ export default function RolesPage() {
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
-                        <Button
+                        <Button aria-label="Delete role"
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteRole(role.id)}

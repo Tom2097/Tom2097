@@ -11,7 +11,12 @@ export async function GET(_req: NextRequest) {
     
     const { data, error } = await supabase
       .from('datasets')
-      .select('id, name, description, created_at, updated_at, size')
+      // `datasets` has no updated_at column (see
+      // supabase/migrations/20260731000000_intelligence_remaining.sql) --
+      // selecting it made PostgREST reject the whole query, so this route
+      // 500'd for every org and the Predictive Modeling tab could never
+      // list datasets. Only select columns the migration guarantees.
+      .select('id, name, description, created_at, size, features, samples, columns')
       .eq('organization_id', organizationId)
       .order('created_at', { ascending: false })
     

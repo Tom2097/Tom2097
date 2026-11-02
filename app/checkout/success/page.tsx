@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { createClient } from "@/lib/supabase/client"
-import { getPlanById, formatPrice, type SubscriptionPlan } from "@/lib/products"
+import { resolvePlan, formatPrice, type SubscriptionPlan } from "@/lib/products"
 import { getCheckoutSessionPlanId } from "@/app/actions/stripe"
 
 interface SubscriptionData {
@@ -99,7 +99,7 @@ function CheckoutSuccessContent() {
         const sub = await readSubscription(profile.organization_id)
         const isSettled = sub?.status === "active" || sub?.status === "trialing"
         const matchesExpectedPlan = !expectedPlanId || sub?.plan_id === expectedPlanId
-        const resolvedPlan = sub ? getPlanById(sub.plan_id) : undefined
+        const resolvedPlan = sub ? resolvePlan(sub.plan_id) : undefined
 
         if (sub && isSettled && matchesExpectedPlan && resolvedPlan) {
           if (!cancelled) {
@@ -124,7 +124,7 @@ function CheckoutSuccessContent() {
     }
   }, [sessionId, expectedPlanFromUrl])
 
-  const plan: SubscriptionPlan | undefined = subscription ? getPlanById(subscription.plan_id) : undefined
+  const plan: SubscriptionPlan | undefined = subscription ? resolvePlan(subscription.plan_id) : undefined
 
   const quickStartSteps = [
     {
@@ -377,7 +377,7 @@ function CheckoutSuccessContent() {
             </Button>
             <p className="text-sm text-muted-foreground mt-4">
               {t("checkout.success.needHelp")}{" "}
-              <a href="mailto:support@digit-enterprise.com" className="text-primary hover:underline">
+              <a href="mailto:support@digit-ai.org" className="text-primary hover:underline">
                 {t("checkout.success.contactSupport")}
               </a>
             </p>
@@ -390,9 +390,14 @@ function CheckoutSuccessContent() {
             transition={{ delay: 0.7 }}
             className="mt-12 text-center"
           >
-            <Button variant="ghost" size="sm" className="text-muted-foreground">
-              <Download className="w-4 h-4 mr-2" />
-              {t("checkout.success.downloadReceipt")}
+            {/* Was a "Download receipt" button with no handler. A trial
+                signup charges nothing, so there is no receipt at this point;
+                invoices live behind Settings -> Billing (Stripe portal). */}
+            <Button variant="ghost" size="sm" className="text-muted-foreground" asChild>
+              <Link href="/settings/billing">
+                <Download className="w-4 h-4 mr-2" />
+                {t("checkout.success.viewBilling")}
+              </Link>
             </Button>
           </motion.div>
         </div>

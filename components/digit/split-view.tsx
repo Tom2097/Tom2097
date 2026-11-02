@@ -190,7 +190,7 @@ export function SplitView({ document, onSelectDocument }: SplitViewProps) {
               <div className="p-3 border-t border-border shrink-0">
                 <form onSubmit={(e) => { e.preventDefault(); sendChat() }} className="flex gap-2">
                   <Input placeholder="Ask about this document..." value={chatInput} onChange={(e) => setChatInput(e.target.value)} className="text-sm" />
-                  <Button type="submit" size="icon" disabled={chatLoading || !chatInput.trim()}>
+                  <Button aria-label="Send" type="submit" size="icon" disabled={chatLoading || !chatInput.trim()}>
                     <Send className="h-4 w-4" />
                   </Button>
                 </form>

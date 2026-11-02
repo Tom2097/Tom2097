@@ -11,6 +11,15 @@ import { KeyResultsPanel } from "@/components/digit/performance/key-results-pane
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { InView } from "@/components/motion-primitives/in-view"
 
+// A missing percentile used to render as a made-up "50th"; also gets the
+// suffix right (1st/2nd/3rd/11th...) instead of always appending "th".
+function ordinal(n: number): string {
+  const v = Math.round(n)
+  const mod100 = v % 100
+  const suffix = mod100 >= 11 && mod100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[v % 10] ?? "th"
+  return `${v}${suffix}`
+}
+
 export default async function PerformancePage() {
   const ctx = await extractTenantContext()
   if (!ctx) redirect("/auth/login")
@@ -62,7 +71,7 @@ export default async function PerformancePage() {
         </div>
         <div className="rounded-2xl border border-border/50 bg-card p-6">
            <p className="text-sm text-muted-foreground">{t("performance.page.benchmarks")}</p>
-          <p className="text-3xl font-bold text-foreground">{benchmarks.length > 0 ? `${benchmarks[0].percentile ?? 50}th` : "N/A"}</p>
+          <p className="text-3xl font-bold text-foreground">{benchmarks[0]?.percentile != null ? ordinal(benchmarks[0].percentile) : "N/A"}</p>
            <p className="text-xs text-muted-foreground mt-1">{t("performance.page.vsCohort", { cohort: benchmarks[0]?.cohort ?? "industry" })}</p>
         </div>
         <div className="rounded-2xl border border-border/50 bg-card p-6">

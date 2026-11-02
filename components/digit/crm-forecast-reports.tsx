@@ -183,7 +183,7 @@ export function CrmForecastReports() {
           <ChartContainer title="Pipeline by Stage" subtitle="Deal value distribution across stages">
             <LiveChart
               data={stages.map((s) => ({ name: stageLabel(s.stage), value: s.value }))}
-              dataKey="value" type="bar" height={300} color="hsl(var(--chart-2))"
+              dataKey="value" type="bar" height={300} color="var(--chart-2)"
             />
           </ChartContainer>
         </TabsContent>
@@ -193,7 +193,7 @@ export function CrmForecastReports() {
             <LiveChart
               data={stages.filter((s) => s.stage !== "lost").map((s) => ({ name: stageLabel(s.stage), value: s.weighted_value }))}
               dataKey="value" type="bar" height={300}
-              color="hsl(var(--chart-2))"
+              color="var(--chart-2)"
             />
           </ChartContainer>
         </TabsContent>

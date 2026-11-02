@@ -273,7 +273,7 @@ export function CrmQuotes() {
                     </Button>
                   )
                 })()}
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                <Button aria-label="Download quote" variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
                   const blob = new Blob([`Title: ${quote.title}\nValue: ${formatCurrency(quote.value, quote.currency)}\nStatus: ${quote.status}\nContact: ${quote.contact}\nCompany: ${quote.company}`], { type: "text/plain" })
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement("a")

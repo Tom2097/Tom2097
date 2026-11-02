@@ -50,7 +50,7 @@ export function RunReportButton({ label }: { label: string }) {
         <div className="absolute right-0 mt-2 w-80 rounded-xl border border-border bg-card p-4 shadow-lg z-10">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold">{summary?.title ?? "Report"}</span>
-            <button onClick={() => { setRun(null); setError(null) }} className="text-muted-foreground hover:text-foreground">
+            <button aria-label="Close report" onClick={() => { setRun(null); setError(null) }} className="text-muted-foreground hover:text-foreground">
               <X className="h-4 w-4" />
             </button>
           </div>

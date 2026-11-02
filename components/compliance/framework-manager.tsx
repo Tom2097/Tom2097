@@ -43,12 +43,12 @@ export function FrameworkManager({ frameworks, onView, onEdit }: FrameworkManage
             <TableCell>{format(new Date(framework.created_at), "PP")}</TableCell>
             <TableCell className="flex gap-2">
               {onView && (
-                <Button variant="outline" size="sm" onClick={() => onView(framework)}>
+                <Button aria-label="View framework" variant="outline" size="sm" onClick={() => onView(framework)}>
                   <Eye className="h-4 w-4" />
                 </Button>
               )}
               {onEdit && (
-                <Button variant="outline" size="sm" onClick={() => onEdit(framework)}>
+                <Button aria-label="Edit framework" variant="outline" size="sm" onClick={() => onEdit(framework)}>
                   <Pencil className="h-4 w-4" />
                 </Button>
               )}

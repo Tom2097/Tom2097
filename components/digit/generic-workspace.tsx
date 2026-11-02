@@ -92,7 +92,7 @@ export async function GenericWorkspace({ title = 'Operations Workspace' }: { tit
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartContainer title="Throughput" subtitle="Operational throughput series">
           {throughputData.length > 0 ? (
-            <LiveChart data={throughputData} dataKey="value" type="line" color="hsl(var(--primary))" />
+            <LiveChart data={throughputData} dataKey="value" type="line" color="var(--primary)" />
           ) : (
             <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
               No throughput data recorded yet.

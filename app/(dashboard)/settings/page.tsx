@@ -49,9 +49,9 @@ import {
 } from "@/components/ui/select"
 import { createClient } from "@/lib/supabase/client"
 import { createBillingPortalSession } from "@/app/actions/stripe"
-import { SUBSCRIPTION_PLANS, formatPrice, getPlanById } from "@/lib/products"
+import { SUBSCRIPTION_PLANS, formatPrice, resolvePlan } from "@/lib/products"
 import { UsageMonitor } from "@/components/digit/usage-monitor"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { useI18n } from "@/components/providers/i18n-provider"
@@ -168,6 +168,7 @@ export default function SettingsPage() {
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loading, setLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
+  const router = useRouter()
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [twoFactorAuth, setTwoFactorAuth] = useState(false)
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null)
@@ -417,8 +418,14 @@ export default function SettingsPage() {
   const handleManageBilling = () => {
     startTransition(async () => {
       try {
-        const { url } = await createBillingPortalSession()
-        if (url) window.location.href = url
+        const result = await createBillingPortalSession()
+        if (result.url !== null) {
+          window.location.href = result.url
+        } else if (result.reason === "no_billing_account") {
+          router.push("/checkout")
+        } else {
+          showToast("error", result.message)
+        }
       } catch (_error) {
         showToast("error", "Failed to create billing portal session")
       }
@@ -649,7 +656,7 @@ export default function SettingsPage() {
     }
   }
 
-  const currentPlan = subscription ? getPlanById(subscription.plan_id) : null
+  const currentPlan = subscription ? resolvePlan(subscription.plan_id) : null
 
   const canManageTeamRoles = profile?.role === "owner" || profile?.role === "admin"
   const assignableRoles = profile?.role === "owner" ? ["admin", "member", "viewer"] : ["member", "viewer"]
@@ -773,7 +780,7 @@ export default function SettingsPage() {
                   <p className="text-sm font-medium text-muted-foreground mb-3">{t("settings.subscription.planFeatures")}</p>
                   <ul className="space-y-2">
                     {(currentPlan?.features || [
-                      "7-day free trial",
+                      "1-month free trial",
                       "Access to all features",
                       "Full AI capabilities",
                       "Priority support"
@@ -816,15 +823,15 @@ export default function SettingsPage() {
                 <Card 
                   key={plan.id}
                   className={`p-6 ${
-                    subscription?.plan_id === plan.id 
+                    currentPlan?.id === plan.id 
                       ? "border-primary bg-primary/5" 
                       : "border-border/50 bg-card/50"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-lg font-semibold">{plan.name}</h4>
-                    {subscription?.plan_id === plan.id && <Badge>{t("settings.subscription.current")}</Badge>}
-                    {plan.popular && subscription?.plan_id !== plan.id && <Badge variant="secondary">{t("settings.subscription.popular")}</Badge>}
+                    {currentPlan?.id === plan.id && <Badge>{t("settings.subscription.current")}</Badge>}
+                    {plan.popular && currentPlan?.id !== plan.id && <Badge variant="secondary">{t("settings.subscription.popular")}</Badge>}
                   </div>
                   <div className="flex items-baseline gap-1 mb-4">
                     <span className="text-2xl font-bold">{formatPrice(plan.priceInCents)}</span>
@@ -838,7 +845,7 @@ export default function SettingsPage() {
                       </li>
                     ))}
                   </ul>
-                  {subscription?.plan_id !== plan.id && (
+                  {currentPlan?.id !== plan.id && (
                     <Button variant="outline" className="w-full" asChild>
                       <Link href="/checkout">
                         {!subscription?.plan_id ? t("settings.subscription.startTrial") : t("settings.subscription.upgrade")}
@@ -1129,10 +1136,10 @@ export default function SettingsPage() {
                     <Button size="icon" variant="outline" onClick={() => setShowKey(!showKey)}>
                       {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </Button>
-                    <Button size="icon" variant="outline" onClick={handleCopyKey}>
+                    <Button aria-label="Copy API key" size="icon" variant="outline" onClick={handleCopyKey}>
                       <Copy className="w-4 h-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" onClick={() => setGeneratedKey(null)}>
+                    <Button aria-label="Dismiss" size="icon" variant="ghost" onClick={() => setGeneratedKey(null)}>
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
@@ -1157,7 +1164,7 @@ export default function SettingsPage() {
                           {key.last_used_at && ` · Last used ${new Date(key.last_used_at).toLocaleDateString()}`}
                         </p>
                       </div>
-                      <Button size="icon" variant="ghost" onClick={() => handleDeleteKey(key.id)}>
+                      <Button aria-label="Delete API key" size="icon" variant="ghost" onClick={() => handleDeleteKey(key.id)}>
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
                     </div>
@@ -1346,7 +1353,7 @@ export default function SettingsPage() {
                           </p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeletePasskey(passkey.id)}>
+                      <Button aria-label="Remove passkey" variant="ghost" size="sm" onClick={() => handleDeletePasskey(passkey.id)}>
                         <Trash2 className="w-4 h-4 text-muted-foreground" />
                       </Button>
                     </div>

@@ -25,53 +25,25 @@ export interface AddOn {
   unit: string
 }
 
-export const pricingTiers: PricingTier[] = SUBSCRIPTION_PLANS.map((plan) => {
-  const base: PricingTier = {
-    id: plan.id,
-    name: plan.name,
-    description: plan.description,
-    monthlyPrice: plan.priceInCents / 100,
-    annualPrice: plan.annualPriceInCents / 100,
-    features: plan.features,
-    limits: { users: 1, dataPoints: "N/A", modules: 1, apiCalls: "N/A" },
-    cta: "Select",
-  }
-  switch (plan.id) {
-    case "starter":
-      return {
-        ...base,
-        limits: {
-          users: plan.limits.users,
-          dataPoints: "100K",
-          modules: plan.limits.modules,
-          apiCalls: "1,000/month",
-        },
-      }
-    case "professional":
-      return {
-        ...base,
-        limits: {
-          users: plan.limits.users,
-          dataPoints: "1M",
-          modules: plan.limits.modules,
-          apiCalls: "10,000/month",
-        },
-        highlighted: true,
-      }
-    case "enterprise":
-      return {
-        ...base,
-        limits: {
-          users: "unlimited" as const,
-          dataPoints: "Unlimited",
-          modules: "all" as const,
-          apiCalls: "Unlimited",
-        },
-      }
-    default:
-      return base
-  }
-})
+// Derived from each plan's own limits (-1 = unlimited). This used to switch
+// on the old starter/professional/enterprise ids, so the current single plan
+// fell through to a placeholder of 1 user / 1 module.
+export const pricingTiers: PricingTier[] = SUBSCRIPTION_PLANS.map((plan) => ({
+  id: plan.id,
+  name: plan.name,
+  description: plan.description,
+  monthlyPrice: plan.priceInCents / 100,
+  annualPrice: plan.annualPriceInCents / 100,
+  features: plan.features,
+  limits: {
+    users: plan.limits.users < 0 ? "unlimited" : plan.limits.users,
+    dataPoints: plan.limits.dataPoints < 0 ? "Unlimited" : plan.limits.dataPoints.toLocaleString("en-US"),
+    modules: plan.limits.modules < 0 || plan.limits.modules >= 6 ? "all" : plan.limits.modules,
+    apiCalls: plan.limits.apiCalls < 0 ? "Unlimited" : `${plan.limits.apiCalls.toLocaleString("en-US")}/month`,
+  },
+  highlighted: plan.popular,
+  cta: "Start free trial",
+}))
 
 export interface CurrencyConfig {
   code: string

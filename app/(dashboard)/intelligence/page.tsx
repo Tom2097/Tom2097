@@ -20,15 +20,18 @@ import { InView } from "@/components/motion-primitives/in-view"
 export default function IntelligencePage() {
   const { t } = useI18n()
   const [activeTab, setActiveTab] = useState("command-center")
+  // Neutral starting values. These used to be hardcoded demo numbers (92%
+  // accuracy, 75% load, 142 insights, "3 alerts") that showed until the
+  // aggregate loaded -- and stayed on screen whenever it failed.
   const [metrics, setMetrics] = useState({
-    agentStatus: "active",
-    reasoningAccuracy: 92,
-    graphComplexity: 42,
-    anomalyDetection: 3,
-    systemLoad: 0.75,
-    memoryUsage: 0.68,
-    activeAgents: 8,
-    insightsGenerated: 142,
+    agentStatus: "idle",
+    reasoningAccuracy: 0,
+    graphComplexity: 0,
+    anomalyDetection: 0,
+    systemLoad: 0,
+    memoryUsage: 0,
+    activeAgents: 0,
+    insightsGenerated: 0,
   })
   const [chartData, setChartData] = useState<Array<{ name: string; value: number; insights: number }>>([])
   const [anomalies, setAnomalies] = useState<Array<{ id: string; type: string; severity: string; timestamp: string }>>([])

@@ -21,7 +21,7 @@ export async function getTranslator(locale?: string | null) {
     t: (key: string, params?: Record<string, string | number>) => {
       const value = getNestedValue(dict as Record<string, unknown>, key)
       if (typeof value !== 'string') return key
-      return value.replace(/{(\w+)}/g, (_, k) => String(params?.[k] ?? `{${k}}`))
+      return value.replace(/\{\{?(\w+)\}?\}/g, (_, k) => String(params?.[k] ?? `{${k}}`))
     },
   }
 }

@@ -204,7 +204,7 @@ export default function BulkPage() {
                     <span className="text-xs text-muted-foreground">{formatSize(file.size)}</span>
                     <Badge variant="outline" className="text-xs">{file.type}</Badge>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveFile(i)}>
+                  <Button aria-label="Remove file" variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveFile(i)}>
                     <X className="h-3 w-3" />
                   </Button>
                 </div>

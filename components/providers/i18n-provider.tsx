@@ -105,7 +105,7 @@ export function I18nProvider({
       const dict = dictionaries[locale]
       const value = getNestedValue(dict as Record<string, unknown>, key)
       if (typeof value !== 'string') return key
-      return value.replace(/{(\w+)}/g, (_, k) => String(params?.[k] ?? `{${k}}`))
+      return value.replace(/\{\{?(\w+)\}?\}/g, (_, k) => String(params?.[k] ?? `{${k}}`))
     },
     [locale]
   )

@@ -516,7 +516,7 @@ export function CrmSupportTickets() {
                           <div className="flex gap-2">
                             <Dialog open={currentTicket?.id === ticket.id} onOpenChange={(open) => !open && setCurrentTicket(null)}>
                               <DialogTrigger asChild>
-                                <Button
+                                <Button aria-label="Edit ticket"
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setCurrentTicket(ticket)}
@@ -646,7 +646,7 @@ export function CrmSupportTickets() {
                                 </DialogFooter>
                               </DialogContent>
                             </Dialog>
-                            <Button
+                            <Button aria-label="Delete ticket"
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDeleteTicket(ticket.id)}

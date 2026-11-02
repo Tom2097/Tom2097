@@ -543,7 +543,7 @@ export default function SkillMatrixPage() {
                    <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-indigo-500" />
                    <span className="text-sm flex-1">{rec.text}</span>
                    {rec.skillId && (
-                     <Button
+                     <Button aria-label="Open related training"
                        variant="ghost"
                        size="sm"
                        className="h-7 w-7 p-1 text-indigo-500 hover:text-indigo-600"
