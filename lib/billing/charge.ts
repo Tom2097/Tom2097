@@ -101,6 +101,23 @@ async function chargeSubscriptionAtTrialEnd(sub: SubscriptionRow): Promise<boole
     .eq("is_default", true)
     .maybeSingle()
 
+  // A 100%-off discount locks the price at 0: nothing to charge, so the
+  // term just starts. (Checked before the payment-method guard, which used
+  // to treat a locked price of 0 as "missing" and mark the org past_due.)
+  if (sub.locked_price_cents === 0 && sub.billing_mode !== "split") {
+    const termEnd = new Date()
+    termEnd.setFullYear(termEnd.getFullYear() + 1)
+    await db
+      .from("subscriptions")
+      .update({
+        status: "active",
+        current_period_start: new Date().toISOString(),
+        current_period_end: termEnd.toISOString(),
+      })
+      .eq("id", sub.id)
+    return true
+  }
+
   if (!pm || !sub.stripe_customer_id || !sub.locked_price_cents) {
     await recordFailedPayment(sub.id, sub.organization_id, (sub.locked_price_cents ?? 0) / 100, "usd", "No confirmed payment method on file")
     await db.from("subscriptions").update({ status: "past_due" }).eq("id", sub.id)

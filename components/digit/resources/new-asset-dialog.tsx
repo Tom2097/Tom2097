@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -65,20 +66,20 @@ export function NewAssetDialog({ label }: { label: string }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Asset</DialogTitle>
+          <DialogTitle><T>Add Asset</T></DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div>
-            <Label htmlFor="asset-name">Name</Label>
+            <Label htmlFor="asset-name"><T>Name</T></Label>
             <Input id="asset-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Forklift #3" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="asset-category">Category</Label>
+              <Label htmlFor="asset-category"><T>Category</T></Label>
               <Input id="asset-category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Equipment" />
             </div>
             <div>
-              <Label>Status</Label>
+              <Label><T>Status</T></Label>
               <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -89,11 +90,11 @@ export function NewAssetDialog({ label }: { label: string }) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="asset-location">Location</Label>
+              <Label htmlFor="asset-location"><T>Location</T></Label>
               <Input id="asset-location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Warehouse A" />
             </div>
             <div>
-              <Label htmlFor="asset-value">Purchase value</Label>
+              <Label htmlFor="asset-value"><T>Purchase value</T></Label>
               <Input id="asset-value" type="number" value={form.purchase_value} onChange={(e) => setForm({ ...form, purchase_value: e.target.value })} placeholder="0" />
             </div>
           </div>

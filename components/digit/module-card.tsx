@@ -1,4 +1,5 @@
 'use client'
+import { T } from "@/components/i18n/t"
 
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -77,7 +78,7 @@ export function ModuleCard({
 
       {/* Action */}
       <div className="mt-auto flex items-center gap-2 pt-6 text-sm font-medium text-primary transition-colors">
-        <span>Open Module</span>
+        <span><T>Open Module</T></span>
         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
       </div>
     </Link>

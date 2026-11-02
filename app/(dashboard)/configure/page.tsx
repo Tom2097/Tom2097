@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback } from "react"
 import { SetupWizard } from "@/components/digit/setup-wizard"
@@ -164,7 +165,7 @@ export default function ConfigurePage() {
             {loadingWorkspaces && (
               <div className="flex items-center justify-center p-8 text-muted-foreground text-sm gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Loading your workspaces...
+                <T>Loading your workspaces...</T>
               </div>
             )}
 

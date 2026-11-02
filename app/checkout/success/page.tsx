@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useEffect, useState, Suspense } from "react"
@@ -284,7 +285,7 @@ function CheckoutSuccessContent() {
                   <p className="text-2xl font-bold text-foreground">
                     {formatPrice(plan.priceInCents)}
                   </p>
-                  <p className="text-sm text-muted-foreground">/month</p>
+                  <p className="text-sm text-muted-foreground"><T>/month</T></p>
                 </div>
               </div>
             </Card>

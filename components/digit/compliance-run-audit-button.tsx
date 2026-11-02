@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { Activity, Loader2, CheckCircle2, AlertTriangle } from "lucide-react"
@@ -48,15 +49,15 @@ export function ComplianceRunAuditButton() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Gap Analysis Audit</DialogTitle>
-            <DialogDescription>Controls checked against submitted evidence, framework by framework</DialogDescription>
+            <DialogTitle><T>Gap Analysis Audit</T></DialogTitle>
+            <DialogDescription><T>Controls checked against submitted evidence, framework by framework</T></DialogDescription>
           </DialogHeader>
           {running ? (
             <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
           ) : !results || results.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <CheckCircle2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No frameworks with tracked controls yet, or nothing to flag</p>
+              <p><T>No frameworks with tracked controls yet, or nothing to flag</T></p>
             </div>
           ) : (
             <div className="max-h-96 overflow-auto space-y-3">

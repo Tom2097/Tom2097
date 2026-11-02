@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -60,9 +61,9 @@ export function VerticalIntelligence() {
     <div className="space-y-6">
       <Tabs value={vertical} onValueChange={setVertical}>
         <TabsList>
-          <TabsTrigger value="pharma"><Beaker className="h-4 w-4 mr-1.5" />Pharma</TabsTrigger>
-          <TabsTrigger value="renewables"><TrendingUp className="h-4 w-4 mr-1.5" />Renewables</TabsTrigger>
-          <TabsTrigger value="logistics"><FileSearch className="h-4 w-4 mr-1.5" />Logistics</TabsTrigger>
+          <TabsTrigger value="pharma"><Beaker className="h-4 w-4 mr-1.5" /><T>Pharma</T></TabsTrigger>
+          <TabsTrigger value="renewables"><TrendingUp className="h-4 w-4 mr-1.5" /><T>Renewables</T></TabsTrigger>
+          <TabsTrigger value="logistics"><FileSearch className="h-4 w-4 mr-1.5" /><T>Logistics</T></TabsTrigger>
         </TabsList>
 
         {Object.entries(extractors).map(([key, exts]) => (

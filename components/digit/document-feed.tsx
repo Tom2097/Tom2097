@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -96,7 +97,7 @@ export function DocumentFeed({ onSelectDoc }: DocumentFeedProps) {
     } catch {} finally { setProcessingId(null) }
   }
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground text-sm">Loading feed...</div>
+  if (loading) return <div className="p-8 text-center text-muted-foreground text-sm"><T>Loading feed...</T></div>
 
   // Without this the tab rendered a completely blank panel for any org that
   // hasn't ingested a document yet.
@@ -105,8 +106,8 @@ export function DocumentFeed({ onSelectDoc }: DocumentFeedProps) {
       <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/60 py-12 text-center">
         <FileText className="h-8 w-8 text-muted-foreground" />
         <div>
-          <p className="font-medium text-foreground">No documents yet</p>
-          <p className="text-sm text-muted-foreground">Upload a file, forward an email, or add a URL above and it will appear here.</p>
+          <p className="font-medium text-foreground"><T>No documents yet</T></p>
+          <p className="text-sm text-muted-foreground"><T>Upload a file, forward an email, or add a URL above and it will appear here.</T></p>
         </div>
       </div>
     )
@@ -147,53 +148,53 @@ export function DocumentFeed({ onSelectDoc }: DocumentFeedProps) {
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => performAction(item, "classify")} disabled={processingId === item.id}>
                       {processingId === item.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-                      <span className="ml-1">Classify</span>
+                      <span className="ml-1"><T>Classify</T></span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Auto-classify this document</TooltipContent>
+                  <TooltipContent><T>Auto-classify this document</T></TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => performAction(item, "extract")} disabled={processingId === item.id}>
                       {processingId === item.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileSearch className="h-3 w-3" />}
-                      <span className="ml-1">Extract</span>
+                      <span className="ml-1"><T>Extract</T></span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Extract structured data</TooltipContent>
+                  <TooltipContent><T>Extract structured data</T></TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => performAction(item, "summarize")} disabled={processingId === item.id}>
                       {processingId === item.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <MessageSquare className="h-3 w-3" />}
-                      <span className="ml-1">Summarize</span>
+                      <span className="ml-1"><T>Summarize</T></span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Generate a summary</TooltipContent>
+                  <TooltipContent><T>Generate a summary</T></TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => performAction(item, "draft")} disabled={processingId === item.id}>
                       {processingId === item.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
-                      <span className="ml-1">Draft</span>
+                      <span className="ml-1"><T>Draft</T></span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Draft a response</TooltipContent>
+                  <TooltipContent><T>Draft a response</T></TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => performAction(item, "auto_create")} disabled={processingId === item.id}>
                       {processingId === item.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <ListTree className="h-3 w-3" />}
-                      <span className="ml-1">Auto-Act</span>
+                      <span className="ml-1"><T>Auto-Act</T></span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Auto-create tasks & run recipes</TooltipContent>
+                  <TooltipContent><T>Auto-create tasks & run recipes</T></TooltipContent>
                 </Tooltip>
               </div>
 
               {actionResults[`${item.id}-draft`] && (
                 <div className="px-3 pb-2">
                   <div className="p-2 bg-blue-500/5 border border-blue-500/20 rounded text-xs text-muted-foreground">
-                    <p className="font-medium text-blue-500 mb-1">Draft Response:</p>
+                    <p className="font-medium text-blue-500 mb-1"><T>Draft Response:</T></p>
                     <p className="whitespace-pre-wrap">{actionResults[`${item.id}-draft`]}</p>
                   </div>
                 </div>

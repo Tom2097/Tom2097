@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import { redirect } from 'next/navigation'
 import { Shield, Users, BarChart3, Eye, EyeOff, Info, CheckCircle2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -124,13 +125,13 @@ export default async function BenchmarksPage() {
       <div className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Users className="h-5 w-5 text-muted-foreground" />
-          Peer Comparison by Metric
+          <T>Peer Comparison by Metric</T>
         </h2>
         {comparisons.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <BarChart3 className="h-12 w-12 text-muted-foreground/40 mb-4" />
-              <p className="text-sm text-muted-foreground">No benchmark data available for your cohort.</p>
+              <p className="text-sm text-muted-foreground"><T>No benchmark data available for your cohort.</T></p>
             </CardContent>
           </Card>
         ) : (
@@ -153,11 +154,11 @@ export default async function BenchmarksPage() {
                       <div className="flex items-center gap-1.5">
                         {result.anonymized ? (
                           <Badge variant="outline" className="text-xs gap-1 border-amber-500/30 text-amber-600">
-                            <EyeOff className="h-3 w-3" /> DP
+                            <EyeOff className="h-3 w-3" /> <T>DP</T>
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs gap-1 border-emerald-500/30 text-emerald-600">
-                            <CheckCircle2 className="h-3 w-3" /> k-Anon
+                            <CheckCircle2 className="h-3 w-3" /> <T>k-Anon</T>
                           </Badge>
                         )}
                         <Badge variant="secondary" className="text-xs">

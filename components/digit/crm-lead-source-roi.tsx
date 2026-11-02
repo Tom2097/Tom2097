@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -48,7 +49,7 @@ export function CrmLeadSourceRoi() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-emerald-500" />
-          <p className="text-sm font-medium">Lead Source ROI</p>
+          <p className="text-sm font-medium"><T>Lead Source ROI</T></p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-[10px]">Revenue: ${(totalRevenue / 1000).toFixed(0)}K</Badge>
@@ -56,7 +57,7 @@ export function CrmLeadSourceRoi() {
         </div>
       </div>
 
-      {sources.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No lead source data yet</p>
+      {sources.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8"><T>No lead source data yet</T></p>
       : <div className="space-y-2">
         {sources.map((src, i) => {
           const Icon = sourceIcons[src.source] || Globe
@@ -79,19 +80,19 @@ export function CrmLeadSourceRoi() {
 
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="p-1.5 rounded-lg bg-muted/30">
-                  <p className="text-[10px] text-muted-foreground">Leads</p>
+                  <p className="text-[10px] text-muted-foreground"><T>Leads</T></p>
                   <p className="text-xs font-medium">{src.leads}</p>
                 </div>
                 <div className="p-1.5 rounded-lg bg-muted/30">
-                  <p className="text-[10px] text-muted-foreground">Conv%</p>
+                  <p className="text-[10px] text-muted-foreground"><T>Conv%</T></p>
                   <p className="text-xs font-medium">{src.conversion}%</p>
                 </div>
                 <div className="p-1.5 rounded-lg bg-muted/30">
-                  <p className="text-[10px] text-muted-foreground">Revenue</p>
+                  <p className="text-[10px] text-muted-foreground"><T>Revenue</T></p>
                   <p className="text-xs font-medium">${(src.revenue / 1000).toFixed(0)}K</p>
                 </div>
                 <div className="p-1.5 rounded-lg bg-muted/30">
-                  <p className="text-[10px] text-muted-foreground">Cost</p>
+                  <p className="text-[10px] text-muted-foreground"><T>Cost</T></p>
                   <p className="text-xs font-medium">${(src.cost / 1000).toFixed(0)}K</p>
                 </div>
               </div>

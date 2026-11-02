@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -73,9 +74,9 @@ export function FeedbackWidget({ userId }: FeedbackWidgetProps) {
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="space-y-4">
-          <h3 className="font-medium">Give Feedback</h3>
+          <h3 className="font-medium"><T>Give Feedback</T></h3>
           <div className="space-y-2">
-            <Label>Rating</Label>
+            <Label><T>Rating</T></Label>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Button
@@ -92,7 +93,7 @@ export function FeedbackWidget({ userId }: FeedbackWidgetProps) {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="comments">Comments</Label>
+            <Label htmlFor="comments"><T>Comments</T></Label>
             <Textarea
               id="comments"
               value={comments}

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
@@ -19,7 +20,7 @@ export function ComplianceFrameworkPanel({ data, onChange }: PanelProps) {
     <div className="space-y-5">
       <div>
         <h3 className="flex items-center gap-2 text-sm font-semibold mb-3">
-          <Shield className="h-4 w-4 text-teal-500" />Regulatory Frameworks
+          <Shield className="h-4 w-4 text-teal-500" /><T>Regulatory Frameworks</T>
         </h3>
         <div className="grid grid-cols-2 gap-2">
           {([
@@ -47,36 +48,36 @@ export function ComplianceFrameworkPanel({ data, onChange }: PanelProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="flex items-center gap-1 text-xs"><Clock className="h-3 w-3 text-teal-500" />Audit Calendar (days)</Label>
+          <Label className="flex items-center gap-1 text-xs"><Clock className="h-3 w-3 text-teal-500" /><T>Audit Calendar (days)</T></Label>
           <Input type="number" value={(data.auditCalendarDays as string) ?? "365"} onChange={(e) => onChange("auditCalendarDays", e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label className="flex items-center gap-1 text-xs"><AlertTriangle className="h-3 w-3 text-teal-500" />CAPA SLA (days)</Label>
+          <Label className="flex items-center gap-1 text-xs"><AlertTriangle className="h-3 w-3 text-teal-500" /><T>CAPA SLA (days)</T></Label>
           <Input type="number" value={(data.capaSlaDays as string) ?? "30"} onChange={(e) => onChange("capaSlaDays", e.target.value)} />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-xs">Risk Level Threshold</Label>
+          <Label className="text-xs"><T>Risk Level Threshold</T></Label>
           <Select value={(data.riskThreshold as string) ?? "medium"} onValueChange={(v) => onChange("riskThreshold", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="low">Low — Flag all deviations</SelectItem>
-              <SelectItem value="medium">Medium — Moderate severity +</SelectItem>
-              <SelectItem value="high">High — Critical only</SelectItem>
+              <SelectItem value="low"><T>Low — Flag all deviations</T></SelectItem>
+              <SelectItem value="medium"><T>Medium — Moderate severity +</T></SelectItem>
+              <SelectItem value="high"><T>High — Critical only</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label className="text-xs">Review Frequency</Label>
+          <Label className="text-xs"><T>Review Frequency</T></Label>
           <Select value={(data.reviewFrequency as string) ?? "quarterly"} onValueChange={(v) => onChange("reviewFrequency", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="monthly">Monthly</SelectItem>
-              <SelectItem value="quarterly">Quarterly</SelectItem>
-              <SelectItem value="semi_annual">Semi-Annual</SelectItem>
-              <SelectItem value="annual">Annual</SelectItem>
+              <SelectItem value="monthly"><T>Monthly</T></SelectItem>
+              <SelectItem value="quarterly"><T>Quarterly</T></SelectItem>
+              <SelectItem value="semi_annual"><T>Semi-Annual</T></SelectItem>
+              <SelectItem value="annual"><T>Annual</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -85,7 +86,7 @@ export function ComplianceFrameworkPanel({ data, onChange }: PanelProps) {
       <div className="flex items-center justify-between p-3 rounded-lg bg-teal-500/5 border border-teal-500/10">
         <div className="flex items-center gap-2">
           <FileCheck className="h-4 w-4 text-teal-500" />
-          <span className="text-xs font-medium">Auto-generate audit reports</span>
+          <span className="text-xs font-medium"><T>Auto-generate audit reports</T></span>
         </div>
         <Switch checked={(data.autoAuditReports as boolean) ?? true} onCheckedChange={(v) => onChange("autoAuditReports", v)} />
       </div>
@@ -98,7 +99,7 @@ export function ResourcesFrameworkPanel({ data, onChange }: PanelProps) {
     <div className="space-y-5">
       <div>
         <h3 className="flex items-center gap-2 text-sm font-semibold mb-3">
-          <Package className="h-4 w-4 text-blue-500" />Asset Categories
+          <Package className="h-4 w-4 text-blue-500" /><T>Asset Categories</T>
         </h3>
         <div className="grid grid-cols-2 gap-2">
           {([
@@ -124,28 +125,28 @@ export function ResourcesFrameworkPanel({ data, onChange }: PanelProps) {
 
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label className="text-xs">Reorder Point</Label>
+          <Label className="text-xs"><T>Reorder Point</T></Label>
           <Input type="number" value={(data.reorderPoint as string) ?? "10"} onChange={(e) => onChange("reorderPoint", e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label className="text-xs">Safety Stock</Label>
+          <Label className="text-xs"><T>Safety Stock</T></Label>
           <Input type="number" value={(data.safetyStock as string) ?? "5"} onChange={(e) => onChange("safetyStock", e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label className="text-xs">Lead Time (days)</Label>
+          <Label className="text-xs"><T>Lead Time (days)</T></Label>
           <Input type="number" value={(data.leadTimeDays as string) ?? "14"} onChange={(e) => onChange("leadTimeDays", e.target.value)} />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label className="flex items-center gap-1 text-xs"><Wifi className="h-3 w-3 text-blue-500" />Telemetry / IoT Feed URL</Label>
+        <Label className="flex items-center gap-1 text-xs"><Wifi className="h-3 w-3 text-blue-500" /><T>Telemetry / IoT Feed URL</T></Label>
         <Input value={(data.telemetryFeed as string) ?? ""} onChange={(e) => onChange("telemetryFeed", e.target.value)} placeholder="mqtt://broker.example.com:1883/topic" />
       </div>
 
       <div className="flex items-center justify-between p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
         <div className="flex items-center gap-2">
           <Bell className="h-4 w-4 text-blue-500" />
-          <span className="text-xs font-medium">Low-stock alerts</span>
+          <span className="text-xs font-medium"><T>Low-stock alerts</T></span>
         </div>
         <Switch checked={(data.lowStockAlerts as boolean) ?? true} onCheckedChange={(v) => onChange("lowStockAlerts", v)} />
       </div>
@@ -158,7 +159,7 @@ export function PerformanceFrameworkPanel({ data, onChange }: PanelProps) {
     <div className="space-y-5">
       <div>
         <h3 className="flex items-center gap-2 text-sm font-semibold mb-3">
-          <BarChart3 className="h-4 w-4 text-amber-500" />Metrics & KPIs
+          <BarChart3 className="h-4 w-4 text-amber-500" /><T>Metrics & KPIs</T>
         </h3>
         <div className="space-y-2">
           {([
@@ -189,7 +190,7 @@ export function PerformanceFrameworkPanel({ data, onChange }: PanelProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-xs">North Star Metric</Label>
+          <Label className="text-xs"><T>North Star Metric</T></Label>
           <Select value={(data.northStar as string) ?? ""} onValueChange={(v) => onChange("northStar", v)}>
             <SelectTrigger><SelectValue placeholder="Select primary metric" /></SelectTrigger>
             <SelectContent>
@@ -200,14 +201,14 @@ export function PerformanceFrameworkPanel({ data, onChange }: PanelProps) {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label className="text-xs">Reporting Period</Label>
+          <Label className="text-xs"><T>Reporting Period</T></Label>
           <Select value={(data.reportingPeriod as string) ?? "monthly"} onValueChange={(v) => onChange("reportingPeriod", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-              <SelectItem value="quarterly">Quarterly</SelectItem>
+              <SelectItem value="daily"><T>Daily</T></SelectItem>
+              <SelectItem value="weekly"><T>Weekly</T></SelectItem>
+              <SelectItem value="monthly"><T>Monthly</T></SelectItem>
+              <SelectItem value="quarterly"><T>Quarterly</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -216,7 +217,7 @@ export function PerformanceFrameworkPanel({ data, onChange }: PanelProps) {
       <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
         <div className="flex items-center gap-2">
           <Gauge className="h-4 w-4 text-amber-500" />
-          <span className="text-xs font-medium">Anomaly detection alerts</span>
+          <span className="text-xs font-medium"><T>Anomaly detection alerts</T></span>
         </div>
         <Switch checked={(data.anomalyAlerts as boolean) ?? true} onCheckedChange={(v) => onChange("anomalyAlerts", v)} />
       </div>
@@ -231,7 +232,7 @@ export function OperationalFrameworkPanel({ data, onChange }: PanelProps) {
     <div className="space-y-5">
       <div>
         <h3 className="flex items-center gap-2 text-sm font-semibold mb-3">
-          <Wifi className="h-4 w-4 text-indigo-500" />Intake Doors
+          <Wifi className="h-4 w-4 text-indigo-500" /><T>Intake Doors</T>
         </h3>
         <div className="grid grid-cols-2 gap-2">
           {intakeDoors.map((door) => (
@@ -247,19 +248,19 @@ export function OperationalFrameworkPanel({ data, onChange }: PanelProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-xs">Auto-Routing Target</Label>
+          <Label className="text-xs"><T>Auto-Routing Target</T></Label>
           <Select value={(data.routingTarget as string) ?? "compliance"} onValueChange={(v) => onChange("routingTarget", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="compliance">Compliance</SelectItem>
-              <SelectItem value="resources">Resources</SelectItem>
-              <SelectItem value="performance">Performance</SelectItem>
-              <SelectItem value="operational">Operational</SelectItem>
+              <SelectItem value="compliance"><T>Compliance</T></SelectItem>
+              <SelectItem value="resources"><T>Resources</T></SelectItem>
+              <SelectItem value="performance"><T>Performance</T></SelectItem>
+              <SelectItem value="operational"><T>Operational</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label className="text-xs">HITL Confidence Threshold (%)</Label>
+          <Label className="text-xs"><T>HITL Confidence Threshold (%)</T></Label>
           <Input type="number" min={0} max={100} value={(data.hitlThreshold as string) ?? "80"}
             onChange={(e) => onChange("hitlThreshold", e.target.value)} />
         </div>
@@ -267,11 +268,11 @@ export function OperationalFrameworkPanel({ data, onChange }: PanelProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-xs">Max File Size (MB)</Label>
+          <Label className="text-xs"><T>Max File Size (MB)</T></Label>
           <Input type="number" value={(data.maxFileSizeMB as string) ?? "25"} onChange={(e) => onChange("maxFileSizeMB", e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label className="text-xs">Supported Formats</Label>
+          <Label className="text-xs"><T>Supported Formats</T></Label>
           <Input value={(data.supportedFormats as string) ?? "pdf,docx,jpg,png,txt,csv,xlsx"}
             onChange={(e) => onChange("supportedFormats", e.target.value)} />
         </div>
@@ -280,7 +281,7 @@ export function OperationalFrameworkPanel({ data, onChange }: PanelProps) {
       <div className="flex items-center justify-between p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/10">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-indigo-500" />
-          <span className="text-xs font-medium">Auto-assign to team based on classification</span>
+          <span className="text-xs font-medium"><T>Auto-assign to team based on classification</T></span>
         </div>
         <Switch checked={(data.autoAssign as boolean) ?? true} onCheckedChange={(v) => onChange("autoAssign", v)} />
       </div>

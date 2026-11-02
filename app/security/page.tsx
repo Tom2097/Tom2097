@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import { getTranslator } from "@/lib/i18n/server"
 import type { Metadata } from "next"
 import { LegalPageShell, LegalSection } from "@/components/legal/legal-page-shell"
@@ -47,7 +48,7 @@ export default async function SecurityPage() {
         <p>
           {t("legal.security.reporting.contentBefore")}{" "}
           <a href="mailto:security@digit-ai.org" className="text-primary hover:underline">
-            security@digit-ai.org
+            <T>security@digit-ai.org</T>
           </a>
           {t("legal.security.reporting.contentAfter")}
         </p>

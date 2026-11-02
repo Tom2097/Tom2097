@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, Suspense, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
@@ -297,8 +298,8 @@ function LoginFormFallback() {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Logo size="md" />
           </div>
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to your enterprise dashboard</CardDescription>
+          <CardTitle className="text-2xl"><T>Welcome back</T></CardTitle>
+          <CardDescription><T>Sign in to your enterprise dashboard</T></CardDescription>
         </AnimatedGroup>
       </CardHeader>
       <CardContent className="flex items-center justify-center py-12">

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
@@ -69,21 +70,21 @@ export function ComplianceFrameworks() {
     <Card className="p-6 border-border/50 bg-card/50">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="font-semibold text-foreground">Compliance Frameworks</h3>
-          <p className="text-sm text-muted-foreground">Regulatory and quality frameworks tracked for this organization</p>
+          <h3 className="font-semibold text-foreground"><T>Compliance Frameworks</T></h3>
+          <p className="text-sm text-muted-foreground"><T>Regulatory and quality frameworks tracked for this organization</T></p>
         </div>
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-2" />Add Framework</Button>
+            <Button><Plus className="w-4 h-4 mr-2" /><T>Add Framework</T></Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Compliance Framework</DialogTitle>
-              <DialogDescription>Track a regulatory or quality framework (e.g. ISO 27001, GDPR, SOC 2)</DialogDescription>
+              <DialogTitle><T>Add Compliance Framework</T></DialogTitle>
+              <DialogDescription><T>Track a regulatory or quality framework (e.g. ISO 27001, GDPR, SOC 2)</T></DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Name</Label>
+                <Label><T>Name</T></Label>
                 <Input
                   value={newFramework.name}
                   onChange={(e) => setNewFramework((p) => ({ ...p, name: e.target.value }))}
@@ -91,7 +92,7 @@ export function ComplianceFrameworks() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label><T>Description</T></Label>
                 <Textarea
                   value={newFramework.description}
                   onChange={(e) => setNewFramework((p) => ({ ...p, description: e.target.value }))}
@@ -100,14 +101,14 @@ export function ComplianceFrameworks() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Total Controls</Label>
+                <Label><T>Total Controls</T></Label>
                 <Input
                   type="number"
                   min={0}
                   value={newFramework.controls_count}
                   onChange={(e) => setNewFramework((p) => ({ ...p, controls_count: Math.max(0, Number(e.target.value)) }))}
                 />
-                <p className="text-xs text-muted-foreground">Used to weight the compliance score as evidence is submitted</p>
+                <p className="text-xs text-muted-foreground"><T>Used to weight the compliance score as evidence is submitted</T></p>
               </div>
             </div>
             <DialogFooter>
@@ -126,8 +127,8 @@ export function ComplianceFrameworks() {
       ) : frameworks.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <ShieldCheck className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No frameworks tracked yet</p>
-          <p className="text-sm mt-1">Add one to start measuring compliance against it</p>
+          <p><T>No frameworks tracked yet</T></p>
+          <p className="text-sm mt-1"><T>Add one to start measuring compliance against it</T></p>
         </div>
       ) : (
         <div className="space-y-3">

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -31,7 +32,7 @@ export function GeoAwarePricing() {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
-        Detecting location...
+        <T>Detecting location...</T>
       </div>
     )
   }
@@ -44,10 +45,10 @@ export function GeoAwarePricing() {
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-primary" />
           <span className="text-sm">
-            Pricing in <strong>{geoInfo.currency}</strong>
+            <T>Pricing in</T> <strong>{geoInfo.currency}</strong>
             {geoInfo.isIndia && (
               <Badge variant="outline" className="ml-2 text-xs">
-                India
+                <T>India</T>
               </Badge>
             )}
           </span>

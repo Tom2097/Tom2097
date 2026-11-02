@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -121,18 +122,18 @@ export function KeyResultsPanel({ objectiveId, addLabel = "Add key result" }: Ke
       <CollapsibleTrigger asChild>
         <button type="button" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
           <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
-          Key results
+          <T>Key results</T>
         </button>
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-2 space-y-2">
         {loading && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin" /> Loading...
+            <Loader2 className="h-3 w-3 animate-spin" /> <T>Loading...</T>
           </div>
         )}
 
         {!loading && loaded && keyResults.length === 0 && (
-          <p className="text-xs text-muted-foreground">No key results yet.</p>
+          <p className="text-xs text-muted-foreground"><T>No key results yet.</T></p>
         )}
 
         {!loading &&

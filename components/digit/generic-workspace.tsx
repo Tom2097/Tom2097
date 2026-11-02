@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import { LayoutGrid, Activity, FileText, Workflow } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
@@ -58,7 +59,7 @@ export async function GenericWorkspace({ title = 'Operations Workspace' }: { tit
           <div>
             <h1 className="text-2xl font-bold text-foreground">{title}</h1>
             <p className="text-sm text-muted-foreground">
-              Configurable operational intelligence for your organization
+              <T>Configurable operational intelligence for your organization</T>
             </p>
           </div>
         </div>
@@ -66,11 +67,11 @@ export async function GenericWorkspace({ title = 'Operations Workspace' }: { tit
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2" onClick={() => window.location.href = "/analytics/reports"}>
             <FileText className="h-4 w-4" />
-            View Reports
+            <T>View Reports</T>
           </Button>
           <Button className="gap-2" onClick={() => window.location.href = "/analytics/configure"}>
             <Workflow className="h-4 w-4" />
-            Configure Workspace
+            <T>Configure Workspace</T>
           </Button>
         </div>
       </div>
@@ -95,7 +96,7 @@ export async function GenericWorkspace({ title = 'Operations Workspace' }: { tit
             <LiveChart data={throughputData} dataKey="value" type="line" color="var(--primary)" />
           ) : (
             <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
-              No throughput data recorded yet.
+              <T>No throughput data recorded yet.</T>
             </div>
           )}
         </ChartContainer>
@@ -105,7 +106,7 @@ export async function GenericWorkspace({ title = 'Operations Workspace' }: { tit
             <LiveChart data={operational} dataKey="cpu" type="area" />
           ) : (
             <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
-              No performance data recorded yet.
+              <T>No performance data recorded yet.</T>
             </div>
           )}
         </ChartContainer>
@@ -115,7 +116,7 @@ export async function GenericWorkspace({ title = 'Operations Workspace' }: { tit
       <div className="rounded-2xl border border-border/50 bg-card p-6">
         <div className="mb-4 flex items-center gap-2">
           <Activity className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold text-foreground">Monitored Streams</h3>
+          <h3 className="text-lg font-semibold text-foreground"><T>Monitored Streams</T></h3>
         </div>
         {monitors.length > 0 ? (
           <div className="grid gap-3 sm:grid-cols-2">
@@ -140,9 +141,9 @@ export async function GenericWorkspace({ title = 'Operations Workspace' }: { tit
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/60 py-10 text-center">
-            <p className="font-medium text-foreground">No monitored streams yet</p>
+            <p className="font-medium text-foreground"><T>No monitored streams yet</T></p>
             <p className="text-sm text-muted-foreground">
-              Configure monitors to track operational health in this workspace.
+              <T>Configure monitors to track operational health in this workspace.</T>
             </p>
           </div>
         )}

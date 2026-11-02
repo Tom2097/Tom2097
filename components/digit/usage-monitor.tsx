@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -134,8 +135,8 @@ export function UsageMonitor() {
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Usage Monitor</CardTitle>
-          <CardDescription>Track your usage of AI and operational features</CardDescription>
+          <CardTitle><T>Usage Monitor</T></CardTitle>
+          <CardDescription><T>Track your usage of AI and operational features</T></CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
@@ -150,7 +151,7 @@ export function UsageMonitor() {
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Usage Monitor</CardTitle>
+          <CardTitle><T>Usage Monitor</T></CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8 text-destructive">
@@ -170,18 +171,18 @@ export function UsageMonitor() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Usage Monitor</h2>
-          <p className="text-sm text-muted-foreground">Track your usage of AI and operational features</p>
+          <h2 className="text-2xl font-bold text-foreground"><T>Usage Monitor</T></h2>
+          <p className="text-sm text-muted-foreground"><T>Track your usage of AI and operational features</T></p>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Time range" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="week">Last 7 days</SelectItem>
-            <SelectItem value="month">This month</SelectItem>
-            <SelectItem value="quarter">This quarter</SelectItem>
-            <SelectItem value="year">This year</SelectItem>
+            <SelectItem value="week"><T>Last 7 days</T></SelectItem>
+            <SelectItem value="month"><T>This month</T></SelectItem>
+            <SelectItem value="quarter"><T>This quarter</T></SelectItem>
+            <SelectItem value="year"><T>This year</T></SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -190,10 +191,10 @@ export function UsageMonitor() {
         <Card className="border-destructive/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" /> Usage Limits Exceeded
+              <AlertTriangle className="h-5 w-5" /> <T>Usage Limits Exceeded</T>
             </CardTitle>
             <CardDescription>
-              You have exceeded your plan&apos;s fair-use limits. Contact support to have them raised.
+              <T>You have exceeded your plan&apos;s fair-use limits. Contact support to have them raised.</T>
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -206,7 +207,7 @@ export function UsageMonitor() {
                       {limit.currentUsage} of {limit.limit} ({Math.round(limit.percentage)}%)
                     </div>
                   </div>
-                  <Badge variant="destructive">Exceeded</Badge>
+                  <Badge variant="destructive"><T>Exceeded</T></Badge>
                 </div>
               ))}
             </div>
@@ -216,7 +217,7 @@ export function UsageMonitor() {
                 support. */}
             <div className="mt-4 flex gap-2">
               <Button asChild>
-                <a href="mailto:support@digit-ai.org?subject=Raise%20usage%20limits">Contact support to raise limits</a>
+                <a href="mailto:support@digit-ai.org?subject=Raise%20usage%20limits"><T>Contact support to raise limits</T></a>
               </Button>
             </div>
           </CardContent>
@@ -226,7 +227,7 @@ export function UsageMonitor() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Total Usage</CardTitle>
+            <CardTitle className="text-lg"><T>Total Usage</T></CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{usageData.usageStatistics.totalUsage}</div>
@@ -247,7 +248,7 @@ export function UsageMonitor() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Top Usage Types</CardTitle>
+            <CardTitle className="text-lg"><T>Top Usage Types</T></CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -271,7 +272,7 @@ export function UsageMonitor() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Usage Summary</CardTitle>
+            <CardTitle className="text-lg"><T>Usage Summary</T></CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -309,18 +310,18 @@ export function UsageMonitor() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Usage Details</CardTitle>
-          <CardDescription>Detailed usage breakdown by feature</CardDescription>
+          <CardTitle><T>Usage Details</T></CardTitle>
+          <CardDescription><T>Detailed usage breakdown by feature</T></CardDescription>
         </CardHeader>
         <CardContent>
           <div className="border rounded-lg overflow-hidden">
             <table className="w-full">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Feature</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Usage</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Limit</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Status</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground"><T>Feature</T></th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground"><T>Usage</T></th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground"><T>Limit</T></th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground"><T>Status</T></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

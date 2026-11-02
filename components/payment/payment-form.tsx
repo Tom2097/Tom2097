@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { 
@@ -99,8 +100,8 @@ export function PaymentForm({ priceInCents, onSuccess, onError }: PaymentFormPro
                   transition={{ duration: 1.5, repeat: Infinity }}
                 />
               </div>
-              <p className="mt-4 text-lg font-medium text-foreground">Processing payment...</p>
-              <p className="text-sm text-muted-foreground">Please do not close this window</p>
+              <p className="mt-4 text-lg font-medium text-foreground"><T>Processing payment...</T></p>
+              <p className="text-sm text-muted-foreground"><T>Please do not close this window</T></p>
             </div>
           </motion.div>
         )}
@@ -120,8 +121,8 @@ export function PaymentForm({ priceInCents, onSuccess, onError }: PaymentFormPro
               >
                 <CheckCircle2 className="w-16 h-16 text-emerald-500 mx-auto" />
               </motion.div>
-              <p className="mt-4 text-lg font-medium text-foreground">Payment successful!</p>
-              <p className="text-sm text-muted-foreground">Redirecting to your dashboard...</p>
+              <p className="mt-4 text-lg font-medium text-foreground"><T>Payment successful!</T></p>
+              <p className="text-sm text-muted-foreground"><T>Redirecting to your dashboard...</T></p>
             </div>
           </motion.div>
         )}
@@ -131,12 +132,12 @@ export function PaymentForm({ priceInCents, onSuccess, onError }: PaymentFormPro
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
           <CreditCard className="w-4 h-4" />
-          Billing Information
+          <T>Billing Information</T>
         </h3>
         
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="billingName">Full Name</Label>
+            <Label htmlFor="billingName"><T>Full Name</T></Label>
             <Input
               id="billingName"
               placeholder="John Doe"
@@ -146,7 +147,7 @@ export function PaymentForm({ priceInCents, onSuccess, onError }: PaymentFormPro
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="billingEmail">Email</Label>
+            <Label htmlFor="billingEmail"><T>Email</T></Label>
             <Input
               id="billingEmail"
               type="email"
@@ -163,7 +164,7 @@ export function PaymentForm({ priceInCents, onSuccess, onError }: PaymentFormPro
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
           <Lock className="w-4 h-4" />
-          Payment Method
+          <T>Payment Method</T>
         </h3>
         
         <div className="p-4 rounded-xl border border-border bg-muted/30">
@@ -192,7 +193,7 @@ export function PaymentForm({ priceInCents, onSuccess, onError }: PaymentFormPro
           htmlFor="saveCard"
           className="text-sm text-muted-foreground cursor-pointer"
         >
-          Save this payment method for future purchases
+          <T>Save this payment method for future purchases</T>
         </label>
       </div>
 
@@ -206,7 +207,7 @@ export function PaymentForm({ priceInCents, onSuccess, onError }: PaymentFormPro
         {isProcessing ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Processing...
+            <T>Processing...</T>
           </>
         ) : (
           <>
@@ -219,7 +220,7 @@ export function PaymentForm({ priceInCents, onSuccess, onError }: PaymentFormPro
       {/* Security Note */}
       <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
         <Lock className="w-3 h-3" />
-        <span>Your payment is secured with 256-bit SSL encryption</span>
+        <span><T>Your payment is secured with 256-bit SSL encryption</T></span>
       </div>
     </form>
   )

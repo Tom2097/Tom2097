@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { Logo } from "@/components/digit/logo"
@@ -26,7 +27,7 @@ export function LegalPageShell({ title, description, lastUpdated, children }: Le
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            <T>Back</T>
           </Link>
         </div>
       </header>
@@ -38,7 +39,7 @@ export function LegalPageShell({ title, description, lastUpdated, children }: Le
           <p className="mt-3 text-pretty text-lg leading-relaxed text-muted-foreground">{description}</p>
           {lastUpdated && (
             <p className="mt-4 text-sm text-muted-foreground">
-              Last updated: <span className="text-foreground">{lastUpdated}</span>
+              <T>Last updated:</T> <span className="text-foreground">{lastUpdated}</span>
             </p>
           )}
         </AnimatedGroup>
@@ -49,7 +50,7 @@ export function LegalPageShell({ title, description, lastUpdated, children }: Le
           <p className="text-sm text-muted-foreground">
             Questions? Contact us at{" "}
             <a href="mailto:legal@digit-ai.org" className="text-primary hover:underline">
-              legal@digit-ai.org
+              <T>legal@digit-ai.org</T>
             </a>
             .
           </p>

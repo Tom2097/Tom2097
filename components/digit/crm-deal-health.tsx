@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -51,14 +52,14 @@ export function CrmDealHealthRadar() {
   const mediumRisk = deals.filter((d) => d.risk === "medium").length
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
-  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchHealth} className="underline ml-1">Retry</button></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchHealth} className="underline ml-1"><T>Retry</T></button></div>
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-amber-500" />
-          <p className="text-sm font-medium">Deal Health Radar</p>
+          <p className="text-sm font-medium"><T>Deal Health Radar</T></p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-[10px] text-red-500 border-red-500/30">{highRisk} at risk</Badge>

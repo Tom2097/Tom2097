@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 import { useI18n } from "@/components/providers/i18n-provider"
 
 import { Suspense, useState, useMemo } from "react"
@@ -137,7 +138,7 @@ function SignUpForm() {
                 <span className="w-full border-t border-border/50" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">or sign up with email</span>
+                <span className="bg-card px-2 text-muted-foreground"><T>or sign up with email</T></span>
               </div>
             </div>
 

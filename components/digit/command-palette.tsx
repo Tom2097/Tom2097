@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
@@ -126,7 +127,7 @@ export function CommandPalette() {
             </div>
             <div className="max-h-72 overflow-y-auto p-2">
               {filtered.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No commands found</p>
+                <p className="text-sm text-muted-foreground text-center py-8"><T>No commands found</T></p>
               ) : (
                 filtered.map((cmd, i) => (
                   <button

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
@@ -136,24 +137,24 @@ export function ConnectorManager() {
     <Card className="p-6 border-border/50 bg-card/50">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="font-semibold text-foreground">Integrations</h3>
-          <p className="text-sm text-muted-foreground">Connect your tools and data sources</p>
+          <h3 className="font-semibold text-foreground"><T>Integrations</T></h3>
+          <p className="text-sm text-muted-foreground"><T>Connect your tools and data sources</T></p>
         </div>
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
-              Add Connector
+              <T>Add Connector</T>
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>New Connector</DialogTitle>
-              <DialogDescription>Connect an external service to ingest data</DialogDescription>
+              <DialogTitle><T>New Connector</T></DialogTitle>
+              <DialogDescription><T>Connect an external service to ingest data</T></DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Connector Type</Label>
+                <Label><T>Connector Type</T></Label>
                 <Select value={newConnector.type} onValueChange={(v) => setNewConnector(p => ({ ...p, type: v }))}>
                   <SelectTrigger>
                     <SelectValue />
@@ -166,16 +167,16 @@ export function ConnectorManager() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Name</Label>
+                <Label><T>Name</T></Label>
                 <Input value={newConnector.name} onChange={(e) => setNewConnector(p => ({ ...p, name: e.target.value }))} placeholder="My Connector" />
               </div>
               {OAUTH_TYPES.has(newConnector.type) ? (
                 <p className="text-xs text-muted-foreground">
-                  You&apos;ll be redirected to sign in and grant access after creating this connector -- no API key needed.
+                  <T>You&apos;ll be redirected to sign in and grant access after creating this connector -- no API key needed.</T>
                 </p>
               ) : (
                 <div className="space-y-2">
-                  <Label>API Key / Token</Label>
+                  <Label><T>API Key / Token</T></Label>
                   <Input value={newConnector.credentials} onChange={(e) => setNewConnector(p => ({ ...p, credentials: e.target.value }))} type="password" />
                 </div>
               )}
@@ -196,8 +197,8 @@ export function ConnectorManager() {
       {connectors.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <Plug className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No connectors configured</p>
-          <p className="text-sm mt-2">Connect Gmail, Google Drive, SharePoint, or Slack to ingest data automatically</p>
+          <p><T>No connectors configured</T></p>
+          <p className="text-sm mt-2"><T>Connect Gmail, Google Drive, SharePoint, or Slack to ingest data automatically</T></p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -237,7 +238,7 @@ export function ConnectorManager() {
                 <div className="flex items-center gap-2">
                   {OAUTH_TYPES.has(connector.type) && !connector.connected ? (
                     <Button size="sm" variant="outline" asChild>
-                      <a href={`/api/v1/connectors/${connector.id}/oauth/start`}>Connect</a>
+                      <a href={`/api/v1/connectors/${connector.id}/oauth/start`}><T>Connect</T></a>
                     </Button>
                   ) : (
                     <Button size="icon" variant="ghost" onClick={() => handleSync(connector.id)} disabled={syncing === connector.id}>

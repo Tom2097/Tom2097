@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useState } from "react"
 import { History, Loader2 } from "lucide-react"
@@ -41,8 +42,8 @@ export function ComplianceAuditTrail() {
   return (
     <Card className="p-6 border-border/50 bg-card/50">
       <div className="mb-6">
-        <h3 className="font-semibold text-foreground">Audit Trail</h3>
-        <p className="text-sm text-muted-foreground">Tamper-evident, hash-chained log of every compliance-relevant change</p>
+        <h3 className="font-semibold text-foreground"><T>Audit Trail</T></h3>
+        <p className="text-sm text-muted-foreground"><T>Tamper-evident, hash-chained log of every compliance-relevant change</T></p>
       </div>
 
       {loading ? (
@@ -50,8 +51,8 @@ export function ComplianceAuditTrail() {
       ) : entries.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No audit entries yet</p>
-          <p className="text-sm mt-1">Actions across frameworks, CAPAs, and signatures will appear here</p>
+          <p><T>No audit entries yet</T></p>
+          <p className="text-sm mt-1"><T>Actions across frameworks, CAPAs, and signatures will appear here</T></p>
         </div>
       ) : (
         <div className="space-y-2">

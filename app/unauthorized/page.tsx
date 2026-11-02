@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import Link from "next/link"
 import { ShieldAlert } from "lucide-react"
 import { AuroraBackground } from "@/components/digit/aurora-background"
@@ -11,12 +12,12 @@ export default function UnauthorizedPage() {
         <div className="rounded-full bg-destructive/10 p-4">
           <ShieldAlert className="h-8 w-8 text-destructive" />
         </div>
-        <h1 className="text-lg font-semibold">Not authorized</h1>
+        <h1 className="text-lg font-semibold"><T>Not authorized</T></h1>
         <p className="text-sm text-muted-foreground">
-          You don&apos;t have permission to access this page. If you believe this is a mistake, contact your administrator.
+          <T>You don&apos;t have permission to access this page. If you believe this is a mistake, contact your administrator.</T>
         </p>
         <Link href="/" className="text-sm font-medium text-primary hover:underline">
-          Return to dashboard
+          <T>Return to dashboard</T>
         </Link>
       </AnimatedGroup>
     </div>

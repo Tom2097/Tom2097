@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { BarChart3, Loader2, X } from "lucide-react"
@@ -59,19 +60,19 @@ export function RunReportButton({ label }: { label: string }) {
           {summary?.data && !summary.error && (
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="rounded-lg bg-secondary/30 p-2">
-                <p className="text-xs text-muted-foreground">Total events</p>
+                <p className="text-xs text-muted-foreground"><T>Total events</T></p>
                 <p className="font-semibold">{summary.data.total_events ?? 0}</p>
               </div>
               <div className="rounded-lg bg-secondary/30 p-2">
-                <p className="text-xs text-muted-foreground">Unique users</p>
+                <p className="text-xs text-muted-foreground"><T>Unique users</T></p>
                 <p className="font-semibold">{summary.data.unique_users ?? 0}</p>
               </div>
               <div className="rounded-lg bg-secondary/30 p-2">
-                <p className="text-xs text-muted-foreground">Distinct events</p>
+                <p className="text-xs text-muted-foreground"><T>Distinct events</T></p>
                 <p className="font-semibold">{summary.data.distinct_events ?? 0}</p>
               </div>
               <div className="rounded-lg bg-secondary/30 p-2">
-                <p className="text-xs text-muted-foreground">Total value</p>
+                <p className="text-xs text-muted-foreground"><T>Total value</T></p>
                 <p className="font-semibold">{summary.data.total_value ?? 0}</p>
               </div>
             </div>

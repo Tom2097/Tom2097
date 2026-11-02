@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback } from "react"
 import { Mail, Phone, Sparkles, ArrowRight, Star, Clock, MoreHorizontal, UserPlus, Loader2, Archive, Trash2 } from "lucide-react"
@@ -190,7 +191,7 @@ export function CrmLeadInbox() {
     .filter((l) => !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.company?.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => sortBy === "score" ? b.score - a.score : new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
-  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center">Loading leads...</div>
+  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center"><T>Loading leads...</T></div>
   if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
   return (
@@ -208,24 +209,24 @@ export function CrmLeadInbox() {
               onClick={() => setSortBy("score")}
               className={cn("px-3 py-1 text-xs font-medium rounded-md transition-colors", sortBy === "score" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground")}
             >
-              <Sparkles className="w-3 h-3 inline mr-1" />Score
+              <Sparkles className="w-3 h-3 inline mr-1" /><T>Score</T>
             </button>
             <button
               onClick={() => setSortBy("recent")}
               className={cn("px-3 py-1 text-xs font-medium rounded-md transition-colors", sortBy === "recent" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground")}
             >
-              <Clock className="w-3 h-3 inline mr-1" />Recent
+              <Clock className="w-3 h-3 inline mr-1" /><T>Recent</T>
             </button>
           </div>
         </div>
         <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) resetForm() }}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-1"><UserPlus className="w-4 h-4" /> Add Lead</Button>
+            <Button size="sm" className="gap-1"><UserPlus className="w-4 h-4" /> <T>Add Lead</T></Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Add Lead</DialogTitle>
-              <DialogDescription>Add a new lead to your inbox.</DialogDescription>
+              <DialogTitle><T>Add Lead</T></DialogTitle>
+              <DialogDescription><T>Add a new lead to your inbox.</T></DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddLead}>
               <div className="grid gap-4 py-4">
@@ -234,24 +235,24 @@ export function CrmLeadInbox() {
                 )}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="lead-first-name">First name</Label>
+                    <Label htmlFor="lead-first-name"><T>First name</T></Label>
                     <Input id="lead-first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="John" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lead-last-name">Last name</Label>
+                    <Label htmlFor="lead-last-name"><T>Last name</T></Label>
                     <Input id="lead-last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lead-email">Email</Label>
+                  <Label htmlFor="lead-email"><T>Email</T></Label>
                   <Input id="lead-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="john@company.com" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lead-phone">Phone</Label>
+                  <Label htmlFor="lead-phone"><T>Phone</T></Label>
                   <Input id="lead-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lead-title">Title</Label>
+                  <Label htmlFor="lead-title"><T>Title</T></Label>
                   <Input id="lead-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Software Engineer" />
                 </div>
               </div>
@@ -298,10 +299,10 @@ export function CrmLeadInbox() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => updateLeadStatus(lead.id, "archived")}>
-                      <Archive className="w-3.5 h-3.5 mr-2" />Archive
+                      <Archive className="w-3.5 h-3.5 mr-2" /><T>Archive</T>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDeleteLead(lead.id)}>
-                      <Trash2 className="w-3.5 h-3.5 mr-2" />Delete
+                      <Trash2 className="w-3.5 h-3.5 mr-2" /><T>Delete</T>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

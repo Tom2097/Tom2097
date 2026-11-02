@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -15,15 +16,15 @@ export function LegalFrameworkPanel({ formData, update }: LegalFrameworkPanelPro
   return (
     <CardContent className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium">Legal Workspace Configuration</h3>
+        <h3 className="text-lg font-medium"><T>Legal Workspace Configuration</T></h3>
         <p className="text-sm text-muted-foreground">
-          Configure your legal workspace with industry-specific settings and compliance requirements.
+          <T>Configure your legal workspace with industry-specific settings and compliance requirements.</T>
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="legal-specialty">Legal Specialty</Label>
+          <Label htmlFor="legal-specialty"><T>Legal Specialty</T></Label>
           <Select
             value={formData.legalSpecialty as string || ""}
             onValueChange={(value) => update("legalSpecialty", value)}
@@ -32,20 +33,20 @@ export function LegalFrameworkPanel({ formData, update }: LegalFrameworkPanelPro
               <SelectValue placeholder="Select specialty" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="corporate-law">Corporate Law</SelectItem>
-              <SelectItem value="litigation">Litigation</SelectItem>
-              <SelectItem value="intellectual-property">Intellectual Property</SelectItem>
-              <SelectItem value="real-estate">Real Estate Law</SelectItem>
-              <SelectItem value="family-law">Family Law</SelectItem>
-              <SelectItem value="criminal-law">Criminal Law</SelectItem>
-              <SelectItem value="employment-law">Employment Law</SelectItem>
-              <SelectItem value="tax-law">Tax Law</SelectItem>
+              <SelectItem value="corporate-law"><T>Corporate Law</T></SelectItem>
+              <SelectItem value="litigation"><T>Litigation</T></SelectItem>
+              <SelectItem value="intellectual-property"><T>Intellectual Property</T></SelectItem>
+              <SelectItem value="real-estate"><T>Real Estate Law</T></SelectItem>
+              <SelectItem value="family-law"><T>Family Law</T></SelectItem>
+              <SelectItem value="criminal-law"><T>Criminal Law</T></SelectItem>
+              <SelectItem value="employment-law"><T>Employment Law</T></SelectItem>
+              <SelectItem value="tax-law"><T>Tax Law</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="document-management">Document Management</Label>
+          <Label htmlFor="document-management"><T>Document Management</T></Label>
           <div className="flex flex-wrap gap-2">
             {[
               "contracts",
@@ -79,7 +80,7 @@ export function LegalFrameworkPanel({ formData, update }: LegalFrameworkPanelPro
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="case-management">Case Management</Label>
+          <Label htmlFor="case-management"><T>Case Management</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="case-management"
@@ -89,31 +90,31 @@ export function LegalFrameworkPanel({ formData, update }: LegalFrameworkPanelPro
             <Label htmlFor="case-management">Enable case management</Label>
           </div>
           <p className="text-sm text-muted-foreground">
-            Enables tracking of legal cases, deadlines, and client matters.
+            <T>Enables tracking of legal cases, deadlines, and client matters.</T>
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="time-tracking">Time Tracking & Billing</Label>
+          <Label htmlFor="time-tracking"><T>Time Tracking & Billing</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="time-tracking"
               checked={formData.timeTracking as boolean || false}
               onCheckedChange={(checked) => update("timeTracking", checked)}
             />
-            <Label htmlFor="time-tracking">Enable time tracking & billing</Label>
+            <Label htmlFor="time-tracking"><T>Enable time tracking & billing</T></Label>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="client-portal">Client Portal</Label>
+          <Label htmlFor="client-portal"><T>Client Portal</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="client-portal"
               checked={formData.clientPortal as boolean || false}
               onCheckedChange={(checked) => update("clientPortal", checked)}
             />
-            <Label htmlFor="client-portal">Enable client portal</Label>
+            <Label htmlFor="client-portal"><T>Enable client portal</T></Label>
           </div>
         </div>
       </div>

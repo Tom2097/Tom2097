@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
@@ -102,21 +103,21 @@ export function ComplianceESignatures() {
     <Card className="p-6 border-border/50 bg-card/50">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="font-semibold text-foreground">E-Signatures</h3>
-          <p className="text-sm text-muted-foreground">Request and track document signatures, 21 CFR Part 11 compliant</p>
+          <h3 className="font-semibold text-foreground"><T>E-Signatures</T></h3>
+          <p className="text-sm text-muted-foreground"><T>Request and track document signatures, 21 CFR Part 11 compliant</T></p>
         </div>
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-2" />Request Signature</Button>
+            <Button><Plus className="w-4 h-4 mr-2" /><T>Request Signature</T></Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Request a Signature</DialogTitle>
-              <DialogDescription>Send a document to be signed electronically</DialogDescription>
+              <DialogTitle><T>Request a Signature</T></DialogTitle>
+              <DialogDescription><T>Send a document to be signed electronically</T></DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Document</Label>
+                <Label><T>Document</T></Label>
                 <Select value={form.documentId} onValueChange={(v) => setForm((p) => ({ ...p, documentId: v }))}>
                   <SelectTrigger><SelectValue placeholder="Select a document" /></SelectTrigger>
                   <SelectContent>
@@ -126,11 +127,11 @@ export function ComplianceESignatures() {
                   </SelectContent>
                 </Select>
                 {documents.length === 0 && (
-                  <p className="text-xs text-muted-foreground">No documents available yet — upload one first</p>
+                  <p className="text-xs text-muted-foreground"><T>No documents available yet — upload one first</T></p>
                 )}
               </div>
               <div className="space-y-2">
-                <Label>Signer Email</Label>
+                <Label><T>Signer Email</T></Label>
                 <Input
                   type="email"
                   value={form.signerEmail}
@@ -139,7 +140,7 @@ export function ComplianceESignatures() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Signer Name</Label>
+                <Label><T>Signer Name</T></Label>
                 <Input
                   value={form.signerName}
                   onChange={(e) => setForm((p) => ({ ...p, signerName: e.target.value }))}
@@ -147,7 +148,7 @@ export function ComplianceESignatures() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Message (optional)</Label>
+                <Label><T>Message (optional)</T></Label>
                 <Textarea
                   value={form.message}
                   onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
@@ -172,7 +173,7 @@ export function ComplianceESignatures() {
       ) : requests.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <FileSignature className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No signature requests yet</p>
+          <p><T>No signature requests yet</T></p>
         </div>
       ) : (
         <div className="space-y-3">

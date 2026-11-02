@@ -1,4 +1,5 @@
 'use client'
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
@@ -535,7 +536,7 @@ export default function EsignPage() {
               {['pending', 'sent', 'viewed'].includes(selectedRequest.status) && (
                 <div className="space-y-3 border-t pt-4">
                   <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs">Type your full name to sign</Label>
+                    <Label className="text-xs"><T>Type your full name to sign</T></Label>
                     <Input
                       placeholder={selectedRequest.signer_name ?? 'Your full name'}
                       value={signatureName}

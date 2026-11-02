@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -15,15 +16,15 @@ export function RetailFrameworkPanel({ formData, update }: RetailFrameworkPanelP
   return (
     <CardContent className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium">Retail Workspace Configuration</h3>
+        <h3 className="text-lg font-medium"><T>Retail Workspace Configuration</T></h3>
         <p className="text-sm text-muted-foreground">
-          Configure your retail workspace with industry-specific settings and customer engagement features.
+          <T>Configure your retail workspace with industry-specific settings and customer engagement features.</T>
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="retail-sector">Retail Sector</Label>
+          <Label htmlFor="retail-sector"><T>Retail Sector</T></Label>
           <Select
             value={formData.retailSector as string || ""}
             onValueChange={(value) => update("retailSector", value)}
@@ -32,20 +33,20 @@ export function RetailFrameworkPanel({ formData, update }: RetailFrameworkPanelP
               <SelectValue placeholder="Select sector" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ecommerce">E-commerce</SelectItem>
-              <SelectItem value="brick-and-mortar">Brick & Mortar</SelectItem>
-              <SelectItem value="omnichannel">Omnichannel</SelectItem>
-              <SelectItem value="grocery">Grocery</SelectItem>
-              <SelectItem value="apparel">Apparel & Fashion</SelectItem>
-              <SelectItem value="electronics">Electronics</SelectItem>
-              <SelectItem value="home-goods">Home Goods</SelectItem>
-              <SelectItem value="luxury">Luxury Goods</SelectItem>
+              <SelectItem value="ecommerce"><T>E-commerce</T></SelectItem>
+              <SelectItem value="brick-and-mortar"><T>Brick & Mortar</T></SelectItem>
+              <SelectItem value="omnichannel"><T>Omnichannel</T></SelectItem>
+              <SelectItem value="grocery"><T>Grocery</T></SelectItem>
+              <SelectItem value="apparel"><T>Apparel & Fashion</T></SelectItem>
+              <SelectItem value="electronics"><T>Electronics</T></SelectItem>
+              <SelectItem value="home-goods"><T>Home Goods</T></SelectItem>
+              <SelectItem value="luxury"><T>Luxury Goods</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="pos-integration">POS Integration</Label>
+          <Label htmlFor="pos-integration"><T>POS Integration</T></Label>
           <Select
             value={formData.posIntegration as string || ""}
             onValueChange={(value) => update("posIntegration", value)}
@@ -54,42 +55,42 @@ export function RetailFrameworkPanel({ formData, update }: RetailFrameworkPanelP
               <SelectValue placeholder="Select POS system" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="square">Square</SelectItem>
-              <SelectItem value="clover">Clover</SelectItem>
-              <SelectItem value="shopify-pos">Shopify POS</SelectItem>
-              <SelectItem value="lightspeed">Lightspeed</SelectItem>
-              <SelectItem value="toast">Toast (for restaurants)</SelectItem>
-              <SelectItem value="other">Other/None</SelectItem>
+              <SelectItem value="square"><T>Square</T></SelectItem>
+              <SelectItem value="clover"><T>Clover</T></SelectItem>
+              <SelectItem value="shopify-pos"><T>Shopify POS</T></SelectItem>
+              <SelectItem value="lightspeed"><T>Lightspeed</T></SelectItem>
+              <SelectItem value="toast"><T>Toast (for restaurants)</T></SelectItem>
+              <SelectItem value="other"><T>Other/None</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="inventory-management">Inventory Management</Label>
+          <Label htmlFor="inventory-management"><T>Inventory Management</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="inventory-management"
               checked={formData.inventoryManagement as boolean || false}
               onCheckedChange={(checked) => update("inventoryManagement", checked)}
             />
-            <Label htmlFor="inventory-management">Enable inventory management</Label>
+            <Label htmlFor="inventory-management"><T>Enable inventory management</T></Label>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="customer-loyalty">Customer Loyalty Program</Label>
+          <Label htmlFor="customer-loyalty"><T>Customer Loyalty Program</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="customer-loyalty"
               checked={formData.customerLoyalty as boolean || false}
               onCheckedChange={(checked) => update("customerLoyalty", checked)}
             />
-            <Label htmlFor="customer-loyalty">Enable loyalty program</Label>
+            <Label htmlFor="customer-loyalty"><T>Enable loyalty program</T></Label>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="omnichannel-capabilities">Omnichannel Capabilities</Label>
+          <Label htmlFor="omnichannel-capabilities"><T>Omnichannel Capabilities</T></Label>
           <div className="flex flex-wrap gap-2">
             {[
               "online-store",
@@ -122,14 +123,14 @@ export function RetailFrameworkPanel({ formData, update }: RetailFrameworkPanelP
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="sales-analytics">Sales Analytics</Label>
+          <Label htmlFor="sales-analytics"><T>Sales Analytics</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="sales-analytics"
               checked={formData.salesAnalytics as boolean || false}
               onCheckedChange={(checked) => update("salesAnalytics", checked)}
             />
-            <Label htmlFor="sales-analytics">Enable sales analytics</Label>
+            <Label htmlFor="sales-analytics"><T>Enable sales analytics</T></Label>
           </div>
         </div>
       </div>

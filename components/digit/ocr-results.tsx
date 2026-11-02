@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { motion } from "framer-motion"
@@ -61,7 +62,7 @@ export function OcrResults({ result, documentName, onReRun, reRunning }: OcrResu
             <ScanLine className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">OCR Results</h3>
+            <h3 className="font-semibold text-foreground"><T>OCR Results</T></h3>
             {documentName && <p className="text-xs text-muted-foreground">{documentName}</p>}
           </div>
         </div>
@@ -80,7 +81,7 @@ export function OcrResults({ result, documentName, onReRun, reRunning }: OcrResu
         <TabsList className="mb-4">
           <TabsTrigger value="text" className="gap-2">
             <FileText className="w-4 h-4" />
-            Extracted Text
+            <T>Extracted Text</T>
           </TabsTrigger>
           <TabsTrigger value="blocks" className="gap-2">
             <ScanLine className="w-4 h-4" />

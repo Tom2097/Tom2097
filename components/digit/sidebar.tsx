@@ -1,4 +1,5 @@
 'use client'
+import { T } from "@/components/i18n/t"
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -187,7 +188,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                   <span className="flex items-center gap-2">
                     {t('sidebar.admin')}
                     <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                      Founder
+                      <T>Founder</T>
                     </span>
                   </span>
                 )}
@@ -207,7 +208,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                   <span className="flex items-center gap-2">
                     {t('sidebar.platformCapacity')}
                     <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                      Founder
+                      <T>Founder</T>
                     </span>
                   </span>
                 )}

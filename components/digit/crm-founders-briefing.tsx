@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -75,13 +76,13 @@ export function CrmFoundersBriefing() {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
             <Sun className="h-4 w-4 text-amber-500" />
-            Founder&apos;s Daily Briefing
-            <Badge variant="secondary" className="text-[10px]">AI-generated</Badge>
+            <T>Founder&apos;s Daily Briefing</T>
+            <Badge variant="secondary" className="text-[10px]"><T>AI-generated</T></Badge>
           </div>
           {briefing && (
             <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={generateBriefing} disabled={loading}>
               <RefreshCw className={`h-3 w-3 mr-1 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+              <T>Refresh</T>
             </Button>
           )}
         </CardTitle>
@@ -90,23 +91,23 @@ export function CrmFoundersBriefing() {
         {!briefing && !loading && !error && (
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
             <Sparkles className="h-10 w-10 text-primary/30 mb-3" />
-            <p className="text-sm font-medium mb-1">Your Daily Briefing Awaits</p>
-            <p className="text-xs text-muted-foreground mb-4">AI-powered summary of your CRM, pipeline, team, and market.</p>
-            <Button onClick={generateBriefing}><Sparkles className="h-4 w-4 mr-1" />Generate Briefing</Button>
+            <p className="text-sm font-medium mb-1"><T>Your Daily Briefing Awaits</T></p>
+            <p className="text-xs text-muted-foreground mb-4"><T>AI-powered summary of your CRM, pipeline, team, and market.</T></p>
+            <Button onClick={generateBriefing}><Sparkles className="h-4 w-4 mr-1" /><T>Generate Briefing</T></Button>
           </div>
         )}
         {(loading) && (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center space-y-3">
               <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
-              <p className="text-xs text-muted-foreground">Analyzing pipeline, team, and market data...</p>
+              <p className="text-xs text-muted-foreground"><T>Analyzing pipeline, team, and market data...</T></p>
             </div>
           </div>
         )}
         {error && !loading && (
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
             <p className="text-xs text-red-500 mb-2">{error}</p>
-            <Button size="sm" variant="outline" onClick={generateBriefing}>Retry</Button>
+            <Button size="sm" variant="outline" onClick={generateBriefing}><T>Retry</T></Button>
           </div>
         )}
         {briefing && !loading && (
@@ -130,7 +131,7 @@ export function CrmFoundersBriefing() {
                   <p className="text-xs text-muted-foreground mt-2 break-words">{section.content}</p>
                   {selectedSection === i && section.actionItems.length > 0 && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-2 space-y-1">
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase">Action Items</p>
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase"><T>Action Items</T></p>
                       {section.actionItems.map((item, j) => (
                         <div key={j} className="flex items-center gap-2 text-xs p-1.5 rounded-lg hover:bg-muted/30">
                           <Target className="h-3 w-3 text-primary" />

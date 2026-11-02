@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { motion } from "framer-motion"
@@ -43,8 +44,8 @@ export function ExtraSeatsPurchase() {
           <Users className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="font-semibold text-foreground">Additional Seats</h3>
-          <p className="text-xs text-muted-foreground">Add more team members to your plan</p>
+          <h3 className="font-semibold text-foreground"><T>Additional Seats</T></h3>
+          <p className="text-xs text-muted-foreground"><T>Add more team members to your plan</T></p>
         </div>
       </div>
 

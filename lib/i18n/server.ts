@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { resolveLocale, LOCALE_COOKIE, type Locale } from './config'
 import { getDictionary } from './get-dictionary'
+import { translatePhrase } from './phrases'
 
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   return path.split('.').reduce<unknown>((current, key) => {
@@ -23,6 +24,7 @@ export async function getTranslator(locale?: string | null) {
       if (typeof value !== 'string') return key
       return value.replace(/\{\{?(\w+)\}?\}/g, (_, k) => String(params?.[k] ?? `{${k}}`))
     },
+    tx: (text: string) => translatePhrase(resolved, text),
   }
 }
 

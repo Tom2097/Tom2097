@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -15,15 +16,15 @@ export function HealthcareFrameworkPanel({ formData, update }: HealthcareFramewo
   return (
     <CardContent className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium">Healthcare Workspace Configuration</h3>
+        <h3 className="text-lg font-medium"><T>Healthcare Workspace Configuration</T></h3>
         <p className="text-sm text-muted-foreground">
-          Configure your healthcare workspace with industry-specific settings and compliance requirements.
+          <T>Configure your healthcare workspace with industry-specific settings and compliance requirements.</T>
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="healthcare-specialty">Medical Specialty</Label>
+          <Label htmlFor="healthcare-specialty"><T>Medical Specialty</T></Label>
           <Select
             value={formData.healthcareSpecialty as string || ""}
             onValueChange={(value) => update("healthcareSpecialty", value)}
@@ -32,35 +33,35 @@ export function HealthcareFrameworkPanel({ formData, update }: HealthcareFramewo
               <SelectValue placeholder="Select specialty" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="primary-care">Primary Care</SelectItem>
-              <SelectItem value="pediatrics">Pediatrics</SelectItem>
-              <SelectItem value="cardiology">Cardiology</SelectItem>
-              <SelectItem value="oncology">Oncology</SelectItem>
-              <SelectItem value="neurology">Neurology</SelectItem>
-              <SelectItem value="orthopedics">Orthopedics</SelectItem>
-              <SelectItem value="mental-health">Mental Health</SelectItem>
-              <SelectItem value="emergency">Emergency Medicine</SelectItem>
+              <SelectItem value="primary-care"><T>Primary Care</T></SelectItem>
+              <SelectItem value="pediatrics"><T>Pediatrics</T></SelectItem>
+              <SelectItem value="cardiology"><T>Cardiology</T></SelectItem>
+              <SelectItem value="oncology"><T>Oncology</T></SelectItem>
+              <SelectItem value="neurology"><T>Neurology</T></SelectItem>
+              <SelectItem value="orthopedics"><T>Orthopedics</T></SelectItem>
+              <SelectItem value="mental-health"><T>Mental Health</T></SelectItem>
+              <SelectItem value="emergency"><T>Emergency Medicine</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="hipaa-compliance">HIPAA Compliance</Label>
+          <Label htmlFor="hipaa-compliance"><T>HIPAA Compliance</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="hipaa-compliance"
               checked={formData.hipaaCompliance as boolean || false}
               onCheckedChange={(checked) => update("hipaaCompliance", checked)}
             />
-            <Label htmlFor="hipaa-compliance">Enable HIPAA compliance features</Label>
+            <Label htmlFor="hipaa-compliance"><T>Enable HIPAA compliance features</T></Label>
           </div>
           <p className="text-sm text-muted-foreground">
-            Enables additional security and audit features required for HIPAA compliance.
+            <T>Enables additional security and audit features required for HIPAA compliance.</T>
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="ehr-integration">EHR Integration</Label>
+          <Label htmlFor="ehr-integration"><T>EHR Integration</T></Label>
           <Select
             value={formData.ehrIntegration as string || ""}
             onValueChange={(value) => update("ehrIntegration", value)}
@@ -69,18 +70,18 @@ export function HealthcareFrameworkPanel({ formData, update }: HealthcareFramewo
               <SelectValue placeholder="Select EHR system" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="epic">Epic Systems</SelectItem>
-              <SelectItem value="cerner">Cerner</SelectItem>
-              <SelectItem value="meditech">Meditech</SelectItem>
-              <SelectItem value="allscripts">Allscripts</SelectItem>
-              <SelectItem value="nextgen">NextGen Healthcare</SelectItem>
-              <SelectItem value="other">Other/None</SelectItem>
+              <SelectItem value="epic"><T>Epic Systems</T></SelectItem>
+              <SelectItem value="cerner"><T>Cerner</T></SelectItem>
+              <SelectItem value="meditech"><T>Meditech</T></SelectItem>
+              <SelectItem value="allscripts"><T>Allscripts</T></SelectItem>
+              <SelectItem value="nextgen"><T>NextGen Healthcare</T></SelectItem>
+              <SelectItem value="other"><T>Other/None</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="patient-data-fields">Patient Data Fields</Label>
+          <Label htmlFor="patient-data-fields"><T>Patient Data Fields</T></Label>
           <div className="flex flex-wrap gap-2">
             {[
               "demographics",
@@ -114,14 +115,14 @@ export function HealthcareFrameworkPanel({ formData, update }: HealthcareFramewo
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="appointment-scheduling">Appointment Scheduling</Label>
+          <Label htmlFor="appointment-scheduling"><T>Appointment Scheduling</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="appointment-scheduling"
               checked={formData.appointmentScheduling as boolean || false}
               onCheckedChange={(checked) => update("appointmentScheduling", checked)}
             />
-            <Label htmlFor="appointment-scheduling">Enable appointment scheduling</Label>
+            <Label htmlFor="appointment-scheduling"><T>Enable appointment scheduling</T></Label>
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
@@ -55,7 +56,7 @@ export function ComplianceHealthScore() {
             <Shield className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">Compliance Health</h3>
+            <h3 className="font-semibold text-foreground"><T>Compliance Health</T></h3>
             <p className="text-xs text-muted-foreground">Last assessed {new Date(score.lastAssessment).toLocaleDateString()}</p>
           </div>
         </div>
@@ -88,7 +89,7 @@ export function ComplianceHealthScore() {
 
       <div className="mt-4 p-3 rounded-lg bg-muted/30 flex items-start gap-2">
         <Info className="w-4 h-4 text-muted-foreground mt-0.5" />
-        <p className="text-xs text-muted-foreground">Scores are updated daily based on evidence submissions, audit results, and control tests.</p>
+        <p className="text-xs text-muted-foreground"><T>Scores are updated daily based on evidence submissions, audit results, and control tests.</T></p>
       </div>
     </Card>
   )

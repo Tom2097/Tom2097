@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -104,14 +105,14 @@ export function CrmPipelineBoard() {
     } catch {} finally { setSaving(false) }
   }
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground text-sm">Loading pipeline...</div>
+  if (loading) return <div className="p-8 text-center text-muted-foreground text-sm"><T>Loading pipeline...</T></div>
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{deals.length} deals across {STAGES.length} stages</p>
         <Button size="sm" onClick={() => { setNewDealOpen(true); setNewDealStage("lead") }}>
-          <Plus className="h-4 w-4 mr-1" />Add Deal
+          <Plus className="h-4 w-4 mr-1" /><T>Add Deal</T>
         </Button>
       </div>
 
@@ -173,7 +174,7 @@ export function CrmPipelineBoard() {
 
               {stage.deals.length === 0 && (
                 <div className="p-4 text-center text-[10px] text-muted-foreground border border-dashed border-border/50 rounded-lg">
-                  Drop deals here
+                  <T>Drop deals here</T>
                 </div>
               )}
             </div>
@@ -197,7 +198,7 @@ export function CrmPipelineBoard() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">New Deal</h3>
+                <h3 className="text-lg font-semibold"><T>New Deal</T></h3>
                 <Button aria-label="Close" variant="ghost" size="icon" onClick={() => setNewDealOpen(false)}><X className="h-4 w-4" /></Button>
               </div>
               <div className="space-y-3">

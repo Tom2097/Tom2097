@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { motion } from "framer-motion"
@@ -38,8 +39,8 @@ export function DomainVerification() {
           <Globe className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="font-semibold text-foreground">Domain Verification</h3>
-          <p className="text-xs text-muted-foreground">Verify your company domain to unlock enterprise features</p>
+          <h3 className="font-semibold text-foreground"><T>Domain Verification</T></h3>
+          <p className="text-xs text-muted-foreground"><T>Verify your company domain to unlock enterprise features</T></p>
         </div>
       </div>
 
@@ -68,7 +69,7 @@ export function DomainVerification() {
       )}
 
       <div className="mt-4 p-3 rounded-lg bg-muted/30">
-        <p className="text-xs font-medium text-foreground mb-2">To verify, add this TXT record to your DNS:</p>
+        <p className="text-xs font-medium text-foreground mb-2"><T>To verify, add this TXT record to your DNS:</T></p>
         <code className="text-xs bg-background p-2 rounded block break-all">digit-verify={domain ? domain.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase() : "yourdomain"}</code>
       </div>
     </Card>

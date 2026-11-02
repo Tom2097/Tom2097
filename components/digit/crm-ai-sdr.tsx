@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { motion } from "framer-motion"
@@ -67,9 +68,9 @@ export function CrmAiSdr() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-amber-500" />
-          <p className="text-sm font-medium">AI SDR — Research Assistant</p>
+          <p className="text-sm font-medium"><T>AI SDR — Research Assistant</T></p>
         </div>
-        <Badge variant="secondary" className="text-[10px]">Powered by AI</Badge>
+        <Badge variant="secondary" className="text-[10px]"><T>Powered by AI</T></Badge>
       </div>
 
       <div className="flex gap-2">
@@ -108,33 +109,33 @@ export function CrmAiSdr() {
 
               {result.ai_generated && (
                 <p className="text-[10px] text-muted-foreground italic">
-                  AI-inferred estimate, not verified third-party data — confirm before using in outreach.
+                  <T>AI-inferred estimate, not verified third-party data — confirm before using in outreach.</T>
                 </p>
               )}
 
               <div className="grid grid-cols-3 gap-3">
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 min-w-0">
                   <Users className="h-4 w-4 text-blue-500 shrink-0" />
-                  <div className="min-w-0"><p className="text-[10px] text-muted-foreground">Size</p><p className="text-xs font-medium truncate" title={result.size}>{result.size}</p></div>
+                  <div className="min-w-0"><p className="text-[10px] text-muted-foreground"><T>Size</T></p><p className="text-xs font-medium truncate" title={result.size}>{result.size}</p></div>
                 </div>
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 min-w-0">
                   <TrendingUp className="h-4 w-4 text-green-500 shrink-0" />
-                  <div className="min-w-0"><p className="text-[10px] text-muted-foreground">Revenue</p><p className="text-xs font-medium truncate" title={result.revenue}>{result.revenue}</p></div>
+                  <div className="min-w-0"><p className="text-[10px] text-muted-foreground"><T>Revenue</T></p><p className="text-xs font-medium truncate" title={result.revenue}>{result.revenue}</p></div>
                 </div>
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 min-w-0">
                   <Globe className="h-4 w-4 text-cyan-500 shrink-0" />
-                  <div className="min-w-0"><p className="text-[10px] text-muted-foreground">Location</p><p className="text-xs font-medium truncate" title={result.location}>{result.location}</p></div>
+                  <div className="min-w-0"><p className="text-[10px] text-muted-foreground"><T>Location</T></p><p className="text-xs font-medium truncate" title={result.location}>{result.location}</p></div>
                 </div>
               </div>
 
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Description</p>
+                <p className="text-xs text-muted-foreground mb-1"><T>Description</T></p>
                 <p className="text-xs">{result.description}</p>
               </div>
 
               <div>
                 <p className="text-xs font-medium mb-2 flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3 text-green-500" />Recent News
+                  <TrendingUp className="h-3 w-3 text-green-500" /><T>Recent News</T>
                 </p>
                 <ul className="space-y-2">
                   {result.recent_news.map((news, i) => {
@@ -159,7 +160,7 @@ export function CrmAiSdr() {
 
       {history.length > 0 && (
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">Recent Searches</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2"><T>Recent Searches</T></p>
           <div className="space-y-1">
             {history.map((h, i) => (
               <div key={i} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/30 cursor-pointer text-xs" onClick={() => { setQuery(h.query); setResult(h.result) }}>

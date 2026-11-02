@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -59,8 +60,8 @@ export function CompareView({ documents }: { documents: DocSummary[] }) {
       <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/60 py-12 text-center">
         <FileText className="h-8 w-8 text-muted-foreground" />
         <div>
-          <p className="font-medium text-foreground">Nothing to compare yet</p>
-          <p className="text-sm text-muted-foreground">Ingest at least two documents to compare them side by side.</p>
+          <p className="font-medium text-foreground"><T>Nothing to compare yet</T></p>
+          <p className="text-sm text-muted-foreground"><T>Ingest at least two documents to compare them side by side.</T></p>
         </div>
       </div>
     )

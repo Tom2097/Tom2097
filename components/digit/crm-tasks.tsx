@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { Plus, Circle, CheckCircle2, Clock, AlertCircle, MoreHorizontal, User, Trash2, Loader2 } from "lucide-react"
@@ -121,7 +122,7 @@ export function CrmTasks() {
 
   const filtered = filter === "all" ? tasks : tasks.filter((t) => t.status === filter)
 
-  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center">Loading tasks...</div>
+  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center"><T>Loading tasks...</T></div>
   if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
   return (
@@ -140,37 +141,37 @@ export function CrmTasks() {
         </div>
         <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) resetForm() }}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-1 h-7 text-xs"><Plus className="w-3 h-3" /> Add Task</Button>
+            <Button size="sm" className="gap-1 h-7 text-xs"><Plus className="w-3 h-3" /> <T>Add Task</T></Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Add Task</DialogTitle>
-              <DialogDescription>Create a new CRM task.</DialogDescription>
+              <DialogTitle><T>Add Task</T></DialogTitle>
+              <DialogDescription><T>Create a new CRM task.</T></DialogDescription>
             </DialogHeader>
             <div className="space-y-3 py-2">
               <div className="space-y-2">
-                <Label htmlFor="task-title">Title</Label>
+                <Label htmlFor="task-title"><T>Title</T></Label>
                 <Input id="task-title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Follow up with prospect" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="task-description">Description</Label>
+                <Label htmlFor="task-description"><T>Description</T></Label>
                 <Textarea id="task-description" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} rows={3} placeholder="Optional notes..." />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="task-priority">Priority</Label>
+                  <Label htmlFor="task-priority"><T>Priority</T></Label>
                   <Select value={newPriority} onValueChange={setNewPriority}>
                     <SelectTrigger id="task-priority"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="urgent">Urgent</SelectItem>
+                      <SelectItem value="low"><T>Low</T></SelectItem>
+                      <SelectItem value="medium"><T>Medium</T></SelectItem>
+                      <SelectItem value="high"><T>High</T></SelectItem>
+                      <SelectItem value="urgent"><T>Urgent</T></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="task-due">Due date</Label>
+                  <Label htmlFor="task-due"><T>Due date</T></Label>
                   <Input id="task-due" type="date" value={newDueAt} onChange={(e) => setNewDueAt(e.target.value)} />
                 </div>
               </div>
@@ -217,7 +218,7 @@ export function CrmTasks() {
                   fetch(`/api/v1/crm/tasks?id=${task.id}`, { method: "DELETE" }).catch(() => {})
                   setTasks((prev) => prev.filter((t) => t.id !== task.id))
                 }}>
-                  <Trash2 className="mr-2 h-3 w-3" />Delete
+                  <Trash2 className="mr-2 h-3 w-3" /><T>Delete</T>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

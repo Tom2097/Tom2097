@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useRef, useCallback, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -224,7 +225,7 @@ export function HelpSupport() {
         whileTap={{ scale: 0.95 }}
       >
         <HelpCircle className="h-5 w-5" />
-        <span className="font-medium">Help</span>
+        <span className="font-medium"><T>Help</T></span>
       </motion.button>
 
       {/* Help Panel */}
@@ -258,8 +259,8 @@ export function HelpSupport() {
                     <Headphones className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="font-semibold">Help & Support</h2>
-                    <p className="text-xs text-muted-foreground">We&apos;re here to help</p>
+                    <h2 className="font-semibold"><T>Help & Support</T></h2>
+                    <p className="text-xs text-muted-foreground"><T>We&apos;re here to help</T></p>
                   </div>
                 </div>
                 <Button variant="ghost" size="icon" aria-label="Close help" onClick={() => setIsOpen(false)}>
@@ -323,7 +324,7 @@ export function HelpSupport() {
                             {/* FAQ Results */}
                             {searchResults.filter(r => r.type === 'faq').length > 0 && (
                               <div className="p-2">
-                                <p className="px-2 py-1 text-xs font-semibold text-muted-foreground">FAQs</p>
+                                <p className="px-2 py-1 text-xs font-semibold text-muted-foreground"><T>FAQs</T></p>
                                 {searchResults
                                   .filter((r): r is { type: 'faq' } & FAQItem => r.type === 'faq')
                                   .map((result, idx) => (
@@ -352,7 +353,7 @@ export function HelpSupport() {
                             {/* Topic Results */}
                             {searchResults.filter(r => r.type === 'topic').length > 0 && (
                               <div className="border-t border-border p-2">
-                                <p className="px-2 py-1 text-xs font-semibold text-muted-foreground">Help Topics</p>
+                                <p className="px-2 py-1 text-xs font-semibold text-muted-foreground"><T>Help Topics</T></p>
                                 {searchResults
                                   .filter((r): r is { type: 'topic'; title: string; category: string; icon: typeof Book; href: string } => r.type === 'topic')
                                   .map((result, idx) => (
@@ -412,7 +413,7 @@ export function HelpSupport() {
                                 }}
                               >
                                 <MessageCircle className="mr-2 h-4 w-4" />
-                                Ask AI Assistant
+                                <T>Ask AI Assistant</T>
                               </Button>
                             </div>
                           </motion.div>
@@ -431,9 +432,9 @@ export function HelpSupport() {
                           <Sparkles className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold">AI Support Assistant</h3>
+                          <h3 className="font-semibold"><T>AI Support Assistant</T></h3>
                           <p className="mt-1 text-sm text-muted-foreground">
-                            Get instant answers powered by AI
+                            <T>Get instant answers powered by AI</T>
                           </p>
                           <Button 
                             size="sm" 
@@ -449,7 +450,7 @@ export function HelpSupport() {
 
                     {/* Quick Links */}
                     <div>
-                      <h3 className="mb-3 text-sm font-semibold">Quick Links</h3>
+                      <h3 className="mb-3 text-sm font-semibold"><T>Quick Links</T></h3>
                       <div className="grid grid-cols-2 gap-3">
                         {quickLinks.map((link, index) => (
                           <motion.a
@@ -475,7 +476,7 @@ export function HelpSupport() {
 
                     {/* Popular Topics */}
                     <div>
-                      <h3 className="mb-3 text-sm font-semibold">Popular Topics</h3>
+                      <h3 className="mb-3 text-sm font-semibold"><T>Popular Topics</T></h3>
                       <div className="space-y-2">
                         {faqs.slice(0, 3).map((faq, index) => (
                           <button
@@ -495,10 +496,10 @@ export function HelpSupport() {
 
                     {/* Contact Options */}
                     <div>
-                      <h3 className="mb-3 text-sm font-semibold">Contact Us</h3>
+                      <h3 className="mb-3 text-sm font-semibold"><T>Contact Us</T></h3>
                       <Button variant="outline" className="w-full" onClick={() => setActiveTab("contact")}>
                         <Mail className="mr-2 h-4 w-4" />
-                        Send us an Email
+                        <T>Send us an Email</T>
                       </Button>
                     </div>
 
@@ -506,8 +507,8 @@ export function HelpSupport() {
                     <div className="rounded-lg bg-muted/50 p-3">
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Support Hours:</span>
-                        <span className="font-medium">24/7 for Enterprise</span>
+                        <span className="text-muted-foreground"><T>Support Hours:</T></span>
+                        <span className="font-medium"><T>24/7 for Enterprise</T></span>
                       </div>
                     </div>
                   </div>
@@ -583,7 +584,7 @@ export function HelpSupport() {
                                 <div className="border-t border-border bg-muted/30 p-4">
                                   <p className="text-sm text-muted-foreground">{faq.answer}</p>
                                   <div className="mt-3 flex items-center gap-2">
-                                    <span className="text-xs text-muted-foreground">Was this helpful?</span>
+                                    <span className="text-xs text-muted-foreground"><T>Was this helpful?</T></span>
                                     <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => {
                                       fetch("/api/v1/feedback", {
                                         method: "POST",
@@ -614,7 +615,7 @@ export function HelpSupport() {
                     {filteredFaqs.length === 0 && (
                       <div className="py-8 text-center">
                         <FileQuestion className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                        <p className="mt-2 text-muted-foreground">No FAQs found matching your search</p>
+                        <p className="mt-2 text-muted-foreground"><T>No FAQs found matching your search</T></p>
                         <Button variant="outline" size="sm" className="mt-4" onClick={() => setActiveTab("contact")}>
                           Contact Support
                         </Button>
@@ -649,7 +650,7 @@ export function HelpSupport() {
                             {message.role === "ai" && (
                               <div className="mb-1 flex items-center gap-1">
                                 <Sparkles className="h-3 w-3 text-primary" />
-                                <span className="text-xs font-medium text-primary">DigiT AI</span>
+                                <span className="text-xs font-medium text-primary"><T>DigiT AI</T></span>
                               </div>
                             )}
                             <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
@@ -687,7 +688,7 @@ export function HelpSupport() {
                         </Button>
                       </div>
                       <p className="mt-2 text-center text-xs text-muted-foreground">
-                        AI-powered support available 24/7
+                        <T>AI-powered support available 24/7</T>
                       </p>
                     </div>
                   </div>
@@ -705,9 +706,9 @@ export function HelpSupport() {
                         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
                           <CheckCircle2 className="h-8 w-8 text-green-500" />
                         </div>
-                        <h3 className="text-lg font-semibold">Ticket Submitted!</h3>
+                        <h3 className="text-lg font-semibold"><T>Ticket Submitted!</T></h3>
                         <p className="mt-2 text-muted-foreground">
-                          We&apos;ll get back to you within 24 hours
+                          <T>We&apos;ll get back to you within 24 hours</T>
                         </p>
                         <p className="mt-1 text-sm text-muted-foreground">
                           Ticket #DGT-{ticketId ? ticketId.substring(0, 8).toUpperCase() : "NEW"}
@@ -716,15 +717,15 @@ export function HelpSupport() {
                     ) : (
                       <>
                         <div>
-                          <h3 className="font-semibold">Submit a Support Ticket</h3>
+                          <h3 className="font-semibold"><T>Submit a Support Ticket</T></h3>
                           <p className="mt-1 text-sm text-muted-foreground">
-                            Our team typically responds within 24 hours
+                            <T>Our team typically responds within 24 hours</T>
                           </p>
                         </div>
 
                         <div className="space-y-4">
                           <div>
-                            <label className="mb-2 block text-sm font-medium">Subject</label>
+                            <label className="mb-2 block text-sm font-medium"><T>Subject</T></label>
                             <Input
                               placeholder="Brief description of your issue"
                               value={ticketForm.subject}
@@ -733,7 +734,7 @@ export function HelpSupport() {
                           </div>
 
                           <div>
-                            <label className="mb-2 block text-sm font-medium">Priority</label>
+                            <label className="mb-2 block text-sm font-medium"><T>Priority</T></label>
                             <div className="flex gap-2">
                               {["low", "medium", "high", "urgent"].map((priority) => (
                                 <button
@@ -753,7 +754,7 @@ export function HelpSupport() {
                           </div>
 
                           <div>
-                            <label className="mb-2 block text-sm font-medium">Description</label>
+                            <label className="mb-2 block text-sm font-medium"><T>Description</T></label>
                             <Textarea
                               placeholder="Please describe your issue in detail..."
                               rows={5}
@@ -763,7 +764,7 @@ export function HelpSupport() {
                           </div>
 
                           <div>
-                            <label className="mb-2 block text-sm font-medium">Attachments (optional)</label>
+                            <label className="mb-2 block text-sm font-medium"><T>Attachments (optional)</T></label>
                             <div
                               onDragOver={handleDragOver}
                               onDragLeave={handleDragLeave}
@@ -819,22 +820,22 @@ export function HelpSupport() {
                           </div>
 
                           <Button className="w-full" onClick={handleSubmitTicket}>
-                            Submit Ticket
+                            <T>Submit Ticket</T>
                           </Button>
                         </div>
 
                         {/* Alternative Contact */}
                         <div className="border-t border-border pt-6">
-                          <h4 className="mb-4 text-sm font-semibold">Other Ways to Reach Us</h4>
+                          <h4 className="mb-4 text-sm font-semibold"><T>Other Ways to Reach Us</T></h4>
                           <div className="space-y-3">
                             <a
-                              href="mailto:support@digit.ai"
+                              href="mailto:support@digit-ai.org"
                               className="flex items-center gap-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 hover:bg-card"
                             >
                               <Mail className="h-5 w-5 text-muted-foreground" />
                               <div>
-                                <p className="font-medium">Email Support</p>
-                                <p className="text-sm text-muted-foreground">support@digit.ai</p>
+                                <p className="font-medium"><T>Email Support</T></p>
+                                <p className="text-sm text-muted-foreground">support@digit-ai.org</p>
                               </div>
                               <ExternalLink className="ml-auto h-4 w-4 text-muted-foreground" />
                             </a>

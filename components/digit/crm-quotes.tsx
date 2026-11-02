@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { FileText, Plus, Eye, Send, CheckCircle2, XCircle, Download, MoreHorizontal, Loader2 } from "lucide-react"
@@ -150,7 +151,7 @@ export function CrmQuotes() {
 
   const filtered = filter === "all" ? quotes : quotes.filter((q) => q.status === filter)
 
-  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center">Loading quotes...</div>
+  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center"><T>Loading quotes...</T></div>
   if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
   return (
@@ -169,25 +170,25 @@ export function CrmQuotes() {
         </div>
         <Dialog open={newQuoteOpen} onOpenChange={(open) => { setNewQuoteOpen(open); if (!open) resetNewQuoteForm() }}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-1"><Plus className="w-4 h-4" /> New Quote</Button>
+            <Button size="sm" className="gap-1"><Plus className="w-4 h-4" /> <T>New Quote</T></Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>New Quote</DialogTitle>
-              <DialogDescription>Create a new quote for a contact or company.</DialogDescription>
+              <DialogTitle><T>New Quote</T></DialogTitle>
+              <DialogDescription><T>Create a new quote for a contact or company.</T></DialogDescription>
             </DialogHeader>
             <div className="space-y-3 py-2">
               <div className="space-y-2">
-                <Label htmlFor="quote-title">Title</Label>
+                <Label htmlFor="quote-title"><T>Title</T></Label>
                 <Input id="quote-title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Annual subscription renewal" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="quote-contact">Contact</Label>
+                  <Label htmlFor="quote-contact"><T>Contact</T></Label>
                   <Select value={newContactId || "none"} onValueChange={(v) => setNewContactId(v === "none" ? "" : v)}>
                     <SelectTrigger id="quote-contact"><SelectValue placeholder="None" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="none"><T>None</T></SelectItem>
                       {contacts.map((c) => (
                         <SelectItem key={c.id} value={c.id}>{[c.first_name, c.last_name].filter(Boolean).join(" ") || c.email || "Unnamed"}</SelectItem>
                       ))}
@@ -195,11 +196,11 @@ export function CrmQuotes() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="quote-company">Company</Label>
+                  <Label htmlFor="quote-company"><T>Company</T></Label>
                   <Select value={newCompanyId || "none"} onValueChange={(v) => setNewCompanyId(v === "none" ? "" : v)}>
                     <SelectTrigger id="quote-company"><SelectValue placeholder="None" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="none"><T>None</T></SelectItem>
                       {companies.map((c) => (
                         <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                       ))}
@@ -209,20 +210,20 @@ export function CrmQuotes() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="quote-value">Value</Label>
+                  <Label htmlFor="quote-value"><T>Value</T></Label>
                   <Input id="quote-value" type="number" min="0" value={newValue} onChange={(e) => setNewValue(e.target.value)} placeholder="0" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="quote-currency">Currency</Label>
+                  <Label htmlFor="quote-currency"><T>Currency</T></Label>
                   <Input id="quote-currency" value={newCurrency} onChange={(e) => setNewCurrency(e.target.value.toUpperCase())} placeholder="USD" maxLength={3} />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="quote-valid-until">Valid until</Label>
+                <Label htmlFor="quote-valid-until"><T>Valid until</T></Label>
                 <Input id="quote-valid-until" type="date" value={newValidUntil} onChange={(e) => setNewValidUntil(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="quote-notes">Notes</Label>
+                <Label htmlFor="quote-notes"><T>Notes</T></Label>
                 <Textarea id="quote-notes" value={newNotes} onChange={(e) => setNewNotes(e.target.value)} rows={3} placeholder="Optional notes..." />
               </div>
             </div>

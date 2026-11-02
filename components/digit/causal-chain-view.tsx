@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -117,9 +118,9 @@ export function CausalChainView({ entityId }: { entityId?: string }) {
       <Card>
         <CardContent className="p-12 text-center">
           <Network className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-lg font-medium">No Causal Chains Found</p>
+          <p className="text-lg font-medium"><T>No Causal Chains Found</T></p>
           <p className="text-sm text-muted-foreground">
-            Chains are built as entities are linked across modules. Link entities in the operational graph to see causal paths.
+            <T>Chains are built as entities are linked across modules. Link entities in the operational graph to see causal paths.</T>
           </p>
         </CardContent>
       </Card>
@@ -132,7 +133,7 @@ export function CausalChainView({ entityId }: { entityId?: string }) {
         <div>
           <h3 className="font-medium flex items-center gap-2">
             <Network className="w-4 h-4 text-primary" />
-            Cross-Module Causal Chains
+            <T>Cross-Module Causal Chains</T>
           </h3>
           <p className="text-sm text-muted-foreground">
             {chains.length} chains — ${chains.reduce((s, c) => s + c.totalMonetaryRisk, 0).toLocaleString()} total risk
@@ -222,7 +223,7 @@ function SingleChainView({ chain }: { chain: ChainResult }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Network className="w-5 h-5 text-primary" />
-          Causal Chain Analysis
+          <T>Causal Chain Analysis</T>
         </CardTitle>
         <CardDescription>
           {chain.nodes.length} entities across {new Set(chain.nodes.map((n) => n.module)).size} modules
@@ -235,19 +236,19 @@ function SingleChainView({ chain }: { chain: ChainResult }) {
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-red-500">${chain.totalMonetaryRisk.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground">Total Monetary Risk</p>
+              <p className="text-xs text-muted-foreground"><T>Total Monetary Risk</T></p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-amber-500">{chain.affectedDeals.length}</p>
-              <p className="text-xs text-muted-foreground">Affected Deals</p>
+              <p className="text-xs text-muted-foreground"><T>Affected Deals</T></p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-primary">{chain.nodes.length}</p>
-              <p className="text-xs text-muted-foreground">Entities in Chain</p>
+              <p className="text-xs text-muted-foreground"><T>Entities in Chain</T></p>
             </CardContent>
           </Card>
         </div>
@@ -256,7 +257,7 @@ function SingleChainView({ chain }: { chain: ChainResult }) {
           <div className="mt-4">
             <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-primary" />
-              Affected Deals
+              <T>Affected Deals</T>
             </h4>
             <div className="space-y-2">
               {chain.affectedDeals.map((deal) => (

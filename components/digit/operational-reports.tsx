@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -321,9 +322,9 @@ export function OperationalReports() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'draft': return <Badge variant="secondary">Draft</Badge>
-      case 'generated': return <Badge variant="default">Generated</Badge>
-      case 'scheduled': return <Badge variant="default">Scheduled</Badge>
+      case 'draft': return <Badge variant="secondary"><T>Draft</T></Badge>
+      case 'generated': return <Badge variant="default"><T>Generated</T></Badge>
+      case 'scheduled': return <Badge variant="default"><T>Scheduled</T></Badge>
       default: return <Badge variant="secondary">{status}</Badge>
     }
   }
@@ -408,7 +409,7 @@ export function OperationalReports() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total</CardTitle>
+                  <CardTitle className="text-sm font-medium"><T>Total</T></CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{reportData.summary?.total}</div>
@@ -416,7 +417,7 @@ export function OperationalReports() {
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Average</CardTitle>
+                  <CardTitle className="text-sm font-medium"><T>Average</T></CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{reportData.summary?.average}</div>
@@ -424,7 +425,7 @@ export function OperationalReports() {
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Count</CardTitle>
+                  <CardTitle className="text-sm font-medium"><T>Count</T></CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{reportData.summary?.count}</div>
@@ -435,7 +436,7 @@ export function OperationalReports() {
         )
       
       default:
-        return <div>No visualization type selected</div>
+        return <div><T>No visualization type selected</T></div>
     }
   }
 
@@ -443,25 +444,25 @@ export function OperationalReports() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Operational Reports</h2>
-          <p className="text-sm text-muted-foreground">Generate custom reports for operational insights</p>
+          <h2 className="text-2xl font-bold text-foreground"><T>Operational Reports</T></h2>
+          <p className="text-sm text-muted-foreground"><T>Generate custom reports for operational insights</T></p>
         </div>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="h-4 w-4 mr-2" /> Create Report
+              <Plus className="h-4 w-4 mr-2" /> <T>Create Report</T>
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Create New Report</DialogTitle>
+              <DialogTitle><T>Create New Report</T></DialogTitle>
               <DialogDescription>
-                Define a new operational report.
+                <T>Define a new operational report.</T>
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="report-name">Report Name</Label>
+                <Label htmlFor="report-name"><T>Report Name</T></Label>
                 <Input
                   id="report-name"
                   value={newReport.name}
@@ -470,7 +471,7 @@ export function OperationalReports() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="report-description">Description</Label>
+                <Label htmlFor="report-description"><T>Description</T></Label>
                 <Textarea
                   id="report-description"
                   value={newReport.description}
@@ -481,7 +482,7 @@ export function OperationalReports() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="report-type">Report Type</Label>
+                  <Label htmlFor="report-type"><T>Report Type</T></Label>
                   <Select
                     value={newReport.type}
                     onValueChange={(value) => setNewReport({...newReport, type: value as any})}
@@ -490,15 +491,15 @@ export function OperationalReports() {
                       <SelectValue placeholder="Select report type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="document_analysis">Document Analysis</SelectItem>
-                      <SelectItem value="process_efficiency">Process Efficiency</SelectItem>
-                      <SelectItem value="trend_analysis">Trend Analysis</SelectItem>
-                      <SelectItem value="custom">Custom Report</SelectItem>
+                      <SelectItem value="document_analysis"><T>Document Analysis</T></SelectItem>
+                      <SelectItem value="process_efficiency"><T>Process Efficiency</T></SelectItem>
+                      <SelectItem value="trend_analysis"><T>Trend Analysis</T></SelectItem>
+                      <SelectItem value="custom"><T>Custom Report</T></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="data-source">Data Source</Label>
+                  <Label htmlFor="data-source"><T>Data Source</T></Label>
                   <Select
                     value={newReport.data_source}
                     onValueChange={(value) => setNewReport({...newReport, data_source: value as any})}
@@ -507,16 +508,16 @@ export function OperationalReports() {
                       <SelectValue placeholder="Select data source" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="documents">Documents</SelectItem>
-                      <SelectItem value="workflows">Workflows</SelectItem>
-                      <SelectItem value="events">Events</SelectItem>
-                      <SelectItem value="all">All Data</SelectItem>
+                      <SelectItem value="documents"><T>Documents</T></SelectItem>
+                      <SelectItem value="workflows"><T>Workflows</T></SelectItem>
+                      <SelectItem value="events"><T>Events</T></SelectItem>
+                      <SelectItem value="all"><T>All Data</T></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="visualization-type">Visualization Type</Label>
+                <Label htmlFor="visualization-type"><T>Visualization Type</T></Label>
                 <Select
                   value={newReport.visualization_type}
                   onValueChange={(value) => setNewReport({...newReport, visualization_type: value as any})}
@@ -525,11 +526,11 @@ export function OperationalReports() {
                     <SelectValue placeholder="Select visualization type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="table">Table</SelectItem>
-                    <SelectItem value="bar_chart">Bar Chart</SelectItem>
-                    <SelectItem value="line_chart">Line Chart</SelectItem>
-                    <SelectItem value="pie_chart">Pie Chart</SelectItem>
-                    <SelectItem value="summary">Summary</SelectItem>
+                    <SelectItem value="table"><T>Table</T></SelectItem>
+                    <SelectItem value="bar_chart"><T>Bar Chart</T></SelectItem>
+                    <SelectItem value="line_chart"><T>Line Chart</T></SelectItem>
+                    <SelectItem value="pie_chart"><T>Pie Chart</T></SelectItem>
+                    <SelectItem value="summary"><T>Summary</T></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -569,26 +570,26 @@ export function OperationalReports() {
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="document_analysis">Document Analysis</SelectItem>
-            <SelectItem value="process_efficiency">Process Efficiency</SelectItem>
-            <SelectItem value="trend_analysis">Trend Analysis</SelectItem>
-            <SelectItem value="custom">Custom Report</SelectItem>
+            <SelectItem value="all"><T>All Types</T></SelectItem>
+            <SelectItem value="document_analysis"><T>Document Analysis</T></SelectItem>
+            <SelectItem value="process_efficiency"><T>Process Efficiency</T></SelectItem>
+            <SelectItem value="trend_analysis"><T>Trend Analysis</T></SelectItem>
+            <SelectItem value="custom"><T>Custom Report</T></SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <Tabs defaultValue="reports" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="reports">My Reports</TabsTrigger>
-          {currentReport && <TabsTrigger value="preview">Report Preview</TabsTrigger>}
+          <TabsTrigger value="reports"><T>My Reports</T></TabsTrigger>
+          {currentReport && <TabsTrigger value="preview"><T>Report Preview</T></TabsTrigger>}
         </TabsList>
 
         <TabsContent value="reports">
           <Card>
             <CardHeader>
-              <CardTitle>Available Reports</CardTitle>
-              <CardDescription>Manage and generate operational reports</CardDescription>
+              <CardTitle><T>Available Reports</T></CardTitle>
+              <CardDescription><T>Manage and generate operational reports</T></CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -600,13 +601,13 @@ export function OperationalReports() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Data Source</TableHead>
-                        <TableHead>Visualization</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Last Generated</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead><T>Name</T></TableHead>
+                        <TableHead><T>Type</T></TableHead>
+                        <TableHead><T>Data Source</T></TableHead>
+                        <TableHead><T>Visualization</T></TableHead>
+                        <TableHead><T>Status</T></TableHead>
+                        <TableHead><T>Last Generated</T></TableHead>
+                        <TableHead><T>Actions</T></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -645,12 +646,12 @@ export function OperationalReports() {
                                     <DialogHeader>
                                       <DialogTitle>Report Settings: {report.name}</DialogTitle>
                                       <DialogDescription>
-                                        Configure report settings and schedule.
+                                        <T>Configure report settings and schedule.</T>
                                       </DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-4 py-4">
                                       <div className="space-y-2">
-                                        <Label htmlFor="edit-report-name">Report Name</Label>
+                                        <Label htmlFor="edit-report-name"><T>Report Name</T></Label>
                                         <Input
                                           id="edit-report-name"
                                           value={currentReport?.name || ''}
@@ -658,7 +659,7 @@ export function OperationalReports() {
                                         />
                                       </div>
                                       <div className="space-y-2">
-                                        <Label htmlFor="edit-report-description">Description</Label>
+                                        <Label htmlFor="edit-report-description"><T>Description</T></Label>
                                         <Textarea
                                           id="edit-report-description"
                                           value={currentReport?.description || ''}
@@ -667,17 +668,17 @@ export function OperationalReports() {
                                         />
                                       </div>
                                       <div className="space-y-2">
-                                        <Label htmlFor="schedule-recipients">Recipients</Label>
+                                        <Label htmlFor="schedule-recipients"><T>Recipients</T></Label>
                                         <Input
                                           id="schedule-recipients"
                                           value={scheduleRecipients}
                                           onChange={(e) => setScheduleRecipients(e.target.value)}
                                           placeholder="e.g., alice@company.com, bob@company.com"
                                         />
-                                        <p className="text-xs text-muted-foreground">Comma-separated emails to receive this report on schedule.</p>
+                                        <p className="text-xs text-muted-foreground"><T>Comma-separated emails to receive this report on schedule.</T></p>
                                       </div>
                                       <div className="space-y-2">
-                                        <Label>Schedule</Label>
+                                        <Label><T>Schedule</T></Label>
                                         <div className="flex gap-2">
                                           <Button
                                             size="sm"
@@ -729,7 +730,7 @@ export function OperationalReports() {
                       ) : (
                         <TableRow>
                           <TableCell colSpan={7} className="text-center py-8">
-                            No reports found
+                            <T>No reports found</T>
                           </TableCell>
                         </TableRow>
                       )}
@@ -752,10 +753,10 @@ export function OperationalReports() {
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" onClick={handleExportReport} disabled={!reportData}>
-                      <Download className="h-4 w-4 mr-2" /> Export
+                      <Download className="h-4 w-4 mr-2" /> <T>Export</T>
                     </Button>
                     <Button onClick={handleShareReport} disabled={!reportData}>
-                      <Share2 className="h-4 w-4 mr-2" /> Share
+                      <Share2 className="h-4 w-4 mr-2" /> <T>Share</T>
                     </Button>
                   </div>
                 </div>

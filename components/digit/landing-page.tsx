@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import Link from "next/link"
 import {
   ArrowRight,
@@ -68,7 +69,7 @@ export async function LandingPage() {
                 href="/blog"
                 className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
               >
-                Blog
+                <T>Blog</T>
               </Link>
               <Button variant="outline" size="sm" asChild>
                 <Link href="/auth/login">{t("landing.header.signIn")}</Link>
@@ -148,8 +149,8 @@ export async function LandingPage() {
         {/* Pricing */}
         <section id="pricing" className="container mx-auto px-6 py-16 scroll-mt-20">
           <InView className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="text-3xl font-bold text-foreground">One platform. One price.</h2>
-            <p className="mt-3 text-muted-foreground">Every module, every AI capability, no tiers to compare.</p>
+            <h2 className="text-3xl font-bold text-foreground"><T>One platform. One price.</T></h2>
+            <p className="mt-3 text-muted-foreground"><T>Every module, every AI capability, no tiers to compare.</T></p>
           </InView>
 
           <InView className="mx-auto max-w-md">
@@ -159,20 +160,20 @@ export async function LandingPage() {
 
               <div className="flex items-baseline gap-3">
                 <span className="text-5xl font-bold text-foreground">{formatPrice(plan.annualPriceInCents)}</span>
-                <span className="text-muted-foreground">/year</span>
+                <span className="text-muted-foreground"><T>/year</T></span>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 or {formatPrice(plan.priceInCents)}/month, cancel anytime.
               </p>
 
               <div className="flex items-center gap-4 text-sm text-muted-foreground my-6">
-                <span>1-month free trial</span>
+                <span><T>1-month free trial</T></span>
                 <span aria-hidden>·</span>
-                <span>No card charged until trial ends</span>
+                <span><T>No card charged until trial ends</T></span>
               </div>
 
               <Button size="lg" className="w-full mb-8" asChild>
-                <Link href="/checkout">Start free trial</Link>
+                <Link href="/checkout"><T>Start free trial</T></Link>
               </Button>
 
               <div className="space-y-3">
@@ -212,7 +213,7 @@ export async function LandingPage() {
                 {t("navigation.pricing")}
               </Link>
               <Link href="/blog" className="transition-colors hover:text-foreground">
-                Blog
+                <T>Blog</T>
               </Link>
               <Link href="/security" className="transition-colors hover:text-foreground">
                 {t("landing.footer.security")}

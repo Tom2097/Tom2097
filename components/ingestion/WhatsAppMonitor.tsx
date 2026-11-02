@@ -1,4 +1,5 @@
 "use client";
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react";
 
@@ -43,7 +44,7 @@ export default function WhatsAppMonitor() {
 
     return (
         <div className="p-4 border rounded-lg shadow-sm bg-white">
-            <h2 className="text-lg font-semibold mb-4">WhatsApp Ingestion Monitor</h2>
+            <h2 className="text-lg font-semibold mb-4"><T>WhatsApp Ingestion Monitor</T></h2>
             <button
                 onClick={simulateWhatsAppMessage}
                 disabled={loading}
@@ -55,11 +56,11 @@ export default function WhatsAppMonitor() {
             {result && (
                 <div className="mt-4 p-3 border rounded-md">
                     <p>
-                        <strong>Transcription:</strong> {result.text}
+                        <strong><T>Transcription:</T></strong> {result.text}
                     </p>
                     {result.intent && (
                         <p>
-                            <strong>Intent:</strong> {result.intent}
+                            <strong><T>Intent:</T></strong> {result.intent}
                         </p>
                     )}
                     {result.entities && (

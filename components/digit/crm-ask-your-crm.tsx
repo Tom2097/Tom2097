@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useRef, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -70,8 +71,8 @@ export function CrmAskYourCrm() {
       <CardHeader className="p-4 pb-2 shrink-0">
         <CardTitle className="flex items-center gap-2 text-sm">
           <MessageSquare className="h-4 w-4 text-primary" />
-          Ask Your CRM
-          <Badge variant="secondary" className="text-[10px] ml-auto">Natural Language</Badge>
+          <T>Ask Your CRM</T>
+          <Badge variant="secondary" className="text-[10px] ml-auto"><T>Natural Language</T></Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0 flex-1 flex flex-col min-h-0">

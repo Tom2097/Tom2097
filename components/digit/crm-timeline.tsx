@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { Phone, Mail, MessageSquare, Calendar, FileText, CheckCircle2, ArrowRight, Plus, Loader2 } from "lucide-react"
@@ -106,8 +107,8 @@ export function CrmTimeline({ entityId, entityType }: { entityId?: string; entit
   return (
     <div className="relative">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-foreground">Engagement Timeline</h3>
-        <Button variant="outline" size="sm" className="gap-1 h-7 text-xs" onClick={() => setShowLogForm(!showLogForm)}><Plus className="w-3 h-3" /> Log Activity</Button>
+        <h3 className="text-sm font-medium text-foreground"><T>Engagement Timeline</T></h3>
+        <Button variant="outline" size="sm" className="gap-1 h-7 text-xs" onClick={() => setShowLogForm(!showLogForm)}><Plus className="w-3 h-3" /> <T>Log Activity</T></Button>
       </div>
 
       {showLogForm && (
@@ -127,13 +128,13 @@ export function CrmTimeline({ entityId, entityType }: { entityId?: string; entit
           <input value={logTitle} onChange={(e) => setLogTitle(e.target.value)} placeholder="Activity title..." className="w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
           <input value={logDesc} onChange={(e) => setLogDesc(e.target.value)} placeholder="Description (optional)..." className="w-full rounded-lg border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring" />
           <div className="flex gap-2">
-            <Button size="sm" className="h-7 text-xs" onClick={handleLogActivity}>Save</Button>
+            <Button size="sm" className="h-7 text-xs" onClick={handleLogActivity}><T>Save</T></Button>
             <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setShowLogForm(false)}>Cancel</Button>
           </div>
         </div>
       )}
 
-      {events.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">No timeline events yet</p>}
+      {events.length === 0 && <p className="text-xs text-muted-foreground text-center py-8"><T>No timeline events yet</T></p>}
       <div className="relative space-y-0">
         {events.map((event, i) => {
           const Icon = iconMap[event.type] || FileText

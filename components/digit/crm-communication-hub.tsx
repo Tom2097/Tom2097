@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { Send, Mail, MessageSquare, Phone, FileText, Plus, ChevronDown, Loader2 } from "lucide-react"
@@ -138,15 +139,15 @@ export function CrmCommunicationHub() {
   }
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
-  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchData} className="underline ml-1">Retry</button></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchData} className="underline ml-1"><T>Retry</T></button></div>
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <div className="lg:col-span-2 space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-foreground">Conversations</h3>
+          <h3 className="text-sm font-medium text-foreground"><T>Conversations</T></h3>
           <Button size="sm" className="gap-1 h-7 text-xs" onClick={() => setShowCompose(!showCompose)}>
-            {showCompose ? "Cancel" : <><Send className="w-3 h-3" /> Compose</>}
+            {showCompose ? "Cancel" : <><Send className="w-3 h-3" /> <T>Compose</T></>}
           </Button>
         </div>
 
@@ -181,7 +182,7 @@ export function CrmCommunicationHub() {
         )}
 
         <div className="space-y-2">
-          {messages.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">No conversations yet</p>}
+          {messages.length === 0 && <p className="text-xs text-muted-foreground text-center py-6"><T>No conversations yet</T></p>}
           {messages.map((msg) => (
             <Card key={msg.id} className={cn("p-3 border-border/50", msg.direction === "inbound" ? "border-l-2 border-l-primary" : "border-l-2 border-l-muted")}>
               <div className="flex items-start justify-between gap-2">
@@ -201,25 +202,25 @@ export function CrmCommunicationHub() {
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-foreground">Templates</h3>
+          <h3 className="text-sm font-medium text-foreground"><T>Templates</T></h3>
           <Dialog open={newTemplateOpen} onOpenChange={(open) => { setNewTemplateOpen(open); if (!open) resetTemplateForm() }}>
             <DialogTrigger asChild>
               <Button size="sm" variant="outline" className="gap-1 h-7 text-xs">
-                <Plus className="w-3 h-3" /> New
+                <Plus className="w-3 h-3" /> <T>New</T>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>New Template</DialogTitle>
-                <DialogDescription>Create a reusable communication template.</DialogDescription>
+                <DialogTitle><T>New Template</T></DialogTitle>
+                <DialogDescription><T>Create a reusable communication template.</T></DialogDescription>
               </DialogHeader>
               <div className="space-y-3 py-2">
                 <div className="space-y-2">
-                  <Label htmlFor="template-name">Name</Label>
+                  <Label htmlFor="template-name"><T>Name</T></Label>
                   <Input id="template-name" value={newTemplateName} onChange={(e) => setNewTemplateName(e.target.value)} placeholder="Welcome email" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="template-channel">Channel</Label>
+                  <Label htmlFor="template-channel"><T>Channel</T></Label>
                   <Select value={newTemplateChannel} onValueChange={setNewTemplateChannel}>
                     <SelectTrigger id="template-channel">
                       <SelectValue />
@@ -232,11 +233,11 @@ export function CrmCommunicationHub() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="template-subject">Subject</Label>
+                  <Label htmlFor="template-subject"><T>Subject</T></Label>
                   <Input id="template-subject" value={newTemplateSubject} onChange={(e) => setNewTemplateSubject(e.target.value)} placeholder="Welcome to {{company}}!" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="template-body">Body</Label>
+                  <Label htmlFor="template-body"><T>Body</T></Label>
                   <Textarea id="template-body" value={newTemplateBody} onChange={(e) => setNewTemplateBody(e.target.value)} rows={5} placeholder="Write your template content..." />
                 </div>
               </div>
@@ -250,7 +251,7 @@ export function CrmCommunicationHub() {
             </DialogContent>
           </Dialog>
         </div>
-        {templates.length === 0 && <p className="text-xs text-muted-foreground">No templates yet</p>}
+        {templates.length === 0 && <p className="text-xs text-muted-foreground"><T>No templates yet</T></p>}
         <div className="space-y-2">
           {templates.map((t) => (
             <Card key={t.id} className="p-3 border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => applyTemplate(t)}>

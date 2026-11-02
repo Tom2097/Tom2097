@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -125,7 +126,7 @@ export default function DashboardContent({
               <div className="absolute inset-8 animate-spin rounded-full border border-primary/40 [animation-duration:15s] [animation-direction:reverse]" />
               <div className="absolute inset-16 animate-spin rounded-full border border-primary/50 [animation-duration:10s]" />
               <div className="absolute inset-24 flex items-center justify-center rounded-full bg-primary digit-glow-lg">
-                <span className="text-3xl font-bold text-primary-foreground">AI</span>
+                <span className="text-3xl font-bold text-primary-foreground"><T>AI</T></span>
               </div>
               <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-xs font-medium text-primary">
                 {t("dashboard.hero.aiNetwork")}

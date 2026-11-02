@@ -43,6 +43,7 @@ export default function BillingPlansPage() {
   const [discountCode, setDiscountCode] = useState('')
   const [discountValid, setDiscountValid] = useState<boolean | null>(null)
   const [discountValue, setDiscountValue] = useState<number | null>(null)
+  const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage')
   const [discountReason, setDiscountReason] = useState('')
   const [applyingDiscount, setApplyingDiscount] = useState(false)
 
@@ -92,7 +93,8 @@ export default function BillingPlansPage() {
       if (res.ok && data.valid) {
         setDiscountValid(true)
         setDiscountValue(data.discount)
-        toast.success(t('billingPlans.page.success.discountApplied', { discount: data.discount }))
+        setDiscountType(data.discountType === 'fixed' ? 'fixed' : 'percentage')
+        toast.success(t('billingPlans.page.codeValid'))
         return
       }
 
@@ -249,10 +251,20 @@ export default function BillingPlansPage() {
             </p>
           )}
           {discountValid === true && discountValue && (
-            <p className="mt-2 text-sm text-emerald-500 flex items-center gap-1">
-              <Check className="h-3 w-3" />
-              {t('billingPlans.page.discountValidNote', { discount: discountValue })}
-            </p>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-emerald-500 flex items-center gap-1">
+                <Check className="h-3 w-3" />
+                {t('billingPlans.page.discountValidNote', {
+                  discount: discountType === 'percentage' ? `${discountValue}%` : formatPrice(discountValue * 100),
+                })}
+              </p>
+              {/* Codes are applied (and their price locked) at checkout. */}
+              <Button size="sm" asChild>
+                <Link href={`/checkout?code=${encodeURIComponent(discountCode.trim().toUpperCase())}`}>
+                  {t('billingPlans.page.useAtCheckout')}
+                </Link>
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import { ShieldCheck, AlertTriangle, Calendar } from "lucide-react"
 import { extractTenantContext } from "@/lib/multitenant/context.server"
 import { computeComplianceScore } from "@/lib/compliance/scoring"
@@ -54,7 +55,7 @@ export default async function CompliancePage() {
           <p className={`text-3xl font-bold ${overallScore >= 80 ? "text-green-500" : overallScore >= 50 ? "text-amber-500" : "text-red-500"}`}>
             {overallScore}%
           </p>
-          <p className="text-xs text-muted-foreground mt-1">Weighted across frameworks</p>
+          <p className="text-xs text-muted-foreground mt-1"><T>Weighted across frameworks</T></p>
         </div>
         <div className="rounded-2xl border border-border/50 bg-card p-6">
            <p className="text-sm text-muted-foreground">{t("compliance.page.openCapas")}</p>
@@ -76,12 +77,12 @@ export default async function CompliancePage() {
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="frameworks">Frameworks</TabsTrigger>
-          <TabsTrigger value="capas">CAPAs</TabsTrigger>
-          <TabsTrigger value="dsar">DSAR</TabsTrigger>
-          <TabsTrigger value="esignatures">E-Signatures</TabsTrigger>
-          <TabsTrigger value="audit-trail">Audit Trail</TabsTrigger>
+          <TabsTrigger value="overview"><T>Overview</T></TabsTrigger>
+          <TabsTrigger value="frameworks"><T>Frameworks</T></TabsTrigger>
+          <TabsTrigger value="capas"><T>CAPAs</T></TabsTrigger>
+          <TabsTrigger value="dsar"><T>DSAR</T></TabsTrigger>
+          <TabsTrigger value="esignatures"><T>E-Signatures</T></TabsTrigger>
+          <TabsTrigger value="audit-trail"><T>Audit Trail</T></TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">

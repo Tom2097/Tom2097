@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -146,19 +147,19 @@ export function CrmWhatsAppNurture() {
   }
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
-  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchSequences} className="underline ml-1">Retry</button></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchSequences} className="underline ml-1"><T>Retry</T></button></div>
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-green-500" />
-          <p className="text-sm font-medium">WhatsApp Nurture Sequences</p>
+          <p className="text-sm font-medium"><T>WhatsApp Nurture Sequences</T></p>
         </div>
         <Badge variant="secondary" className="text-[10px]">{sequences.length} active sequences</Badge>
       </div>
 
-      {sequences.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No sequences yet</p>
+      {sequences.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8"><T>No sequences yet</T></p>
       : <div className="space-y-3">
         {sequences.map((seq, i) => (
           <motion.div key={seq.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
@@ -171,7 +172,7 @@ export function CrmWhatsAppNurture() {
                 <p className="text-sm font-medium">{seq.name}</p>
                 <p className="text-xs text-muted-foreground">{seq.prospect} · {seq.steps.length} steps</p>
               </div>
-              <Badge variant="outline" className="text-[10px]">Active</Badge>
+              <Badge variant="outline" className="text-[10px]"><T>Active</T></Badge>
             </div>
 
             {expanded === seq.id && (
@@ -225,13 +226,13 @@ export function CrmWhatsAppNurture() {
       <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (!open) setSelectedLeadId("") }}>
         <DialogTrigger asChild>
           <Button variant="outline" className="w-full text-xs">
-            <Plus className="h-3 w-3 mr-1" />Create New Sequence
+            <Plus className="h-3 w-3 mr-1" /><T>Create New Sequence</T>
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Create Nurture Sequence</DialogTitle>
-            <DialogDescription>Pick a lead to generate a WhatsApp nurture sequence for.</DialogDescription>
+            <DialogTitle><T>Create Nurture Sequence</T></DialogTitle>
+            <DialogDescription><T>Pick a lead to generate a WhatsApp nurture sequence for.</T></DialogDescription>
           </DialogHeader>
           <div className="py-2">
             <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>

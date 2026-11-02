@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -174,21 +175,21 @@ export function AuditRetention() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Audit Log Retention</h2>
-          <p className="text-sm text-muted-foreground">Manage retention policies for audit logs</p>
+          <h2 className="text-2xl font-bold text-foreground"><T>Audit Log Retention</T></h2>
+          <p className="text-sm text-muted-foreground"><T>Manage retention policies for audit logs</T></p>
         </div>
         <div className="flex gap-2">
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline">
-                <History className="h-4 w-4 mr-2" /> View History
+                <History className="h-4 w-4 mr-2" /> <T>View History</T>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Retention Cleanup History</DialogTitle>
+                <DialogTitle><T>Retention Cleanup History</T></DialogTitle>
                 <DialogDescription>
-                  Recent retention cleanup operations
+                  <T>Recent retention cleanup operations</T>
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
@@ -196,9 +197,9 @@ export function AuditRetention() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Logs Deleted</TableHead>
-                        <TableHead>Policies Applied</TableHead>
+                        <TableHead><T>Date</T></TableHead>
+                        <TableHead><T>Logs Deleted</T></TableHead>
+                        <TableHead><T>Policies Applied</T></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -213,7 +214,7 @@ export function AuditRetention() {
                   </Table>
                 ) : (
                   <div className="flex items-center justify-center py-8 text-muted-foreground">
-                    No retention history found
+                    <T>No retention history found</T>
                   </div>
                 )}
               </div>
@@ -228,9 +229,9 @@ export function AuditRetention() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Retention Policies</CardTitle>
+          <CardTitle><T>Retention Policies</T></CardTitle>
           <CardDescription>
-            Configure how long audit logs are retained before automatic deletion
+            <T>Configure how long audit logs are retained before automatic deletion</T>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -244,10 +245,10 @@ export function AuditRetention() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Retention Period</TableHead>
-                      <TableHead>Scope</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead><T>Retention Period</T></TableHead>
+                      <TableHead><T>Scope</T></TableHead>
+                      <TableHead><T>Status</T></TableHead>
+                      <TableHead><T>Actions</T></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -271,12 +272,12 @@ export function AuditRetention() {
                               <SelectValue placeholder="Select scope" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="all">All Logs</SelectItem>
-                              <SelectItem value="auth">Authentication</SelectItem>
-                              <SelectItem value="document">Documents</SelectItem>
-                              <SelectItem value="crm">CRM</SelectItem>
-                              <SelectItem value="billing">Billing</SelectItem>
-                              <SelectItem value="system">System</SelectItem>
+                              <SelectItem value="all"><T>All Logs</T></SelectItem>
+                              <SelectItem value="auth"><T>Authentication</T></SelectItem>
+                              <SelectItem value="document"><T>Documents</T></SelectItem>
+                              <SelectItem value="crm"><T>CRM</T></SelectItem>
+                              <SelectItem value="billing"><T>Billing</T></SelectItem>
+                              <SelectItem value="system"><T>System</T></SelectItem>
                             </SelectContent>
                           </Select>
                         </TableCell>
@@ -302,10 +303,10 @@ export function AuditRetention() {
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Add New Policy</h3>
+                <h3 className="text-lg font-medium"><T>Add New Policy</T></h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                   <div className="space-y-2">
-                    <Label htmlFor="retention-days">Retention Period (days)</Label>
+                    <Label htmlFor="retention-days"><T>Retention Period (days)</T></Label>
                     <Input
                       id="retention-days"
                       type="number"
@@ -315,7 +316,7 @@ export function AuditRetention() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="policy-scope">Scope</Label>
+                    <Label htmlFor="policy-scope"><T>Scope</T></Label>
                     <Select
                       value={newPolicy.apply_to}
                       onValueChange={(value) => setNewPolicy({...newPolicy, apply_to: value as any})}
@@ -324,17 +325,17 @@ export function AuditRetention() {
                         <SelectValue placeholder="Select scope" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Logs</SelectItem>
-                        <SelectItem value="auth">Authentication</SelectItem>
-                        <SelectItem value="document">Documents</SelectItem>
-                        <SelectItem value="crm">CRM</SelectItem>
-                        <SelectItem value="billing">Billing</SelectItem>
-                        <SelectItem value="system">System</SelectItem>
+                        <SelectItem value="all"><T>All Logs</T></SelectItem>
+                        <SelectItem value="auth"><T>Authentication</T></SelectItem>
+                        <SelectItem value="document"><T>Documents</T></SelectItem>
+                        <SelectItem value="crm"><T>CRM</T></SelectItem>
+                        <SelectItem value="billing"><T>Billing</T></SelectItem>
+                        <SelectItem value="system"><T>System</T></SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="policy-active">Active</Label>
+                    <Label htmlFor="policy-active"><T>Active</T></Label>
                     <Switch
                       id="policy-active"
                       checked={newPolicy.is_active}
@@ -342,7 +343,7 @@ export function AuditRetention() {
                     />
                   </div>
                   <Button onClick={addPolicy}>
-                    <Plus className="h-4 w-4 mr-2" /> Add Policy
+                    <Plus className="h-4 w-4 mr-2" /> <T>Add Policy</T>
                   </Button>
                 </div>
               </div>
@@ -360,9 +361,9 @@ export function AuditRetention() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Retention Summary</CardTitle>
+          <CardTitle><T>Retention Summary</T></CardTitle>
           <CardDescription>
-            Current retention settings overview
+            <T>Current retention settings overview</T>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -383,12 +384,12 @@ export function AuditRetention() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Retention Period:</span>
+                      <span className="text-muted-foreground"><T>Retention Period:</T></span>
                       <span className="font-medium">{policy.retention_period_days} days</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <History className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Cutoff Date:</span>
+                      <span className="text-muted-foreground"><T>Cutoff Date:</T></span>
                       <span className="font-medium">
                         {cutoffDates[index]}
                       </span>

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
@@ -119,48 +120,48 @@ export function CapaManager() {
     <Card className="p-6 border-border/50 bg-card/50">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="font-semibold text-foreground">CAPA Management</h3>
-          <p className="text-sm text-muted-foreground">Corrective and Preventive Actions</p>
+          <h3 className="font-semibold text-foreground"><T>CAPA Management</T></h3>
+          <p className="text-sm text-muted-foreground"><T>Corrective and Preventive Actions</T></p>
         </div>
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-2" />New CAPA</Button>
+            <Button><Plus className="w-4 h-4 mr-2" /><T>New CAPA</T></Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create CAPA</DialogTitle>
-              <DialogDescription>Document a corrective or preventive action</DialogDescription>
+              <DialogTitle><T>Create CAPA</T></DialogTitle>
+              <DialogDescription><T>Document a corrective or preventive action</T></DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Title</Label>
+                <Label><T>Title</T></Label>
                 <Input value={newCapa.title} onChange={(e) => setNewCapa(p => ({ ...p, title: e.target.value }))} />
               </div>
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label><T>Description</T></Label>
                 <Textarea value={newCapa.description} onChange={(e) => setNewCapa(p => ({ ...p, description: e.target.value }))} rows={3} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Source</Label>
+                  <Label><T>Source</T></Label>
                   <Select value={newCapa.source} onValueChange={(v) => setNewCapa(p => ({ ...p, source: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="quality">Quality</SelectItem>
-                      <SelectItem value="safety">Safety</SelectItem>
-                      <SelectItem value="compliance">Compliance</SelectItem>
-                      <SelectItem value="process">Process</SelectItem>
+                      <SelectItem value="quality"><T>Quality</T></SelectItem>
+                      <SelectItem value="safety"><T>Safety</T></SelectItem>
+                      <SelectItem value="compliance"><T>Compliance</T></SelectItem>
+                      <SelectItem value="process"><T>Process</T></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Severity</Label>
+                  <Label><T>Severity</T></Label>
                   <Select value={newCapa.severity} onValueChange={(v) => setNewCapa(p => ({ ...p, severity: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="minor">Minor</SelectItem>
-                      <SelectItem value="major">Major</SelectItem>
-                      <SelectItem value="critical">Critical</SelectItem>
+                      <SelectItem value="minor"><T>Minor</T></SelectItem>
+                      <SelectItem value="major"><T>Major</T></SelectItem>
+                      <SelectItem value="critical"><T>Critical</T></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -184,11 +185,11 @@ export function CapaManager() {
         </div>
         <Tabs value={filter} onValueChange={setFilter}>
           <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="open">Open</TabsTrigger>
-            <TabsTrigger value="investigation">Investigation</TabsTrigger>
-            <TabsTrigger value="action">Action</TabsTrigger>
-            <TabsTrigger value="closed">Closed</TabsTrigger>
+            <TabsTrigger value="all"><T>All</T></TabsTrigger>
+            <TabsTrigger value="open"><T>Open</T></TabsTrigger>
+            <TabsTrigger value="investigation"><T>Investigation</T></TabsTrigger>
+            <TabsTrigger value="action"><T>Action</T></TabsTrigger>
+            <TabsTrigger value="closed"><T>Closed</T></TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -198,7 +199,7 @@ export function CapaManager() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <ClipboardCheck className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No CAPA records found</p>
+          <p><T>No CAPA records found</T></p>
         </div>
       ) : (
         <div className="space-y-3">

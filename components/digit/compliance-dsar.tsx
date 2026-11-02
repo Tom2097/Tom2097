@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
@@ -206,21 +207,21 @@ export function ComplianceDsar() {
       <Card className="p-6 border-border/50 bg-card/50">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="font-semibold text-foreground">Data Subject Requests</h3>
-            <p className="text-sm text-muted-foreground">Track and triage GDPR/DPDP data subject access requests</p>
+            <h3 className="font-semibold text-foreground"><T>Data Subject Requests</T></h3>
+            <p className="text-sm text-muted-foreground"><T>Track and triage GDPR/DPDP data subject access requests</T></p>
           </div>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-2" />Log Request</Button>
+              <Button><Plus className="w-4 h-4 mr-2" /><T>Log Request</T></Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Log a Data Subject Request</DialogTitle>
-                <DialogDescription>Record a request received from a data subject</DialogDescription>
+                <DialogTitle><T>Log a Data Subject Request</T></DialogTitle>
+                <DialogDescription><T>Record a request received from a data subject</T></DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label>Subject Email</Label>
+                  <Label><T>Subject Email</T></Label>
                   <Input
                     type="email"
                     value={newRequest.subjectEmail}
@@ -229,7 +230,7 @@ export function ComplianceDsar() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Request Type</Label>
+                  <Label><T>Request Type</T></Label>
                   <Select value={newRequest.requestType} onValueChange={(v) => setNewRequest((p) => ({ ...p, requestType: v as DsarRequest["request_type"] }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -254,7 +255,7 @@ export function ComplianceDsar() {
         {requests.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>No data subject requests logged</p>
+            <p><T>No data subject requests logged</T></p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -278,10 +279,10 @@ export function ComplianceDsar() {
                   {req.status !== "completed" && req.status !== "rejected" && (
                     <>
                       <Button size="sm" variant="ghost" className="text-xs gap-1" onClick={() => handleStatusChange(req.id, "completed")}>
-                        <Check className="w-3 h-3" />Complete
+                        <Check className="w-3 h-3" /><T>Complete</T>
                       </Button>
                       <Button size="sm" variant="ghost" className="text-xs gap-1" onClick={() => handleStatusChange(req.id, "rejected")}>
-                        <X className="w-3 h-3" />Reject
+                        <X className="w-3 h-3" /><T>Reject</T>
                       </Button>
                     </>
                   )}
@@ -294,15 +295,15 @@ export function ComplianceDsar() {
 
       <Card className="p-6 border-border/50 bg-card/50">
         <div className="mb-6">
-          <h3 className="font-semibold text-foreground">Your Privacy Controls</h3>
-          <p className="text-sm text-muted-foreground">Self-service actions on your own account data</p>
+          <h3 className="font-semibold text-foreground"><T>Your Privacy Controls</T></h3>
+          <p className="text-sm text-muted-foreground"><T>Self-service actions on your own account data</T></p>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
           <Button variant="outline" className="justify-start gap-2 h-auto py-3" onClick={handleExport} disabled={exporting}>
             {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             <div className="text-left">
-              <p className="text-sm font-medium">Export My Data</p>
-              <p className="text-xs text-muted-foreground font-normal">Right of access</p>
+              <p className="text-sm font-medium"><T>Export My Data</T></p>
+              <p className="text-xs text-muted-foreground font-normal"><T>Right of access</T></p>
             </div>
           </Button>
           <Dialog open={rectifyOpen} onOpenChange={setRectifyOpen}>
@@ -310,23 +311,23 @@ export function ComplianceDsar() {
               <Button variant="outline" className="justify-start gap-2 h-auto py-3">
                 <Pencil className="w-4 h-4" />
                 <div className="text-left">
-                  <p className="text-sm font-medium">Correct a Field</p>
-                  <p className="text-xs text-muted-foreground font-normal">Right of rectification</p>
+                  <p className="text-sm font-medium"><T>Correct a Field</T></p>
+                  <p className="text-xs text-muted-foreground font-normal"><T>Right of rectification</T></p>
                 </div>
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Correct Profile Data</DialogTitle>
-                <DialogDescription>Update a field on your profile</DialogDescription>
+                <DialogTitle><T>Correct Profile Data</T></DialogTitle>
+                <DialogDescription><T>Update a field on your profile</T></DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label>Field</Label>
+                  <Label><T>Field</T></Label>
                   <Input value={rectifyField.field} onChange={(e) => setRectifyField((p) => ({ ...p, field: e.target.value }))} placeholder="full_name" />
                 </div>
                 <div className="space-y-2">
-                  <Label>New Value</Label>
+                  <Label><T>New Value</T></Label>
                   <Input value={rectifyField.value} onChange={(e) => setRectifyField((p) => ({ ...p, value: e.target.value }))} />
                 </div>
               </div>
@@ -343,22 +344,22 @@ export function ComplianceDsar() {
             <div className="flex items-center gap-2">
               <ShieldOff className="w-4 h-4 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Restrict Processing</p>
-                <p className="text-xs text-muted-foreground">Right to restriction</p>
+                <p className="text-sm font-medium"><T>Restrict Processing</T></p>
+                <p className="text-xs text-muted-foreground"><T>Right to restriction</T></p>
               </div>
             </div>
             <Switch checked={restricted} onCheckedChange={handleRestrictToggle} />
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-4">
-          To permanently delete your account (right to erasure), use Settings &gt; Security &gt; Danger Zone.
+          <T>To permanently delete your account (right to erasure), use Settings &gt; Security &gt; Danger Zone.</T>
         </p>
       </Card>
 
       <Card className="p-6 border-border/50 bg-card/50">
         <div className="mb-6">
-          <h3 className="font-semibold text-foreground">Consent</h3>
-          <p className="text-sm text-muted-foreground">Manage what you&apos;ve consented to</p>
+          <h3 className="font-semibold text-foreground"><T>Consent</T></h3>
+          <p className="text-sm text-muted-foreground"><T>Manage what you&apos;ve consented to</T></p>
         </div>
         <div className="space-y-3">
           {CONSENT_PURPOSES.map((purpose) => {
@@ -380,8 +381,8 @@ export function ComplianceDsar() {
       <Dialog open={exportOpen} onOpenChange={setExportOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Your Data Export</DialogTitle>
-            <DialogDescription>A copy of the personal data associated with your account</DialogDescription>
+            <DialogTitle><T>Your Data Export</T></DialogTitle>
+            <DialogDescription><T>A copy of the personal data associated with your account</T></DialogDescription>
           </DialogHeader>
           <pre className="max-h-96 overflow-auto rounded-lg bg-muted/50 p-4 text-xs">
             {JSON.stringify(exportData, null, 2)}

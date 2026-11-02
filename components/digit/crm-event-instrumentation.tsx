@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -43,12 +44,12 @@ export function CrmEventInstrumentation() {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
             <BarChart3 className="h-4 w-4 text-primary" />
-            Event Instrumentation
-            <Badge variant="secondary" className="text-[10px]">Analytics</Badge>
+            <T>Event Instrumentation</T>
+            <Badge variant="secondary" className="text-[10px]"><T>Analytics</T></Badge>
           </div>
           <div className="flex gap-1">
             <Button size="sm" variant="default" className="h-7 text-[10px]" disabled>
-              <Layers className="h-3 w-3 mr-1" />Funnel
+              <Layers className="h-3 w-3 mr-1" /><T>Funnel</T>
             </Button>
             <Button
               size="sm"
@@ -57,13 +58,13 @@ export function CrmEventInstrumentation() {
               disabled
               title="Retention/cohort analytics are not available yet in this environment."
             >
-              <CalendarDays className="h-3 w-3 mr-1" />Retention
+              <CalendarDays className="h-3 w-3 mr-1" /><T>Retention</T>
             </Button>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4">
-        {funnelData.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No funnel data</p>
+        {funnelData.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8"><T>No funnel data</T></p>
         : <div className="space-y-3">
           <div className="h-[250px]">
             <LiveChart data={funnelData.map((d) => ({ name: d.step, count: d.count }))} dataKey="count" type="bar" color="var(--chart-2)" />

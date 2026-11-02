@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useRef, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -131,9 +132,9 @@ export function SplitView({ document, onSelectDocument }: SplitViewProps) {
         <div className="flex flex-col min-w-0 min-h-0">
           <Tabs value={activeView} onValueChange={setActiveView} className="flex-1 flex flex-col min-h-0">
             <TabsList className="grid grid-cols-3 mx-2 mt-2 shrink-0">
-              <TabsTrigger value="extracted" className="text-xs"><Database className="h-3 w-3 mr-1" />Data</TabsTrigger>
-              <TabsTrigger value="chat" className="text-xs"><MessageSquare className="h-3 w-3 mr-1" />AI Chat</TabsTrigger>
-              <TabsTrigger value="document" className="text-xs"><FileText className="h-3 w-3 mr-1" />Raw</TabsTrigger>
+              <TabsTrigger value="extracted" className="text-xs"><Database className="h-3 w-3 mr-1" /><T>Data</T></TabsTrigger>
+              <TabsTrigger value="chat" className="text-xs"><MessageSquare className="h-3 w-3 mr-1" /><T>AI Chat</T></TabsTrigger>
+              <TabsTrigger value="document" className="text-xs"><FileText className="h-3 w-3 mr-1" /><T>Raw</T></TabsTrigger>
             </TabsList>
 
             <TabsContent value="extracted" className="flex-1 min-h-0 p-4 mt-0 overflow-auto">
@@ -142,8 +143,8 @@ export function SplitView({ document, onSelectDocument }: SplitViewProps) {
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <Database className="h-8 w-8 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">No extracted data yet</p>
-                  <p className="text-xs text-muted-foreground mt-1">Use the Extract action in the feed</p>
+                  <p className="text-sm text-muted-foreground"><T>No extracted data yet</T></p>
+                  <p className="text-xs text-muted-foreground mt-1"><T>Use the Extract action in the feed</T></p>
                 </div>
               )}
             </TabsContent>

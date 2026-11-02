@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
@@ -151,7 +152,7 @@ export function CausalGraphVisualization({ data }: { data?: GraphData }) {
     return (
       <Card>
         <CardContent className="p-12 text-center">
-          <p className="text-muted-foreground">No graph data available</p>
+          <p className="text-muted-foreground"><T>No graph data available</T></p>
         </CardContent>
       </Card>
     )
@@ -165,7 +166,7 @@ export function CausalGraphVisualization({ data }: { data?: GraphData }) {
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <h3 className="font-medium">Cross-Module Causal Graph</h3>
+            <h3 className="font-medium"><T>Cross-Module Causal Graph</T></h3>
             <Badge variant="outline">
               {graph.nodes.length} entities
             </Badge>

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 import { useI18n } from "@/components/providers/i18n-provider"
 
 import { motion } from "framer-motion"
@@ -25,7 +26,7 @@ export default function RefundPolicyPage() {
             <Logo size="md" />
           </Link>
           <Button variant="outline" asChild>
-            <Link href="/#pricing">View Plans</Link>
+            <Link href="/#pricing"><T>View Plans</T></Link>
           </Button>
         </div>
       </header>
@@ -40,10 +41,10 @@ export default function RefundPolicyPage() {
             className="text-center mb-12"
           >
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Refund Policy
+              <T>Refund Policy</T>
             </h1>
             <p className="text-lg text-muted-foreground">
-              Our refund policy for DigiT Enterprise Intelligence subscriptions
+              <T>Our refund policy for DigiT Enterprise Intelligence subscriptions</T>
             </p>
           </motion.div>
 
@@ -56,16 +57,16 @@ export default function RefundPolicyPage() {
             <Card className="p-8 mb-8">
               <div className="space-y-6">
                 <InView delay={0 * 0.08}>
-                  <h2 className="text-2xl font-bold text-foreground mb-4">Monthly Plans</h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-4"><T>Monthly Plans</T></h2>
                   <div className="space-y-4">
                     <div className="flex items-start gap-4">
                       <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-1">
                         <Check className="w-4 h-4 text-emerald-500" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground">30-Day Refund Window</h3>
+                        <h3 className="font-semibold text-foreground"><T>30-Day Refund Window</T></h3>
                         <p className="text-muted-foreground mt-1">
-                          You can request a full refund within 30 days of your first payment. After this period, refunds are not available.
+                          <T>You can request a full refund within 30 days of your first payment. After this period, refunds are not available.</T>
                         </p>
                       </div>
                     </div>
@@ -75,9 +76,9 @@ export default function RefundPolicyPage() {
                         <Clock className="w-4 h-4 text-blue-500" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground">Trial Period</h3>
+                        <h3 className="font-semibold text-foreground"><T>Trial Period</T></h3>
                         <p className="text-muted-foreground mt-1">
-                          Every plan, monthly or annual, includes a 1-month free trial. You won&apos;t be charged until the trial ends.
+                          <T>Every plan, monthly or annual, includes a 1-month free trial. You won&apos;t be charged until the trial ends.</T>
                         </p>
                       </div>
                     </div>
@@ -87,9 +88,9 @@ export default function RefundPolicyPage() {
                         <AlertCircle className="w-4 h-4 text-amber-500" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground">Cancellation</h3>
+                        <h3 className="font-semibold text-foreground"><T>Cancellation</T></h3>
                         <p className="text-muted-foreground mt-1">
-                          You can cancel your subscription at any time. If you cancel within the 30-day refund window, you&apos;ll receive a full refund.
+                          <T>You can cancel your subscription at any time. If you cancel within the 30-day refund window, you&apos;ll receive a full refund.</T>
                         </p>
                       </div>
                     </div>
@@ -97,16 +98,16 @@ export default function RefundPolicyPage() {
                 </InView>
 
                 <InView delay={1 * 0.08}>
-                  <h2 className="text-2xl font-bold text-foreground mb-4">Yearly Plans</h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-4"><T>Yearly Plans</T></h2>
                   <div className="space-y-4">
                     <div className="flex items-start gap-4">
                       <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-1">
                         <Shield className="w-4 h-4 text-red-500" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground">No Refunds</h3>
+                        <h3 className="font-semibold text-foreground"><T>No Refunds</T></h3>
                         <p className="text-muted-foreground mt-1">
-                          Yearly plans are non-refundable. Once purchased, you cannot receive a refund for any unused portion of the subscription.
+                          <T>Yearly plans are non-refundable. Once purchased, you cannot receive a refund for any unused portion of the subscription.</T>
                         </p>
                       </div>
                     </div>
@@ -116,9 +117,9 @@ export default function RefundPolicyPage() {
                         <AlertCircle className="w-4 h-4 text-amber-500" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground">3-Month Minimum Commitment</h3>
+                        <h3 className="font-semibold text-foreground"><T>3-Month Minimum Commitment</T></h3>
                         <p className="text-muted-foreground mt-1">
-                          Yearly plans require a 3-month minimum commitment. You can cancel after 3 months, but no refund will be issued.
+                          <T>Yearly plans require a 3-month minimum commitment. You can cancel after 3 months, but no refund will be issued.</T>
                         </p>
                       </div>
                     </div>
@@ -126,7 +127,7 @@ export default function RefundPolicyPage() {
                 </InView>
 
                 <InView delay={2 * 0.08}>
-                  <h2 className="text-2xl font-bold text-foreground mb-4">How to Request a Refund</h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-4"><T>How to Request a Refund</T></h2>
                   <div className="space-y-4">
                     <div className="flex items-start gap-4">
                       <div
@@ -136,9 +137,9 @@ export default function RefundPolicyPage() {
                         <Check className="w-4 h-4" style={{ color: TRIAD[0] }} />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground">Eligibility</h3>
+                        <h3 className="font-semibold text-foreground"><T>Eligibility</T></h3>
                         <p className="text-muted-foreground mt-1">
-                          Refunds are only available for monthly plans within 30 days of the first payment.
+                          <T>Refunds are only available for monthly plans within 30 days of the first payment.</T>
                         </p>
                       </div>
                     </div>
@@ -151,9 +152,9 @@ export default function RefundPolicyPage() {
                         <Check className="w-4 h-4" style={{ color: TRIAD[1] }} />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground">Request Process</h3>
+                        <h3 className="font-semibold text-foreground"><T>Request Process</T></h3>
                         <p className="text-muted-foreground mt-1">
-                          Go to <Link href="/settings/billing" className="text-primary hover:underline">Settings → Billing</Link> and click &quot;Request Refund&quot;.
+                          <T>Go to</T> <Link href="/settings/billing" className="text-primary hover:underline"><T>Settings → Billing</T></Link> <T>and click &quot;Request Refund&quot;.</T>
                         </p>
                       </div>
                     </div>
@@ -166,9 +167,9 @@ export default function RefundPolicyPage() {
                         <Check className="w-4 h-4" style={{ color: TRIAD[2] }} />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground">Processing Time</h3>
+                        <h3 className="font-semibold text-foreground"><T>Processing Time</T></h3>
                         <p className="text-muted-foreground mt-1">
-                          Refunds typically take 3-5 business days to process and appear on your original payment method.
+                          <T>Refunds typically take 3-5 business days to process and appear on your original payment method.</T>
                         </p>
                       </div>
                     </div>
@@ -180,7 +181,7 @@ export default function RefundPolicyPage() {
             <div className="text-center">
               <Button asChild>
                 <Link href="/settings/billing">
-                  Manage Billing
+                  <T>Manage Billing</T>
                 </Link>
               </Button>
             </div>

@@ -1,4 +1,5 @@
 "use client";
+import { T } from "@/components/i18n/t"
 
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
@@ -29,7 +30,7 @@ const LeadScoreVisual = ({ score, className }: LeadScoreVisualProps) => {
     <Card className={className}>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium flex justify-between items-center">
-          Lead Score
+          <T>Lead Score</T>
           <Badge variant={getBadgeVariant()}>{score.priority}</Badge>
         </CardTitle>
       </CardHeader>
@@ -40,15 +41,15 @@ const LeadScoreVisual = ({ score, className }: LeadScoreVisualProps) => {
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
           <div className="flex flex-col">
-            <span className="text-gray-500">Engagement</span>
+            <span className="text-gray-500"><T>Engagement</T></span>
             <span className="font-medium">{score.factors.engagement}</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-gray-500">Firmographics</span>
+            <span className="text-gray-500"><T>Firmographics</T></span>
             <span className="font-medium">{score.factors.firmographics}</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-gray-500">Intent</span>
+            <span className="text-gray-500"><T>Intent</T></span>
             <span className="font-medium">{score.factors.intent}</span>
           </div>
         </div>

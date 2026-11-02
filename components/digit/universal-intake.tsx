@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -77,7 +78,7 @@ export function UniversalIntake() {
                 <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
                   <Upload className="h-8 w-8 text-primary" />
                 </div>
-                <p className="text-sm text-muted-foreground">Drop files here or click to browse</p>
+                <p className="text-sm text-muted-foreground"><T>Drop files here or click to browse</T></p>
                 <input ref={fileRef} type="file" className="hidden" onChange={handleFileUpload} />
                 <Button onClick={() => fileRef.current?.click()} disabled={loading}>
                   {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
@@ -89,28 +90,28 @@ export function UniversalIntake() {
             {activeDoor === "email" && (
               <div className="py-8 text-center space-y-3">
                 <Mail className="h-10 w-10 mx-auto text-purple-500" />
-                <p className="text-sm font-medium">Forward emails to</p>
+                <p className="text-sm font-medium"><T>Forward emails to</T></p>
                 <code className="px-3 py-1.5 bg-muted rounded-lg text-sm font-mono">support@digit-ai.in</code>
-                <p className="text-xs text-muted-foreground">Attachments are automatically extracted and processed</p>
+                <p className="text-xs text-muted-foreground"><T>Attachments are automatically extracted and processed</T></p>
               </div>
             )}
 
             {activeDoor === "voice" && (
               <div className="py-8 text-center space-y-3">
                 <Mic className="h-10 w-10 mx-auto text-pink-500" />
-                <p className="text-sm font-medium">Send voice notes via WhatsApp</p>
+                <p className="text-sm font-medium"><T>Send voice notes via WhatsApp</T></p>
                 <code className="px-3 py-1.5 bg-muted rounded-lg text-sm font-mono">+1 (555) DIGIT-01</code>
-                <p className="text-xs text-muted-foreground">Voice notes are transcribed and processed automatically</p>
+                <p className="text-xs text-muted-foreground"><T>Voice notes are transcribed and processed automatically</T></p>
               </div>
             )}
 
             {activeDoor === "scan" && (
               <div className="py-8 text-center space-y-3">
                 <Camera className="h-10 w-10 mx-auto text-emerald-500" />
-                <p className="text-sm font-medium">Snap a photo to upload</p>
+                <p className="text-sm font-medium"><T>Snap a photo to upload</T></p>
                 <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileUpload} />
-                <Button variant="outline" onClick={() => fileRef.current?.click()}><Camera className="h-4 w-4 mr-2" />Take Photo</Button>
-                <p className="text-xs text-muted-foreground">OCR extracts text from scans of invoices, whiteboards, handwritten notes</p>
+                <Button variant="outline" onClick={() => fileRef.current?.click()}><Camera className="h-4 w-4 mr-2" /><T>Take Photo</T></Button>
+                <p className="text-xs text-muted-foreground"><T>OCR extracts text from scans of invoices, whiteboards, handwritten notes</T></p>
               </div>
             )}
 
@@ -151,7 +152,7 @@ export function UniversalIntake() {
                   </dl>
                 )}
                 {result.analysis?.status === "failed" && (
-                  <p className="mt-2 text-xs text-muted-foreground">Saved, but analysis couldn&apos;t be completed.</p>
+                  <p className="mt-2 text-xs text-muted-foreground"><T>Saved, but analysis couldn&apos;t be completed.</T></p>
                 )}
               </div>
             )}

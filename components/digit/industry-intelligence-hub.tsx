@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -237,14 +238,14 @@ export function IndustryIntelligenceHub() {
               </div>
               <div>
                 <h2 className="text-xl font-semibold flex items-center gap-2">
-                  AI Intelligence Hub
+                  <T>AI Intelligence Hub</T>
                   <Badge variant="secondary" className="ml-2">
                     <Sparkles className="w-3 h-3 mr-1" />
-                    Active
+                    <T>Active</T>
                   </Badge>
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Continuously learning from your data and industry trends
+                  <T>Continuously learning from your data and industry trends</T>
                 </p>
               </div>
             </div>
@@ -253,15 +254,15 @@ export function IndustryIntelligenceHub() {
               <div className="flex items-center gap-6">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-primary">{learningStats.totalInteractions.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">Data Points</p>
+                  <p className="text-xs text-muted-foreground"><T>Data Points</T></p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-primary">{learningStats.insightsGenerated}</p>
-                  <p className="text-xs text-muted-foreground">Insights</p>
+                  <p className="text-xs text-muted-foreground"><T>Insights</T></p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-primary">{Math.round(learningStats.accuracyScore * 100)}%</p>
-                  <p className="text-xs text-muted-foreground">Accuracy</p>
+                  <p className="text-xs text-muted-foreground"><T>Accuracy</T></p>
                 </div>
                 <Button
                   variant="outline"
@@ -281,12 +282,12 @@ export function IndustryIntelligenceHub() {
           {learningStats && !isLoading && (
             <div className="mt-4 pt-4 border-t border-border/50">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">AI Learning Progress</span>
+                <span className="text-sm text-muted-foreground"><T>AI Learning Progress</T></span>
                 <span className="text-sm font-medium">{Math.round(learningStats.learningProgress * 100)}%</span>
               </div>
               <Progress value={learningStats.learningProgress * 100} className="h-2" />
               <p className="text-xs text-muted-foreground mt-2">
-                The more you interact with DigiT, the more personalized your insights become.
+                <T>The more you interact with DigiT, the more personalized your insights become.</T>
               </p>
             </div>
           )}
@@ -307,15 +308,15 @@ export function IndustryIntelligenceHub() {
           </TabsTrigger>
           <TabsTrigger value="benchmarks" className="gap-2">
             <BarChart3 className="w-4 h-4" />
-            Benchmarks
+            <T>Benchmarks</T>
           </TabsTrigger>
           <TabsTrigger value="predictions" className="gap-2">
             <Target className="w-4 h-4" />
-            Predictions
+            <T>Predictions</T>
           </TabsTrigger>
           <TabsTrigger value="resources" className="gap-2">
             <BookOpen className="w-4 h-4" />
-            Resources
+            <T>Resources</T>
           </TabsTrigger>
         </TabsList>
 
@@ -365,7 +366,7 @@ export function IndustryIntelligenceHub() {
                             <div className="flex items-start justify-between gap-4 mb-2">
                               <div className="flex items-center gap-2 flex-wrap">
                                 {insight.isNew && (
-                                  <Badge className="bg-primary text-primary-foreground">New</Badge>
+                                  <Badge className="bg-primary text-primary-foreground"><T>New</T></Badge>
                                 )}
                                 <Badge variant="outline" className="capitalize">
                                   {insight.category}
@@ -404,7 +405,7 @@ export function IndustryIntelligenceHub() {
                                 )}
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground">Helpful?</span>
+                                <span className="text-xs text-muted-foreground"><T>Helpful?</T></span>
                                 <Button aria-label="Mark as helpful"
                                   size="sm"
                                   variant={feedback[insight.id] === "helpful" ? "default" : "ghost"}
@@ -438,8 +439,8 @@ export function IndustryIntelligenceHub() {
         <TabsContent value="benchmarks" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Industry Benchmarks</CardTitle>
-              <CardDescription>See how you compare to industry averages and top performers</CardDescription>
+              <CardTitle><T>Industry Benchmarks</T></CardTitle>
+              <CardDescription><T>See how you compare to industry averages and top performers</T></CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -532,15 +533,15 @@ export function IndustryIntelligenceHub() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="w-5 h-5 text-primary" />
-                Predictions
+                <T>Predictions</T>
               </CardTitle>
               <CardDescription>
-                Derived from your organization&apos;s real deal, compliance, and resource data.
+                <T>Derived from your organization&apos;s real deal, compliance, and resource data.</T>
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {predictions.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-6">No prediction data available yet.</p>
+                <p className="text-sm text-muted-foreground text-center py-6"><T>No prediction data available yet.</T></p>
               ) : (
                 predictions.map((prediction, index) => (
                   <motion.div
@@ -592,7 +593,7 @@ export function IndustryIntelligenceHub() {
             "Continuously learning from your data" header above. */}
         <TabsContent value="resources" className="space-y-4 mt-4">
           <p className="text-sm text-muted-foreground">
-            General reference resources -- not personalized or generated from your organization&apos;s data.
+            <T>General reference resources -- not personalized or generated from your organization&apos;s data.</T>
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[

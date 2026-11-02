@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service"
 import { ANNUAL_PRICE_CENTS, MONTHLY_PRICE_CENTS, STANDARD_TRIAL_DAYS } from "@/lib/products"
+import { applyDiscount, type DiscountConfig } from "@/lib/billing/discounts"
 
 export type BillingInterval = "year" | "month"
 
@@ -24,10 +25,15 @@ export async function activateTrial(
   organizationId: string,
   subscriptionId: string,
   billingInterval: BillingInterval,
+  // An already-claimed discount (see app/api/v1/billing/v2/confirm). It is
+  // baked into locked_price_cents, which is what the annual trial-end
+  // charge and the monthly Stripe subscription both bill from.
+  discount?: DiscountConfig,
 ): Promise<ActivateTrialResult> {
   const db = createServiceClient()
 
-  const lockedPriceCents = billingInterval === "month" ? MONTHLY_PRICE_CENTS : ANNUAL_PRICE_CENTS
+  const basePriceCents = billingInterval === "month" ? MONTHLY_PRICE_CENTS : ANNUAL_PRICE_CENTS
+  const lockedPriceCents = discount ? applyDiscount(basePriceCents, discount) : basePriceCents
   const now = new Date()
   const trialEndsAt = new Date(now.getTime() + STANDARD_TRIAL_DAYS * 24 * 60 * 60 * 1000)
 

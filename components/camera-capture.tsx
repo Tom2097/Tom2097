@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useRef, useEffect } from "react"
 import { Camera, Check, Loader2, RefreshCw, X } from "lucide-react"
@@ -88,9 +89,9 @@ export function CameraCapture({ onCapture, onCancel, isLoading }: CameraCaptureP
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
       <CardContent className="p-6 space-y-4">
         <div className="text-center">
-          <h3 className="text-lg font-semibold">Identity Verification</h3>
+          <h3 className="text-lg font-semibold"><T>Identity Verification</T></h3>
           <p className="text-sm text-muted-foreground">
-            Capture a live photo to verify your identity
+            <T>Capture a live photo to verify your identity</T>
           </p>
         </div>
 
@@ -130,21 +131,21 @@ export function CameraCapture({ onCapture, onCancel, isLoading }: CameraCaptureP
               onClick={onCancel}
               disabled={isLoading}
             >
-              <X className="w-4 h-4 mr-2" /> Cancel
+              <X className="w-4 h-4 mr-2" /> <T>Cancel</T>
             </Button>
             <Button
               onClick={captureImage}
               disabled={isLoading}
               className="bg-primary hover:bg-primary/90"
             >
-              <Camera className="w-4 h-4 mr-2" /> Capture
+              <Camera className="w-4 h-4 mr-2" /> <T>Capture</T>
             </Button>
           </div>
         ) : (
           <div className="space-y-4">
             {!livenessPassed ? (
               <div className="text-center">
-                <p className="text-sm font-medium mb-2">Liveness Check</p>
+                <p className="text-sm font-medium mb-2"><T>Liveness Check</T></p>
                 <p className="text-sm text-muted-foreground mb-4">
                     Please {livenessCheck === "blink" ? "blink" : "smile"} to confirm you&apos;re a real person
                   </p>
@@ -168,13 +169,13 @@ export function CameraCapture({ onCapture, onCancel, isLoading }: CameraCaptureP
                   onClick={retakeImage}
                   className="flex-1"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" /> Retake
+                  <RefreshCw className="w-4 h-4 mr-2" /> <T>Retake</T>
                 </Button>
                 <Button
                   onClick={confirmImage}
                   className="flex-1 bg-primary hover:bg-primary/90"
                 >
-                  <Check className="w-4 h-4 mr-2" /> Confirm
+                  <Check className="w-4 h-4 mr-2" /> <T>Confirm</T>
                 </Button>
               </div>
             )}

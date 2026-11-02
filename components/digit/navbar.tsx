@@ -1,4 +1,5 @@
 'use client'
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
@@ -287,7 +288,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
                   <div className="p-3">
                     <div className="flex items-center gap-2 px-2 pb-2">
                       <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs font-medium text-muted-foreground">Recent Searches</span>
+                      <span className="text-xs font-medium text-muted-foreground"><T>Recent Searches</T></span>
                     </div>
                     {recentSearches.map((search, idx) => (
                       <button
@@ -305,15 +306,15 @@ export function Navbar({ onOpenAI }: NavbarProps) {
                     <div className="mt-3 border-t border-border pt-3">
                       <div className="flex items-center gap-2 px-2 pb-2">
                         <Sparkles className="h-3.5 w-3.5 text-cyan-500" />
-                        <span className="text-xs font-medium text-muted-foreground">Quick Actions</span>
+                        <span className="text-xs font-medium text-muted-foreground"><T>Quick Actions</T></span>
                       </div>
                       <button
                         onClick={() => onOpenAI?.()}
                         className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-left transition-colors hover:bg-muted"
                       >
                         <MessageSquare className="h-4 w-4 text-primary" />
-                        <span>Open AI Assistant</span>
-                        <Badge variant="secondary" className="ml-auto text-xs">Ctrl+K</Badge>
+                        <span><T>Open AI Assistant</T></span>
+                        <Badge variant="secondary" className="ml-auto text-xs"><T>Ctrl+K</T></Badge>
                       </button>
                     </div>
                   </div>
@@ -357,8 +358,8 @@ export function Navbar({ onOpenAI }: NavbarProps) {
                     ))}
                     <div className="border-t border-border p-2">
                       <div className="flex items-center justify-between px-3 py-2 text-xs text-muted-foreground">
-                        <span>Navigate with <kbd className="mx-1 rounded border border-border px-1">↑</kbd><kbd className="rounded border border-border px-1">↓</kbd></span>
-                        <span>Select with <kbd className="rounded border border-border px-1.5">Enter</kbd></span>
+                        <span><T>Navigate with</T> <kbd className="mx-1 rounded border border-border px-1">↑</kbd><kbd className="rounded border border-border px-1">↓</kbd></span>
+                        <span><T>Select with</T> <kbd className="rounded border border-border px-1.5">Enter</kbd></span>
                       </div>
                     </div>
                   </div>
@@ -366,8 +367,8 @@ export function Navbar({ onOpenAI }: NavbarProps) {
                   /* No Results */
                   <div className="p-6 text-center">
                     <Search className="mx-auto h-10 w-10 text-muted-foreground/30" />
-                    <p className="mt-3 text-sm font-medium">No results found</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Try searching for modules, pages, or features</p>
+                    <p className="mt-3 text-sm font-medium"><T>No results found</T></p>
+                    <p className="mt-1 text-xs text-muted-foreground"><T>Try searching for modules, pages, or features</T></p>
                     <Button
                       variant="outline"
                       size="sm"
@@ -378,7 +379,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
                       }}
                     >
                       <MessageSquare className="mr-2 h-4 w-4" />
-                      Ask AI Assistant
+                      <T>Ask AI Assistant</T>
                     </Button>
                   </div>
                 )}
@@ -400,7 +401,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
           onClick={onOpenAI}
         >
           <MessageSquare className="h-4 w-4" />
-          <span className="hidden sm:inline">AI Assistant</span>
+          <span className="hidden sm:inline"><T>AI Assistant</T></span>
         </Button>
 
         {/* Notifications */}
@@ -413,19 +414,19 @@ export function Navbar({ onOpenAI }: NavbarProps) {
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
-              <span className="sr-only">Notifications</span>
+              <span className="sr-only"><T>Notifications</T></span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <div className="flex items-center justify-between px-2 py-1.5">
-              <DropdownMenuLabel className="p-0">Notifications</DropdownMenuLabel>
+              <DropdownMenuLabel className="p-0"><T>Notifications</T></DropdownMenuLabel>
               {unreadCount > 0 && (
                 <DropdownMenuItem
                   onSelect={handleMarkAllRead}
                   className="w-auto gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground focus:text-foreground"
                 >
                   <CheckCheck className="h-3.5 w-3.5" />
-                  Mark all read
+                  <T>Mark all read</T>
                 </DropdownMenuItem>
               )}
             </div>
@@ -433,7 +434,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
             {notifLoading ? (
               <div className="flex items-center justify-center gap-2 p-6 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Loading...
+                <T>Loading...</T>
               </div>
             ) : notifications.length > 0 ? (
               <div className="max-h-96 overflow-y-auto">
@@ -463,7 +464,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
             ) : (
               <div className="flex flex-col items-center gap-2 p-6 text-center text-sm text-muted-foreground">
                 <BellOff className="h-6 w-6 text-muted-foreground/50" />
-                You&apos;re all caught up
+                <T>You&apos;re all caught up</T>
               </div>
             )}
           </DropdownMenuContent>
@@ -485,7 +486,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
                     <User className="h-4 w-4" />
                   )}
                 </div>
-                <span className="sr-only">User menu</span>
+                <span className="sr-only"><T>User menu</T></span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -500,7 +501,7 @@ export function Navbar({ onOpenAI }: NavbarProps) {
                <DropdownMenuItem asChild>
                  <Link href="/configure" className="flex items-center gap-2">
                    <Settings className="h-4 w-4" />
-                   Configure Workspace
+                   <T>Configure Workspace</T>
                  </Link>
                </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -509,17 +510,17 @@ export function Navbar({ onOpenAI }: NavbarProps) {
                 onClick={handleSignOut}
               >
                 <LogOut className="h-4 w-4" />
-                Sign Out
+                <T>Sign Out</T>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/auth/login">Sign In</Link>
+              <Link href="/auth/login"><T>Sign In</T></Link>
             </Button>
             <Button size="sm" asChild>
-              <Link href="/auth/sign-up">Get Started</Link>
+              <Link href="/auth/sign-up"><T>Get Started</T></Link>
             </Button>
           </div>
         )}

@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import { getTranslator } from "@/lib/i18n/server"
 import type { Metadata } from "next"
 import Link from "next/link"
@@ -82,7 +83,7 @@ export default async function StatusPage() {
         <p className="mt-8 text-sm text-muted-foreground">
           {t("status.page.contact")}{" "}
           <a href="mailto:support@digit-ai.org" className="text-primary hover:underline">
-            support@digit-ai.org
+            <T>support@digit-ai.org</T>
           </a>
           .
         </p>

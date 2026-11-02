@@ -141,6 +141,8 @@ export async function createMonthlyStripeSubscription(
   customerId: string,
   paymentMethodId: string,
   trialEndsAt: Date,
+  // The org's locked monthly price (after any discount); defaults to list.
+  unitAmountCents: number = MONTHLY_PRICE_CENTS,
 ): Promise<string> {
   const stripe = await getStripe()
   const productId = await getOrCreateDigitProductId(stripe)
@@ -151,7 +153,7 @@ export async function createMonthlyStripeSubscription(
         price_data: {
           currency: "usd",
           product: productId,
-          unit_amount: MONTHLY_PRICE_CENTS,
+          unit_amount: unitAmountCents,
           recurring: { interval: "month" },
         },
       },

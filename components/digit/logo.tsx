@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 
@@ -75,7 +76,7 @@ function Wordmark({ size, className }: { size: number; className?: string }) {
         fontSize="46"
         fill="currentColor"
       >
-        DigiT
+        <T>DigiT</T>
       </text>
     </svg>
   )
@@ -90,7 +91,7 @@ export function Logo({ size = "md", showText = true, className, link }: LogoProp
       <div className="flex flex-col">
         <Wordmark size={s.badge} />
         {showText && (
-          <p className={cn("text-muted-foreground/60 leading-tight tracking-wider", s.sub)}>ENTERPRISE INTELLIGENCE</p>
+          <p className={cn("text-muted-foreground/60 leading-tight tracking-wider", s.sub)}><T>ENTERPRISE INTELLIGENCE</T></p>
         )}
       </div>
     </div>

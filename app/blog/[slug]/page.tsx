@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
@@ -72,7 +73,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to blog
+            <T>Back to blog</T>
           </Link>
         </div>
       </header>
@@ -112,7 +113,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <p className="text-sm text-muted-foreground">
             Want to see this in practice?{" "}
             <Link href="/checkout" className="text-primary hover:underline">
-              Start a free trial
+              <T>Start a free trial</T>
             </Link>
             .
           </p>

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -277,25 +278,25 @@ export function CrmSupportTickets() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Support Tickets</CardTitle>
-            <CardDescription>Manage customer support requests and issues</CardDescription>
+            <CardTitle><T>Support Tickets</T></CardTitle>
+            <CardDescription><T>Manage customer support requests and issues</T></CardDescription>
           </div>
           <Dialog open={newTicketOpen} onOpenChange={setNewTicketOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Ticket className="h-4 w-4 mr-2" /> New Ticket
+                <Ticket className="h-4 w-4 mr-2" /> <T>New Ticket</T>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Create Support Ticket</DialogTitle>
+                <DialogTitle><T>Create Support Ticket</T></DialogTitle>
                 <DialogDescription>
-                  Create a new support ticket for a customer issue.
+                  <T>Create a new support ticket for a customer issue.</T>
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="ticket-subject">Subject</Label>
+                  <Label htmlFor="ticket-subject"><T>Subject</T></Label>
                   <Input
                     id="ticket-subject"
                     value={newTicket.subject}
@@ -304,7 +305,7 @@ export function CrmSupportTickets() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ticket-description">Description</Label>
+                  <Label htmlFor="ticket-description"><T>Description</T></Label>
                   <Textarea
                     id="ticket-description"
                     value={newTicket.description}
@@ -315,7 +316,7 @@ export function CrmSupportTickets() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="ticket-status">Status</Label>
+                    <Label htmlFor="ticket-status"><T>Status</T></Label>
                     <Select
                       value={newTicket.status}
                       onValueChange={(value) => setNewTicket({...newTicket, status: value as any})}
@@ -324,15 +325,15 @@ export function CrmSupportTickets() {
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="open">Open</SelectItem>
-                        <SelectItem value="in_progress">In Progress</SelectItem>
-                        <SelectItem value="resolved">Resolved</SelectItem>
-                        <SelectItem value="closed">Closed</SelectItem>
+                        <SelectItem value="open"><T>Open</T></SelectItem>
+                        <SelectItem value="in_progress"><T>In Progress</T></SelectItem>
+                        <SelectItem value="resolved"><T>Resolved</T></SelectItem>
+                        <SelectItem value="closed"><T>Closed</T></SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ticket-priority">Priority</Label>
+                    <Label htmlFor="ticket-priority"><T>Priority</T></Label>
                     <Select
                       value={newTicket.priority}
                       onValueChange={(value) => setNewTicket({...newTicket, priority: value as any})}
@@ -341,16 +342,16 @@ export function CrmSupportTickets() {
                         <SelectValue placeholder="Select priority" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="critical">Critical</SelectItem>
+                        <SelectItem value="low"><T>Low</T></SelectItem>
+                        <SelectItem value="medium"><T>Medium</T></SelectItem>
+                        <SelectItem value="high"><T>High</T></SelectItem>
+                        <SelectItem value="critical"><T>Critical</T></SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ticket-category">Category</Label>
+                  <Label htmlFor="ticket-category"><T>Category</T></Label>
                   <Input
                     id="ticket-category"
                     value={newTicket.category}
@@ -360,7 +361,7 @@ export function CrmSupportTickets() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="ticket-contact">Contact</Label>
+                    <Label htmlFor="ticket-contact"><T>Contact</T></Label>
                     <Select
                       value={newTicket.contact_id || 'none'}
                       onValueChange={(value) => setNewTicket({...newTicket, contact_id: value === 'none' ? null : value})}
@@ -369,7 +370,7 @@ export function CrmSupportTickets() {
                         <SelectValue placeholder="Select contact" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="none"><T>None</T></SelectItem>
                         {contacts.map(contact => (
                           <SelectItem key={contact.id} value={contact.id}>
                             {contact.first_name} {contact.last_name} ({contact.email})
@@ -379,7 +380,7 @@ export function CrmSupportTickets() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ticket-assignee">Assignee</Label>
+                    <Label htmlFor="ticket-assignee"><T>Assignee</T></Label>
                     <Select
                       value={newTicket.assigned_to || 'unassigned'}
                       onValueChange={(value) => setNewTicket({...newTicket, assigned_to: value === 'unassigned' ? null : value})}
@@ -388,7 +389,7 @@ export function CrmSupportTickets() {
                         <SelectValue placeholder="Select assignee" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        <SelectItem value="unassigned"><T>Unassigned</T></SelectItem>
                         {users.map(user => (
                           <SelectItem key={user.id} value={user.id}>
                             {user.name} ({user.email})
@@ -441,11 +442,11 @@ export function CrmSupportTickets() {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
+                <SelectItem value="all"><T>All Statuses</T></SelectItem>
+                <SelectItem value="open"><T>Open</T></SelectItem>
+                <SelectItem value="in_progress"><T>In Progress</T></SelectItem>
+                <SelectItem value="resolved"><T>Resolved</T></SelectItem>
+                <SelectItem value="closed"><T>Closed</T></SelectItem>
               </SelectContent>
             </Select>
             <Select value={priorityFilter || 'all'} onValueChange={(v) => setPriorityFilter(v === 'all' ? null : v)}>
@@ -453,11 +454,11 @@ export function CrmSupportTickets() {
                 <SelectValue placeholder="Filter by priority" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Priorities</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
+                <SelectItem value="all"><T>All Priorities</T></SelectItem>
+                <SelectItem value="low"><T>Low</T></SelectItem>
+                <SelectItem value="medium"><T>Medium</T></SelectItem>
+                <SelectItem value="high"><T>High</T></SelectItem>
+                <SelectItem value="critical"><T>Critical</T></SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -471,14 +472,14 @@ export function CrmSupportTickets() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Subject</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Priority</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Assigned To</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead><T>Subject</T></TableHead>
+                    <TableHead><T>Contact</T></TableHead>
+                    <TableHead><T>Status</T></TableHead>
+                    <TableHead><T>Priority</T></TableHead>
+                    <TableHead><T>Category</T></TableHead>
+                    <TableHead><T>Assigned To</T></TableHead>
+                    <TableHead><T>Created</T></TableHead>
+                    <TableHead><T>Actions</T></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -526,15 +527,15 @@ export function CrmSupportTickets() {
                               </DialogTrigger>
                               <DialogContent className="max-w-2xl">
                                 <DialogHeader>
-                                  <DialogTitle>Edit Support Ticket</DialogTitle>
+                                  <DialogTitle><T>Edit Support Ticket</T></DialogTitle>
                                   <DialogDescription>
-                                    Update support ticket details.
+                                    <T>Update support ticket details.</T>
                                   </DialogDescription>
                                 </DialogHeader>
                                 {currentTicket && (
                                   <div className="space-y-4 py-4">
                                     <div className="space-y-2">
-                                      <Label htmlFor="edit-ticket-subject">Subject</Label>
+                                      <Label htmlFor="edit-ticket-subject"><T>Subject</T></Label>
                                       <Input
                                         id="edit-ticket-subject"
                                         value={currentTicket.subject}
@@ -542,7 +543,7 @@ export function CrmSupportTickets() {
                                       />
                                     </div>
                                     <div className="space-y-2">
-                                      <Label htmlFor="edit-ticket-description">Description</Label>
+                                      <Label htmlFor="edit-ticket-description"><T>Description</T></Label>
                                       <Textarea
                                         id="edit-ticket-description"
                                         value={currentTicket.description}
@@ -552,7 +553,7 @@ export function CrmSupportTickets() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                       <div className="space-y-2">
-                                        <Label htmlFor="edit-ticket-status">Status</Label>
+                                        <Label htmlFor="edit-ticket-status"><T>Status</T></Label>
                                         <Select
                                           value={currentTicket.status}
                                           onValueChange={(value) => setCurrentTicket({...currentTicket, status: value as any})}
@@ -561,15 +562,15 @@ export function CrmSupportTickets() {
                                             <SelectValue placeholder="Select status" />
                                           </SelectTrigger>
                                           <SelectContent>
-                                            <SelectItem value="open">Open</SelectItem>
-                                            <SelectItem value="in_progress">In Progress</SelectItem>
-                                            <SelectItem value="resolved">Resolved</SelectItem>
-                                            <SelectItem value="closed">Closed</SelectItem>
+                                            <SelectItem value="open"><T>Open</T></SelectItem>
+                                            <SelectItem value="in_progress"><T>In Progress</T></SelectItem>
+                                            <SelectItem value="resolved"><T>Resolved</T></SelectItem>
+                                            <SelectItem value="closed"><T>Closed</T></SelectItem>
                                           </SelectContent>
                                         </Select>
                                       </div>
                                       <div className="space-y-2">
-                                        <Label htmlFor="edit-ticket-priority">Priority</Label>
+                                        <Label htmlFor="edit-ticket-priority"><T>Priority</T></Label>
                                         <Select
                                           value={currentTicket.priority}
                                           onValueChange={(value) => setCurrentTicket({...currentTicket, priority: value as any})}
@@ -578,16 +579,16 @@ export function CrmSupportTickets() {
                                             <SelectValue placeholder="Select priority" />
                                           </SelectTrigger>
                                           <SelectContent>
-                                            <SelectItem value="low">Low</SelectItem>
-                                            <SelectItem value="medium">Medium</SelectItem>
-                                            <SelectItem value="high">High</SelectItem>
-                                            <SelectItem value="critical">Critical</SelectItem>
+                                            <SelectItem value="low"><T>Low</T></SelectItem>
+                                            <SelectItem value="medium"><T>Medium</T></SelectItem>
+                                            <SelectItem value="high"><T>High</T></SelectItem>
+                                            <SelectItem value="critical"><T>Critical</T></SelectItem>
                                           </SelectContent>
                                         </Select>
                                       </div>
                                     </div>
                                     <div className="space-y-2">
-                                      <Label htmlFor="edit-ticket-category">Category</Label>
+                                      <Label htmlFor="edit-ticket-category"><T>Category</T></Label>
                                       <Input
                                         id="edit-ticket-category"
                                         value={currentTicket.category}
@@ -596,7 +597,7 @@ export function CrmSupportTickets() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                       <div className="space-y-2">
-                                        <Label htmlFor="edit-ticket-contact">Contact</Label>
+                                        <Label htmlFor="edit-ticket-contact"><T>Contact</T></Label>
                                         <Select
                                           value={currentTicket.contact_id || 'none'}
                                           onValueChange={(value) => setCurrentTicket({...currentTicket, contact_id: value === 'none' ? null : value})}
@@ -605,7 +606,7 @@ export function CrmSupportTickets() {
                                             <SelectValue placeholder="Select contact" />
                                           </SelectTrigger>
                                           <SelectContent>
-                                            <SelectItem value="none">None</SelectItem>
+                                            <SelectItem value="none"><T>None</T></SelectItem>
                                             {contacts.map(contact => (
                                               <SelectItem key={contact.id} value={contact.id}>
                                                 {contact.first_name} {contact.last_name} ({contact.email})
@@ -615,7 +616,7 @@ export function CrmSupportTickets() {
                                         </Select>
                                       </div>
                                       <div className="space-y-2">
-                                        <Label htmlFor="edit-ticket-assignee">Assignee</Label>
+                                        <Label htmlFor="edit-ticket-assignee"><T>Assignee</T></Label>
                                         <Select
                                           value={currentTicket.assigned_to || 'unassigned'}
                                           onValueChange={(value) => setCurrentTicket({...currentTicket, assigned_to: value === 'unassigned' ? null : value})}
@@ -624,7 +625,7 @@ export function CrmSupportTickets() {
                                             <SelectValue placeholder="Select assignee" />
                                           </SelectTrigger>
                                           <SelectContent>
-                                            <SelectItem value="unassigned">Unassigned</SelectItem>
+                                            <SelectItem value="unassigned"><T>Unassigned</T></SelectItem>
                                             {users.map(user => (
                                               <SelectItem key={user.id} value={user.id}>
                                                 {user.name} ({user.email})
@@ -660,7 +661,7 @@ export function CrmSupportTickets() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8">
-                        No support tickets found
+                        <T>No support tickets found</T>
                       </TableCell>
                     </TableRow>
                   )}

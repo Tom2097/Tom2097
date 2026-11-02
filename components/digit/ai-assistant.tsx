@@ -1,4 +1,5 @@
 'use client'
+import { T } from "@/components/i18n/t"
 
 import { MarkdownText } from "@/components/digit/markdown-text"
 import { useState, useRef, useEffect } from 'react'
@@ -72,7 +73,7 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
             <Sparkles className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">DigiT AI Assistant</h3>
+            <h3 className="font-semibold text-foreground"><T>DigiT AI Assistant</T></h3>
             {!isMinimized && (
               <p className="text-xs text-muted-foreground">
                 {isLoading ? 'Thinking...' : 'Powered by Mistral Large'}
@@ -96,7 +97,7 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
             <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only"><T>Close</T></span>
           </Button>
         </div>
       </div>
@@ -218,7 +219,7 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
                 className="rounded-xl"
               >
                 <Send className="h-4 w-4" />
-                <span className="sr-only">Send message</span>
+                <span className="sr-only"><T>Send message</T></span>
               </Button>
             </div>
           </form>

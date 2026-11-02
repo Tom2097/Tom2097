@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -48,16 +49,16 @@ export function CrmNextBestAction() {
   }, [])
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
-  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchActions} className="underline ml-1">Retry</button></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchActions} className="underline ml-1"><T>Retry</T></button></div>
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Target className="h-5 w-5 text-primary" />
-          <p className="text-sm font-medium">Next Best Actions</p>
+          <p className="text-sm font-medium"><T>Next Best Actions</T></p>
         </div>
-        <Badge variant="secondary" className="text-[10px]">AI-recommended</Badge>
+        <Badge variant="secondary" className="text-[10px]"><T>AI-recommended</T></Badge>
       </div>
 
       <div className="space-y-2">
@@ -103,7 +104,7 @@ export function CrmNextBestAction() {
                     toast.error("Failed to execute action")
                   }
                 }}>
-                  <Send className="h-3 w-3 mr-1" />Do It
+                  <Send className="h-3 w-3 mr-1" /><T>Do It</T>
                 </Button>
               </div>
             </motion.div>

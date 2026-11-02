@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -138,7 +139,7 @@ export function SettingsPanel() {
         )}
       >
         <Settings className="h-4 w-4" />
-        <span>Settings</span>
+        <span><T>Settings</T></span>
       </motion.button>
 
       {/* Settings Panel */}
@@ -174,8 +175,8 @@ export function SettingsPanel() {
                     <Settings className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">Settings</h2>
-                    <p className="text-xs text-muted-foreground">Customize your experience</p>
+                    <h2 className="text-lg font-semibold"><T>Settings</T></h2>
+                    <p className="text-xs text-muted-foreground"><T>Customize your experience</T></p>
                   </div>
                 </div>
                 <Button aria-label="Close settings" variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
@@ -197,7 +198,7 @@ export function SettingsPanel() {
                     <Button variant="outline" size="sm" asChild>
                       <Link href="/settings">
                         <ExternalLink className="h-3 w-3 mr-1" />
-                        Full Settings
+                        <T>Full Settings</T>
                       </Link>
                     </Button>
                   </div>
@@ -205,13 +206,13 @@ export function SettingsPanel() {
               ) : (
                 <div className="p-4 border-b border-border bg-muted/30">
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-3">Sign in to access all settings</p>
+                    <p className="text-sm text-muted-foreground mb-3"><T>Sign in to access all settings</T></p>
                     <div className="flex gap-2 justify-center">
                       <Button variant="outline" size="sm" asChild>
-                        <Link href="/auth/login">Sign In</Link>
+                        <Link href="/auth/login"><T>Sign In</T></Link>
                       </Button>
                       <Button size="sm" asChild>
-                        <Link href="/auth/sign-up">Get Started</Link>
+                        <Link href="/auth/sign-up"><T>Get Started</T></Link>
                       </Button>
                     </div>
                   </div>
@@ -223,15 +224,15 @@ export function SettingsPanel() {
                 <TabsList className="grid grid-cols-3 mx-4 mt-4 bg-muted/50">
                   <TabsTrigger value="profile" className="text-xs px-2 gap-1.5">
                     <User className="h-4 w-4" />
-                    Profile
+                    <T>Profile</T>
                   </TabsTrigger>
                   <TabsTrigger value="appearance" className="text-xs px-2 gap-1.5">
                     <Palette className="h-4 w-4" />
-                    Appearance
+                    <T>Appearance</T>
                   </TabsTrigger>
                   <TabsTrigger value="accessibility" className="text-xs px-2 gap-1.5">
                     <Accessibility className="h-4 w-4" />
-                    Accessibility
+                    <T>Accessibility</T>
                   </TabsTrigger>
                 </TabsList>
 
@@ -239,14 +240,14 @@ export function SettingsPanel() {
                   {/* Profile Tab */}
                   <TabsContent value="profile" className="mt-0 space-y-4">
                     <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Account</h3>
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider"><T>Account</T></h3>
 
                       <Link href="/settings?tab=subscription" className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-3">
                           <CreditCard className="h-5 w-5 text-muted-foreground" />
                           <div>
-                            <p className="text-sm font-medium">Subscription</p>
-                            <p className="text-xs text-muted-foreground">Manage your plan</p>
+                            <p className="text-sm font-medium"><T>Subscription</T></p>
+                            <p className="text-xs text-muted-foreground"><T>Manage your plan</T></p>
                           </div>
                         </div>
                         <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -256,8 +257,8 @@ export function SettingsPanel() {
                         <div className="flex items-center gap-3">
                           <Building2 className="h-5 w-5 text-muted-foreground" />
                           <div>
-                            <p className="text-sm font-medium">Organization</p>
-                            <p className="text-xs text-muted-foreground">Team settings</p>
+                            <p className="text-sm font-medium"><T>Organization</T></p>
+                            <p className="text-xs text-muted-foreground"><T>Team settings</T></p>
                           </div>
                         </div>
                         <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -267,8 +268,8 @@ export function SettingsPanel() {
                         <div className="flex items-center gap-3">
                           <Shield className="h-5 w-5 text-muted-foreground" />
                           <div>
-                            <p className="text-sm font-medium">Security</p>
-                            <p className="text-xs text-muted-foreground">Password, 2FA & notifications</p>
+                            <p className="text-sm font-medium"><T>Security</T></p>
+                            <p className="text-xs text-muted-foreground"><T>Password, 2FA & notifications</T></p>
                           </div>
                         </div>
                         <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -276,12 +277,12 @@ export function SettingsPanel() {
                     </div>
 
                     <div className="space-y-4 pt-4 border-t border-border">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Regional</h3>
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider"><T>Regional</T></h3>
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Globe className="h-5 w-5 text-muted-foreground" />
-                          <Label>Language</Label>
+                          <Label><T>Language</T></Label>
                         </div>
                         <Select value={locale} onValueChange={(v) => setLocale(v as Locale)}>
                           <SelectTrigger className="w-40">
@@ -314,11 +315,11 @@ export function SettingsPanel() {
                           <Button className="w-full" asChild>
                             <Link href="/auth/sign-up">
                               <Sparkles className="h-4 w-4 mr-2" />
-                              Get Started
+                              <T>Get Started</T>
                             </Link>
                           </Button>
                           <Button variant="outline" className="w-full" asChild>
-                            <Link href="/auth/login">Sign In</Link>
+                            <Link href="/auth/login"><T>Sign In</T></Link>
                           </Button>
                         </div>
                       )}
@@ -328,7 +329,7 @@ export function SettingsPanel() {
                   {/* Appearance Tab */}
                   <TabsContent value="appearance" className="mt-0 space-y-6">
                     <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Theme</h3>
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider"><T>Theme</T></h3>
                       <div className="grid grid-cols-3 gap-2">
                         {themes.map((th) => (
                           <button
@@ -355,7 +356,7 @@ export function SettingsPanel() {
                     </div>
 
                     <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Accent Color</h3>
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider"><T>Accent Color</T></h3>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setPref("accentColor", "default")}
@@ -384,11 +385,11 @@ export function SettingsPanel() {
                   {/* Accessibility Tab */}
                   <TabsContent value="accessibility" className="mt-0 space-y-6">
                     <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Visual</h3>
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider"><T>Visual</T></h3>
 
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <Label>Font Size</Label>
+                          <Label><T>Font Size</T></Label>
                           <span className="text-sm text-muted-foreground">{prefs.fontSize}%</span>
                         </div>
                         <Slider
@@ -405,8 +406,8 @@ export function SettingsPanel() {
                         <div className="flex items-center gap-3">
                           <Eye className="h-5 w-5 text-muted-foreground" />
                           <div>
-                            <Label>High Contrast</Label>
-                            <p className="text-xs text-muted-foreground">Increase color contrast</p>
+                            <Label><T>High Contrast</T></Label>
+                            <p className="text-xs text-muted-foreground"><T>Increase color contrast</T></p>
                           </div>
                         </div>
                         <Switch
@@ -419,8 +420,8 @@ export function SettingsPanel() {
                         <div className="flex items-center gap-3">
                           <Accessibility className="h-5 w-5 text-muted-foreground" />
                           <div>
-                            <Label>Reduced Motion</Label>
-                            <p className="text-xs text-muted-foreground">Minimize animations</p>
+                            <Label><T>Reduced Motion</T></Label>
+                            <p className="text-xs text-muted-foreground"><T>Minimize animations</T></p>
                           </div>
                         </div>
                         <Switch

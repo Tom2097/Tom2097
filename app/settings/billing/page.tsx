@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
@@ -212,7 +213,7 @@ export default function BillingSettingsPage() {
           </Link>
           <div className="flex items-center gap-4">
             <Button variant="outline" asChild>
-              <Link href="/settings">Settings</Link>
+              <Link href="/settings"><T>Settings</T></Link>
             </Button>
           </div>
         </div>
@@ -251,7 +252,7 @@ export default function BillingSettingsPage() {
                     </Badge>
                     {subscription?.cancel_at_period_end && (
                       <Badge variant="outline" className="text-muted-foreground border-muted-foreground/30">
-                        Cancels at period end
+                        <T>Cancels at period end</T>
                       </Badge>
                     )}
                   </div>
@@ -324,7 +325,7 @@ export default function BillingSettingsPage() {
                       <ArrowUpCircle className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">Switch to annual</p>
+                      <p className="font-medium text-foreground"><T>Switch to annual</T></p>
                       <p className="text-sm text-muted-foreground mt-1">
                         {formatPrice(ANNUAL_PRICE_CENTS)}/year instead of {formatPrice(MONTHLY_PRICE_CENTS)}/month -- save{" "}
                         {formatPrice(annualSavingsCents)}/year. Charged now, new 12-month term starts today.
@@ -343,14 +344,14 @@ export default function BillingSettingsPage() {
           <AlertDialog open={switchDialogOpen} onOpenChange={(open) => !isSwitching && setSwitchDialogOpen(open)}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Switch to the annual plan?</AlertDialogTitle>
+                <AlertDialogTitle><T>Switch to the annual plan?</T></AlertDialogTitle>
                 <AlertDialogDescription>
                   {formatPrice(ANNUAL_PRICE_CENTS)} will be charged to your card on file right now, your monthly
                   subscription will be cancelled, and a new 12-month term starts today.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel disabled={isSwitching}>Stay monthly</AlertDialogCancel>
+                <AlertDialogCancel disabled={isSwitching}><T>Stay monthly</T></AlertDialogCancel>
                 <AlertDialogAction onClick={handleSwitchToAnnual} disabled={isSwitching}>
                   {isSwitching ? "Switching..." : `Charge ${formatPrice(ANNUAL_PRICE_CENTS)} and switch`}
                 </AlertDialogAction>
@@ -375,9 +376,9 @@ export default function BillingSettingsPage() {
                     <Shield className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="font-medium text-foreground">No refunds</p>
+                    <p className="font-medium text-foreground"><T>No refunds</T></p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Cancelling doesn&apos;t refund any amount already charged -- access continues until the end of your paid term. Your data can be exported in full at any time, including after you leave.
+                      <T>Cancelling doesn&apos;t refund any amount already charged -- access continues until the end of your paid term. Your data can be exported in full at any time, including after you leave.</T>
                     </p>
                   </div>
                 </div>
@@ -393,7 +394,7 @@ export default function BillingSettingsPage() {
               transition={{ duration: 0.6, delay: 0.35 }}
             >
               <Card className="p-6 mb-8">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Cancel Subscription</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-4"><T>Cancel Subscription</T></h3>
 
                 {subscription.cancel_at_period_end ? (
                   <div className="p-4 rounded-lg bg-muted/30">
@@ -402,7 +403,7 @@ export default function BillingSettingsPage() {
                         <Clock className="w-4 h-4 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">Cancellation scheduled</p>
+                        <p className="font-medium text-foreground"><T>Cancellation scheduled</T></p>
                         <p className="text-sm text-muted-foreground mt-1">
                           Your subscription will remain active until{" "}
                           {subscription.current_period_end
@@ -429,7 +430,7 @@ export default function BillingSettingsPage() {
                       className="gap-2 text-destructive hover:text-destructive"
                     >
                       <XCircle className="w-4 h-4" />
-                      Cancel Subscription
+                      <T>Cancel Subscription</T>
                     </Button>
                   </div>
                 )}
@@ -440,14 +441,14 @@ export default function BillingSettingsPage() {
           <AlertDialog open={cancelDialogOpen} onOpenChange={(open) => !isCancelling && setCancelDialogOpen(open)}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Cancel your subscription?</AlertDialogTitle>
+                <AlertDialogTitle><T>Cancel your subscription?</T></AlertDialogTitle>
                 <AlertDialogDescription>
-                  You&apos;ll keep access until the end of your current billing period, then your subscription will not
-                  renew. This does not issue a refund for the current period.
+                  <T>You&apos;ll keep access until the end of your current billing period, then your subscription will not
+                  renew. This does not issue a refund for the current period.</T>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel disabled={isCancelling}>Keep Subscription</AlertDialogCancel>
+                <AlertDialogCancel disabled={isCancelling}><T>Keep Subscription</T></AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleCancelSubscription}
                   disabled={isCancelling}
@@ -473,18 +474,18 @@ export default function BillingSettingsPage() {
                   <span className="font-medium text-foreground flex items-center gap-2">
                     {plan?.name || "-"}
                     {subscription?.is_founding && (
-                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">Founding rate</Badge>
+                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30"><T>Founding rate</T></Badge>
                     )}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Payment</span>
+                  <span className="text-muted-foreground"><T>Payment</T></span>
                   <span className="font-medium text-foreground">
                     {isMonthly ? "Monthly, cancel anytime" : isSplit ? "12 monthly instalments" : "Paid in full, annually"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Price</span>
+                  <span className="text-muted-foreground"><T>Price</T></span>
                   <span className="font-medium text-foreground">
                     {subscription?.locked_price_cents ? formatPrice(subscription.locked_price_cents) : "-"}/{isMonthly ? "month" : "year"}
                   </span>

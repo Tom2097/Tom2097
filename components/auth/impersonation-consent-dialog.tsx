@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -88,20 +89,20 @@ export function ImpersonationConsentDialog() {
         <DialogHeader>
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-amber-500" />
-            <DialogTitle>Support access request</DialogTitle>
+            <DialogTitle><T>Support access request</T></DialogTitle>
           </div>
           <DialogDescription>
-            <strong>{requester}</strong> is requesting temporary access to your account to
-            provide support.
+            <strong>{requester}</strong> <T>is requesting temporary access to your account to
+            provide support.</T>
           </DialogDescription>
         </DialogHeader>
         <div className="rounded-md border border-border/50 bg-muted/40 p-3 text-sm">
-          <p className="text-muted-foreground">Reason given:</p>
+          <p className="text-muted-foreground"><T>Reason given:</T></p>
           <p className="font-medium text-foreground">{pending.reason}</p>
         </div>
         <p className="text-xs text-muted-foreground">
-          If approved, access expires automatically after 1 hour. You can revoke it sooner from
-          Settings.
+          <T>If approved, access expires automatically after 1 hour. You can revoke it sooner from
+          Settings.</T>
         </p>
         <DialogFooter className="gap-2 sm:gap-2">
           <Button variant="outline" disabled={responding} onClick={() => respond(false)}>

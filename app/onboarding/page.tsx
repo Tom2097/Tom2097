@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect, useCallback } from "react"
@@ -219,7 +220,7 @@ export default function OnboardingPage() {
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <LogOut className="w-4 h-4" />
-            Sign out
+            <T>Sign out</T>
           </button>
         </div>
 
@@ -289,10 +290,10 @@ export default function OnboardingPage() {
                   <div className="space-y-6">
                     <div className="text-center space-y-4">
                       <p className="text-lg">
-                        Welcome to <span className="text-primary font-semibold">DigiT Enterprise Intelligence</span>
+                        <T>Welcome to</T> <span className="text-primary font-semibold"><T>DigiT Enterprise Intelligence</T></span>
                       </p>
                       <p className="text-muted-foreground max-w-md mx-auto">
-                        Our AI will analyze your business needs and recommend the perfect software solutions tailored specifically for you.
+                        <T>Our AI will analyze your business needs and recommend the perfect software solutions tailored specifically for you.</T>
                       </p>
                     </div>
                     
@@ -319,7 +320,7 @@ export default function OnboardingPage() {
                     {/* Warm-up question */}
                     <div className="bg-primary/5 rounded-xl p-6 border border-primary/20">
                       <Label className="text-sm text-primary mb-2 block">
-                        Before we start, a quick warm-up:
+                        <T>Before we start, a quick warm-up:</T>
                       </Label>
                       <p className="text-lg font-medium mb-4">{warmupQuestion}</p>
                       <Textarea
@@ -558,9 +559,12 @@ export default function OnboardingPage() {
                         className="bg-secondary/50 rounded-xl p-4"
                       >
                         <p className="text-sm text-muted-foreground">
-                          You&apos;ve selected <span className="text-primary font-medium">{data.primaryGoals.length} goals</span> and{" "}
-                          <span className="text-primary font-medium">{data.currentChallenges.length} challenges</span>.
-                          Our AI will use this to find the best solutions for you.
+                          {/* Label/value pairs instead of an English sentence stitched
+                              around the counts, so it translates cleanly. */}
+                          <T>Goals</T>: <span className="text-primary font-medium">{data.primaryGoals.length}</span>
+                          {" · "}
+                          <T>Challenges</T>: <span className="text-primary font-medium">{data.currentChallenges.length}</span>
+                          {" "}<T>Our AI will use this to find the best solutions for you.</T>
                         </p>
                       </motion.div>
                     )}
@@ -749,7 +753,7 @@ export default function OnboardingPage() {
                         </motion.div>
                         <h3 className="text-xl font-semibold mb-2">{t("onboarding.page.analyzing")}</h3>
                         <p className="text-muted-foreground mb-6">
-                          Our AI is finding the perfect solutions for you
+                          <T>Our AI is finding the perfect solutions for you</T>
                         </p>
                         <div className="max-w-md mx-auto">
                           <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -804,7 +808,7 @@ export default function OnboardingPage() {
 
                         {/* Next steps preview */}
                         <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
-                          <h4 className="font-medium mb-2 text-primary">What&apos;s next?</h4>
+                          <h4 className="font-medium mb-2 text-primary"><T>What&apos;s next?</T></h4>
                           <ul className="text-sm text-muted-foreground space-y-1">
                             {analysisResult.suggestedNextSteps.slice(0, 3).map((step, i) => (
                               <li key={i} className="flex items-center gap-2">
@@ -833,7 +837,7 @@ export default function OnboardingPage() {
                     className="gap-2"
                   >
                     <ArrowLeft className="w-4 h-4" />
-                    Back
+                    <T>Back</T>
                   </Button>
                   <Button
                     onClick={handleNext}

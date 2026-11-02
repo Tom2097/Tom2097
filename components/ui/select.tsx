@@ -4,6 +4,7 @@ import * as React from 'react'
 import * as SelectPrimitive from '@radix-ui/react-select'
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 
+import { useI18nSafe } from '@/components/providers/i18n-provider'
 import { cn } from '@/lib/utils'
 
 function Select({
@@ -19,9 +20,13 @@ function SelectGroup({
 }
 
 function SelectValue({
+  placeholder,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Value>) {
-  return <SelectPrimitive.Value data-slot="select-value" {...props} />
+  // Literal English placeholders are translated via lib/i18n/phrases.ts.
+  const i18n = useI18nSafe()
+  const translated = typeof placeholder === 'string' && i18n ? i18n.tx(placeholder) : placeholder
+  return <SelectPrimitive.Value data-slot="select-value" placeholder={translated} {...props} />
 }
 
 function SelectTrigger({

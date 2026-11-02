@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -41,12 +42,12 @@ export function CrmVerticalSignals() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-blue-500" />
-          <p className="text-sm font-medium">Vertical Buying Signals</p>
+          <p className="text-sm font-medium"><T>Vertical Buying Signals</T></p>
         </div>
-        <Badge variant="secondary" className="text-[10px]">Market intelligence</Badge>
+        <Badge variant="secondary" className="text-[10px]"><T>Market intelligence</T></Badge>
       </div>
 
-      {verticals.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No vertical data yet</p>
+      {verticals.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8"><T>No vertical data yet</T></p>
       : <div className="space-y-2">
         {verticals.map((v, i) => (
           <motion.div key={v.name} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}

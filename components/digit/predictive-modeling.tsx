@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -257,11 +258,11 @@ export function PredictiveModeling() {
 
   const getModelStatusBadge = (status: string) => {
     switch (status) {
-      case 'draft': return <Badge variant="secondary">Draft</Badge>
-      case 'training': return <Badge variant="secondary">Training</Badge>
-      case 'trained': return <Badge variant="default">Trained</Badge>
-      case 'deployed': return <Badge variant="default">Deployed</Badge>
-      case 'failed': return <Badge variant="destructive">Failed</Badge>
+      case 'draft': return <Badge variant="secondary"><T>Draft</T></Badge>
+      case 'training': return <Badge variant="secondary"><T>Training</T></Badge>
+      case 'trained': return <Badge variant="default"><T>Trained</T></Badge>
+      case 'deployed': return <Badge variant="default"><T>Deployed</T></Badge>
+      case 'failed': return <Badge variant="destructive"><T>Failed</T></Badge>
       default: return <Badge variant="secondary">{status}</Badge>
     }
   }
@@ -284,11 +285,11 @@ export function PredictiveModeling() {
         return (
           <div className="grid grid-cols-3 gap-2 text-sm">
             <div>
-              <div className="text-muted-foreground">RMSE</div>
+              <div className="text-muted-foreground"><T>RMSE</T></div>
               <div className="font-medium">{model.performance_metrics.rmse?.toFixed(4)}</div>
             </div>
             <div>
-              <div className="text-muted-foreground">MAE</div>
+              <div className="text-muted-foreground"><T>MAE</T></div>
               <div className="font-medium">{model.performance_metrics.mae?.toFixed(4)}</div>
             </div>
             <div>
@@ -301,19 +302,19 @@ export function PredictiveModeling() {
         return (
           <div className="grid grid-cols-4 gap-2 text-sm">
             <div>
-              <div className="text-muted-foreground">Accuracy</div>
+              <div className="text-muted-foreground"><T>Accuracy</T></div>
               <div className="font-medium">{model.performance_metrics.accuracy?.toFixed(4)}</div>
             </div>
             <div>
-              <div className="text-muted-foreground">Precision</div>
+              <div className="text-muted-foreground"><T>Precision</T></div>
               <div className="font-medium">{model.performance_metrics.precision?.toFixed(4)}</div>
             </div>
             <div>
-              <div className="text-muted-foreground">Recall</div>
+              <div className="text-muted-foreground"><T>Recall</T></div>
               <div className="font-medium">{model.performance_metrics.recall?.toFixed(4)}</div>
             </div>
             <div>
-              <div className="text-muted-foreground">F1 Score</div>
+              <div className="text-muted-foreground"><T>F1 Score</T></div>
               <div className="font-medium">{model.performance_metrics.f1_score?.toFixed(4)}</div>
             </div>
           </div>
@@ -321,7 +322,7 @@ export function PredictiveModeling() {
       default:
         return (
           <div className="text-sm">
-            <div className="text-muted-foreground">Performance metrics available</div>
+            <div className="text-muted-foreground"><T>Performance metrics available</T></div>
           </div>
         )
     }
@@ -331,25 +332,25 @@ export function PredictiveModeling() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Predictive Modeling</h2>
-          <p className="text-sm text-muted-foreground">Create, train, and deploy custom AI models for your business</p>
+          <h2 className="text-2xl font-bold text-foreground"><T>Predictive Modeling</T></h2>
+          <p className="text-sm text-muted-foreground"><T>Create, train, and deploy custom AI models for your business</T></p>
         </div>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="h-4 w-4 mr-2" /> Create Model
+              <Plus className="h-4 w-4 mr-2" /> <T>Create Model</T>
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Create New Predictive Model</DialogTitle>
+              <DialogTitle><T>Create New Predictive Model</T></DialogTitle>
               <DialogDescription>
-                Define a new AI model for predictive analytics.
+                <T>Define a new AI model for predictive analytics.</T>
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="model-name">Model Name</Label>
+                <Label htmlFor="model-name"><T>Model Name</T></Label>
                 <Input
                   id="model-name"
                   value={newModel.name}
@@ -358,7 +359,7 @@ export function PredictiveModeling() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="model-description">Description</Label>
+                <Label htmlFor="model-description"><T>Description</T></Label>
                 <Textarea
                   id="model-description"
                   value={newModel.description}
@@ -369,7 +370,7 @@ export function PredictiveModeling() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="model-type">Model Type</Label>
+                  <Label htmlFor="model-type"><T>Model Type</T></Label>
                   <Select
                     value={newModel.type}
                     onValueChange={(value) => setNewModel({...newModel, type: value as any})}
@@ -378,15 +379,15 @@ export function PredictiveModeling() {
                       <SelectValue placeholder="Select model type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="regression">Regression</SelectItem>
-                      <SelectItem value="classification">Classification</SelectItem>
-                      <SelectItem value="time_series">Time Series</SelectItem>
-                      <SelectItem value="clustering">Clustering</SelectItem>
+                      <SelectItem value="regression"><T>Regression</T></SelectItem>
+                      <SelectItem value="classification"><T>Classification</T></SelectItem>
+                      <SelectItem value="time_series"><T>Time Series</T></SelectItem>
+                      <SelectItem value="clustering"><T>Clustering</T></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="model-dataset">Training Dataset</Label>
+                  <Label htmlFor="model-dataset"><T>Training Dataset</T></Label>
                   <Select
                     value={newModel.dataset_id}
                     onValueChange={(value) => setNewModel({...newModel, dataset_id: value})}
@@ -426,7 +427,7 @@ export function PredictiveModeling() {
       {trainingStatus && (
         <Card>
           <CardHeader>
-            <CardTitle>Model Training</CardTitle>
+            <CardTitle><T>Model Training</T></CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -445,9 +446,9 @@ export function PredictiveModeling() {
 
       <Tabs defaultValue="models" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="models">Models</TabsTrigger>
-          <TabsTrigger value="datasets">Datasets</TabsTrigger>
-          <TabsTrigger value="deployments">Deployments</TabsTrigger>
+          <TabsTrigger value="models"><T>Models</T></TabsTrigger>
+          <TabsTrigger value="datasets"><T>Datasets</T></TabsTrigger>
+          <TabsTrigger value="deployments"><T>Deployments</T></TabsTrigger>
         </TabsList>
 
         <TabsContent value="models">
@@ -467,12 +468,12 @@ export function PredictiveModeling() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm">
                       <Brain className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Type:</span>
+                      <span className="text-muted-foreground"><T>Type:</T></span>
                       <span className="font-medium">{getModelTypeLabel(model.type)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Created:</span>
+                      <span className="text-muted-foreground"><T>Created:</T></span>
                       <span className="font-medium">{new Date(model.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
@@ -481,7 +482,7 @@ export function PredictiveModeling() {
                     <div className="space-y-1 text-sm">
                       <div className="flex items-center gap-2">
                         <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Training Data:</span>
+                        <span className="text-muted-foreground"><T>Training Data:</T></span>
                       </div>
                       <div className="pl-6">
                         <div>{model.training_data.samples} samples</div>
@@ -494,7 +495,7 @@ export function PredictiveModeling() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Target className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground text-sm">Performance Metrics:</span>
+                        <span className="text-muted-foreground text-sm"><T>Performance Metrics:</T></span>
                       </div>
                       {getPerformanceMetrics(model)}
                     </div>
@@ -507,7 +508,7 @@ export function PredictiveModeling() {
                         onClick={() => handleTrainModel(model.id)}
                         disabled={isTraining}
                       >
-                        <Play className="h-4 w-4 mr-1" /> Train
+                        <Play className="h-4 w-4 mr-1" /> <T>Train</T>
                       </Button>
                     )}
                     {model.status === 'trained' && (
@@ -516,7 +517,7 @@ export function PredictiveModeling() {
                         onClick={() => handleDeployModel(model.id)}
                         disabled={isDeploying}
                       >
-                        <Upload className="h-4 w-4 mr-1" /> Deploy
+                        <Upload className="h-4 w-4 mr-1" /> <T>Deploy</T>
                       </Button>
                     )}
                     {model.status === 'deployed' && (
@@ -526,11 +527,11 @@ export function PredictiveModeling() {
                         disabled
                         title="Prediction is not available yet: this environment has no configured model-serving/inference backend."
                       >
-                        <Target className="h-4 w-4 mr-1" /> Predict
+                        <Target className="h-4 w-4 mr-1" /> <T>Predict</T>
                       </Button>
                     )}
                     <Button size="sm" variant="outline" onClick={() => setCurrentModel(model)}>
-                      <Info className="h-4 w-4 mr-1" /> Details
+                      <Info className="h-4 w-4 mr-1" /> <T>Details</T>
                     </Button>
                     <Button aria-label="Delete model"
                       size="sm"
@@ -549,20 +550,20 @@ export function PredictiveModeling() {
         <TabsContent value="datasets">
           <Card>
             <CardHeader>
-              <CardTitle>Training Datasets</CardTitle>
-              <CardDescription>Datasets available for model training</CardDescription>
+              <CardTitle><T>Training Datasets</T></CardTitle>
+              <CardDescription><T>Datasets available for model training</T></CardDescription>
             </CardHeader>
             <CardContent>
               <div className="border rounded-lg overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Size</TableHead>
-                      <TableHead>Features</TableHead>
-                      <TableHead>Samples</TableHead>
-                      <TableHead>Created</TableHead>
+                      <TableHead><T>Name</T></TableHead>
+                      <TableHead><T>Description</T></TableHead>
+                      <TableHead><T>Size</T></TableHead>
+                      <TableHead><T>Features</T></TableHead>
+                      <TableHead><T>Samples</T></TableHead>
+                      <TableHead><T>Created</T></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -586,8 +587,8 @@ export function PredictiveModeling() {
         <TabsContent value="deployments">
           <Card>
             <CardHeader>
-              <CardTitle>Deployed Models</CardTitle>
-              <CardDescription>Models currently deployed and available for predictions</CardDescription>
+              <CardTitle><T>Deployed Models</T></CardTitle>
+              <CardDescription><T>Models currently deployed and available for predictions</T></CardDescription>
             </CardHeader>
             <CardContent>
               {models.filter(model => model.status === 'deployed').length > 0 ? (
@@ -602,20 +603,20 @@ export function PredictiveModeling() {
                         <div className="space-y-2 text-sm">
                           <div className="flex items-center gap-2">
                             <Brain className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">Type:</span>
+                            <span className="text-muted-foreground"><T>Type:</T></span>
                             <span className="font-medium">{getModelTypeLabel(model.type)}</span>
                           </div>
                           {model.deployment_info?.endpoint && (
                             <div className="flex items-center gap-2">
                               <Target className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-muted-foreground">Endpoint:</span>
+                              <span className="text-muted-foreground"><T>Endpoint:</T></span>
                               <span className="font-mono text-xs bg-muted px-2 py-1 rounded">{model.deployment_info.endpoint}</span>
                             </div>
                           )}
                           {model.deployment_info?.last_deployed && (
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-muted-foreground">Last Deployed:</span>
+                              <span className="text-muted-foreground"><T>Last Deployed:</T></span>
                               <span className="font-medium">{new Date(model.deployment_info.last_deployed).toLocaleString()}</span>
                             </div>
                           )}
@@ -626,7 +627,7 @@ export function PredictiveModeling() {
                             disabled
                             title="Prediction is not available yet: this environment has no configured model-serving/inference backend."
                           >
-                            <Target className="h-4 w-4 mr-1" /> Predict
+                            <Target className="h-4 w-4 mr-1" /> <T>Predict</T>
                           </Button>
                           <Button
                             size="sm"
@@ -634,7 +635,7 @@ export function PredictiveModeling() {
                             disabled
                             title="Live model monitoring is not available yet: this environment has no configured model-serving/inference backend."
                           >
-                            <Info className="h-4 w-4 mr-1" /> Monitor
+                            <Info className="h-4 w-4 mr-1" /> <T>Monitor</T>
                           </Button>
                         </div>
                       </CardContent>
@@ -643,7 +644,7 @@ export function PredictiveModeling() {
                 </div>
               ) : (
                 <div className="flex items-center justify-center py-8 text-muted-foreground">
-                  No deployed models found
+                  <T>No deployed models found</T>
                 </div>
               )}
             </CardContent>
@@ -663,11 +664,11 @@ export function PredictiveModeling() {
               <div className="space-y-6 py-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <h4 className="font-medium">Model Information</h4>
+                    <h4 className="font-medium"><T>Model Information</T></h4>
                     <div className="space-y-1 text-sm">
                       <div className="flex items-center gap-2">
                         <Brain className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Type:</span>
+                        <span className="text-muted-foreground"><T>Type:</T></span>
                         <span>{getModelTypeLabel(currentModel.type)}</span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -675,12 +676,12 @@ export function PredictiveModeling() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Created:</span>
+                        <span className="text-muted-foreground"><T>Created:</T></span>
                         <span>{new Date(currentModel.created_at).toLocaleString()}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Updated:</span>
+                        <span className="text-muted-foreground"><T>Updated:</T></span>
                         <span>{new Date(currentModel.updated_at).toLocaleString()}</span>
                       </div>
                     </div>
@@ -688,16 +689,16 @@ export function PredictiveModeling() {
                   
                   {currentModel.training_data && (
                     <div className="space-y-2">
-                      <h4 className="font-medium">Training Data</h4>
+                      <h4 className="font-medium"><T>Training Data</T></h4>
                       <div className="space-y-1 text-sm">
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Samples:</span>
+                          <span className="text-muted-foreground"><T>Samples:</T></span>
                           <span>{currentModel.training_data.samples}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Features:</span>
+                          <span className="text-muted-foreground"><T>Features:</T></span>
                           <span>{currentModel.training_data.features}</span>
                         </div>
                       </div>
@@ -707,26 +708,26 @@ export function PredictiveModeling() {
 
                 {currentModel.performance_metrics && (
                   <div className="space-y-2">
-                    <h4 className="font-medium">Performance Metrics</h4>
+                    <h4 className="font-medium"><T>Performance Metrics</T></h4>
                     {getPerformanceMetrics(currentModel)}
                   </div>
                 )}
 
                 {currentModel.status === 'deployed' && currentModel.deployment_info && (
                   <div className="space-y-2">
-                    <h4 className="font-medium">Deployment Information</h4>
+                    <h4 className="font-medium"><T>Deployment Information</T></h4>
                     <div className="space-y-1 text-sm">
                       {currentModel.deployment_info.endpoint && (
                         <div className="flex items-center gap-2">
                           <Target className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Endpoint:</span>
+                          <span className="text-muted-foreground"><T>Endpoint:</T></span>
                           <span className="font-mono text-xs bg-muted px-2 py-1 rounded">{currentModel.deployment_info.endpoint}</span>
                         </div>
                       )}
                       {currentModel.deployment_info.last_deployed && (
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Last Deployed:</span>
+                          <span className="text-muted-foreground"><T>Last Deployed:</T></span>
                           <span>{new Date(currentModel.deployment_info.last_deployed).toLocaleString()}</span>
                         </div>
                       )}
@@ -735,16 +736,16 @@ export function PredictiveModeling() {
                 )}
 
                 <div className="space-y-2">
-                  <h4 className="font-medium">Actions</h4>
+                  <h4 className="font-medium"><T>Actions</T></h4>
                   <div className="flex flex-wrap gap-2">
                     {currentModel.status === 'draft' && (
                       <Button size="sm" onClick={() => handleTrainModel(currentModel.id)}>
-                        <Play className="h-4 w-4 mr-1" /> Train Model
+                        <Play className="h-4 w-4 mr-1" /> <T>Train Model</T>
                       </Button>
                     )}
                     {currentModel.status === 'trained' && (
                       <Button size="sm" onClick={() => handleDeployModel(currentModel.id)}>
-                        <Upload className="h-4 w-4 mr-1" /> Deploy Model
+                        <Upload className="h-4 w-4 mr-1" /> <T>Deploy Model</T>
                       </Button>
                     )}
                     {currentModel.status === 'deployed' && (
@@ -764,11 +765,11 @@ export function PredictiveModeling() {
                         disabled
                         title="Prediction is not available yet: this environment has no configured model-serving/inference backend."
                       >
-                        <Target className="h-4 w-4 mr-1" /> Make Prediction
+                        <Target className="h-4 w-4 mr-1" /> <T>Make Prediction</T>
                       </Button>
                     )}
                     <Button size="sm" variant="outline" onClick={() => handleExportModel(currentModel)}>
-                      <Save className="h-4 w-4 mr-1" /> Export Model
+                      <Save className="h-4 w-4 mr-1" /> <T>Export Model</T>
                     </Button>
                   </div>
                 </div>

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -210,7 +211,7 @@ export function FloatingCommandBar() {
                   ))}
                   {filtered.length === 0 && (
                     <p className="text-center text-sm text-muted-foreground py-4">
-                      No commands found
+                      <T>No commands found</T>
                     </p>
                   )}
                 </div>

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback } from "react"
 import { useI18n } from "@/components/providers/i18n-provider"
@@ -103,27 +104,27 @@ export default function IntelligencePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.reasoningAccuracy}%</div>
-            <p className="text-xs text-muted-foreground">Causal reasoning accuracy</p>
+            <p className="text-xs text-muted-foreground"><T>Causal reasoning accuracy</T></p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">System Load</CardTitle>
+            <CardTitle className="text-sm font-medium"><T>System Load</T></CardTitle>
             <Cpu className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{Math.round(metrics.systemLoad * 100)}%</div>
-            <p className="text-xs text-muted-foreground">CPU utilization</p>
+            <p className="text-xs text-muted-foreground"><T>CPU utilization</T></p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Memory Usage</CardTitle>
+            <CardTitle className="text-sm font-medium"><T>Memory Usage</T></CardTitle>
             <MemoryStick className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{Math.round(metrics.memoryUsage * 100)}%</div>
-            <p className="text-xs text-muted-foreground">Memory utilization</p>
+            <p className="text-xs text-muted-foreground"><T>Memory utilization</T></p>
           </CardContent>
         </Card>
       </div>

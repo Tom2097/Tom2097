@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback } from "react"
 import { useI18n } from "@/components/providers/i18n-provider"
@@ -92,7 +93,7 @@ export default function OperationsPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("operations.page.title")}</h1>
-            <p className="text-sm text-muted-foreground">Unified intake hub — ingest, understand, act, and review</p>
+            <p className="text-sm text-muted-foreground"><T>Unified intake hub — ingest, understand, act, and review</T></p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -113,37 +114,37 @@ export default function OperationsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.ingestionRate}/min</div>
-            <p className="text-xs text-muted-foreground">Documents processed</p>
+            <p className="text-xs text-muted-foreground"><T>Documents processed</T></p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Processing Time</CardTitle>
+            <CardTitle className="text-sm font-medium"><T>Processing Time</T></CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.processingTime}ms</div>
-            <p className="text-xs text-muted-foreground">Avg processing time</p>
+            <p className="text-xs text-muted-foreground"><T>Avg processing time</T></p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Analysis Success Rate</CardTitle>
+            <CardTitle className="text-sm font-medium"><T>Analysis Success Rate</T></CardTitle>
             <Brain className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.analysisSuccessRate}%</div>
-            <p className="text-xs text-muted-foreground">Documents analyzed without error</p>
+            <p className="text-xs text-muted-foreground"><T>Documents analyzed without error</T></p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Auto-Action Rate</CardTitle>
+            <CardTitle className="text-sm font-medium"><T>Auto-Action Rate</T></CardTitle>
             <Zap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.autoActionRate}%</div>
-            <p className="text-xs text-muted-foreground">Classified docs with a task created</p>
+            <p className="text-xs text-muted-foreground"><T>Classified docs with a task created</T></p>
           </CardContent>
         </Card>
       </div>
@@ -207,7 +208,7 @@ export default function OperationsPage() {
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-purple-500" />
                   <div>
-                    <div className="font-medium">Open CAPAs</div>
+                    <div className="font-medium"><T>Open CAPAs</T></div>
                     <div className="text-sm text-muted-foreground">{metrics.openCapas} awaiting resolution</div>
                   </div>
                 </div>
@@ -303,28 +304,28 @@ export default function OperationsPage() {
                   <Sparkles className="h-3.5 w-3.5 text-blue-500" />
                   <span className="text-xs font-medium">{t("operations.page.classification")}</span>
                 </div>
-                <Badge variant="secondary" className="text-[10px]">Auto</Badge>
+                <Badge variant="secondary" className="text-[10px]"><T>Auto</T></Badge>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
                 <div className="flex items-center gap-2">
                   <FileSearch className="h-3.5 w-3.5 text-emerald-500" />
                   <span className="text-xs font-medium">{t("operations.page.fieldExtraction")}</span>
                 </div>
-                <Badge variant="secondary" className="text-[10px]">Invoice, Contract, +3</Badge>
+                <Badge variant="secondary" className="text-[10px]"><T>Invoice, Contract, +3</T></Badge>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-purple-500/5 border border-purple-500/10">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="h-3.5 w-3.5 text-purple-500" />
                   <span className="text-xs font-medium">{t("operations.page.summarization")}</span>
                 </div>
-                <Badge variant="secondary" className="text-[10px]">Key Points</Badge>
+                <Badge variant="secondary" className="text-[10px]"><T>Key Points</T></Badge>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-amber-500/5 border border-amber-500/10">
                 <div className="flex items-center gap-2">
                   <Zap className="h-3.5 w-3.5 text-amber-500" />
                   <span className="text-xs font-medium">{t("operations.page.entityRecognition")}</span>
                 </div>
-                <Badge variant="secondary" className="text-[10px]">People, Orgs, Dates</Badge>
+                <Badge variant="secondary" className="text-[10px]"><T>People, Orgs, Dates</T></Badge>
               </div>
             </CardContent>
           </Card>
@@ -343,21 +344,21 @@ export default function OperationsPage() {
                   <ListTree className="h-3.5 w-3.5 text-green-500" />
                   <span className="text-xs font-medium">{t("operations.page.autoTasks")}</span>
                 </div>
-                <Badge variant="secondary" className="text-[10px]">CAPA, Payables</Badge>
+                <Badge variant="secondary" className="text-[10px]"><T>CAPA, Payables</T></Badge>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-blue-500/5 border border-blue-500/10">
                 <div className="flex items-center gap-2">
                   <FileText className="h-3.5 w-3.5 text-blue-500" />
                   <span className="text-xs font-medium">{t("operations.page.draftResponse")}</span>
                 </div>
-                <Badge variant="secondary" className="text-[10px]">AI-Powered</Badge>
+                <Badge variant="secondary" className="text-[10px]"><T>AI-Powered</T></Badge>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-indigo-500/5 border border-indigo-500/10">
                 <div className="flex items-center gap-2">
                   <Zap className="h-3.5 w-3.5 text-indigo-500" />
                   <span className="text-xs font-medium">{t("operations.page.recipeExecution")}</span>
                 </div>
-                <Badge variant="secondary" className="text-[10px]">4 Playbooks</Badge>
+                <Badge variant="secondary" className="text-[10px]"><T>4 Playbooks</T></Badge>
               </div>
             </CardContent>
           </Card>

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -159,20 +160,20 @@ export function CrmAccountsHierarchy() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Building2 className="h-5 w-5 text-primary" />
-          <p className="text-sm font-medium">Account Hierarchy</p>
+          <p className="text-sm font-medium"><T>Account Hierarchy</T></p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <input className="h-8 w-48 rounded-md border border-input bg-background pl-8 pr-3 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder="Search accounts..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <Button size="sm" className="h-8" onClick={() => setAddOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" />Add Account</Button>
+          <Button size="sm" className="h-8" onClick={() => setAddOpen(true)}><Plus className="h-3.5 w-3.5 mr-1" /><T>Add Account</T></Button>
         </div>
       </div>
 
       {loading ? <div className="flex justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
       : error ? <div className="text-xs text-red-500 p-4 text-center">{error}</div>
-      : accounts.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No accounts found</p>
+      : accounts.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8"><T>No accounts found</T></p>
       : (
         <div className="border border-border/50 rounded-xl divide-y divide-border/50">
           {accounts.map((account) => (
@@ -199,7 +200,7 @@ export function CrmAccountsHierarchy() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">New Account</h3>
+                <h3 className="text-lg font-semibold"><T>New Account</T></h3>
                 <Button aria-label="Close" variant="ghost" size="icon" onClick={() => { setAddOpen(false); resetForm() }}><X className="h-4 w-4" /></Button>
               </div>
               <div className="space-y-3">

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import useSWR from "swr"
@@ -153,24 +154,24 @@ export function DesignPartnerView() {
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add Design Partner</DialogTitle>
-                <DialogDescription>Track a new company piloting the platform</DialogDescription>
+                <DialogTitle><T>Add Design Partner</T></DialogTitle>
+                <DialogDescription><T>Track a new company piloting the platform</T></DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-2">
                 <div className="space-y-2">
-                  <Label>Name</Label>
+                  <Label><T>Name</T></Label>
                   <Input value={newPartner.name} onChange={(e) => setNewPartner((p) => ({ ...p, name: e.target.value }))} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Company</Label>
+                  <Label><T>Company</T></Label>
                   <Input value={newPartner.company} onChange={(e) => setNewPartner((p) => ({ ...p, company: e.target.value }))} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Email</Label>
+                  <Label><T>Email</T></Label>
                   <Input type="email" value={newPartner.email} onChange={(e) => setNewPartner((p) => ({ ...p, email: e.target.value }))} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Vertical</Label>
+                  <Label><T>Vertical</T></Label>
                   <Input value={newPartner.vertical} onChange={(e) => setNewPartner((p) => ({ ...p, vertical: e.target.value }))} placeholder="Healthcare, Banking, ..." />
                 </div>
               </div>
@@ -185,7 +186,7 @@ export function DesignPartnerView() {
           </Dialog>
           <Button size="sm" onClick={() => setAddOpen(true)}>
             <Plus className="mr-1 h-4 w-4" />
-            Add Partner
+            <T>Add Partner</T>
           </Button>
         </div>
       </div>

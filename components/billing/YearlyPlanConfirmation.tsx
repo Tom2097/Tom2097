@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -32,9 +33,9 @@ export function YearlyPlanConfirmation({ planName, onConfirm, onCancel }: Yearly
               <Info className="w-3 h-3 text-amber-500" />
             </div>
             <div>
-              <h4 className="font-medium text-sm">3-Month Minimum Commitment</h4>
+              <h4 className="font-medium text-sm"><T>3-Month Minimum Commitment</T></h4>
               <p className="text-sm text-muted-foreground mt-1">
-                This yearly plan requires a 3-month minimum commitment. You can cancel after 3 months, but no refunds will be issued.
+                <T>This yearly plan requires a 3-month minimum commitment. You can cancel after 3 months, but no refunds will be issued.</T>
               </p>
             </div>
           </div>
@@ -44,9 +45,9 @@ export function YearlyPlanConfirmation({ planName, onConfirm, onCancel }: Yearly
               <Info className="w-3 h-3 text-amber-500" />
             </div>
             <div>
-              <h4 className="font-medium text-sm">No Refunds</h4>
+              <h4 className="font-medium text-sm"><T>No Refunds</T></h4>
               <p className="text-sm text-muted-foreground mt-1">
-                Yearly plans are non-refundable. You will be billed for the full year upfront.
+                <T>Yearly plans are non-refundable. You will be billed for the full year upfront.</T>
               </p>
             </div>
           </div>
@@ -58,20 +59,20 @@ export function YearlyPlanConfirmation({ planName, onConfirm, onCancel }: Yearly
               onCheckedChange={(checked) => setUnderstood(checked === true)}
             />
             <Label htmlFor="understood" className="text-sm">
-              I understand the terms and conditions
+              <T>I understand the terms and conditions</T>
             </Label>
           </div>
         </div>
         
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>
-            Cancel
+            <T>Cancel</T>
           </Button>
           <Button
             onClick={onConfirm}
             disabled={!understood}
           >
-            Confirm Purchase
+            <T>Confirm Purchase</T>
           </Button>
         </DialogFooter>
       </DialogContent>

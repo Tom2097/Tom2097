@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useState, useTransition, useCallback, Suspense } from "react"
 import { motion } from "framer-motion"
@@ -707,23 +708,23 @@ export default function SettingsPage() {
         <TabsList className="bg-muted/50 p-1">
           <TabsTrigger value="subscription" className="gap-2">
             <CreditCard className="w-4 h-4" />
-            Subscription
+            <T>Subscription</T>
           </TabsTrigger>
           <TabsTrigger value="team" className="gap-2">
             <Users className="w-4 h-4" />
-            Team
+            <T>Team</T>
           </TabsTrigger>
           <TabsTrigger value="organization" className="gap-2">
             <Building2 className="w-4 h-4" />
-            Organization
+            <T>Organization</T>
           </TabsTrigger>
           <TabsTrigger value="integrations" className="gap-2">
             <Plug className="w-4 h-4" />
-            Integrations
+            <T>Integrations</T>
           </TabsTrigger>
           <TabsTrigger value="security" className="gap-2">
             <Shield className="w-4 h-4" />
-            Security
+            <T>Security</T>
           </TabsTrigger>
         </TabsList>
 
@@ -767,7 +768,7 @@ export default function SettingsPage() {
                   ) : (
                     <Button asChild>
                       <Link href="/checkout">
-                        Upgrade Plan
+                        <T>Upgrade Plan</T>
                         <ChevronRight className="w-4 h-4 ml-1" />
                       </Link>
                     </Button>
@@ -793,7 +794,7 @@ export default function SettingsPage() {
                   </ul>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-3">Billing Period</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-3"><T>Billing Period</T></p>
                   {subscription?.current_period_end ? (
                     <div className="space-y-2">
                       <p className="text-sm">

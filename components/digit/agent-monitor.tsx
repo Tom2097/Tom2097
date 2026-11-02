@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
@@ -77,8 +78,8 @@ export function AgentMonitor() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-foreground">Agent Monitor</h3>
-          <p className="text-sm text-muted-foreground">AI agents monitoring your workspaces</p>
+          <h3 className="font-semibold text-foreground"><T>Agent Monitor</T></h3>
+          <p className="text-sm text-muted-foreground"><T>AI agents monitoring your workspaces</T></p>
         </div>
         <Badge variant="secondary" className="gap-1">
           <Activity className="w-3 h-3" />

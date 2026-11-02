@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -214,13 +215,13 @@ export function IntelligenceCommandCenter() {
               </div>
               <div>
                 <h2 className="text-xl font-semibold flex items-center gap-2">
-                  Command Center
+                  <T>Command Center</T>
                   <Badge variant="secondary" className="ml-2">
                     <Activity className="w-3 h-3 mr-1" />
                     {pendingActions.length > 0 ? `${pendingActions.length} pending` : "All clear"}
                   </Badge>
                 </h2>
-                <p className="text-sm text-muted-foreground">Continuous monitoring across all modules</p>
+                <p className="text-sm text-muted-foreground"><T>Continuous monitoring across all modules</T></p>
               </div>
             </div>
 
@@ -231,11 +232,11 @@ export function IntelligenceCommandCenter() {
               </Button>
               <Button variant="outline" size="sm" onClick={generateBriefing} disabled={isGeneratingBriefing} className="gap-2">
                 <Sparkles className={cn("w-4 h-4", isGeneratingBriefing && "animate-pulse")} />
-                Generate Briefing
+                <T>Generate Briefing</T>
               </Button>
               <Button variant="default" size="sm" onClick={autoAssign} className="gap-2">
                 <PlayCircle className="w-4 h-4" />
-                Auto-Assign Agents
+                <T>Auto-Assign Agents</T>
               </Button>
             </div>
           </div>
@@ -248,25 +249,25 @@ export function IntelligenceCommandCenter() {
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-green-500">{monitorSummary.healthy}</p>
-              <p className="text-xs text-muted-foreground">Healthy</p>
+              <p className="text-xs text-muted-foreground"><T>Healthy</T></p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-amber-500">{monitorSummary.warnings}</p>
-              <p className="text-xs text-muted-foreground">Warnings</p>
+              <p className="text-xs text-muted-foreground"><T>Warnings</T></p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-red-500">{monitorSummary.critical}</p>
-              <p className="text-xs text-muted-foreground">Critical</p>
+              <p className="text-xs text-muted-foreground"><T>Critical</T></p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-primary">{findings.length}</p>
-              <p className="text-xs text-muted-foreground">Active Findings</p>
+              <p className="text-xs text-muted-foreground"><T>Active Findings</T></p>
             </CardContent>
           </Card>
         </div>
@@ -276,7 +277,7 @@ export function IntelligenceCommandCenter() {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview" className="gap-2">
             <Brain className="w-4 h-4" />
-            Overview
+            <T>Overview</T>
           </TabsTrigger>
           <TabsTrigger value="findings" className="gap-2">
             <AlertTriangle className="w-4 h-4" />
@@ -298,7 +299,7 @@ export function IntelligenceCommandCenter() {
           </TabsTrigger>
           <TabsTrigger value="briefing" className="gap-2">
             <FileText className="w-4 h-4" />
-            Briefing
+            <T>Briefing</T>
           </TabsTrigger>
         </TabsList>
 
@@ -310,7 +311,7 @@ export function IntelligenceCommandCenter() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <FileText className="w-4 h-4 text-primary" />
-                  Latest Briefing
+                  <T>Latest Briefing</T>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -328,7 +329,7 @@ export function IntelligenceCommandCenter() {
                     </Button>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Generate your first briefing to get started.</p>
+                  <p className="text-sm text-muted-foreground"><T>Generate your first briefing to get started.</T></p>
                 )}
               </CardContent>
             </Card>
@@ -338,7 +339,7 @@ export function IntelligenceCommandCenter() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Users className="w-4 h-4 text-primary" />
-                  Active Agents
+                  <T>Active Agents</T>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -348,7 +349,7 @@ export function IntelligenceCommandCenter() {
                     <Skeleton className="h-4 w-3/4" />
                   </div>
                 ) : agents.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No agents configured yet.</p>
+                  <p className="text-sm text-muted-foreground"><T>No agents configured yet.</T></p>
                 ) : (
                   <div className="space-y-3">
                     {agents.map((agent) => (
@@ -381,7 +382,7 @@ export function IntelligenceCommandCenter() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Activity className="w-4 h-4 text-primary" />
-                Module Intelligence Status
+                <T>Module Intelligence Status</T>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -410,15 +411,15 @@ export function IntelligenceCommandCenter() {
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={runMonitors} disabled={isRunningMonitors}>
               <RefreshCw className={cn("w-4 h-4 mr-2", isRunningMonitors && "animate-spin")} />
-              Scan All Modules
+              <T>Scan All Modules</T>
             </Button>
             <Button variant="secondary" size="sm" onClick={autoAssign}>
               <PlayCircle className="w-4 h-4 mr-2" />
-              Assign All Findings
+              <T>Assign All Findings</T>
             </Button>
             <Button variant="secondary" size="sm" onClick={generateBriefing} disabled={isGeneratingBriefing}>
               <Sparkles className={cn("w-4 h-4 mr-2", isGeneratingBriefing && "animate-pulse")} />
-              Generate Briefing
+              <T>Generate Briefing</T>
             </Button>
           </div>
         </TabsContent>
@@ -439,8 +440,8 @@ export function IntelligenceCommandCenter() {
             <Card>
               <CardContent className="p-12 text-center">
                 <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                <p className="text-lg font-medium">All Clear</p>
-                <p className="text-sm text-muted-foreground">No active findings. Run a scan to check for new issues.</p>
+                <p className="text-lg font-medium"><T>All Clear</T></p>
+                <p className="text-sm text-muted-foreground"><T>No active findings. Run a scan to check for new issues.</T></p>
               </CardContent>
             </Card>
           ) : (
@@ -482,7 +483,7 @@ export function IntelligenceCommandCenter() {
                             </Badge>
                             {finding.requiresApproval && (
                               <Badge variant="secondary" className="text-xs">
-                                Needs approval
+                                <T>Needs approval</T>
                               </Badge>
                             )}
                           </div>
@@ -501,7 +502,7 @@ export function IntelligenceCommandCenter() {
                             >
                               {finding.suggestedAction && (
                                 <div className="p-3 rounded-lg bg-secondary/30 border border-border/50">
-                                  <p className="text-xs font-medium mb-1">Suggested Action:</p>
+                                  <p className="text-xs font-medium mb-1"><T>Suggested Action:</T></p>
                                   <p className="text-sm text-muted-foreground">{finding.suggestedAction}</p>
                                 </div>
                               )}
@@ -510,7 +511,7 @@ export function IntelligenceCommandCenter() {
                               <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
                                 <div className="flex items-center gap-2 mb-2">
                                   <Network className="w-3 h-3 text-blue-500" />
-                                  <p className="text-xs font-medium text-blue-500">Causal Chain</p>
+                                  <p className="text-xs font-medium text-blue-500"><T>Causal Chain</T></p>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                   This finding may impact connected entities across {finding.sourceModule} and other modules.
@@ -580,8 +581,8 @@ export function IntelligenceCommandCenter() {
             <Card>
               <CardContent className="p-12 text-center">
                 <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                <p className="text-lg font-medium">No Pending Actions</p>
-                <p className="text-sm text-muted-foreground">All findings have been processed or assigned.</p>
+                <p className="text-lg font-medium"><T>No Pending Actions</T></p>
+                <p className="text-sm text-muted-foreground"><T>All findings have been processed or assigned.</T></p>
               </CardContent>
             </Card>
           ) : (
@@ -614,7 +615,7 @@ export function IntelligenceCommandCenter() {
                       </div>
                       <Button size="sm" onClick={() => approveAction(action.id)}>
                         <CheckCircle2 className="w-4 h-4 mr-1" />
-                        Approve
+                        <T>Approve</T>
                       </Button>
                     </CardContent>
                   </Card>
@@ -675,7 +676,7 @@ export function IntelligenceCommandCenter() {
                     Executive Briefing — {briefing.date}
                     <Button variant="ghost" size="sm" onClick={generateBriefing} disabled={isGeneratingBriefing} className="ml-auto">
                       <RefreshCw className={cn("w-4 h-4 mr-1", isGeneratingBriefing && "animate-spin")} />
-                      Regenerate
+                      <T>Regenerate</T>
                     </Button>
                   </CardTitle>
                 </CardHeader>
@@ -684,7 +685,7 @@ export function IntelligenceCommandCenter() {
 
                   {(briefing.actionItems || []).length > 0 && (
                     <div className="mt-6">
-                      <h4 className="text-sm font-medium mb-3">Action Items</h4>
+                      <h4 className="text-sm font-medium mb-3"><T>Action Items</T></h4>
                       <div className="space-y-2">
                         {(briefing.actionItems || []).map((item) => (
                           <div
@@ -733,13 +734,13 @@ export function IntelligenceCommandCenter() {
             <Card>
               <CardContent className="p-12 text-center">
                 <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-lg font-medium">No Briefing Yet</p>
+                <p className="text-lg font-medium"><T>No Briefing Yet</T></p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Generate your first executive briefing to get a summary of findings, metrics, and action items.
+                  <T>Generate your first executive briefing to get a summary of findings, metrics, and action items.</T>
                 </p>
                 <Button onClick={generateBriefing} disabled={isGeneratingBriefing}>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Briefing
+                  <T>Generate Briefing</T>
                 </Button>
               </CardContent>
             </Card>

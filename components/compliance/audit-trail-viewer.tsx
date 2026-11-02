@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -23,13 +24,13 @@ export function AuditTrailViewer({ entries }: AuditTrailViewerProps) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Timestamp</TableHead>
-          <TableHead>Record Type</TableHead>
-          <TableHead>Record ID</TableHead>
-          <TableHead>Action</TableHead>
-          <TableHead>Changed By</TableHead>
-          <TableHead>IP Address</TableHead>
-          <TableHead>Hash</TableHead>
+          <TableHead><T>Timestamp</T></TableHead>
+          <TableHead><T>Record Type</T></TableHead>
+          <TableHead><T>Record ID</T></TableHead>
+          <TableHead><T>Action</T></TableHead>
+          <TableHead><T>Changed By</T></TableHead>
+          <TableHead><T>IP Address</T></TableHead>
+          <TableHead><T>Hash</T></TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

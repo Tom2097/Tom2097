@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -60,30 +61,30 @@ export function NewObjectiveDialog({ label }: { label: string }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New Objective</DialogTitle>
+          <DialogTitle><T>New Objective</T></DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div>
-            <Label htmlFor="obj-name">Name <span className="text-destructive">*</span></Label>
+            <Label htmlFor="obj-name"><T>Name</T> <span className="text-destructive">*</span></Label>
             <Input id="obj-name" required aria-required="true" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Increase quarterly revenue" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="obj-category">Category</Label>
+              <Label htmlFor="obj-category"><T>Category</T></Label>
               <Input id="obj-category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Revenue" />
             </div>
             <div>
-              <Label htmlFor="obj-owner">Owner</Label>
+              <Label htmlFor="obj-owner"><T>Owner</T></Label>
               <Input id="obj-owner" value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} placeholder="Team or person" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="obj-start">Start date <span className="text-destructive">*</span></Label>
+              <Label htmlFor="obj-start"><T>Start date</T> <span className="text-destructive">*</span></Label>
               <Input id="obj-start" type="date" required aria-required="true" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
             </div>
             <div>
-              <Label htmlFor="obj-end">End date <span className="text-destructive">*</span></Label>
+              <Label htmlFor="obj-end"><T>End date</T> <span className="text-destructive">*</span></Label>
               <Input id="obj-end" type="date" required aria-required="true" min={form.start_date || undefined} value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
             </div>
           </div>

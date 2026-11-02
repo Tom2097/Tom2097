@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -62,7 +63,7 @@ export function DocumentUnderstanding({ documentId, content }: { documentId: str
               <Card>
                 <CardHeader className="p-3 pb-1 flex flex-row items-center gap-2 cursor-pointer" onClick={() => setExpanded(expanded === "classify" ? null : "classify")}>
                   <Sparkles className="h-4 w-4 text-blue-500" />
-                  <CardTitle className="text-xs font-medium">Classification</CardTitle>
+                  <CardTitle className="text-xs font-medium"><T>Classification</T></CardTitle>
                   <Badge variant="secondary" className="text-[10px] ml-auto">{data.classification.confidence}%</Badge>
                 </CardHeader>
                 {expanded === "classify" && (
@@ -82,7 +83,7 @@ export function DocumentUnderstanding({ documentId, content }: { documentId: str
               <Card>
                 <CardHeader className="p-3 pb-1 flex flex-row items-center gap-2 cursor-pointer" onClick={() => setExpanded(expanded === "summary" ? null : "summary")}>
                   <MessageSquare className="h-4 w-4 text-purple-500" />
-                  <CardTitle className="text-xs font-medium">Summary</CardTitle>
+                  <CardTitle className="text-xs font-medium"><T>Summary</T></CardTitle>
                   <Badge variant="secondary" className="text-[10px] ml-auto">{data.summary.keyPoints.length} points</Badge>
                 </CardHeader>
                 {expanded === "summary" && (
@@ -107,7 +108,7 @@ export function DocumentUnderstanding({ documentId, content }: { documentId: str
               <Card>
                 <CardHeader className="p-3 pb-1 flex flex-row items-center gap-2 cursor-pointer" onClick={() => setExpanded(expanded === "entities" ? null : "entities")}>
                   <FileSearch className="h-4 w-4 text-amber-500" />
-                  <CardTitle className="text-xs font-medium">Entities</CardTitle>
+                  <CardTitle className="text-xs font-medium"><T>Entities</T></CardTitle>
                   <Badge variant="secondary" className="text-[10px] ml-auto">{data.entities.length} found</Badge>
                 </CardHeader>
                 {expanded === "entities" && (
@@ -130,7 +131,7 @@ export function DocumentUnderstanding({ documentId, content }: { documentId: str
               <Card>
                 <CardHeader className="p-3 pb-1 flex flex-row items-center gap-2 cursor-pointer" onClick={() => setExpanded(expanded === "fields" ? null : "fields")}>
                   <ListTree className="h-4 w-4 text-emerald-500" />
-                  <CardTitle className="text-xs font-medium">Extracted Fields</CardTitle>
+                  <CardTitle className="text-xs font-medium"><T>Extracted Fields</T></CardTitle>
                   <Badge variant="secondary" className="text-[10px] ml-auto">{data.extracted_fields.length} fields</Badge>
                 </CardHeader>
                 {expanded === "fields" && (

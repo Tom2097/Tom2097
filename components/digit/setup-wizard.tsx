@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -201,15 +202,15 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
               {currentStep === 0 && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="ws-name">Workspace Name</Label>
+                    <Label htmlFor="ws-name"><T>Workspace Name</T></Label>
                     <Input id="ws-name" placeholder="My Workspace" value={formData.name as string} onChange={(e) => update("name", e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ws-desc">Description</Label>
+                    <Label htmlFor="ws-desc"><T>Description</T></Label>
                     <Input id="ws-desc" placeholder="What is this workspace for?" value={formData.description as string} onChange={(e) => update("description", e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Vertical</Label>
+                    <Label><T>Vertical</T></Label>
                     <Select value={vertical} onValueChange={(v) => { setVertical(v); update("vertical", v) }}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -220,7 +221,7 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Workspace Owner</Label>
+                    <Label><T>Workspace Owner</T></Label>
                     <Input placeholder="user@example.com" value={formData.owner as string} onChange={(e) => update("owner", e.target.value)} />
                   </div>
                 </>
@@ -230,7 +231,7 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
 
               {currentStep === 2 && (
                 <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground mb-2">Connect external data sources to this workspace:</p>
+                  <p className="text-sm text-muted-foreground mb-2"><T>Connect external data sources to this workspace:</T></p>
                   {["Gmail", "Google Drive", "Slack", "SharePoint", "Dropbox", "Custom API"].map((source) => (
                     <div key={source} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -247,7 +248,7 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
                             rel="noopener noreferrer"
                             className="text-xs text-primary hover:underline"
                           >
-                            Connect
+                            <T>Connect</T>
                           </a>
                         )}
                         <Switch
@@ -262,7 +263,7 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
                     </div>
                   ))}
                   <p className="text-xs text-muted-foreground">
-                    Gmail, Google Drive, Slack, and SharePoint are registered immediately -- click &quot;Connect&quot; next to each to sign in and grant access (or finish later in Settings &gt; Integrations). Dropbox and Custom API are registered for manual credential setup.
+                    <T>Gmail, Google Drive, Slack, and SharePoint are registered immediately -- click &quot;Connect&quot; next to each to sign in and grant access (or finish later in Settings &gt; Integrations). Dropbox and Custom API are registered for manual credential setup.</T>
                   </p>
                 </div>
               )}
@@ -270,23 +271,23 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
               {currentStep === 3 && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Label>Auto-classify documents</Label>
+                    <Label><T>Auto-classify documents</T></Label>
                     <Switch checked={formData.autoClassify as boolean} onCheckedChange={(v) => update("autoClassify", v)} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label>Auto-route to workspace</Label>
+                    <Label><T>Auto-route to workspace</T></Label>
                     <Switch checked={formData.autoRoute as boolean} onCheckedChange={(v) => update("autoRoute", v)} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label>Human-in-the-loop review</Label>
+                    <Label><T>Human-in-the-loop review</T></Label>
                     <Switch checked={formData.hitlEnabled as boolean} onCheckedChange={(v) => update("hitlEnabled", v)} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label>Auto-create tasks from classification</Label>
+                    <Label><T>Auto-create tasks from classification</T></Label>
                     <Switch checked={formData.autoCreateTasks as boolean} onCheckedChange={(v) => update("autoCreateTasks", v)} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label>Generate workflows from documents</Label>
+                    <Label><T>Generate workflows from documents</T></Label>
                     <Switch checked={formData.docToWorkflow as boolean} onCheckedChange={(v) => update("docToWorkflow", v)} />
                   </div>
                 </div>
@@ -295,20 +296,20 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
               {currentStep === 4 && (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Roles (comma-separated)</Label>
+                    <Label><T>Roles (comma-separated)</T></Label>
                     <Input value={formData.teamRoles as string} onChange={(e) => update("teamRoles", e.target.value)} />
-                    <p className="text-xs text-muted-foreground">Define roles for this workspace</p>
+                    <p className="text-xs text-muted-foreground"><T>Define roles for this workspace</T></p>
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label>Enforce MFA for sensitive actions</Label>
+                    <Label><T>Enforce MFA for sensitive actions</T></Label>
                     <Switch checked={formData.mfaEnforced as boolean} onCheckedChange={(v) => update("mfaEnforced", v)} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label>Audit logging</Label>
+                    <Label><T>Audit logging</T></Label>
                     <Switch checked={true} disabled />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label>IP whitelist enforcement</Label>
+                    <Label><T>IP whitelist enforcement</T></Label>
                     <Switch checked={formData.ipWhitelist as boolean} onCheckedChange={(v) => update("ipWhitelist", v)} />
                   </div>
                 </div>
@@ -317,18 +318,18 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
               {currentStep === 5 && (
                 <div className="space-y-4 text-center">
                   <Rocket className="h-12 w-12 mx-auto text-primary" />
-                  <p className="text-lg font-medium">Ready to activate!</p>
+                  <p className="text-lg font-medium"><T>Ready to activate!</T></p>
                   <div className="rounded-xl bg-secondary/30 p-4 text-left text-sm space-y-1">
-                    <p><strong>Workspace:</strong> {formData.name as string}</p>
-                    <p><strong>Vertical:</strong> {vertical}</p>
-                    <p><strong>Auto-classify:</strong> {formData.autoClassify ? "Yes" : "No"}</p>
-                    <p><strong>Auto-route:</strong> {formData.autoRoute ? "Yes" : "No"}</p>
-                    <p><strong>HITL:</strong> {formData.hitlEnabled ? "Yes" : "No"}</p>
+                    <p><strong><T>Workspace:</T></strong> {formData.name as string}</p>
+                    <p><strong><T>Vertical:</T></strong> {vertical}</p>
+                    <p><strong><T>Auto-classify:</T></strong> {formData.autoClassify ? "Yes" : "No"}</p>
+                    <p><strong><T>Auto-route:</T></strong> {formData.autoRoute ? "Yes" : "No"}</p>
+                    <p><strong><T>HITL:</T></strong> {formData.hitlEnabled ? "Yes" : "No"}</p>
                   </div>
                   <div className="flex items-center justify-center gap-2 pt-2">
                     <input type="checkbox" id="terms" checked={formData.acceptTerms as boolean}
                       onChange={(e) => update("acceptTerms", e.target.checked)} className="rounded border-border" />
-                    <Label htmlFor="terms" className="text-sm">I agree to the Terms of Service</Label>
+                    <Label htmlFor="terms" className="text-sm"><T>I agree to the Terms of Service</T></Label>
                   </div>
                 </div>
               )}
@@ -336,7 +337,7 @@ export function SetupWizard({ onComplete, onCancel, initialVertical = "complianc
           </AnimatePresence>
 
           <div className="flex justify-between mt-8">
-            <Button variant="outline" onClick={prev} disabled={currentStep === 0}>Back</Button>
+            <Button variant="outline" onClick={prev} disabled={currentStep === 0}><T>Back</T></Button>
             <Button onClick={next} disabled={!canProceed() || saving}>
               {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
               {saving ? "Saving..." : saved ? "Saved!" : currentStep === steps.length - 1 ? "Activate" : "Continue"}

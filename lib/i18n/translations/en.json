@@ -1901,7 +1901,9 @@
       "orMonthly": "or {price}/month, cancel anytime",
       "manageSubscription": "Manage subscription",
       "trialNote": "Every subscription starts with a 1-month free trial. No card is charged until the trial ends.",
-      "discountValidNote": "Valid code: {discount}% off. Email support@digit-ai.org with this code to have it applied to your subscription."
+      "discountValidNote": "Valid code: {discount} off your subscription.",
+      "useAtCheckout": "Use at checkout",
+      "codeValid": "Discount code is valid"
     }
   },
   "pricing": {

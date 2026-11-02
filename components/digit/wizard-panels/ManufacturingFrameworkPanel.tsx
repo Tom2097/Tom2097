@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -15,15 +16,15 @@ export function ManufacturingFrameworkPanel({ formData, update }: ManufacturingF
   return (
     <CardContent className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium">Manufacturing Workspace Configuration</h3>
+        <h3 className="text-lg font-medium"><T>Manufacturing Workspace Configuration</T></h3>
         <p className="text-sm text-muted-foreground">
-          Configure your manufacturing workspace with industry-specific settings and operational requirements.
+          <T>Configure your manufacturing workspace with industry-specific settings and operational requirements.</T>
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="manufacturing-sector">Manufacturing Sector</Label>
+          <Label htmlFor="manufacturing-sector"><T>Manufacturing Sector</T></Label>
           <Select
             value={formData.manufacturingSector as string || ""}
             onValueChange={(value) => update("manufacturingSector", value)}
@@ -32,20 +33,20 @@ export function ManufacturingFrameworkPanel({ formData, update }: ManufacturingF
               <SelectValue placeholder="Select sector" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="automotive">Automotive</SelectItem>
-              <SelectItem value="aerospace">Aerospace</SelectItem>
-              <SelectItem value="electronics">Electronics</SelectItem>
-              <SelectItem value="pharmaceuticals">Pharmaceuticals</SelectItem>
-              <SelectItem value="food-beverage">Food & Beverage</SelectItem>
-              <SelectItem value="chemicals">Chemicals</SelectItem>
-              <SelectItem value="machinery">Industrial Machinery</SelectItem>
-              <SelectItem value="consumer-goods">Consumer Goods</SelectItem>
+              <SelectItem value="automotive"><T>Automotive</T></SelectItem>
+              <SelectItem value="aerospace"><T>Aerospace</T></SelectItem>
+              <SelectItem value="electronics"><T>Electronics</T></SelectItem>
+              <SelectItem value="pharmaceuticals"><T>Pharmaceuticals</T></SelectItem>
+              <SelectItem value="food-beverage"><T>Food & Beverage</T></SelectItem>
+              <SelectItem value="chemicals"><T>Chemicals</T></SelectItem>
+              <SelectItem value="machinery"><T>Industrial Machinery</T></SelectItem>
+              <SelectItem value="consumer-goods"><T>Consumer Goods</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="production-processes">Production Processes</Label>
+          <Label htmlFor="production-processes"><T>Production Processes</T></Label>
           <div className="flex flex-wrap gap-2">
             {[
               "assembly",
@@ -79,7 +80,7 @@ export function ManufacturingFrameworkPanel({ formData, update }: ManufacturingF
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="mes-integration">MES Integration</Label>
+          <Label htmlFor="mes-integration"><T>MES Integration</T></Label>
           <Select
             value={formData.mesIntegration as string || ""}
             onValueChange={(value) => update("mesIntegration", value)}
@@ -88,52 +89,52 @@ export function ManufacturingFrameworkPanel({ formData, update }: ManufacturingF
               <SelectValue placeholder="Select MES system" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="siemens-opcenter">Siemens Opcenter</SelectItem>
-              <SelectItem value="rockwell-factorytalk">Rockwell FactoryTalk</SelectItem>
-              <SelectItem value="honeywell-pms">Honeywell PMS</SelectItem>
-              <SelectItem value="sap-me">SAP ME</SelectItem>
-              <SelectItem value="oracle-manufacturing">Oracle Manufacturing</SelectItem>
-              <SelectItem value="other">Other/None</SelectItem>
+              <SelectItem value="siemens-opcenter"><T>Siemens Opcenter</T></SelectItem>
+              <SelectItem value="rockwell-factorytalk"><T>Rockwell FactoryTalk</T></SelectItem>
+              <SelectItem value="honeywell-pms"><T>Honeywell PMS</T></SelectItem>
+              <SelectItem value="sap-me"><T>SAP ME</T></SelectItem>
+              <SelectItem value="oracle-manufacturing"><T>Oracle Manufacturing</T></SelectItem>
+              <SelectItem value="other"><T>Other/None</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="quality-management">Quality Management</Label>
+          <Label htmlFor="quality-management"><T>Quality Management</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="quality-management"
               checked={formData.qualityManagement as boolean || false}
               onCheckedChange={(checked) => update("qualityManagement", checked)}
             />
-            <Label htmlFor="quality-management">Enable quality management</Label>
+            <Label htmlFor="quality-management"><T>Enable quality management</T></Label>
           </div>
           <p className="text-sm text-muted-foreground">
-            Enables tracking of quality control metrics, defects, and compliance documentation.
+            <T>Enables tracking of quality control metrics, defects, and compliance documentation.</T>
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="inventory-tracking">Inventory Tracking</Label>
+          <Label htmlFor="inventory-tracking"><T>Inventory Tracking</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="inventory-tracking"
               checked={formData.inventoryTracking as boolean || false}
               onCheckedChange={(checked) => update("inventoryTracking", checked)}
             />
-            <Label htmlFor="inventory-tracking">Enable inventory tracking</Label>
+            <Label htmlFor="inventory-tracking"><T>Enable inventory tracking</T></Label>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="maintenance-management">Maintenance Management</Label>
+          <Label htmlFor="maintenance-management"><T>Maintenance Management</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="maintenance-management"
               checked={formData.maintenanceManagement as boolean || false}
               onCheckedChange={(checked) => update("maintenanceManagement", checked)}
             />
-            <Label htmlFor="maintenance-management">Enable maintenance management</Label>
+            <Label htmlFor="maintenance-management"><T>Enable maintenance management</T></Label>
           </div>
         </div>
       </div>

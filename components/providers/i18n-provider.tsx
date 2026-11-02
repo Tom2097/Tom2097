@@ -10,11 +10,14 @@ import {
 } from '@/lib/i18n/config'
 import { dictionaries } from '@/lib/i18n/dictionaries'
 import { getCookie, setCookie } from '@/lib/i18n/cookies'
+import { translatePhrase } from '@/lib/i18n/phrases'
 
 interface I18nContextValue {
   locale: Locale
   setLocale: (locale: Locale, options?: { save?: boolean }) => void
   t: (key: string, params?: Record<string, string | number>) => string
+  /** Translate a literal English UI phrase (see lib/i18n/phrases.ts). */
+  tx: (text: string) => string
   detectedLocale: Locale | null
   showBanner: boolean
   dismissBanner: () => void
@@ -110,12 +113,15 @@ export function I18nProvider({
     [locale]
   )
 
+  const tx = useCallback((text: string) => translatePhrase(locale, text), [locale])
+
   return (
     <I18nContext.Provider
       value={{
         locale,
         setLocale,
         t,
+        tx,
         detectedLocale,
         showBanner,
         dismissBanner,

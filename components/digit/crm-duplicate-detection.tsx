@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -76,14 +77,14 @@ export function CrmDuplicateDetection() {
   )
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
-  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchDuplicates} className="underline ml-1">Retry</button></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={fetchDuplicates} className="underline ml-1"><T>Retry</T></button></div>
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Copy className="h-5 w-5 text-orange-500" />
-          <p className="text-sm font-medium">Duplicate Detection</p>
+          <p className="text-sm font-medium"><T>Duplicate Detection</T></p>
         </div>
         <Badge variant="outline" className="text-[10px] border-orange-500/30 text-orange-500">{duplicates.length} found</Badge>
       </div>
@@ -94,7 +95,7 @@ export function CrmDuplicateDetection() {
       </div>
 
       <ScrollArea className="h-[400px]">
-        {filtered.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8">No duplicates found</p>
+        {filtered.length === 0 ? <p className="text-xs text-muted-foreground text-center py-8"><T>No duplicates found</T></p>
         : <div className="space-y-3">
           {filtered.map((item, i) => {
             const Icon = typeIcons[item.type]
@@ -135,7 +136,7 @@ export function CrmDuplicateDetection() {
                     <div key={j} className="flex items-center gap-2 text-[11px]">
                       <span className="w-16 text-muted-foreground">{f.field}</span>
                       <span className="text-muted-foreground line-through">{f.value1}</span>
-                      <span className={f.match ? "text-green-500" : "text-red-400"}>vs</span>
+                      <span className={f.match ? "text-green-500" : "text-red-400"}><T>vs</T></span>
                       <span className="text-foreground">{f.value2}</span>
                       {f.match ? (
                         <CheckCircle2 className="h-3 w-3 text-green-500 ml-auto" />
@@ -159,7 +160,7 @@ export function CrmDuplicateDetection() {
                     }).catch(() => {})
                     setDuplicates((prev) => prev.filter((d) => d.id !== item.id))
                   }}>
-                    <XCircle className="h-3 w-3 mr-1" />Discard New
+                    <XCircle className="h-3 w-3 mr-1" /><T>Discard New</T>
                   </Button>
                   <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => {
                     fetch("/api/v1/ai/crm-query", {

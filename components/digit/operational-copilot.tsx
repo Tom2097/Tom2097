@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useRef, useEffect } from "react"
 import { motion } from "framer-motion"
@@ -61,8 +62,8 @@ export function OperationalCopilot() {
           <div className="p-1.5 rounded-lg bg-primary/10">
             <Bot className="h-4 w-4 text-primary" />
           </div>
-          Operational Copilot
-          <Badge variant="secondary" className="text-[10px] ml-auto">AI-powered</Badge>
+          <T>Operational Copilot</T>
+          <Badge variant="secondary" className="text-[10px] ml-auto"><T>AI-powered</T></Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0 flex-1 flex flex-col min-h-0">

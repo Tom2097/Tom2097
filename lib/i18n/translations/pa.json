@@ -1901,7 +1901,9 @@
       "orMonthly": "ਜਾਂ {price}/ਮਹੀਨਾ, ਕਦੇ ਵੀ ਰੱਦ ਕਰੋ",
       "manageSubscription": "ਗਾਹਕੀ ਪ੍ਰਬੰਧਿਤ ਕਰੋ",
       "trialNote": "ਹਰ ਗਾਹਕੀ 1-ਮਹੀਨੇ ਦੀ ਮੁਫ਼ਤ ਅਜ਼ਮਾਇਸ਼ ਨਾਲ ਸ਼ੁਰੂ ਹੁੰਦੀ ਹੈ। ਅਜ਼ਮਾਇਸ਼ ਖਤਮ ਹੋਣ ਤੱਕ ਕਾਰਡ ਤੋਂ ਖਰਚਾ ਨਹੀਂ ਲਿਆ ਜਾਂਦਾ।",
-      "discountValidNote": "ਵੈਧ ਕੋਡ: {discount}% ਛੋਟ। ਇਸਨੂੰ ਆਪਣੀ ਗਾਹਕੀ 'ਤੇ ਲਾਗੂ ਕਰਵਾਉਣ ਲਈ ਇਹ ਕੋਡ support@digit-ai.org 'ਤੇ ਈਮੇਲ ਕਰੋ।"
+      "discountValidNote": "ਵੈਧ ਕੋਡ: ਤੁਹਾਡੀ ਗਾਹਕੀ 'ਤੇ {discount} ਦੀ ਛੋਟ।",
+      "useAtCheckout": "ਚੈਕਆਊਟ 'ਤੇ ਵਰਤੋ",
+      "codeValid": "ਛੋਟ ਕੋਡ ਵੈਧ ਹੈ"
     }
   },
   "pricing": {

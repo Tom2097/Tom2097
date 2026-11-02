@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -160,8 +161,8 @@ export function CrmSalesAnalytics() {
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Sales Analytics</CardTitle>
-          <CardDescription>Advanced insights into your sales pipeline</CardDescription>
+          <CardTitle><T>Sales Analytics</T></CardTitle>
+          <CardDescription><T>Advanced insights into your sales pipeline</T></CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
@@ -176,11 +177,11 @@ export function CrmSalesAnalytics() {
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Sales Analytics</CardTitle>
+          <CardTitle><T>Sales Analytics</T></CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8 text-muted-foreground">
-            Failed to load analytics data
+            <T>Failed to load analytics data</T>
           </div>
         </CardContent>
       </Card>
@@ -191,8 +192,8 @@ export function CrmSalesAnalytics() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Sales Analytics</h2>
-          <p className="text-sm text-muted-foreground">Advanced insights into your sales pipeline</p>
+          <h2 className="text-2xl font-bold text-foreground"><T>Sales Analytics</T></h2>
+          <p className="text-sm text-muted-foreground"><T>Advanced insights into your sales pipeline</T></p>
         </div>
         <div className="flex gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
@@ -200,11 +201,11 @@ export function CrmSalesAnalytics() {
               <SelectValue placeholder="Time range" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="week">Last 7 Days</SelectItem>
-              <SelectItem value="month">Last 30 Days</SelectItem>
-              <SelectItem value="quarter">Last 90 Days</SelectItem>
-              <SelectItem value="year">Last Year</SelectItem>
-              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="week"><T>Last 7 Days</T></SelectItem>
+              <SelectItem value="month"><T>Last 30 Days</T></SelectItem>
+              <SelectItem value="quarter"><T>Last 90 Days</T></SelectItem>
+              <SelectItem value="year"><T>Last Year</T></SelectItem>
+              <SelectItem value="all"><T>All Time</T></SelectItem>
             </SelectContent>
           </Select>
           <Select value={filterOwner} onValueChange={setFilterOwner}>
@@ -212,7 +213,7 @@ export function CrmSalesAnalytics() {
               <SelectValue placeholder="Filter by owner" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Owners</SelectItem>
+              <SelectItem value="all"><T>All Owners</T></SelectItem>
               {owners.map(owner => (
                 <SelectItem key={owner.id} value={owner.id}>{owner.name}</SelectItem>
               ))}
@@ -223,13 +224,13 @@ export function CrmSalesAnalytics() {
               <SelectValue placeholder="Filter by stage" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Stages</SelectItem>
-              <SelectItem value="lead">Lead</SelectItem>
-              <SelectItem value="qualified">Qualified</SelectItem>
-              <SelectItem value="proposal">Proposal</SelectItem>
-              <SelectItem value="negotiation">Negotiation</SelectItem>
-              <SelectItem value="won">Won</SelectItem>
-              <SelectItem value="lost">Lost</SelectItem>
+              <SelectItem value="all"><T>All Stages</T></SelectItem>
+              <SelectItem value="lead"><T>Lead</T></SelectItem>
+              <SelectItem value="qualified"><T>Qualified</T></SelectItem>
+              <SelectItem value="proposal"><T>Proposal</T></SelectItem>
+              <SelectItem value="negotiation"><T>Negotiation</T></SelectItem>
+              <SelectItem value="won"><T>Won</T></SelectItem>
+              <SelectItem value="lost"><T>Lost</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -239,7 +240,7 @@ export function CrmSalesAnalytics() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Pipeline Value</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground"><T>Total Pipeline Value</T></CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(analyticsData.totalValue)}</div>
@@ -251,7 +252,7 @@ export function CrmSalesAnalytics() {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Win Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground"><T>Win Rate</T></CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -272,7 +273,7 @@ export function CrmSalesAnalytics() {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Avg. Deal Size</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground"><T>Avg. Deal Size</T></CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(analyticsData.averageDealSize)}</div>
@@ -284,19 +285,19 @@ export function CrmSalesAnalytics() {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Sales Cycle</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground"><T>Sales Cycle</T></CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analyticsData.averageSalesCycle} days</div>
             <p className="text-xs text-muted-foreground">
-              Avg. time to close
+              <T>Avg. time to close</T>
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Forecast Accuracy</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground"><T>Forecast Accuracy</T></CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -318,10 +319,10 @@ export function CrmSalesAnalytics() {
 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="forecast">Forecast</TabsTrigger>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
+          <TabsTrigger value="overview"><T>Overview</T></TabsTrigger>
+          <TabsTrigger value="performance"><T>Performance</T></TabsTrigger>
+          <TabsTrigger value="forecast"><T>Forecast</T></TabsTrigger>
+          <TabsTrigger value="trends"><T>Trends</T></TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -329,8 +330,8 @@ export function CrmSalesAnalytics() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Pipeline Value by Stage</CardTitle>
-               <CardDescription>Distribution of deal value across pipeline stages</CardDescription>
+                <CardTitle><T>Pipeline Value by Stage</T></CardTitle>
+               <CardDescription><T>Distribution of deal value across pipeline stages</T></CardDescription>
                </CardHeader>
                <CardContent>
                  <ChartContainer>
@@ -358,8 +359,8 @@ export function CrmSalesAnalytics() {
             
             <Card>
               <CardHeader>
-                <CardTitle>Deal Stage Distribution</CardTitle>
-                <CardDescription>Number of deals in each stage</CardDescription>
+                <CardTitle><T>Deal Stage Distribution</T></CardTitle>
+                <CardDescription><T>Number of deals in each stage</T></CardDescription>
               </CardHeader>
               <CardContent>
                  <ChartContainer>
@@ -384,17 +385,17 @@ export function CrmSalesAnalytics() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Top Performers</CardTitle>
-                <CardDescription>Sales reps ranked by performance</CardDescription>
+                <CardTitle><T>Top Performers</T></CardTitle>
+                <CardDescription><T>Sales reps ranked by performance</T></CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Sales Rep</TableHead>
-                      <TableHead>Deals</TableHead>
-                      <TableHead>Value</TableHead>
-                      <TableHead>Win Rate</TableHead>
+                      <TableHead><T>Sales Rep</T></TableHead>
+                      <TableHead><T>Deals</T></TableHead>
+                      <TableHead><T>Value</T></TableHead>
+                      <TableHead><T>Win Rate</T></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -417,8 +418,8 @@ export function CrmSalesAnalytics() {
             
             <Card>
               <CardHeader>
-                <CardTitle>Conversion Rates</CardTitle>
-                <CardDescription>Conversion rates between pipeline stages</CardDescription>
+                <CardTitle><T>Conversion Rates</T></CardTitle>
+                <CardDescription><T>Conversion rates between pipeline stages</T></CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -447,8 +448,8 @@ export function CrmSalesAnalytics() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Forecast Accuracy</CardTitle>
-                <CardDescription>Historical forecast accuracy over time</CardDescription>
+                <CardTitle><T>Forecast Accuracy</T></CardTitle>
+                <CardDescription><T>Historical forecast accuracy over time</T></CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer>
@@ -466,8 +467,8 @@ export function CrmSalesAnalytics() {
             
             <Card>
               <CardHeader>
-                <CardTitle>Lost Deal Analysis</CardTitle>
-                <CardDescription>Reasons for lost deals</CardDescription>
+                <CardTitle><T>Lost Deal Analysis</T></CardTitle>
+                <CardDescription><T>Reasons for lost deals</T></CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer>
@@ -495,8 +496,8 @@ export function CrmSalesAnalytics() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Deals Over Time</CardTitle>
-                <CardDescription>Number of deals created over time</CardDescription>
+                <CardTitle><T>Deals Over Time</T></CardTitle>
+                <CardDescription><T>Number of deals created over time</T></CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer>
@@ -514,8 +515,8 @@ export function CrmSalesAnalytics() {
             
             <Card>
               <CardHeader>
-                <CardTitle>Pipeline Value Over Time</CardTitle>
-                <CardDescription>Total pipeline value over time</CardDescription>
+                <CardTitle><T>Pipeline Value Over Time</T></CardTitle>
+                <CardDescription><T>Total pipeline value over time</T></CardDescription>
               </CardHeader>
               <CardContent>
                 <ChartContainer>

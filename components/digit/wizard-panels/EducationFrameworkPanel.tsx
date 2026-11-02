@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -15,15 +16,15 @@ export function EducationFrameworkPanel({ formData, update }: EducationFramework
   return (
     <CardContent className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium">Education Workspace Configuration</h3>
+        <h3 className="text-lg font-medium"><T>Education Workspace Configuration</T></h3>
         <p className="text-sm text-muted-foreground">
-          Configure your education workspace with industry-specific settings and learning management features.
+          <T>Configure your education workspace with industry-specific settings and learning management features.</T>
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="education-sector">Education Sector</Label>
+          <Label htmlFor="education-sector"><T>Education Sector</T></Label>
           <Select
             value={formData.educationSector as string || ""}
             onValueChange={(value) => update("educationSector", value)}
@@ -33,18 +34,18 @@ export function EducationFrameworkPanel({ formData, update }: EducationFramework
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="k12">K-12</SelectItem>
-              <SelectItem value="higher-ed">Higher Education</SelectItem>
-              <SelectItem value="vocational">Vocational Training</SelectItem>
-              <SelectItem value="corporate-training">Corporate Training</SelectItem>
-              <SelectItem value="online-learning">Online Learning Platform</SelectItem>
-              <SelectItem value="tutoring">Tutoring Services</SelectItem>
-              <SelectItem value="test-prep">Test Preparation</SelectItem>
+              <SelectItem value="higher-ed"><T>Higher Education</T></SelectItem>
+              <SelectItem value="vocational"><T>Vocational Training</T></SelectItem>
+              <SelectItem value="corporate-training"><T>Corporate Training</T></SelectItem>
+              <SelectItem value="online-learning"><T>Online Learning Platform</T></SelectItem>
+              <SelectItem value="tutoring"><T>Tutoring Services</T></SelectItem>
+              <SelectItem value="test-prep"><T>Test Preparation</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="lms-integration">LMS Integration</Label>
+          <Label htmlFor="lms-integration"><T>LMS Integration</T></Label>
           <Select
             value={formData.lmsIntegration as string || ""}
             onValueChange={(value) => update("lmsIntegration", value)}
@@ -53,19 +54,19 @@ export function EducationFrameworkPanel({ formData, update }: EducationFramework
               <SelectValue placeholder="Select LMS system" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="canvas">Canvas</SelectItem>
-              <SelectItem value="blackboard">Blackboard</SelectItem>
-              <SelectItem value="moodle">Moodle</SelectItem>
-              <SelectItem value="google-classroom">Google Classroom</SelectItem>
-              <SelectItem value="schoology">Schoology</SelectItem>
-              <SelectItem value="brightspace">Brightspace</SelectItem>
-              <SelectItem value="other">Other/None</SelectItem>
+              <SelectItem value="canvas"><T>Canvas</T></SelectItem>
+              <SelectItem value="blackboard"><T>Blackboard</T></SelectItem>
+              <SelectItem value="moodle"><T>Moodle</T></SelectItem>
+              <SelectItem value="google-classroom"><T>Google Classroom</T></SelectItem>
+              <SelectItem value="schoology"><T>Schoology</T></SelectItem>
+              <SelectItem value="brightspace"><T>Brightspace</T></SelectItem>
+              <SelectItem value="other"><T>Other/None</T></SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="student-management">Student Management</Label>
+          <Label htmlFor="student-management"><T>Student Management</T></Label>
           <div className="flex flex-wrap gap-2">
             {[
               "enrollment",
@@ -99,19 +100,19 @@ export function EducationFrameworkPanel({ formData, update }: EducationFramework
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="course-management">Course Management</Label>
+          <Label htmlFor="course-management"><T>Course Management</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="course-management"
               checked={formData.courseManagement as boolean || false}
               onCheckedChange={(checked) => update("courseManagement", checked)}
             />
-            <Label htmlFor="course-management">Enable course management</Label>
+            <Label htmlFor="course-management"><T>Enable course management</T></Label>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="content-delivery">Content Delivery</Label>
+          <Label htmlFor="content-delivery"><T>Content Delivery</T></Label>
           <div className="flex flex-wrap gap-2">
             {[
               "video-lectures",
@@ -144,14 +145,14 @@ export function EducationFrameworkPanel({ formData, update }: EducationFramework
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="analytics-reporting">Analytics & Reporting</Label>
+          <Label htmlFor="analytics-reporting"><T>Analytics & Reporting</T></Label>
           <div className="flex items-center space-x-2">
             <Switch
               id="analytics-reporting"
               checked={formData.analyticsReporting as boolean || false}
               onCheckedChange={(checked) => update("analyticsReporting", checked)}
             />
-            <Label htmlFor="analytics-reporting">Enable analytics & reporting</Label>
+            <Label htmlFor="analytics-reporting"><T>Enable analytics & reporting</T></Label>
           </div>
         </div>
       </div>

@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     if (!validation.valid || !validation.discount) {
       return NextResponse.json({ valid: false, reason: validation.error }, { status: 400 })
     }
-    return NextResponse.json({ valid: true, discount: validation.discount.value })
+    return NextResponse.json({ valid: true, discount: validation.discount.value, discountType: validation.discount.type })
   } catch (error) {
     return handleAuthError(error as Error)
   }

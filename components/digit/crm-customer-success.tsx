@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { Heart, TrendingUp, AlertTriangle, CheckCircle2, Calendar, ArrowUp, Users, Loader2 } from "lucide-react"
@@ -97,26 +98,26 @@ export function CrmCustomerSuccess() {
   const atRisk = accounts.filter((a) => a.health === "at_risk").length
   const avgScore = accounts.length ? Math.round(accounts.reduce((s, a) => s + a.score, 0) / accounts.length) : 0
 
-  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center">Loading accounts...</div>
+  if (loading) return <div className="text-xs text-muted-foreground p-4 text-center"><T>Loading accounts...</T></div>
   if (error) return <div className="text-xs text-red-500 p-4 text-center">{error}</div>
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-4 gap-3">
         <Card className="p-3 border-border/50">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Accounts</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider"><T>Total Accounts</T></p>
           <p className="text-xl font-bold text-foreground mt-1">{accounts.length}</p>
         </Card>
         <Card className="p-3 border-border/50">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Healthy</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider"><T>Healthy</T></p>
           <p className="text-xl font-bold text-emerald-500 mt-1">{healthy}</p>
         </Card>
         <Card className="p-3 border-border/50">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">At Risk</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider"><T>At Risk</T></p>
           <p className="text-xl font-bold text-amber-500 mt-1">{atRisk}</p>
         </Card>
         <Card className="p-3 border-border/50">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Avg Health Score</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider"><T>Avg Health Score</T></p>
           <p className="text-xl font-bold text-foreground mt-1">{avgScore}%</p>
         </Card>
       </div>

@@ -1,4 +1,5 @@
 'use client'
+import { T } from "@/components/i18n/t"
 
 import { motion } from 'framer-motion'
 import { Activity, Database, Users, Zap, TrendingUp, AlertTriangle } from 'lucide-react'
@@ -80,13 +81,13 @@ export function UsageTracking({ plan, usage, className }: UsageTrackingProps) {
     <Card className={`p-6 border-border/50 ${className}`}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Usage & Limits</h3>
-          <p className="text-sm text-muted-foreground">Current billing period</p>
+          <h3 className="text-lg font-semibold text-foreground"><T>Usage & Limits</T></h3>
+          <p className="text-sm text-muted-foreground"><T>Current billing period</T></p>
         </div>
         {isNearLimit && (
           <Badge variant="outline" className="border-amber-500/30 text-amber-500 bg-amber-500/10">
             <AlertTriangle className="w-3 h-3 mr-1" />
-            Near Limit
+            <T>Near Limit</T>
           </Badge>
         )}
       </div>
@@ -123,7 +124,7 @@ export function UsageTracking({ plan, usage, className }: UsageTrackingProps) {
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {isUnlimited ? (
-                    <Badge variant="secondary" className="text-xs">Unlimited</Badge>
+                    <Badge variant="secondary" className="text-xs"><T>Unlimited</T></Badge>
                   ) : (
                     `${metric.percent}%`
                   )}
@@ -157,12 +158,12 @@ export function UsageTracking({ plan, usage, className }: UsageTrackingProps) {
           <div className="flex items-start gap-3">
             <TrendingUp className="w-5 h-5 text-amber-500 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">Approaching usage limits</p>
+              <p className="text-sm font-medium text-foreground"><T>Approaching usage limits</T></p>
               <p className="text-xs text-muted-foreground mt-1">
-                Consider upgrading your plan to avoid service interruptions.
+                <T>Contact support to raise your limits before they are reached.</T>
               </p>
               <Button size="sm" variant="outline" className="mt-3" asChild>
-                <Link href="/settings/billing">Upgrade Plan</Link>
+                <Link href="/settings/billing"><T>Upgrade Plan</T></Link>
               </Button>
             </div>
           </div>
@@ -185,16 +186,16 @@ export function UsageOverview({ plan, usage }: UsageOverviewProps) {
   return (
     <Card className="p-4 border-border/50">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-foreground">Usage Overview</span>
+        <span className="text-sm font-medium text-foreground"><T>Usage Overview</T></span>
         <Link href="/settings" className="text-xs text-primary hover:underline">
-          View Details
+          <T>View Details</T>
         </Link>
       </div>
       
       <div className="space-y-3">
         <div>
           <div className="flex justify-between text-xs mb-1">
-            <span className="text-muted-foreground">Data Points</span>
+            <span className="text-muted-foreground"><T>Data Points</T></span>
             <span className="text-foreground">{dataPointsPercent}%</span>
           </div>
           <Progress value={dataPointsPercent} className="h-1.5" />
@@ -202,7 +203,7 @@ export function UsageOverview({ plan, usage }: UsageOverviewProps) {
         
         <div>
           <div className="flex justify-between text-xs mb-1">
-            <span className="text-muted-foreground">API Calls</span>
+            <span className="text-muted-foreground"><T>API Calls</T></span>
             <span className="text-foreground">{apiCallsPercent}%</span>
           </div>
           <Progress value={apiCallsPercent} className="h-1.5" />

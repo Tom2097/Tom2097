@@ -1,4 +1,5 @@
 'use client'
+import { T } from "@/components/i18n/t"
 
 import { useEffect, useRef } from 'react'
 import { motion, useMotionValue, useTransform, animate, type Variants } from 'framer-motion'
@@ -63,19 +64,19 @@ export function HeroSignalPanel() {
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Live operations
+          <T>Live operations</T>
         </span>
         <span className="flex items-center gap-1.5 text-xs font-medium text-[#00c875]">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#00c875] opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00c875]" />
           </span>
-          Live
+          <T>Live</T>
         </span>
       </div>
 
       <div className="mt-5">
-        <p className="text-xs text-muted-foreground">Revenue today</p>
+        <p className="text-xs text-muted-foreground"><T>Revenue today</T></p>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-3xl font-bold text-foreground">
             <AnimatedNumber value={128400} prefix="$" />

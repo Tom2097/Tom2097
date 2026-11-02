@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -254,10 +255,10 @@ export function AdvancedDocumentProcessing() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'uploaded': return <Badge variant="secondary">Uploaded</Badge>
-      case 'processing': return <Badge variant="secondary">Processing</Badge>
-      case 'processed': return <Badge variant="default">Processed</Badge>
-      case 'failed': return <Badge variant="destructive">Failed</Badge>
+      case 'uploaded': return <Badge variant="secondary"><T>Uploaded</T></Badge>
+      case 'processing': return <Badge variant="secondary"><T>Processing</T></Badge>
+      case 'processed': return <Badge variant="default"><T>Processed</T></Badge>
+      case 'failed': return <Badge variant="destructive"><T>Failed</T></Badge>
       default: return <Badge variant="secondary">{status}</Badge>
     }
   }
@@ -366,20 +367,20 @@ export function AdvancedDocumentProcessing() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Brain className="h-5 w-5 text-primary" />
-                Document Classification
+                <T>Document Classification</T>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Primary Classification:</span>
+                  <span className="text-sm text-muted-foreground"><T>Primary Classification:</T></span>
                   <Badge variant="secondary">
                     {selectedDocument.metadata.classification.primary}
                   </Badge>
                 </div>
                 {selectedDocument.metadata.classification.confidence && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Confidence:</span>
+                    <span className="text-sm text-muted-foreground"><T>Confidence:</T></span>
                     <span className="font-medium">
                       {(selectedDocument.metadata.classification.confidence * 100).toFixed(1)}%
                     </span>
@@ -395,20 +396,20 @@ export function AdvancedDocumentProcessing() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Search className="h-5 w-5 text-primary" />
-                Extracted Entities
+                <T>Extracted Entities</T>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="people" className="space-y-4">
                 <TabsList>
                   {selectedDocument.metadata.entities.people && selectedDocument.metadata.entities.people.length > 0 && (
-                    <TabsTrigger value="people">People</TabsTrigger>
+                    <TabsTrigger value="people"><T>People</T></TabsTrigger>
                   )}
                   {selectedDocument.metadata.entities.organizations && selectedDocument.metadata.entities.organizations.length > 0 && (
-                    <TabsTrigger value="organizations">Organizations</TabsTrigger>
+                    <TabsTrigger value="organizations"><T>Organizations</T></TabsTrigger>
                   )}
                   {selectedDocument.metadata.entities.locations && selectedDocument.metadata.entities.locations.length > 0 && (
-                    <TabsTrigger value="locations">Locations</TabsTrigger>
+                    <TabsTrigger value="locations"><T>Locations</T></TabsTrigger>
                   )}
                 </TabsList>
                 
@@ -451,20 +452,20 @@ export function AdvancedDocumentProcessing() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <List className="h-5 w-5 text-primary" />
-                Document Summary
+                <T>Document Summary</T>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {selectedDocument.metadata.summary.text && (
                   <div>
-                    <h4 className="font-medium mb-2">Summary</h4>
+                    <h4 className="font-medium mb-2"><T>Summary</T></h4>
                     <p className="text-sm text-muted-foreground">{selectedDocument.metadata.summary.text}</p>
                   </div>
                 )}
                 {selectedDocument.metadata.summary.key_points && selectedDocument.metadata.summary.key_points.length > 0 && (
                   <div>
-                    <h4 className="font-medium mb-2">Key Points</h4>
+                    <h4 className="font-medium mb-2"><T>Key Points</T></h4>
                     <ul className="space-y-2 text-sm">
                       {selectedDocument.metadata.summary.key_points.map((point, index) => (
                         <li key={index} className="flex items-start gap-2">
@@ -487,8 +488,8 @@ export function AdvancedDocumentProcessing() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Advanced Document Processing</h2>
-          <p className="text-sm text-muted-foreground">Extract insights from documents using OCR, NLP, and AI</p>
+          <h2 className="text-2xl font-bold text-foreground"><T>Advanced Document Processing</T></h2>
+          <p className="text-sm text-muted-foreground"><T>Extract insights from documents using OCR, NLP, and AI</T></p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
@@ -497,10 +498,10 @@ export function AdvancedDocumentProcessing() {
               checked={autoRefresh}
               onCheckedChange={setAutoRefresh}
             />
-            <Label htmlFor="auto-refresh">Auto-refresh</Label>
+            <Label htmlFor="auto-refresh"><T>Auto-refresh</T></Label>
           </div>
           <Button variant="outline" onClick={fetchDocuments}>
-            <RefreshCw className="h-4 w-4 mr-2" /> Refresh
+            <RefreshCw className="h-4 w-4 mr-2" /> <T>Refresh</T>
           </Button>
         </div>
       </div>
@@ -508,8 +509,8 @@ export function AdvancedDocumentProcessing() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle>Documents</CardTitle>
-            <CardDescription>Select a document to process</CardDescription>
+            <CardTitle><T>Documents</T></CardTitle>
+            <CardDescription><T>Select a document to process</T></CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -528,11 +529,11 @@ export function AdvancedDocumentProcessing() {
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="uploaded">Uploaded</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
-                    <SelectItem value="processed">Processed</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="all"><T>All Statuses</T></SelectItem>
+                    <SelectItem value="uploaded"><T>Uploaded</T></SelectItem>
+                    <SelectItem value="processing"><T>Processing</T></SelectItem>
+                    <SelectItem value="processed"><T>Processed</T></SelectItem>
+                    <SelectItem value="failed"><T>Failed</T></SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={filterType} onValueChange={setFilterType}>
@@ -540,15 +541,15 @@ export function AdvancedDocumentProcessing() {
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="invoice">Invoice</SelectItem>
-                    <SelectItem value="contract">Contract</SelectItem>
-                    <SelectItem value="report">Report</SelectItem>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="receipt">Receipt</SelectItem>
-                    <SelectItem value="form">Form</SelectItem>
-                    <SelectItem value="image">Image</SelectItem>
-                    <SelectItem value="pdf">PDF</SelectItem>
+                    <SelectItem value="all"><T>All Types</T></SelectItem>
+                    <SelectItem value="invoice"><T>Invoice</T></SelectItem>
+                    <SelectItem value="contract"><T>Contract</T></SelectItem>
+                    <SelectItem value="report"><T>Report</T></SelectItem>
+                    <SelectItem value="email"><T>Email</T></SelectItem>
+                    <SelectItem value="receipt"><T>Receipt</T></SelectItem>
+                    <SelectItem value="form"><T>Form</T></SelectItem>
+                    <SelectItem value="image"><T>Image</T></SelectItem>
+                    <SelectItem value="pdf"><T>PDF</T></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -562,11 +563,11 @@ export function AdvancedDocumentProcessing() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead><T>Name</T></TableHead>
+                        <TableHead><T>Type</T></TableHead>
+                        <TableHead><T>Status</T></TableHead>
+                        <TableHead><T>Created</T></TableHead>
+                        <TableHead><T>Actions</T></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -600,7 +601,7 @@ export function AdvancedDocumentProcessing() {
                       ) : (
                         <TableRow>
                           <TableCell colSpan={5} className="text-center py-8">
-                            No documents found
+                            <T>No documents found</T>
                           </TableCell>
                         </TableRow>
                       )}
@@ -634,7 +635,7 @@ export function AdvancedDocumentProcessing() {
                         {selectedDocument.status === 'processing' ? 'Processing...' : 'Reprocess'}
                       </Button>
                       <Button onClick={handleBulkProcess} disabled={isProcessing}>
-                        <Zap className="h-4 w-4 mr-2" /> Bulk Process
+                        <Zap className="h-4 w-4 mr-2" /> <T>Bulk Process</T>
                       </Button>
                     </div>
                   </div>
@@ -642,14 +643,14 @@ export function AdvancedDocumentProcessing() {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Created:</span>
+                      <span className="text-sm text-muted-foreground"><T>Created:</T></span>
                       <span className="font-medium">{new Date(selectedDocument.created_at).toLocaleString()}</span>
                     </div>
                     
                     {processingStatus && (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Status:</span>
+                          <span className="text-muted-foreground"><T>Status:</T></span>
                           <span className="font-medium">{processingStatus.status}</span>
                         </div>
                         <Progress value={processingStatus.progress} className="h-2" />
@@ -670,16 +671,16 @@ export function AdvancedDocumentProcessing() {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Processing Options</CardTitle>
+                  <CardTitle><T>Processing Options</T></CardTitle>
                   <CardDescription>
-                    Configure how the document should be processed
+                    <T>Configure how the document should be processed</T>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="extract-text">Extract Text</Label>
+                        <Label htmlFor="extract-text"><T>Extract Text</T></Label>
                         <Switch
                           id="extract-text"
                           checked={processingOptions.extractText ?? true}
@@ -687,7 +688,7 @@ export function AdvancedDocumentProcessing() {
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="extract-metadata">Extract Metadata</Label>
+                        <Label htmlFor="extract-metadata"><T>Extract Metadata</T></Label>
                         <Switch
                           id="extract-metadata"
                           checked={processingOptions.extractMetadata ?? true}
@@ -695,7 +696,7 @@ export function AdvancedDocumentProcessing() {
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="classify">Classify Document</Label>
+                        <Label htmlFor="classify"><T>Classify Document</T></Label>
                         <Switch
                           id="classify"
                           checked={processingOptions.classify ?? true}
@@ -703,7 +704,7 @@ export function AdvancedDocumentProcessing() {
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="extract-entities">Extract Entities</Label>
+                        <Label htmlFor="extract-entities"><T>Extract Entities</T></Label>
                         <Switch
                           id="extract-entities"
                           checked={processingOptions.extractEntities ?? true}
@@ -711,7 +712,7 @@ export function AdvancedDocumentProcessing() {
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="analyze-sentiment">Analyze Sentiment</Label>
+                        <Label htmlFor="analyze-sentiment"><T>Analyze Sentiment</T></Label>
                         <Switch
                           id="analyze-sentiment"
                           checked={processingOptions.analyzeSentiment ?? false}
@@ -722,7 +723,7 @@ export function AdvancedDocumentProcessing() {
                     
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="summarize">Summarize Document</Label>
+                        <Label htmlFor="summarize"><T>Summarize Document</T></Label>
                         <Switch
                           id="summarize"
                           checked={processingOptions.summarize ?? false}
@@ -730,7 +731,7 @@ export function AdvancedDocumentProcessing() {
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="ocr">Optical Character Recognition (OCR)</Label>
+                        <Label htmlFor="ocr"><T>Optical Character Recognition (OCR)</T></Label>
                         <Switch
                           id="ocr"
                           checked={processingOptions.ocr ?? false}
@@ -738,7 +739,7 @@ export function AdvancedDocumentProcessing() {
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="detect-tables">Detect Tables</Label>
+                        <Label htmlFor="detect-tables"><T>Detect Tables</T></Label>
                         <Switch
                           id="detect-tables"
                           checked={processingOptions.detectTables ?? false}
@@ -746,7 +747,7 @@ export function AdvancedDocumentProcessing() {
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="detect-forms">Detect Forms</Label>
+                        <Label htmlFor="detect-forms"><T>Detect Forms</T></Label>
                         <Switch
                           id="detect-forms"
                           checked={processingOptions.detectForms ?? false}
@@ -754,7 +755,7 @@ export function AdvancedDocumentProcessing() {
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="translate">Translate Document</Label>
+                        <Label htmlFor="translate"><T>Translate Document</T></Label>
                         <Switch
                           id="translate"
                           checked={processingOptions.translate ?? false}
@@ -766,7 +767,7 @@ export function AdvancedDocumentProcessing() {
                   
                   {processingOptions.translate && (
                     <div className="mt-4">
-                      <Label htmlFor="target-language">Target Language</Label>
+                      <Label htmlFor="target-language"><T>Target Language</T></Label>
                       <Select
                         value={processingOptions.targetLanguage || 'es'}
                         onValueChange={(value) => setProcessingOptions({
@@ -778,11 +779,11 @@ export function AdvancedDocumentProcessing() {
                           <SelectValue placeholder="Select language" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="es">Spanish</SelectItem>
-                          <SelectItem value="fr">French</SelectItem>
-                          <SelectItem value="de">German</SelectItem>
-                          <SelectItem value="zh">Chinese</SelectItem>
-                          <SelectItem value="ja">Japanese</SelectItem>
+                          <SelectItem value="es"><T>Spanish</T></SelectItem>
+                          <SelectItem value="fr"><T>French</T></SelectItem>
+                          <SelectItem value="de"><T>German</T></SelectItem>
+                          <SelectItem value="zh"><T>Chinese</T></SelectItem>
+                          <SelectItem value="ja"><T>Japanese</T></SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -796,7 +797,7 @@ export function AdvancedDocumentProcessing() {
                       }}
                     >
                       <Settings className="h-4 w-4 mr-2" />
-                      Reset to Defaults
+                      <T>Reset to Defaults</T>
                     </Button>
                   </div>
                 </CardContent>
@@ -808,8 +809,8 @@ export function AdvancedDocumentProcessing() {
             <Card className="h-full flex items-center justify-center">
               <CardContent className="text-center">
                 <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Select a document to process</h3>
-                <p className="text-sm text-muted-foreground">Choose a document from the list to view processing options and results</p>
+                <h3 className="text-lg font-medium mb-2"><T>Select a document to process</T></h3>
+                <p className="text-sm text-muted-foreground"><T>Choose a document from the list to view processing options and results</T></p>
               </CardContent>
             </Card>
           )}

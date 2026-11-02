@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { Button } from '@/components/ui/button'
 import { MicrophoneButton } from '@/components/ui/microphone-button'
@@ -31,7 +32,7 @@ export function Navbar({ userId }: NavbarProps) {
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v6h-2zm0 8h2v2h-2z" />
               <path d="M12.5 7.5c0-1.38-1.12-2.5-2.5-2.5S7.5 6.12 7.5 7.5s1.12 2.5 2.5 2.5S12.5 8.88 12.5 7.5z" fill="white" />
             </svg>
-            <span className="font-bold">DigiT</span>
+            <span className="font-bold"><T>DigiT</T></span>
           </Link>
           <div className="hidden gap-4 md:flex">
             <Link href="/dashboard" className={pathname === '/dashboard' ? 'font-medium' : 'text-muted-foreground'}>

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -58,14 +59,14 @@ export function CrmConversationIntelligence() {
   }, [generateData])
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
-  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={generateData} className="underline ml-1">Retry</button></div>
+  if (error) return <div className="text-xs text-red-500 p-4 text-center">{error} <button onClick={generateData} className="underline ml-1"><T>Retry</T></button></div>
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Lightbulb className="h-5 w-5 text-yellow-500" />
-          <p className="text-sm font-medium">Conversation Intelligence</p>
+          <p className="text-sm font-medium"><T>Conversation Intelligence</T></p>
         </div>
         <div className="flex gap-1">
           {(["suggest", "playbook", "sentiment"] as const).map((tab) => (
@@ -105,12 +106,12 @@ export function CrmConversationIntelligence() {
 
                 <div className="space-y-2">
                   <div className="p-2 rounded-lg bg-muted/30 border border-border/30">
-                    <p className="text-[10px] text-muted-foreground mb-1">Suggested response:</p>
+                    <p className="text-[10px] text-muted-foreground mb-1"><T>Suggested response:</T></p>
                     <p className="text-xs">{t.suggested}</p>
                     <Button size="sm" variant="ghost" className="h-6 text-[10px] mt-1" onClick={() => {
                       navigator.clipboard.writeText(t.suggested).catch(() => {})
                     }}>
-                      <Quote className="h-3 w-3 mr-1" />Copy
+                      <Quote className="h-3 w-3 mr-1" /><T>Copy</T>
                     </Button>
                   </div>
                   <div className="p-2 rounded-lg bg-muted/30 border border-border/30">
@@ -121,13 +122,13 @@ export function CrmConversationIntelligence() {
                     <Button size="sm" variant="ghost" className="h-6 text-[10px] mt-1" onClick={() => {
                       navigator.clipboard.writeText(t.rebuttal).catch(() => {})
                     }}>
-                      <Quote className="h-3 w-3 mr-1" />Copy
+                      <Quote className="h-3 w-3 mr-1" /><T>Copy</T>
                     </Button>
                   </div>
                 </div>
               </motion.div>
             ))}
-            {templates.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">No suggestions available</p>}
+            {templates.length === 0 && <p className="text-xs text-muted-foreground text-center py-6"><T>No suggestions available</T></p>}
           </motion.div>
         )}
 
@@ -151,7 +152,7 @@ export function CrmConversationIntelligence() {
                 </div>
               </motion.div>
             ))}
-            {playbooks.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">No playbooks available yet</p>}
+            {playbooks.length === 0 && <p className="text-xs text-muted-foreground text-center py-6"><T>No playbooks available yet</T></p>}
           </motion.div>
         )}
 
@@ -185,7 +186,7 @@ export function CrmConversationIntelligence() {
                 </div>
               </motion.div>
             ))}
-            {sentiments.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">No sentiment data yet</p>}
+            {sentiments.length === 0 && <p className="text-xs text-muted-foreground text-center py-6"><T>No sentiment data yet</T></p>}
           </motion.div>
         )}
       </AnimatePresence>

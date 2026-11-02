@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState, useEffect } from "react"
@@ -131,7 +132,7 @@ export default function RecommendationsPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Brain className="w-12 h-12 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-muted-foreground">Loading your recommendations...</p>
+          <p className="text-muted-foreground"><T>Loading your recommendations...</T></p>
         </div>
       </div>
     )

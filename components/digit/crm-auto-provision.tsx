@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { motion } from "framer-motion"
@@ -59,8 +60,8 @@ export function CrmAutoProvision() {
       <CardHeader className="p-4 pb-2">
         <CardTitle className="flex items-center gap-2 text-sm">
           <UserPlus className="h-4 w-4 text-green-500" />
-          Auto-Provision on Won
-          <Badge className="text-[10px]" variant="secondary">Automation</Badge>
+          <T>Auto-Provision on Won</T>
+          <Badge className="text-[10px]" variant="secondary"><T>Automation</T></Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 space-y-4">
@@ -112,9 +113,9 @@ export function CrmAutoProvision() {
           >
             <div className="flex items-center gap-2 text-sm text-green-600">
               <CheckCircle2 className="h-4 w-4" />
-              <span className="font-medium">Provisioning Complete</span>
+              <span className="font-medium"><T>Provisioning Complete</T></span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">All 6 onboarding steps completed. Customer is ready to go.</p>
+            <p className="text-xs text-muted-foreground mt-1"><T>All 6 onboarding steps completed. Customer is ready to go.</T></p>
           </motion.div>
         )}
       </CardContent>

@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import { redirect } from 'next/navigation'
 import { Users, Target, Phone, Mail, FileText, Heart, BarChart3, Sparkles, Zap, AlertTriangle, MessageSquare, Copy, UserPlus, Sun, Globe, DollarSign, TrendingUp as TrendingUpIcon, Layers, Ticket, BarChart2, MessageCircle, Brain, Activity } from 'lucide-react'
 import { MetricCard, MetricGrid } from '@/components/digit/metric-card'
@@ -185,7 +186,7 @@ export default async function CRMPage() {
                {pipelineRealtime.whatsappConnected ? (
                  <>
                    <div className="text-2xl font-bold">{pipelineRealtime.dealVelocity || 0}</div>
-                   <p className="text-xs text-muted-foreground">messages/day</p>
+                   <p className="text-xs text-muted-foreground"><T>messages/day</T></p>
                    <div className="mt-4 h-16 flex items-center justify-center">
                      <div className="flex items-center gap-2 text-green-500">
                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
@@ -199,7 +200,7 @@ export default async function CRMPage() {
                      {t("crm.page.disconnected")}
                    </Badge>
                    <p className="max-w-[170px] text-[11px] leading-snug text-muted-foreground/70">
-                     Connect a WhatsApp Business account in the Nurture tab to enable live messaging
+                     <T>Connect a WhatsApp Business account in the Nurture tab to enable live messaging</T>
                    </p>
                  </div>
                )}
@@ -207,15 +208,15 @@ export default async function CRMPage() {
 
              <div className="rounded-xl border border-border/50 bg-card p-4">
                <div className="flex items-center justify-between mb-2">
-                 <h4 className="text-sm font-medium">AI Recommendations</h4>
+                 <h4 className="text-sm font-medium"><T>AI Recommendations</T></h4>
                  <Activity className="h-4 w-4 text-orange-500" />
                </div>
                <div className="text-2xl font-bold">{pipelineRealtime.aiRecommendations}</div>
-               <p className="text-xs text-muted-foreground">actions pending</p>
+               <p className="text-xs text-muted-foreground"><T>actions pending</T></p>
                <div className="mt-4 h-16 flex items-center justify-center">
                  <div className="flex items-center gap-2 text-orange-500">
                    <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                   <span className="text-xs">AI Active</span>
+                   <span className="text-xs"><T>AI Active</T></span>
                  </div>
                </div>
              </div>
@@ -269,7 +270,7 @@ export default async function CRMPage() {
            </div>
          ) : (
            <div className="flex h-[200px] items-center justify-center text-center text-sm text-muted-foreground">
-             Pipeline insights will appear once deals are added.
+             <T>Pipeline insights will appear once deals are added.</T>
            </div>
          )}
        </div>

@@ -1,3 +1,4 @@
+import { T } from "@/components/i18n/t"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowLeft, ArrowRight } from "lucide-react"
@@ -34,17 +35,17 @@ export default function BlogIndexPage() {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to home
+            <T>Back to home</T>
           </Link>
         </div>
       </header>
 
       <main className="relative container mx-auto max-w-3xl px-6 py-12 md:py-16">
         <AnimatedGroup className="mb-12">
-          <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground">Blog</h1>
+          <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground"><T>Blog</T></h1>
           <p className="mt-3 text-pretty text-lg leading-relaxed text-muted-foreground">
-            Notes on unified operations, AI that actually reasons across your data, and running a business
-            on one platform instead of a dozen disconnected tools.
+            <T>Notes on unified operations, AI that actually reasons across your data, and running a business
+            on one platform instead of a dozen disconnected tools.</T>
           </p>
         </AnimatedGroup>
 
@@ -68,14 +69,14 @@ export default function BlogIndexPage() {
                     ))}
                   </div>
                   <p className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                    Read post <ArrowRight className="h-3.5 w-3.5" />
+                    <T>Read post</T> <ArrowRight className="h-3.5 w-3.5" />
                   </p>
                 </Card>
               </Link>
             </InView>
           ))}
           {posts.length === 0 && (
-            <p className="py-12 text-center text-muted-foreground">No posts yet — check back soon.</p>
+            <p className="py-12 text-center text-muted-foreground"><T>No posts yet — check back soon.</T></p>
           )}
         </div>
       </main>

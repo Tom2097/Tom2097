@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -68,11 +69,11 @@ export function ScheduleMaintenanceDialog({ label, assets }: { label: string; as
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Schedule Maintenance</DialogTitle>
+          <DialogTitle><T>Schedule Maintenance</T></DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div>
-            <Label>Asset</Label>
+            <Label><T>Asset</T></Label>
             <Select value={form.resource_id} onValueChange={(v) => setForm({ ...form, resource_id: v })}>
               <SelectTrigger><SelectValue placeholder="Select an asset" /></SelectTrigger>
               <SelectContent>
@@ -81,16 +82,16 @@ export function ScheduleMaintenanceDialog({ label, assets }: { label: string; as
             </Select>
           </div>
           <div>
-            <Label htmlFor="sched-title">Description</Label>
+            <Label htmlFor="sched-title"><T>Description</T></Label>
             <Input id="sched-title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Routine inspection" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="sched-start">Start</Label>
+              <Label htmlFor="sched-start"><T>Start</T></Label>
               <Input id="sched-start" type="datetime-local" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} />
             </div>
             <div>
-              <Label htmlFor="sched-end">End</Label>
+              <Label htmlFor="sched-end"><T>End</T></Label>
               <Input id="sched-end" type="datetime-local" value={form.end_time} onChange={(e) => setForm({ ...form, end_time: e.target.value })} />
             </div>
           </div>

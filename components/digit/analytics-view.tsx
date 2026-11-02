@@ -1,4 +1,5 @@
 'use client'
+import { T } from "@/components/i18n/t"
 
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState, useTransition } from 'react'
@@ -290,7 +291,7 @@ export function AnalyticsView(data: AnalyticsViewData) {
         <div className="rounded-2xl border border-border/50 bg-card p-6">
           <div className="mb-4 flex items-center gap-2">
             <Lightbulb className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold text-foreground">Live Insights</h3>
+            <h3 className="text-lg font-semibold text-foreground"><T>Live Insights</T></h3>
           </div>
 
           <div className="space-y-4">
@@ -321,8 +322,8 @@ export function AnalyticsView(data: AnalyticsViewData) {
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
             <div>
-              <h3 className="text-lg font-semibold text-foreground">Platform KPIs</h3>
-              <p className="text-sm text-muted-foreground">Current values across connected systems</p>
+              <h3 className="text-lg font-semibold text-foreground"><T>Platform KPIs</T></h3>
+              <p className="text-sm text-muted-foreground"><T>Current values across connected systems</T></p>
             </div>
           </div>
         </div>
@@ -331,9 +332,9 @@ export function AnalyticsView(data: AnalyticsViewData) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border/50">
-                <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Metric</th>
-                <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Current Value</th>
-                <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Source System</th>
+                <th className="pb-3 text-left text-sm font-medium text-muted-foreground"><T>Metric</T></th>
+                <th className="pb-3 text-left text-sm font-medium text-muted-foreground"><T>Current Value</T></th>
+                <th className="pb-3 text-left text-sm font-medium text-muted-foreground"><T>Source System</T></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
@@ -405,7 +406,7 @@ function AiQueryPanel() {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Sparkles className="h-4 w-4 text-primary" />
-          Ask AI about your data
+          <T>Ask AI about your data</T>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -436,19 +437,19 @@ function AiQueryPanel() {
             {result.result.type === 'summary' && result.result.summary && (
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-muted-foreground">Total events: </span>
+                  <span className="text-muted-foreground"><T>Total events:</T> </span>
                   <span className="font-medium text-foreground">{result.result.summary.total_events.toLocaleString()}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Unique users: </span>
+                  <span className="text-muted-foreground"><T>Unique users:</T> </span>
                   <span className="font-medium text-foreground">{result.result.summary.unique_users.toLocaleString()}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Event types: </span>
+                  <span className="text-muted-foreground"><T>Event types:</T> </span>
                   <span className="font-medium text-foreground">{result.result.summary.distinct_events.toLocaleString()}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Total value: </span>
+                  <span className="text-muted-foreground"><T>Total value:</T> </span>
                   <span className="font-medium text-foreground">{result.result.summary.total_value.toLocaleString()}</span>
                 </div>
               </div>
@@ -458,7 +459,7 @@ function AiQueryPanel() {
               result.result.points.length > 0 ? (
                 <LiveChart data={result.result.points.map((p) => ({ name: p.bucket, value: p.value }))} dataKey="value" type="area" currency={false} height={180} />
               ) : (
-                <p className="text-xs text-muted-foreground">No data points for this range.</p>
+                <p className="text-xs text-muted-foreground"><T>No data points for this range.</T></p>
               )
             )}
 
@@ -473,7 +474,7 @@ function AiQueryPanel() {
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-muted-foreground">No rows for this breakdown.</p>
+                <p className="text-xs text-muted-foreground"><T>No rows for this breakdown.</T></p>
               )
             )}
           </div>
@@ -571,18 +572,18 @@ function SavedReportsPanel() {
       <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
         <CardTitle className="flex items-center gap-2 text-base">
           <FileText className="h-4 w-4 text-primary" />
-          Saved Reports
+          <T>Saved Reports</T>
         </CardTitle>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">
               <Plus className="h-3.5 w-3.5 mr-1.5" />
-              New
+              <T>New</T>
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>New Saved Report</DialogTitle>
+              <DialogTitle><T>New Saved Report</T></DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <Input
@@ -613,9 +614,9 @@ function SavedReportsPanel() {
       </CardHeader>
       <CardContent className="space-y-3">
         {loading ? (
-          <p className="text-xs text-muted-foreground">Loading reports...</p>
+          <p className="text-xs text-muted-foreground"><T>Loading reports...</T></p>
         ) : reports.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No saved reports yet. Create one to get started.</p>
+          <p className="text-xs text-muted-foreground"><T>No saved reports yet. Create one to get started.</T></p>
         ) : (
           <ul className="space-y-2">
             {reports.map((report) => (

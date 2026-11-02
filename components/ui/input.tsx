@@ -1,8 +1,14 @@
+'use client'
+
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
+import { useI18nSafe } from '@/components/providers/i18n-provider'
 
-function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
+function Input({ className, type, placeholder, ...props }: React.ComponentProps<'input'>) {
+  // Literal English placeholders are translated via lib/i18n/phrases.ts.
+  const i18n = useI18nSafe()
+  const translatedPlaceholder = typeof placeholder === 'string' && i18n ? i18n.tx(placeholder) : placeholder
   return (
     <input
       type={type}
@@ -13,6 +19,7 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
         'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
         className,
       )}
+      placeholder={translatedPlaceholder}
       {...props}
     />
   )

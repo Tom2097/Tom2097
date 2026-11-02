@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -126,7 +127,7 @@ export function CrmForecastReports() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" />
-          <p className="text-sm font-medium">Forecast & Reports</p>
+          <p className="text-sm font-medium"><T>Forecast & Reports</T></p>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" className="h-8" onClick={handleExport} disabled={exporting}>{exporting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1" />}Export</Button>
@@ -136,37 +137,37 @@ export function CrmForecastReports() {
       <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Total Pipeline</p>
+            <p className="text-xs text-muted-foreground"><T>Total Pipeline</T></p>
             <p className="text-xl font-bold mt-1">${(totalPipeline / 1000).toFixed(0)}k</p>
             <div className="flex items-center gap-1 mt-1 text-xs text-green-500">
-              <ArrowUp className="h-3 w-3" />Active pipeline
+              <ArrowUp className="h-3 w-3" /><T>Active pipeline</T>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Weighted Forecast</p>
+            <p className="text-xs text-muted-foreground"><T>Weighted Forecast</T></p>
             <p className="text-xl font-bold mt-1">${(weightedPipeline / 1000).toFixed(0)}k</p>
             <div className="flex items-center gap-1 mt-1 text-xs text-green-500">
-              <ArrowUp className="h-3 w-3" />Weighted by probability
+              <ArrowUp className="h-3 w-3" /><T>Weighted by probability</T>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Win Rate</p>
+            <p className="text-xs text-muted-foreground"><T>Win Rate</T></p>
             <p className="text-xl font-bold mt-1">{winRate}%</p>
             <div className="flex items-center gap-1 mt-1 text-xs text-green-500">
-              <ArrowUp className="h-3 w-3" />Closed deals
+              <ArrowUp className="h-3 w-3" /><T>Closed deals</T>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Avg Deal Size</p>
+            <p className="text-xs text-muted-foreground"><T>Avg Deal Size</T></p>
             <p className="text-xl font-bold mt-1">${avgDealSize}k</p>
             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-              Per deal average
+              <T>Per deal average</T>
             </div>
           </CardContent>
         </Card>
@@ -174,9 +175,9 @@ export function CrmForecastReports() {
 
       <Tabs defaultValue="pipeline">
         <TabsList>
-          <TabsTrigger value="pipeline"><DollarSign className="h-4 w-4 mr-1" />Pipeline Value</TabsTrigger>
-          <TabsTrigger value="forecast"><TrendingUp className="h-4 w-4 mr-1" />Revenue Forecast</TabsTrigger>
-          <TabsTrigger value="conversion"><Target className="h-4 w-4 mr-1" />Conversion</TabsTrigger>
+          <TabsTrigger value="pipeline"><DollarSign className="h-4 w-4 mr-1" /><T>Pipeline Value</T></TabsTrigger>
+          <TabsTrigger value="forecast"><TrendingUp className="h-4 w-4 mr-1" /><T>Revenue Forecast</T></TabsTrigger>
+          <TabsTrigger value="conversion"><Target className="h-4 w-4 mr-1" /><T>Conversion</T></TabsTrigger>
         </TabsList>
 
         <TabsContent value="pipeline" className="mt-4">
@@ -200,7 +201,7 @@ export function CrmForecastReports() {
 
         <TabsContent value="conversion" className="mt-4">
           <div className="rounded-xl border border-border/50 p-6">
-            <h3 className="text-sm font-medium mb-4">Stage Conversion Rates</h3>
+            <h3 className="text-sm font-medium mb-4"><T>Stage Conversion Rates</T></h3>
             <div className="space-y-4">
               {stages.slice(0, -1).map((stage, i) => {
                 const nextStage = stages[i + 1]
@@ -226,13 +227,13 @@ export function CrmForecastReports() {
         <CardHeader className="p-4 pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
             <FileText className="h-4 w-4 text-primary" />
-            Win/Loss Analysis
+            <T>Win/Loss Analysis</T>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-2">
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <h4 className="text-xs font-medium mb-2 text-muted-foreground">Top Win Reasons</h4>
+              <h4 className="text-xs font-medium mb-2 text-muted-foreground"><T>Top Win Reasons</T></h4>
               <div className="space-y-2">
                 {(winReasons.length > 0 ? winReasons : [{ reason: "No data", pct: 100 }]).map((r) => (
                   <div key={r.reason} className="flex items-center gap-2">
@@ -246,7 +247,7 @@ export function CrmForecastReports() {
               </div>
             </div>
             <div>
-              <h4 className="text-xs font-medium mb-2 text-muted-foreground">Top Loss Reasons</h4>
+              <h4 className="text-xs font-medium mb-2 text-muted-foreground"><T>Top Loss Reasons</T></h4>
               <div className="space-y-2">
                 {(lossReasons.length > 0 ? lossReasons : [{ reason: "No data", pct: 100 }]).map((r) => (
                   <div key={r.reason} className="flex items-center gap-2">

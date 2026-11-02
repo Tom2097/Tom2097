@@ -1,4 +1,5 @@
 "use client";
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from "react";
 
@@ -33,7 +34,7 @@ export default function EmailMonitor() {
 
     return (
         <div className="p-4 border rounded-lg shadow-sm bg-white">
-            <h2 className="text-lg font-semibold mb-4">Email Ingestion Monitor</h2>
+            <h2 className="text-lg font-semibold mb-4"><T>Email Ingestion Monitor</T></h2>
             <button
                 onClick={fetchEmailRoutes}
                 disabled={loading}
@@ -48,7 +49,7 @@ export default function EmailMonitor() {
                         {routes.map((route, index) => (
                             <li key={index} className="p-3 border rounded-md">
                                 <p>
-                                    <strong>Workspace:</strong> {route.workspace}
+                                    <strong><T>Workspace:</T></strong> {route.workspace}
                                 </p>
                                 <pre className="text-sm text-gray-600 mt-1">
                                     {JSON.stringify(route.metadata, null, 2)}

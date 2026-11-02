@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
@@ -39,7 +40,7 @@ export default function AuthErrorPage() {
           </CardContent>
           <CardFooter>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/">Back to home</Link>
+              <Link href="/"><T>Back to home</T></Link>
             </Button>
           </CardFooter>
         </Card>

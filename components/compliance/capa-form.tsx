@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -66,7 +67,7 @@ export function CapaForm({ onSubmit, initialData, isEditing = false }: CapaFormP
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel><T>Title</T></FormLabel>
               <FormControl>
                 <Input placeholder="CAPA title" {...field} />
               </FormControl>
@@ -80,7 +81,7 @@ export function CapaForm({ onSubmit, initialData, isEditing = false }: CapaFormP
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel><T>Description</T></FormLabel>
               <FormControl>
                 <Textarea placeholder="Detailed description" {...field} />
               </FormControl>
@@ -94,7 +95,7 @@ export function CapaForm({ onSubmit, initialData, isEditing = false }: CapaFormP
           name="source"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Source</FormLabel>
+              <FormLabel><T>Source</T></FormLabel>
               <FormControl>
                 <Input placeholder="Source of the CAPA (e.g., Audit, Incident)" {...field} />
               </FormControl>
@@ -108,7 +109,7 @@ export function CapaForm({ onSubmit, initialData, isEditing = false }: CapaFormP
           name="severity"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Severity</FormLabel>
+              <FormLabel><T>Severity</T></FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -133,7 +134,7 @@ export function CapaForm({ onSubmit, initialData, isEditing = false }: CapaFormP
           name="assigned_to"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Assigned To (Email)</FormLabel>
+              <FormLabel><T>Assigned To (Email)</T></FormLabel>
               <FormControl>
                 <Input placeholder="user@example.com" {...field} />
               </FormControl>
@@ -147,7 +148,7 @@ export function CapaForm({ onSubmit, initialData, isEditing = false }: CapaFormP
           name="sla_days"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>SLA Days</FormLabel>
+              <FormLabel><T>SLA Days</T></FormLabel>
               <FormControl>
                 <Input type="number" placeholder="30" {...field} />
               </FormControl>

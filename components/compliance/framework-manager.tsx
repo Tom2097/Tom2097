@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -25,11 +26,11 @@ export function FrameworkManager({ frameworks, onView, onEdit }: FrameworkManage
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead>Controls</TableHead>
-          <TableHead>Created At</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead><T>Name</T></TableHead>
+          <TableHead><T>Description</T></TableHead>
+          <TableHead><T>Controls</T></TableHead>
+          <TableHead><T>Created At</T></TableHead>
+          <TableHead><T>Actions</T></TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

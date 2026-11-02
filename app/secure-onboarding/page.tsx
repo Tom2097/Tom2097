@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useCallback, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -651,7 +652,7 @@ export default function SecureOnboardingPage() {
                        {data.companyCountry.toLowerCase() === "in" && (
                          <div className="mt-2 p-2 bg-yellow-50/50 rounded-md text-xs text-yellow-700 flex items-start gap-2">
                            <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                           <span>For Indian companies, we verify against MCA and GST registries.</span>
+                           <span><T>For Indian companies, we verify against MCA and GST registries.</T></span>
                          </div>
                        )}
                     </div>
@@ -805,7 +806,7 @@ export default function SecureOnboardingPage() {
                          </Button>
                         {error && <p className="text-sm text-destructive">{error}</p>}
                         <p className="text-xs text-muted-foreground">
-                          This will create a device-bound passkey that only works on this device
+                          <T>This will create a device-bound passkey that only works on this device</T>
                         </p>
                       </div>
                     ) : (
@@ -820,7 +821,7 @@ export default function SecureOnboardingPage() {
                         <div className="bg-secondary/50 rounded-lg p-4 text-left">
                           <div className="flex items-center gap-2 mb-2">
                             <Key className="w-4 h-4 text-primary" />
-                            <span className="font-medium">Device Credential</span>
+                            <span className="font-medium"><T>Device Credential</T></span>
                           </div>
                           <p className="text-sm text-muted-foreground">
                             {data.deviceCredential?.id}

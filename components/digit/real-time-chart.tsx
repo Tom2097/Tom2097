@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import React, { useMemo, useCallback } from 'react'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart'
@@ -156,7 +157,7 @@ export function RealTimeChart({
         <div className="p-4 border-t border-border/50">
           <h4 className="font-semibold mb-2 flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-red-500" />
-            Detected Anomalies
+            <T>Detected Anomalies</T>
           </h4>
           <div className="space-y-2 text-xs">
              {anomalies.slice(0, 3).map((anomaly, index) => {
@@ -192,11 +193,11 @@ export function RealTimeChart({
         <div className="p-4 border-t border-border/50">
           <h4 className="font-semibold mb-2 flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-blue-500" />
-            Forecast
+            <T>Forecast</T>
           </h4>
           <div className="flex items-center justify-between text-xs">
             <div>
-              <div className="font-medium">Next 6 months</div>
+              <div className="font-medium"><T>Next 6 months</T></div>
               <div className="text-muted-foreground">
                 {Math.round(((forecast[forecast.length - 1].forecast - data[0]?.value) / data[0]?.value) * 100)}% growth projected
               </div>

@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -151,20 +152,20 @@ export function RoutingRules() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Dynamic Auto-Routing Rules</CardTitle>
+        <CardTitle><T>Dynamic Auto-Routing Rules</T></CardTitle>
         <CardDescription>
-          Configure rules to automatically route documents to the appropriate workspace based on content analysis.
+          <T>Configure rules to automatically route documents to the appropriate workspace based on content analysis.</T>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {!isLoading && workspaces.length === 0 && (
           <p className="text-sm text-muted-foreground p-3 border rounded-lg bg-muted/30">
-            No workspaces yet — create one from the Workspaces tab before setting up routing rules.
+            <T>No workspaces yet — create one from the Workspaces tab before setting up routing rules.</T>
           </p>
         )}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Classification-Based Routing</h3>
+            <h3 className="text-lg font-medium"><T>Classification-Based Routing</T></h3>
             <Button variant="outline" size="sm" onClick={handleSave} disabled={isSaving || isLoading}>
               {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               {isSaving ? 'Saving...' : 'Save Rules'}
@@ -172,7 +173,7 @@ export function RoutingRules() {
           </div>
 
           <p className="text-sm text-muted-foreground">
-            Route documents based on their content classification (e.g., &quot;legal&quot;, &quot;finance&quot;).
+            <T>Route documents based on their content classification (e.g., &quot;legal&quot;, &quot;finance&quot;).</T>
           </p>
 
            <div className="space-y-3">
@@ -218,15 +219,15 @@ export function RoutingRules() {
               </SelectContent>
             </Select>
             <Button onClick={addCategoryRule} disabled={!newCategory || !newCategoryTarget}>
-              <Plus className="h-4 w-4 mr-2" /> Add Rule
+              <Plus className="h-4 w-4 mr-2" /> <T>Add Rule</T>
             </Button>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Intent-Based Routing</h3>
+          <h3 className="text-lg font-medium"><T>Intent-Based Routing</T></h3>
           <p className="text-sm text-muted-foreground">
-            Route documents based on detected intent (e.g., &quot;contract review&quot;, &quot;financial report&quot;).
+            <T>Route documents based on detected intent (e.g., &quot;contract review&quot;, &quot;financial report&quot;).</T>
           </p>
           
            <div className="space-y-3">
@@ -272,15 +273,15 @@ export function RoutingRules() {
               </SelectContent>
             </Select>
             <Button onClick={addIntentRule} disabled={!newIntent || !newIntentTarget}>
-              <Plus className="h-4 w-4 mr-2" /> Add Rule
+              <Plus className="h-4 w-4 mr-2" /> <T>Add Rule</T>
             </Button>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Test Routing Rules</h3>
+          <h3 className="text-lg font-medium"><T>Test Routing Rules</T></h3>
           <p className="text-sm text-muted-foreground">
-            Test how a document would be routed based on its content.
+            <T>Test how a document would be routed based on its content.</T>
           </p>
 
           <div className="flex gap-2">
@@ -310,7 +311,7 @@ export function RoutingRules() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No workspace suggestions for this content.</p>
+              <p className="text-sm text-muted-foreground"><T>No workspace suggestions for this content.</T></p>
             )
           )}
         </div>

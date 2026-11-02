@@ -1,4 +1,5 @@
 "use client"
+import { T } from "@/components/i18n/t"
 import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useState } from "react"
@@ -120,7 +121,7 @@ export function AdminShell({
           <div className="flex items-center gap-3">
             <Badge variant="default" className="bg-primary/15 text-primary hover:bg-primary/20">
               <Activity className="mr-1 h-3 w-3" />
-              Admin
+              <T>Admin</T>
             </Badge>
             <span className="text-sm text-muted-foreground">{t("admin.layout.platformAdministration")}</span>
           </div>

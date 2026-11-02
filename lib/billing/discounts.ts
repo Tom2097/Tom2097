@@ -62,7 +62,11 @@ export async function validateDiscountCode(
   if (discount.currentUses >= discount.maxUses) return { valid: false, error: "Discount code has expired" }
   if (discount.expiresAt && new Date(discount.expiresAt) < new Date()) return { valid: false, error: "Discount code has expired" }
   if (discount.minPlanId) {
-    const planPriority = ["starter", "professional", "enterprise"]
+    // "digit_annual" is the single all-inclusive plan that replaced the
+    // old tiers, so it satisfies any legacy min_plan_id. Before it was in
+    // this list, indexOf("digit_annual") was -1 and every code that had a
+    // min_plan_id was rejected for the only plan anyone can buy.
+    const planPriority = ["starter", "professional", "enterprise", "digit_annual"]
     if (planPriority.indexOf(planId) < planPriority.indexOf(discount.minPlanId)) {
       return { valid: false, error: "Discount not available for this plan" }
     }
