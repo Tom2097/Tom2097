@@ -28,6 +28,8 @@ interface VisitorSnapshot {
   last24h: number
   topCountries: { country: string; country_code: string | null; visits: number }[]
   topPages: { path: string; visits: number }[]
+  topReferrers?: { source: string; visits: number }[]
+  funnel30d?: { visitors: number; signups: number; trials: number }
   recentVisits: SiteVisit[]
 }
 
@@ -170,6 +172,56 @@ export default function VisitorsPage() {
               </CardContent>
             </Card>
           </div>
+
+          {snapshot.funnel30d && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Funnel, last 30 days</CardTitle>
+                  <CardDescription>Unique visitor sessions, new workspaces, and trials started.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {([
+                    ["Visitors", snapshot.funnel30d.visitors],
+                    ["Sign-ups (new workspaces)", snapshot.funnel30d.signups],
+                    ["Trials started", snapshot.funnel30d.trials],
+                  ] as const).map(([label, value], i, all) => {
+                    const prev = i > 0 ? all[i - 1][1] : null
+                    const rate = prev ? `${((value / prev) * 100).toFixed(1)}% of previous step` : null
+                    return (
+                      <div key={label} className="flex items-center justify-between text-sm">
+                        <span className="text-foreground">{label}</span>
+                        <span className="tabular-nums text-foreground font-medium">
+                          {value}
+                          {rate && <span className="ml-2 text-xs text-muted-foreground font-normal">{rate}</span>}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Traffic sources</CardTitle>
+                  <CardDescription>Referring site for the most recent 100 visits.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!snapshot.topReferrers?.length ? (
+                    <p className="text-sm text-muted-foreground py-6 text-center">{t("platformAdmin.visitors.empty")}</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {snapshot.topReferrers.map((r) => (
+                        <div key={r.source} className="flex items-center justify-between text-sm">
+                          <span className="text-foreground truncate">{r.source}</span>
+                          <span className="text-muted-foreground tabular-nums shrink-0 ml-2">{r.visits}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           <Card>
             <CardHeader>

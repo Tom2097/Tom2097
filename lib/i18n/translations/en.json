@@ -929,7 +929,7 @@
     },
     "signUp": {
       "title": "Create your account",
-      "description": "Start your free trial — no credit card required",
+      "description": "Start your 1-month free trial — nothing is charged until it ends",
       "fullNameLabel": "Full name",
       "fullNamePlaceholder": "Jane Doe",
       "companyNameLabel": "Company name",
@@ -2600,7 +2600,7 @@
     },
     "modules": {
       "title": "Everything your team needs, in one place",
-      "subtitle": "Nine connected modules, one shared source of truth.",
+      "subtitle": "Eight connected modules, one shared source of truth.",
       "crm": "Smart CRM",
       "crmDesc": "Track leads, accounts, and deals with a pipeline that scores and prioritizes itself.",
       "operations": "Operations",
@@ -2620,7 +2620,7 @@
     },
     "finalCta": {
       "title": "Ready to see DigiT in action?",
-      "subtitle": "Start a free trial in minutes, no credit card required.",
+      "subtitle": "Start a 1-month free trial in minutes. Your card is verified, not charged, until the trial ends.",
       "cta": "Create your account"
     },
     "footer": {

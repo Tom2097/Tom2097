@@ -17,6 +17,7 @@ import { modules } from '@/lib/modules'
 import { resolvePlan, formatPrice } from '@/lib/products'
 import { useI18n } from '@/components/providers/i18n-provider'
 import { HarWidget } from '@/components/hitl/har-widget'
+import { GettingStartedChecklist, type OnboardingProgress } from '@/components/digit/getting-started-checklist'
 
 interface DashboardContentProps {
   stats: any
@@ -30,6 +31,7 @@ interface DashboardContentProps {
   activeOperationsCount: number
   communicationVolume: number
   documentsProcessed: number
+  onboarding?: OnboardingProgress
 }
 
 export default function DashboardContent({
@@ -44,6 +46,7 @@ export default function DashboardContent({
   activeOperationsCount,
   communicationVolume,
   documentsProcessed,
+  onboarding,
 }: DashboardContentProps) {
   const { t } = useI18n()
   const router = useRouter()
@@ -61,6 +64,7 @@ export default function DashboardContent({
   return (
     <div className="space-y-8">
       <HarWidget />
+      {onboarding && <GettingStartedChecklist progress={onboarding} />}
       {isActive && plan && (
         <Card className="p-4 border-chart-2/30 bg-chart-2/10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

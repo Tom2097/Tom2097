@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
 // Minimal ambient shape for the bits of Google Identity Services (GSI) this
@@ -62,7 +61,6 @@ interface GoogleIdentityButtonProps {
 export function GoogleIdentityButton({ redirectTo = "/", onError }: GoogleIdentityButtonProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -84,7 +82,11 @@ export function GoogleIdentityButton({ redirectTo = "/", onError }: GoogleIdenti
         const data = await res.json().catch(() => ({}))
         if (!res.ok) throw new Error(data.error || "Failed to complete sign-in")
 
-        router.push(data.needsOnboarding ? "/onboarding" : redirectTo)
+        // Full page load, not router.push(): the session cookies were just
+        // set, and a soft navigation can reuse the router's cached signed-out
+        // render of the destination (the landing page for "/"), so the
+        // first click looked like it did nothing.
+        window.location.assign(data.needsOnboarding ? "/onboarding" : redirectTo)
       } catch (err) {
         setLoading(false)
         onError?.(err instanceof Error ? err.message : "Google sign-in failed")
@@ -102,6 +104,8 @@ export function GoogleIdentityButton({ redirectTo = "/", onError }: GoogleIdenti
         shape: "rectangular",
         width: 360,
       })
+    }).catch(() => {
+      if (!cancelled) onError?.("Google sign-in could not load. Check your connection or ad blocker, then reload.")
     })
 
     return () => {

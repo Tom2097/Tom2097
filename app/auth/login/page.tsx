@@ -31,7 +31,10 @@ function LoginForm() {
   const [passkeyAvailable, setPasskeyAvailable] = useState(false)
   const [googleError, setGoogleError] = useState<string | null>(null)
   const searchParams = useSearchParams()
-  const redirect = searchParams?.get("redirect") || "/"
+  // Same-site paths only -- "//evil.com" or "https://evil.com" would turn
+  // the post-login redirect into an open redirect.
+  const rawRedirect = searchParams?.get("redirect") || "/"
+  const redirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") && !rawRedirect.startsWith("/\\") ? rawRedirect : "/"
   const errorParam = searchParams?.get("error")
   const reasonParam = searchParams?.get("reason")
   const unconfirmedEmail = errorParam === "email_not_confirmed" ? searchParams?.get("email") || "" : ""

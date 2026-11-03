@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next"
 import { getAllPosts } from "@/lib/blog"
+import { INDUSTRIES } from "@/lib/industries"
 
 // No sitemap existed -- Google can still discover pages by crawling links,
 // but a sitemap makes discovery immediate and lets Search Console track
@@ -20,6 +21,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(post.date),
       changeFrequency: "monthly" as const,
       priority: 0.6,
+    })),
+    { url: `${base}/industries`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    ...INDUSTRIES.map((industry) => ({
+      url: `${base}/industries/${industry.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
     })),
     { url: `${base}/security`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/status`, lastModified: now, changeFrequency: "daily", priority: 0.4 },

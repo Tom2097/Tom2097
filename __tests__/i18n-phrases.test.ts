@@ -4,6 +4,7 @@ import { join } from "node:path"
 import hi from "@/lib/i18n/phrases/hi.json"
 import pa from "@/lib/i18n/phrases/pa.json"
 import { translatePhrase, normalizePhrase } from "@/lib/i18n/phrases"
+import { LANDING_FAQ } from "@/components/digit/landing-faq"
 
 // Text that is intentionally identical in every language.
 const UNTRANSLATED_OK = /^(?:[\w.+-]+@[\w.-]+|[\w-]+\.(?:com|org)|k-Anon|🔍 Login Check v2)$/
@@ -24,9 +25,17 @@ function phrasesInCode(): string[] {
   for (const file of [...tsxFiles("app"), ...tsxFiles("components")]) {
     const src = readFileSync(file, "utf8")
     for (const m of src.matchAll(/<T>([\s\S]*?)<\/T>/g)) out.add(normalizePhrase(decode(m[1])))
+    // tx("literal") / title: "..." strings rendered through tx() on the homepage
+    if (file.endsWith("landing-page.tsx")) {
+      for (const m of src.matchAll(/(?:title|desc): "([^"]+)"/g)) out.add(normalizePhrase(m[1]))
+    }
     for (const m of src.matchAll(/<(?:Input|Textarea|SelectValue)\b[^>]*?placeholder="([^"]*[A-Za-z]{2}[^"]*)"/g)) {
       out.add(normalizePhrase(m[1]))
     }
+  }
+  for (const { q, a } of LANDING_FAQ) {
+    out.add(normalizePhrase(q))
+    out.add(normalizePhrase(a))
   }
   return [...out]
 }

@@ -11,6 +11,9 @@ import {
   MessageSquarePlus,
   Brain,
   BarChart3,
+  Languages,
+  Lock,
+  Factory,
   type LucideIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -25,6 +28,7 @@ import { AuroraBackground } from "@/components/digit/aurora-background"
 import { HeroSignalPanel } from "@/components/digit/hero-signal-panel"
 import { WaveDivider } from "@/components/digit/wave-divider"
 import { SUBSCRIPTION_PLANS, formatPrice } from "@/lib/products"
+import { LANDING_FAQ, DEMO_MAILTO } from "@/components/digit/landing-faq"
 
 const plan = SUBSCRIPTION_PLANS[0]
 
@@ -47,7 +51,7 @@ const modules: Array<{ icon: LucideIcon; titleKey: string; descKey: string; span
 ]
 
 export async function LandingPage() {
-  const { t } = await getTranslator()
+  const { t, tx } = await getTranslator()
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background">
@@ -64,6 +68,12 @@ export async function LandingPage() {
                 className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
               >
                 {t("navigation.pricing")}
+              </Link>
+              <Link
+                href="/industries"
+                className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
+              >
+                <T>Industries</T>
               </Link>
               <Link
                 href="/blog"
@@ -101,6 +111,9 @@ export async function LandingPage() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
+                <a href={DEMO_MAILTO}><T>Book a demo</T></a>
+              </Button>
+              <Button size="lg" variant="ghost" asChild>
                 <Link href="#pricing">{t("landing.hero.ctaSecondary")}</Link>
               </Button>
             </div>
@@ -146,6 +159,40 @@ export async function LandingPage() {
           </div>
         </section>
 
+        {/* Built for India -- only features that exist in the product today */}
+        <section className="container mx-auto px-6 py-16">
+          <InView className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="text-3xl font-bold text-foreground"><T>Built for businesses in India</T></h2>
+            <p className="mt-3 text-muted-foreground"><T>Made for how Indian teams work, in the languages they use.</T></p>
+          </InView>
+          <div className="grid gap-4 md:grid-cols-3">
+            {([
+              { icon: Languages, title: "Hindi and Punjabi", desc: "Every person can switch the whole workspace between English, Hindi, and Punjabi.", href: null },
+              { icon: Lock, title: "DPDP-ready privacy tools", desc: "Handle requests to access, correct, or erase personal data, and keep consent records in one place.", href: "/blog/dpdp-act-compliance-checklist" },
+              { icon: Factory, title: "Set up for your industry", desc: "Guided workspace setup for healthcare, manufacturing, legal, retail, banking and finance, and education.", href: "/industries" },
+            ] as const).map(({ icon: Icon, title, desc, href }, i) => (
+              <InView key={title} delay={i * 0.06}>
+                <div className="digit-glass flex h-full flex-col rounded-3xl p-6">
+                  <div
+                    className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl"
+                    style={{ backgroundColor: `${TRIAD[i]}1a`, color: TRIAD[i] }}
+                  >
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-bold text-foreground">{tx(title)}</h3>
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{tx(desc)}</p>
+                  {href && (
+                    <Link href={href} className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                      <T>Learn more</T>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  )}
+                </div>
+              </InView>
+            ))}
+          </div>
+        </section>
+
         {/* Pricing */}
         <section id="pricing" className="container mx-auto px-6 py-16 scroll-mt-20">
           <InView className="mx-auto mb-12 max-w-2xl text-center">
@@ -188,18 +235,41 @@ export async function LandingPage() {
           </InView>
         </section>
 
+        {/* FAQ -- same content as the FAQPage structured data on the homepage */}
+        <section id="faq" className="container mx-auto px-6 py-16 scroll-mt-20">
+          <InView className="mx-auto mb-10 max-w-2xl text-center">
+            <h2 className="text-3xl font-bold text-foreground"><T>Frequently asked questions</T></h2>
+          </InView>
+          <div className="mx-auto max-w-3xl space-y-3">
+            {LANDING_FAQ.map(({ q, a }) => (
+              <details key={q} className="digit-glass group rounded-2xl px-6 py-4">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-foreground">
+                  {tx(q)}
+                  <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-open:rotate-90" aria-hidden />
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{tx(a)}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="container mx-auto px-6 py-20">
           <InView className="mx-auto max-w-4xl">
             <div className="flex flex-col items-center gap-6 rounded-3xl border border-primary/20 bg-primary/5 px-8 py-16 text-center backdrop-blur-xl digit-glow-sm">
               <h2 className="text-3xl font-bold text-foreground">{t("landing.finalCta.title")}</h2>
               <p className="max-w-xl text-muted-foreground">{t("landing.finalCta.subtitle")}</p>
-              <Button size="lg" className="gap-2 digit-glow" asChild>
-                <Link href="/auth/sign-up">
-                  {t("landing.finalCta.cta")}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button size="lg" className="gap-2 digit-glow" asChild>
+                  <Link href="/auth/sign-up">
+                    {t("landing.finalCta.cta")}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <a href={DEMO_MAILTO}><T>Book a demo</T></a>
+                </Button>
+              </div>
             </div>
           </InView>
         </section>
@@ -211,6 +281,9 @@ export async function LandingPage() {
             <nav className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
               <Link href="#pricing" className="transition-colors hover:text-foreground">
                 {t("navigation.pricing")}
+              </Link>
+              <Link href="/industries" className="transition-colors hover:text-foreground">
+                <T>Industries</T>
               </Link>
               <Link href="/blog" className="transition-colors hover:text-foreground">
                 <T>Blog</T>

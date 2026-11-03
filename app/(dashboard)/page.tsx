@@ -9,6 +9,7 @@ import { forecastMetric } from '@/lib/analytics/forecasting'
 import { LandingPage } from '@/components/digit/landing-page'
 import DashboardContent from './dashboard-content'
 import { ANNUAL_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '@/lib/products'
+import { faqStructuredData } from '@/components/digit/landing-faq'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,6 +50,7 @@ const structuredData = {
         },
       ],
     },
+    faqStructuredData(),
   ],
 }
 
@@ -139,6 +141,8 @@ export default async function DashboardPage() {
     getDocumentsProcessedThisMonth(orgId),
   ])
 
+  const onboarding = await getOnboardingProgress(db, orgId)
+
   const subscription = subResult.data as
     | { plan_id: string; status: string; current_period_end: string | null }
     | null
@@ -156,6 +160,29 @@ export default async function DashboardPage() {
       activeOperationsCount={monitorsResult.total}
       communicationVolume={communicationVolume}
       documentsProcessed={documentsProcessed}
+      onboarding={onboarding}
     />
   )
+}
+
+// Each "Getting started" step is ticked off from real data, so the
+// checklist reflects what the workspace has actually done. A failed count
+// reads as "not done" rather than breaking the dashboard.
+async function getOnboardingProgress(db: ReturnType<typeof createServiceClient>, orgId: string) {
+  const count = async (table: string) => {
+    const { count, error } = await db.from(table).select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+    return error ? 0 : count ?? 0
+  }
+  const [workspaces, contacts, members, objectives] = await Promise.all([
+    count('workspaces'),
+    count('crm_contacts'),
+    count('profiles'),
+    count('okr_objectives'),
+  ])
+  return {
+    configured: workspaces > 0,
+    hasContact: contacts > 0,
+    hasTeammate: members > 1,
+    hasObjective: objectives > 0,
+  }
 }

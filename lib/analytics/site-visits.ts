@@ -26,6 +26,10 @@ export interface VisitorSnapshot {
   last24h: number
   topCountries: CountryBreakdown[]
   topPages: { path: string; visits: number }[]
+  /** Where visitors came from (referrer hostname, or "direct"), recent visits only. */
+  topReferrers: { source: string; visits: number }[]
+  /** Last-30-days funnel: unique visitor sessions -> new workspaces -> trials started. */
+  funnel30d: { visitors: number; signups: number; trials: number }
   recentVisits: SiteVisit[]
 }
 
@@ -112,7 +116,16 @@ export async function recordVisit(input: RecordVisitInput): Promise<void> {
 export async function getVisitorSnapshot(): Promise<VisitorSnapshot> {
   const db = createServiceClient()
 
-  const [{ count: totalVisits }, { data: last24hRows }, { data: recentRows }] = await Promise.all([
+  const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+
+  const [
+    { count: totalVisits },
+    { data: last24hRows },
+    { data: recentRows },
+    { data: sessions30dRows },
+    { count: signups30d },
+    { count: trials30d },
+  ] = await Promise.all([
     db.from("site_visits").select("id", { count: "exact", head: true }),
     db
       .from("site_visits")
@@ -123,6 +136,9 @@ export async function getVisitorSnapshot(): Promise<VisitorSnapshot> {
       .select("id, path, referrer, country, country_code, city, region_name, device_type, session_id, created_at")
       .order("created_at", { ascending: false })
       .limit(100),
+    db.from("site_visits").select("session_id").gte("created_at", since30d).limit(20000),
+    db.from("organizations").select("id", { count: "exact", head: true }).gte("created_at", since30d),
+    db.from("subscriptions").select("id", { count: "exact", head: true }).gte("created_at", since30d),
   ])
 
   const rows = (recentRows ?? []) as SiteVisit[]
@@ -140,6 +156,16 @@ export async function getVisitorSnapshot(): Promise<VisitorSnapshot> {
     pageCounts.set(row.path, (pageCounts.get(row.path) ?? 0) + 1)
   }
 
+  const referrerCounts = new Map<string, number>()
+  for (const row of rows) {
+    const source = referrerSource(row.referrer)
+    referrerCounts.set(source, (referrerCounts.get(source) ?? 0) + 1)
+  }
+  const topReferrers = Array.from(referrerCounts.entries())
+    .map(([source, visits]) => ({ source, visits }))
+    .sort((a, b) => b.visits - a.visits)
+    .slice(0, 8)
+
   const topCountries = Array.from(countryCounts.values()).sort((a, b) => b.visits - a.visits).slice(0, 8)
   const topPages = Array.from(pageCounts.entries())
     .map(([path, visits]) => ({ path, visits }))
@@ -152,6 +178,23 @@ export async function getVisitorSnapshot(): Promise<VisitorSnapshot> {
     last24h: last24hRows?.length ?? 0,
     topCountries,
     topPages,
+    topReferrers,
+    funnel30d: {
+      visitors: new Set((sessions30dRows ?? []).map((r: { session_id: string }) => r.session_id)).size,
+      signups: signups30d ?? 0,
+      trials: trials30d ?? 0,
+    },
     recentVisits: rows.slice(0, 30),
+  }
+}
+
+/** Collapses a referrer URL to its hostname; internal navigation and no-referrer both count as "direct". */
+export function referrerSource(referrer: string | null): string {
+  if (!referrer) return "direct"
+  try {
+    const host = new URL(referrer).hostname.replace(/^www\./, "")
+    return host === "digit-ai.org" || host === "localhost" ? "direct" : host
+  } catch {
+    return "direct"
   }
 }
