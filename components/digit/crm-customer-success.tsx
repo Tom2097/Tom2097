@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ACCOUNT_HEALTH_STATUSES } from "@/lib/crm/types"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 import { cn } from "@/lib/utils"
 
 interface Account {

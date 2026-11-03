@@ -41,7 +41,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: "What's included in my subscription?",
-    answer: "There is one plan, DigiT, at $499/year or $44.49/month (cancel anytime). It includes all 6 workspace modules, unlimited team members (fair use), every AI capability, the Integration Hub and API, and SSO. Every subscription starts with a 1-month free trial.",
+    answer: "There is one plan, DigiT, at $499/year or $44.49/month (cancel anytime). It includes all 6 workspace modules, unlimited team members (fair use), every AI capability, and the Integration Hub and API. Every subscription starts with a 1-month free trial.",
     category: "Billing"
   },
   {

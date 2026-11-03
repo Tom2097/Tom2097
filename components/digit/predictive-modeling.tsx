@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { LiveChart } from '@/components/digit/live-chart'
 import { AlertTriangle, CheckCircle2, Info, Brain, BarChart2, Target, Clock, Play, Plus, Trash2, Save, Upload, FileText } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from "@/lib/i18n/toast"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
@@ -71,8 +71,6 @@ export function PredictiveModeling() {
     type: 'regression',
     dataset_id: ''
   })
-  const [trainingStatus, setTrainingStatus] = useState<string | null>(null)
-  const [trainingProgress, setTrainingProgress] = useState(0)
 
   const fetchModelsAndDatasets = useCallback(async () => {
     try {
@@ -142,53 +140,23 @@ export function PredictiveModeling() {
   const handleTrainModel = async (modelId: string) => {
     try {
       setIsTraining(true)
-      setTrainingStatus('Preparing data...')
-      setTrainingProgress(10)
-      
       const response = await fetch(`/api/v1/intelligence/models/${modelId}/train`, {
         method: 'POST'
       })
-      
+
       const result = await response.json()
-      
+
       if (response.ok) {
-        toast.success('Model training started successfully')
-        
-        // Simulate training progress
-        const simulateTraining = () => {
-          setTrainingProgress(prev => {
-            if (prev >= 90) {
-              setTrainingStatus('Finalizing model...')
-              return 95
-            }
-            setTrainingStatus(`Training... ${prev + 5}%`)
-            return prev + 5
-          })
-        }
-        
-        const interval = setInterval(simulateTraining, 2000)
-        
-        // In a real app, you would poll the API for actual training status
-        setTimeout(() => {
-          clearInterval(interval)
-          setTrainingStatus('Training completed!')
-          setTrainingProgress(100)
-          fetchModelsAndDatasets()
-          setTimeout(() => {
-            setTrainingStatus(null)
-            setTrainingProgress(0)
-          }, 3000)
-        }, 20000)
+        // The server records the run and moves the model's status along; no
+        // model is actually fitted, so don't show progress or claim success.
+        toast.info('Run recorded. No model was trained: custom model training is not available yet.')
+        setTimeout(() => void fetchModelsAndDatasets(), 5000)
       } else {
         toast.error(result.error || 'Failed to start model training')
-        setTrainingStatus(null)
-        setTrainingProgress(0)
       }
     } catch (error) {
       toast.error('Error starting model training')
       console.error('Error:', error)
-      setTrainingStatus(null)
-      setTrainingProgress(0)
     } finally {
       setIsTraining(false)
     }
@@ -424,25 +392,11 @@ export function PredictiveModeling() {
         </Dialog>
       </div>
 
-      {trainingStatus && (
-        <Card>
-          <CardHeader>
-            <CardTitle><T>Model Training</T></CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>{trainingStatus}</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <Progress value={trainingProgress} className="flex-1" />
-                <span className="text-sm text-muted-foreground">{trainingProgress}%</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="border-amber-500/30 bg-amber-500/5">
+        <CardContent className="pt-6 text-sm text-foreground">
+          <T>Custom model training is not available yet. You can define models and datasets here, but running or deploying a model does not train it or produce predictions.</T>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="models" className="space-y-4">
         <TabsList>

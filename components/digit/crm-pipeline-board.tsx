@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Plus, GripVertical, DollarSign, Calendar, User, Tag, X, Loader2, Trash2 } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 
 interface Deal {
   id: string; title: string; value: number; stage: string; probability: number

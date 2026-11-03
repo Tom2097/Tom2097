@@ -19,7 +19,7 @@ import {
   Play,
   Plus,
 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from "@/lib/i18n/toast"
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'

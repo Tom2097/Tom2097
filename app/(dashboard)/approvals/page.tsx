@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 import { CheckCircle2, XCircle, UserPlus, ArrowUpCircle, Loader2, ClipboardCheck, Sparkles } from "lucide-react"
 import { useI18n } from "@/components/providers/i18n-provider"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"

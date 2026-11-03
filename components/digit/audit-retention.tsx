@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Switch } from '@/components/ui/switch'
 import { AlertTriangle, CheckCircle2, Clock, Play, Plus, Trash2, Save, History } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from "@/lib/i18n/toast"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 interface RetentionPolicy {

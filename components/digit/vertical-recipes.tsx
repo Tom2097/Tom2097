@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Pill, Wind, Truck, FlaskConical, FileText, Activity, Loader2 } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 
 const verticalRecipes = [
   {

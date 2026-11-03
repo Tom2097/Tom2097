@@ -20,7 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { COMMUNICATION_CHANNELS } from "@/lib/crm/types"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 import { cn } from "@/lib/utils"
 
 interface CommMessage {

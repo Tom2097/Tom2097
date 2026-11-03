@@ -290,6 +290,59 @@ export function validateContact(input: unknown): string | null {
   return null
 }
 
+/**
+ * Bulk insert for CSV import. Contacts whose email already exists in the
+ * organization are skipped and counted in `existing`.
+ */
+export async function importContacts(
+  organizationId: string,
+  createdBy: string,
+  inputs: ContactInput[],
+): Promise<{ contacts: Contact[]; existing: number }> {
+  if (inputs.length === 0) return { contacts: [], existing: 0 }
+  const db = createServiceClient()
+
+  const emails = inputs.map((c) => c.email).filter((e): e is string => !!e)
+  const known = new Set<string>()
+  for (let i = 0; i < emails.length; i += 200) {
+    const { data, error } = await db
+      .from("crm_contacts")
+      .select("email")
+      .eq("organization_id", organizationId)
+      .in("email", emails.slice(i, i + 200))
+    if (error) throw new Error("failed to check existing contacts")
+    for (const row of data ?? []) if (row.email) known.add(String(row.email).toLowerCase())
+  }
+
+  const fresh = inputs.filter((c) => !c.email || !known.has(c.email))
+  if (fresh.length === 0) return { contacts: [], existing: inputs.length }
+
+  const { data, error } = await db
+    .from("crm_contacts")
+    .insert(
+      fresh.map((input) => ({
+        organization_id: organizationId,
+        created_by: createdBy,
+        owner_id: createdBy,
+        first_name: (input.first_name ?? "").slice(0, 120),
+        last_name: (input.last_name ?? "").slice(0, 120),
+        email: clampStr(input.email, 255),
+        phone: clampStr(input.phone, 60),
+        title: clampStr(input.title, 160),
+        status: pick(CONTACT_STATUSES, input.status, "lead"),
+        notes: clampStr(input.notes, 5000),
+        tags: [],
+        source: clampStr(input.source, 60),
+      })),
+    )
+    .select("*")
+  if (error) {
+    console.error("[v0] importContacts failed:", error.message)
+    throw new Error("failed to import contacts")
+  }
+  return { contacts: (data ?? []) as Contact[], existing: inputs.length - fresh.length }
+}
+
 export async function createContact(
   organizationId: string,
   createdBy: string,

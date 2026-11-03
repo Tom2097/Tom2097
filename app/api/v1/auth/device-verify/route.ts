@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       const config = await getNewDeviceDeadEndConfig()
       if (config.enabled) {
         return NextResponse.json({
-          error: "Unknown device. Please use SSO or re-enroll.",
+          error: "Unknown device. Please re-enroll this device.",
           deadEnd: true,
           ssoFallback: config.ssoFallbackEnabled,
         }, { status: 403 })

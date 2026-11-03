@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, CheckCircle2, Clock, TrendingUp, Zap, MessageSquare, Users, Target, Loader2 } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 
 interface DealHealthItem {
   id: string; deal: string; value: number; stage: string; risk: "high" | "medium" | "low"

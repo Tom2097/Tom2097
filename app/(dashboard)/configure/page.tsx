@@ -23,7 +23,7 @@ import { RoutingRules } from "@/components/digit/routing-rules"
 import { useI18n } from "@/components/providers/i18n-provider"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { InView } from "@/components/motion-primitives/in-view"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 
 const verticalMeta: Record<string, { href: string | null; color: string; bg: string; icon: React.ReactNode }> = {
   operational: { href: "/operations", color: "text-indigo-500", bg: "bg-indigo-500/10", icon: <Wifi className="h-5 w-5" /> },

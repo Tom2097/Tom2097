@@ -1,5 +1,6 @@
 'use client'
 import { T } from "@/components/i18n/t"
+import { useI18n } from "@/components/providers/i18n-provider"
 
 import { useEffect, useRef } from 'react'
 import { motion, useMotionValue, useTransform, animate, type Variants } from 'framer-motion'
@@ -12,7 +13,7 @@ interface FeedItem {
 
 const feed: FeedItem[] = [
   { label: 'Smart CRM', detail: 'Lead scored 92 -- routed to sales', color: '#3ce0e2' },
-  { label: 'Compliance', detail: 'SOC 2 evidence check passed', color: '#00c875' },
+  { label: 'Compliance', detail: 'Policy review completed', color: '#00c875' },
   { label: 'Operations', detail: 'Anomaly resolved in checkout flow', color: '#3b7cf5' },
 ]
 
@@ -53,6 +54,7 @@ const item: Variants = {
 }
 
 export function HeroSignalPanel() {
+  const { tx } = useI18n()
   const path = buildPath(sparkPoints, 220, 56)
 
   return (
@@ -64,15 +66,9 @@ export function HeroSignalPanel() {
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          <T>Live operations</T>
+          <T>Example workspace</T>
         </span>
-        <span className="flex items-center gap-1.5 text-xs font-medium text-[#00c875]">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#00c875] opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00c875]" />
-          </span>
-          <T>Live</T>
-        </span>
+        <span className="text-xs font-medium text-muted-foreground"><T>Sample data</T></span>
       </div>
 
       <div className="mt-5">
@@ -124,8 +120,8 @@ export function HeroSignalPanel() {
               style={{ background: f.color }}
             />
             <div className="min-w-0">
-              <p className="text-xs font-medium text-foreground">{f.label}</p>
-              <p className="truncate text-xs text-muted-foreground">{f.detail}</p>
+              <p className="text-xs font-medium text-foreground">{tx(f.label)}</p>
+              <p className="truncate text-xs text-muted-foreground">{tx(f.detail)}</p>
             </div>
           </motion.div>
         ))}

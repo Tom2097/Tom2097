@@ -63,8 +63,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       "Semantic search, analytics & forecasting",
       "Integration Hub + API",
       "Advanced RBAC + ABAC",
-      "Audit & compliance (full export, DPDP data residency)",
-      "SSO/SAML",
+      "Audit & compliance (full export)",
     ],
     limits: {
       users: -1,

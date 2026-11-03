@@ -5,7 +5,7 @@ import { useI18n } from "@/components/providers/i18n-provider"
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 import { 
   Brain, 
   ArrowRight, 

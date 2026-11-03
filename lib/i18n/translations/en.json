@@ -2592,15 +2592,15 @@
       "getStarted": "Get started"
     },
     "hero": {
-      "badge": "Enterprise Intelligence Platform",
-      "headline": "Run your business on one intelligent operating layer",
-      "subheadline": "DigiT unifies CRM, operations, compliance, and AI-driven analytics into a single platform that learns from your business and helps your team make better decisions, faster.",
+      "badge": "Built for growing businesses in India",
+      "headline": "Run your whole business from one workspace",
+      "subheadline": "CRM, operations, compliance, and AI analytics in one place, for your whole team, in English, Hindi, or Punjabi, at one flat price.",
       "ctaPrimary": "Start free trial",
       "ctaSecondary": "View pricing"
     },
     "modules": {
       "title": "Everything your team needs, in one place",
-      "subtitle": "Eight connected modules, one shared source of truth.",
+      "subtitle": "Connected modules, one shared source of truth.",
       "crm": "Smart CRM",
       "crmDesc": "Track leads, accounts, and deals with a pipeline that scores and prioritizes itself.",
       "operations": "Operations",

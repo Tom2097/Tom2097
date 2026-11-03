@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { AlertTriangle, CheckCircle2, Info, Activity, BarChart3, Clock, Plus, Wrench, AlertCircle } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 import { useI18n } from "@/components/providers/i18n-provider"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { InView } from "@/components/motion-primitives/in-view"

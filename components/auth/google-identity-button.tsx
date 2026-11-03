@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { T } from "@/components/i18n/t"
 
 // Minimal ambient shape for the bits of Google Identity Services (GSI) this
 // component actually uses -- the full type surface lives in @types/google.accounts,
@@ -115,8 +116,14 @@ export function GoogleIdentityButton({ redirectTo = "/", onError }: GoogleIdenti
   }, [])
 
   return (
-    <div className="flex justify-center">
+    <div className="flex flex-col items-center gap-2">
       <div ref={containerRef} className={loading ? "pointer-events-none opacity-60" : undefined} />
+      {/* Completing sign-in can take several seconds; without this it looks like nothing happened. */}
+      {loading && (
+        <p role="status" className="text-sm text-muted-foreground">
+          <T>Signing you in...</T>
+        </p>
+      )}
     </div>
   )
 }

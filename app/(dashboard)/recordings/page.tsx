@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 import { useI18n } from "@/components/providers/i18n-provider"
 import type { RecordingUpload, TranscriptionResult, ActionItem } from "@/lib/audio/ingestion"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"

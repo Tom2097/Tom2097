@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Lightbulb, Target, Phone, Send, Calendar, TrendingUp, Star, Zap, MessageSquare, Mail, Loader2 } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 
 interface ActionSuggestion {
   id: string; deal: string; action: string; impact: "high" | "medium" | "low"

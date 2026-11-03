@@ -203,14 +203,14 @@ export async function LandingPage() {
           <InView className="mx-auto max-w-md">
             <Card className="p-8 md:p-10 border-primary/30 relative overflow-hidden">
               <h3 className="text-xl font-semibold text-foreground mb-1">{plan.name}</h3>
-              <p className="text-sm text-muted-foreground mb-6">{plan.description}</p>
+              <p className="text-sm text-muted-foreground mb-6">{tx(plan.description)}</p>
 
               <div className="flex items-baseline gap-3">
                 <span className="text-5xl font-bold text-foreground">{formatPrice(plan.annualPriceInCents)}</span>
                 <span className="text-muted-foreground"><T>/year</T></span>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                or {formatPrice(plan.priceInCents)}/month, cancel anytime.
+                {tx("or {price}/month, cancel anytime.").replace("{price}", formatPrice(plan.priceInCents))}
               </p>
 
               <div className="flex items-center gap-4 text-sm text-muted-foreground my-6">
@@ -227,7 +227,7 @@ export async function LandingPage() {
                 {plan.features.map((feature) => (
                   <div key={feature} className="flex items-start gap-3">
                     <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <span className="text-sm text-foreground">{feature}</span>
+                    <span className="text-sm text-foreground">{tx(feature)}</span>
                   </div>
                 ))}
               </div>

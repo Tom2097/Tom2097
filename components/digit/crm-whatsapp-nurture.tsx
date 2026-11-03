@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { MessageSquare, Send, Clock, CheckCircle2, Phone, Mail, Calendar, ArrowRight, Loader2, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 import { cn } from "@/lib/utils"
 import {
   Dialog,

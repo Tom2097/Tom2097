@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 import { Check, Ticket, Sparkles, AlertTriangle, Timer } from "lucide-react"
 import { useI18n } from "@/components/providers/i18n-provider"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"

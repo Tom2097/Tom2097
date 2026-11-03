@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IntelligenceCommandCenter } from "@/components/digit/intelligence-command-center"
 import { IndustryIntelligenceHub } from "@/components/digit/industry-intelligence-hub"
 import { CausalChainView } from "@/components/digit/causal-chain-view"
-import { PredictiveModeling } from "@/components/digit/predictive-modeling"
 import { RealTimeChart } from "@/components/digit/real-time-chart"
 import { ChartContainer } from "@/components/digit/live-chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -223,10 +222,6 @@ export default function IntelligencePage() {
              <Network className="w-4 h-4" />
              {t("intelligence.page.causalChain")}
            </TabsTrigger>
-           <TabsTrigger value="predictive" className="gap-2">
-             <Sparkles className="w-4 h-4" />
-             {t("intelligence.page.predictiveModeling")}
-           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="command-center" className="mt-4">
@@ -244,12 +239,6 @@ export default function IntelligencePage() {
         <TabsContent value="causal-chains" className="mt-4">
           <ErrorBoundary>
             <CausalChainView />
-          </ErrorBoundary>
-        </TabsContent>
-
-        <TabsContent value="predictive" className="mt-4">
-          <ErrorBoundary>
-            <PredictiveModeling />
           </ErrorBoundary>
         </TabsContent>
       </Tabs>

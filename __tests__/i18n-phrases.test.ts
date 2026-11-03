@@ -5,6 +5,7 @@ import hi from "@/lib/i18n/phrases/hi.json"
 import pa from "@/lib/i18n/phrases/pa.json"
 import { translatePhrase, normalizePhrase } from "@/lib/i18n/phrases"
 import { LANDING_FAQ } from "@/components/digit/landing-faq"
+import { INDUSTRIES } from "@/lib/industries"
 
 // Text that is intentionally identical in every language.
 const UNTRANSLATED_OK = /^(?:[\w.+-]+@[\w.-]+|[\w-]+\.(?:com|org)|k-Anon|🔍 Login Check v2)$/
@@ -25,6 +26,10 @@ function phrasesInCode(): string[] {
   for (const file of [...tsxFiles("app"), ...tsxFiles("components")]) {
     const src = readFileSync(file, "utf8")
     for (const m of src.matchAll(/<T>([\s\S]*?)<\/T>/g)) out.add(normalizePhrase(decode(m[1])))
+    // Literal toast messages sent through the translating wrapper.
+    if (src.includes('from "@/lib/i18n/toast"')) {
+      for (const m of src.matchAll(/toast\.\w+\(\s*(?:[^,()"'`]*\|\|\s*)?["']([^"']+)["']/g)) out.add(normalizePhrase(m[1]))
+    }
     // tx("literal") / title: "..." strings rendered through tx() on the homepage
     if (file.endsWith("landing-page.tsx")) {
       for (const m of src.matchAll(/(?:title|desc): "([^"]+)"/g)) out.add(normalizePhrase(m[1]))
@@ -36,6 +41,11 @@ function phrasesInCode(): string[] {
   for (const { q, a } of LANDING_FAQ) {
     out.add(normalizePhrase(q))
     out.add(normalizePhrase(a))
+  }
+  for (const i of INDUSTRIES) {
+    for (const text of [i.name, i.headline, i.summary, ...i.setup, ...i.uses.flatMap((u) => [u.module, u.text])]) {
+      out.add(normalizePhrase(text))
+    }
   }
   return [...out]
 }

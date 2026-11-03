@@ -6,7 +6,7 @@ import { Phone, Mail, MessageSquare, Calendar, FileText, CheckCircle2, ArrowRigh
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 
 interface ContactOption {
   id: string

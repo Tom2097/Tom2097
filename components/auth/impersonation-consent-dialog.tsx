@@ -2,7 +2,7 @@
 import { T } from "@/components/i18n/t"
 
 import { useEffect, useState } from "react"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 import { ShieldAlert } from "lucide-react"
 import {
   Dialog,

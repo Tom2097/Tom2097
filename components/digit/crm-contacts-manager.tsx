@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { T } from "@/components/i18n/t"
+import { useRef, useState } from "react"
+import { toast } from "@/lib/i18n/toast"
 import { useRouter } from "next/navigation"
 import { useI18n } from "@/components/providers/i18n-provider"
-import { UserPlus, Mail, Phone, MoreHorizontal, Trash2, Pencil, Users, Search, Loader2 } from "lucide-react"
+import { UserPlus, Upload, Mail, Phone, MoreHorizontal, Trash2, Pencil, Users, Search, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -53,8 +55,10 @@ interface CrmContactsManagerProps {
 }
 
 export function CrmContactsManager({ initialContacts }: CrmContactsManagerProps) {
-  const { t } = useI18n()
+  const { t, tx } = useI18n()
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [importing, setImporting] = useState(false)
   const [contacts, setContacts] = useState(initialContacts)
   const [searchQuery, setSearchQuery] = useState("")
   const [addOpen, setAddOpen] = useState(false)
@@ -214,8 +218,65 @@ export function CrmContactsManager({ initialContacts }: CrmContactsManagerProps)
     setError(null)
   }
 
+  const handleImport = async (file: File) => {
+    setImporting(true)
+    try {
+      const body = new FormData()
+      body.append("file", file)
+      const res = await fetch("/api/v1/crm/contacts/import", { method: "POST", body })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || t("crm.contactsManager.error"))
+
+      setContacts((prev) => [
+        ...(data.contacts as Array<Record<string, string | null>>).map((c) => ({
+          id: c.id as string,
+          name: [c.first_name, c.last_name].filter(Boolean).join(" ").trim() || c.email || t("crm.contactsManager.unnamedContact"),
+          email: c.email,
+          phone: c.phone,
+          title: c.title,
+          status: c.status as string,
+          company: null,
+        })),
+        ...prev,
+      ])
+      toast.success(
+        tx("Imported: {imported}. Already there or repeated: {duplicates}. Could not read: {invalid}.")
+          .replace("{imported}", String(data.imported))
+          .replace("{duplicates}", String(data.duplicates))
+          .replace("{invalid}", String(data.invalid)),
+      )
+      router.refresh()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("crm.contactsManager.error"))
+    } finally {
+      setImporting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+  }
+
   return (
     <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv,text/csv"
+        className="hidden"
+        aria-label="Import contacts from a CSV file"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) void handleImport(file)
+        }}
+      />
+      <Button
+        variant="outline"
+        className="gap-2"
+        disabled={importing}
+        title={tx("CSV columns: name or first and last name, email, phone, title, status, source, notes")}
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <Upload className="h-4 w-4" />
+        {importing ? <T>Importing...</T> : <T>Import CSV</T>}
+      </Button>
       {/* Add Lead Button */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogTrigger asChild>

@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { toast } from "sonner"
+import { toast } from "@/lib/i18n/toast"
 import { cn } from "@/lib/utils"
 
 interface QuoteContactOption {

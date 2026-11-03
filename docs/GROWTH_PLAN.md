@@ -40,7 +40,9 @@ _Written 2026-11-02, after a full click-through test of https://digit-ai.org (pu
 
 Done in code: card wording (1), funnel + traffic sources on the visitors page (2), homepage FAQ with FAQ structured data, "Book a demo" (email), India section (3, 4 partly), six industry pages in the sitemap (6), "Getting started" checklist on the dashboard (7 partly), DPDP checklist blog post (8 partly).
 
-Still open: real screenshots/video and customer proof (3); final audience wording (4); INR price (5, needs the real price); demo workspace or no-card trial (7, business decision); comparison pages (8); distribution (9); About page and company address (10, needs real details).
+Also done: CSV contact import (7), toast and industry page translations, SSO/SAML and data residency removed from the plan's feature list because neither is built, Predictive Modeling tab hidden until real model training exists (code kept in components/digit/predictive-modeling.tsx), homepage headline aimed at growing businesses in India (4), hero panel labelled as sample data, DigiT vs Zoho One post (8).
+
+Still open: real screenshots/video and customer proof (3); INR price (5, needs the real price); demo workspace or no-card trial (7, business decision); more comparison pages (8); distribution (9); About page and company address (10, needs real details).
 
 ## Open items needing the owner (not code)
 

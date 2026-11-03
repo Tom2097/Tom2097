@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { ChartContainer, LiveChart } from '@/components/digit/live-chart'
 import { Plus, Trash2, Save, Download, Play, FileText, Filter, Search, Calendar, Clock, BarChart2, PieChart, LineChart, Settings, Share2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from "@/lib/i18n/toast"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 
