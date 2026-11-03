@@ -13,12 +13,12 @@ import { RealTimeChart } from "@/components/digit/real-time-chart"
 import { ChartContainer } from "@/components/digit/live-chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Brain, BarChart3, Network, Sparkles, RefreshCw, Activity, Cpu, MemoryStick, Zap, AlertTriangle, TrendingUp } from "lucide-react"
+import { Brain, BarChart3, Network, Sparkles, RefreshCw, Activity, MemoryStick, Zap, AlertTriangle, TrendingUp } from "lucide-react"
 import { AnimatedGroup } from "@/components/motion-primitives/animated-group"
 import { InView } from "@/components/motion-primitives/in-view"
 
 export default function IntelligencePage() {
-  const { t } = useI18n()
+  const { t, tx } = useI18n()
   const [activeTab, setActiveTab] = useState("command-center")
   // Neutral starting values. These used to be hardcoded demo numbers (92%
   // accuracy, 75% load, 142 insights, "3 alerts") that showed until the
@@ -93,27 +93,27 @@ export default function IntelligencePage() {
               <div className={`w-2 h-2 rounded-full ${metrics.agentStatus === 'active' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
                <div className="text-2xl font-bold capitalize">{t(`intelligence.page.${metrics.agentStatus}`)}</div>
              </div>
-             <p className="text-xs text-muted-foreground">{metrics.activeAgents} {t("intelligence.page.agentsActive")}</p>
+             <p className="text-xs text-muted-foreground">{tx("{count} tasks in the last 24 hours").replace("{count}", String(metrics.activeAgents))}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-             <CardTitle className="text-sm font-medium">{t("intelligence.page.reasoningAccuracy")}</CardTitle>
+             <CardTitle className="text-sm font-medium"><T>Task Success Rate</T></CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.reasoningAccuracy}%</div>
-            <p className="text-xs text-muted-foreground"><T>Causal reasoning accuracy</T></p>
+            <div className="text-2xl font-bold">{metrics.activeAgents > 0 ? `${metrics.reasoningAccuracy}%` : "—"}</div>
+            <p className="text-xs text-muted-foreground">{metrics.activeAgents > 0 ? <T>Background AI tasks that succeeded</T> : <T>No tasks in the last 24 hours</T>}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium"><T>System Load</T></CardTitle>
-            <Cpu className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium"><T>Critical Findings</T></CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{Math.round(metrics.systemLoad * 100)}%</div>
-            <p className="text-xs text-muted-foreground"><T>CPU utilization</T></p>
+            <div className="text-2xl font-bold">{metrics.anomalyDetection}</div>
+            <p className="text-xs text-muted-foreground"><T>Found by the AI monitors</T></p>
           </CardContent>
         </Card>
         <Card>
@@ -123,7 +123,7 @@ export default function IntelligencePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{Math.round(metrics.memoryUsage * 100)}%</div>
-            <p className="text-xs text-muted-foreground"><T>Memory utilization</T></p>
+            <p className="text-xs text-muted-foreground"><T>AI engine memory in use</T></p>
           </CardContent>
         </Card>
       </div>
