@@ -2,10 +2,6 @@ import { NextResponse } from 'next/server'
 import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { createServiceClient } from '@/lib/supabase/service'
 
-export async function GET() {
-  return NextResponse.json({ message: 'Test' })
-}
-
 export async function POST(request: Request) {
   const ctx = await extractTenantContext()
   if (!ctx?.organizationId || !ctx.userId) {

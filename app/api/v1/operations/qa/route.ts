@@ -4,10 +4,6 @@ import { DEFAULT_CHAT_MODEL, BASE_SYSTEM_PROMPT } from '@/lib/ai/config'
 import { extractTenantContext } from '@/lib/multitenant/context.server'
 import { createServiceClient } from '@/lib/supabase/service'
 
-export async function GET() {
-  return NextResponse.json({ message: 'Test' })
-}
-
 // POST /api/v1/operations/qa -- grounded Q&A over a single document's content,
 // backing the Operations Split View's "AI Chat" tab (components/digit/split-view.tsx).
 // Answers are generated strictly from the document's own content -- never invented.

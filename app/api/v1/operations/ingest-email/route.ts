@@ -1,13 +1,36 @@
 import { NextResponse } from 'next/server'
+import { createHash, timingSafeEqual } from 'node:crypto'
 import { ingestFromEmail } from '@/lib/operational/intake'
 
 export const maxDuration = 30
+
+function sha256(value: string) {
+  return createHash('sha256').update(value).digest()
+}
+
+// Inbound-parse providers can't sign requests with our keys, but they can call
+// a URL containing a secret, so accept it as ?token= or a Bearer header. Fails
+// closed when INBOUND_EMAIL_SECRET isn't set.
+function hasValidSecret(request: Request): boolean {
+  const secret = process.env.INBOUND_EMAIL_SECRET
+  if (!secret) return false
+
+  const header = request.headers.get('authorization')
+  const supplied = header?.startsWith('Bearer ')
+    ? header.slice('Bearer '.length)
+    : new URL(request.url).searchParams.get('token')
+  return !!supplied && timingSafeEqual(sha256(supplied), sha256(secret))
+}
 
 // Accepts an inbound-parse webhook payload (e.g. SendGrid Inbound Parse's
 // multipart shape: from/subject/text fields + attachment files). Which
 // organization a message belongs to isn't resolvable from the payload today
 // -- routes to DEFAULT_OPERATIONS_ORG_ID, same as the WhatsApp webhook.
 export async function POST(request: Request) {
+  if (!hasValidSecret(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const organizationId = process.env.DEFAULT_OPERATIONS_ORG_ID
   if (!organizationId) {
     console.error('[ingest-email] DEFAULT_OPERATIONS_ORG_ID is not configured')

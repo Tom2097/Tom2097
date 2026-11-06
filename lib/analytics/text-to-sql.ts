@@ -23,35 +23,18 @@ const ALLOWED_PATTERNS = [
   /^WITH\s/i,
 ]
 
+// Checked with string literals removed, so a keyword inside a value can't
+// trigger these and a value can't hide anything from them.
 const BLOCKED_PATTERNS = [
-  /DROP\s/i,
-  /DELETE\s/i,
-  /INSERT\s/i,
-  /UPDATE\s/i,
-  /ALTER\s/i,
-  /CREATE\s/i,
-  /TRUNCATE\s/i,
-  /GRANT\s/i,
-  /REVOKE\s/i,
-  /EXEC\s/i,
-  /INTO\s+i?[Oo][Uu][Tt][Ff][Ii][Ll][Ee]/,
-  /INTO\s+OUTFILE/i,
-  /LOAD\s+DATA/i,
-  /LOAD_FILE\s*\(/i,
-  /SLEEP\s*\(/i,
-  /BENCHMARK\s*\(/i,
-  /;\s*DROP/i,
-  /;\s*DELETE/i,
-  /;\s*INSERT/i,
-  /;\s*UPDATE/i,
+  /\b(DROP|DELETE|INSERT|UPDATE|ALTER|CREATE|TRUNCATE|GRANT|REVOKE|EXEC|EXECUTE|COPY|CALL|DO|SET|INTO|MERGE|VACUUM|LOCK|TABLE)\b/i,
+  /\b(pg_\w+|information_schema|dblink\w*|lo_\w+|current_setting|set_config|query_to_xml\w*|table_to_xml\w*|schema_to_xml\w*|database_to_xml\w*)\b/i,
+  /--|\/\*|;|"|\$/,
 ]
 
 const TABLE_WHITELIST = [
   "analytics_events",
   "analytics_event_timeseries",
   "documents",
-  "profiles",
-  "organizations",
   "crm_contacts",
   "crm_deals",
   "accounts_payable",
@@ -62,29 +45,66 @@ const TABLE_WHITELIST = [
   "okr_key_results",
 ]
 
-export function guardQuery(sql: string): GuardedQuery {
-  const isSelect = ALLOWED_PATTERNS.some((p) => p.test(sql))
-  if (!isSelect) {
-    return { sql, params: {}, allowed: false, reason: "Only SELECT queries are allowed" }
-  }
+/** Every table named after FROM or JOIN. Subqueries are picked up by their own FROM. */
+function referencedTables(sql: string): string[] {
+  // These use FROM as syntax rather than to name a table.
+  const normalized = sql
+    .replace(/\b(EXTRACT|SUBSTRING|TRIM|OVERLAY)\s*\([^()]*\)/gi, "0")
+    .replace(/\bDISTINCT\s+FROM\b/gi, "= ")
 
-  const isBlocked = BLOCKED_PATTERNS.some((p) => p.test(sql))
-  if (isBlocked) {
-    return { sql, params: {}, allowed: false, reason: "Query contains blocked patterns (DROP, DELETE, INSERT, etc.)" }
-  }
-
-  for (const table of TABLE_WHITELIST) {
-    if (sql.toLowerCase().includes(table.toLowerCase())) {
-      return { sql, params: {}, allowed: true, reason: "Query references allowed table" }
+  const tables: string[] = []
+  const fromClause =
+    /\bFROM\s+([\s\S]*?)(?=\b(?:SELECT|FROM|WHERE|GROUP|ORDER|LIMIT|OFFSET|HAVING|WINDOW|FETCH|UNION|INTERSECT|EXCEPT|JOIN|CROSS|INNER|LEFT|RIGHT|FULL|NATURAL|ON|USING)\b|\)|$)/gi
+  for (const match of normalized.matchAll(fromClause)) {
+    for (const item of match[1].split(",")) {
+      const name = item.trim().split(/\s+/)[0]
+      if (name && !name.startsWith("(")) tables.push(name)
     }
   }
+  for (const match of normalized.matchAll(/\bJOIN\s+([^\s(]+)/gi)) {
+    tables.push(match[1])
+  }
+  return tables
+}
 
-  const tableRef = sql.match(/\bFROM\s+(\w+)/i)?.[1]
-  if (tableRef && !TABLE_WHITELIST.includes(tableRef.toLowerCase())) {
-    return { sql, params: {}, allowed: false, reason: `Table '${tableRef}' is not in the allowed list` }
+/**
+ * Rejects generated SQL that isn't a plain read of allowed tables. This is only
+ * a first filter: pattern checks cannot prove a query stays inside one tenant
+ * (`OR 1=1` passes them), so passing it must never be enough to run a query
+ * with elevated privileges. See the text-to-sql route.
+ */
+export function guardQuery(sql: string): GuardedQuery {
+  const reject = (reason: string): GuardedQuery => ({ sql, params: {}, allowed: false, reason })
+
+  const trimmed = sql.trim().replace(/;\s*$/, "")
+  if (!ALLOWED_PATTERNS.some((p) => p.test(trimmed))) {
+    return reject("Only SELECT queries are allowed")
   }
 
-  return { sql, params: {}, allowed: true, reason: "Read-only query allowed" }
+  const withoutStrings = trimmed.replace(/'(?:[^']|'')*'/g, "''")
+  if (BLOCKED_PATTERNS.some((p) => p.test(withoutStrings))) {
+    return reject("Query contains blocked patterns (DROP, DELETE, INSERT, etc.)")
+  }
+
+  const cteNames = new Set(
+    [...withoutStrings.matchAll(/\b(\w+)\s+AS\s*(?:(?:NOT\s+)?MATERIALIZED\s*)?\(/gi)].map((m) => m[1].toLowerCase()),
+  )
+  const tables = referencedTables(withoutStrings)
+    .map((t) => t.toLowerCase())
+    .filter((t) => !cteNames.has(t))
+
+  if (tables.length === 0) {
+    return reject("Query does not read from an allowed table")
+  }
+  const disallowed = tables.find((t) => !TABLE_WHITELIST.includes(t))
+  if (disallowed) {
+    return reject(`Table '${disallowed}' is not in the allowed list`)
+  }
+  if (!/\borganization_id\b/i.test(withoutStrings)) {
+    return reject("Query is not scoped to an organization")
+  }
+
+  return { sql: trimmed, params: {}, allowed: true, reason: "Read-only query allowed" }
 }
 
 export async function textToSql(

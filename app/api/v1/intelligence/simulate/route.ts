@@ -5,10 +5,6 @@ import { withAuth } from "@/lib/auth/with-auth"
 import { getDashboardMetrics } from "@/lib/analytics/dashboard"
 import { generateForecast } from "@/lib/analytics/forecast"
 
-export async function GET() {
-  return NextResponse.json({ message: 'Test' })
-}
-
 /** Pull a "grows/drops by N%" shape out of a free-text scenario. Defaults to a
  *  20% increase if the text doesn't specify a number -- good enough for a
  *  quick what-if, not a claim of understanding arbitrary scenario text. */

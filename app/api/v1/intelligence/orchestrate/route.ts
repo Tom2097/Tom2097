@@ -6,10 +6,6 @@ import { logAuthEvent, getClientIp } from "@/lib/auth/audit"
 import { listWorkflows } from "@/lib/workflows/store"
 import { triggerWorkflow } from "@/lib/workflows/trigger"
 
-export async function GET() {
-  return NextResponse.json({ message: 'Test' })
-}
-
 /**
  * POST /api/v1/intelligence/orchestrate - "Run Orchestration" command from
  * the floating command bar. There's no separate orchestration engine in

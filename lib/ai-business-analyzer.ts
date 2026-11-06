@@ -2,7 +2,25 @@
 
 import { streamText, generateText } from "ai"
 import { mistralModel } from "@/lib/ai/mistral"
+import { getAuthenticatedUser } from "@/lib/auth/server-auth"
+import { checkTenantRateLimit } from "@/lib/multitenant/rate-limit"
 import { z } from "zod"
+
+const MAX_INPUT_CHARS = 20_000
+
+/**
+ * These are Server Actions that spend money on every model call, so each one
+ * needs a signed-in user and a per-user budget. Throws without a session or on
+ * oversized input. Returns false when the user is over their rate limit.
+ */
+async function allowModelCall(input: unknown): Promise<boolean> {
+  const user = await getAuthenticatedUser()
+  if ((JSON.stringify(input) ?? "").length > MAX_INPUT_CHARS) {
+    throw new Error("Input is too large")
+  }
+  const rateLimited = await checkTenantRateLimit(`ai-business-analyzer:${user.id}`, 60, 10)
+  return !rateLimited
+}
 
 // Types for the AI Business Analyzer
 export interface BusinessProfile {
@@ -112,6 +130,10 @@ Always respond in valid JSON format matching the requested schema.`
 
 // Analyze business profile and generate recommendations
 export async function analyzeBusinessProfile(profile: BusinessProfile): Promise<AIAnalysisResult> {
+  if (!(await allowModelCall(profile))) {
+    return generateFallbackRecommendations(profile)
+  }
+
   const prompt = `Analyze this business profile and provide software recommendations:
 
 Industry: ${profile.industry} ${profile.subIndustry ? `(${profile.subIndustry})` : ''}
@@ -197,6 +219,10 @@ export async function generateIndustryIntelligence(
   selectedModules: string[],
   existingInsights: IndustryInsight[] = []
 ): Promise<IndustryInsight[]> {
+  if (!(await allowModelCall({ industry, selectedModules, existingInsights }))) {
+    return []
+  }
+
   const prompt = `Generate detailed industry intelligence for a ${industry} business using these modules: ${selectedModules.join(', ')}.
 
 Existing insights to build upon:
@@ -247,6 +273,10 @@ Respond in JSON format:
 
 // Stream AI analysis for real-time feedback
 export async function streamBusinessAnalysis(profile: BusinessProfile) {
+  if (!(await allowModelCall(profile))) {
+    throw new Error("Too many requests")
+  }
+
   const prompt = `Analyze this ${profile.industry} business (${profile.companySize}, ${profile.businessStage} stage) with goals: ${profile.primaryGoals.join(', ')}. 
   
 Challenges: ${profile.currentChallenges.join(', ')}.
