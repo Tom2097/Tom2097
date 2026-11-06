@@ -30,7 +30,7 @@ const verticalMeta: Record<string, { href: string | null; color: string; bg: str
   performance: { href: "/performance", color: "text-amber-500", bg: "bg-amber-500/10", icon: <Activity className="h-5 w-5" /> },
   resources: { href: "/resources", color: "text-blue-500", bg: "bg-blue-500/10", icon: <Boxes className="h-5 w-5" /> },
   compliance: { href: "/compliance", color: "text-teal-500", bg: "bg-teal-500/10", icon: <Shield className="h-5 w-5" /> },
-  healthcare: { href: "/healthcare", color: "text-rose-500", bg: "bg-rose-500/10", icon: <HeartPulse className="h-5 w-5" /> },
+  healthcare: { href: null, color: "text-rose-500", bg: "bg-rose-500/10", icon: <HeartPulse className="h-5 w-5" /> },
 }
 const defaultVerticalMeta = { href: null, color: "text-slate-500", bg: "bg-slate-500/10", icon: <Boxes className="h-5 w-5" /> }
 

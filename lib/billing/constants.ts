@@ -8,5 +8,7 @@
 // in subscription-lifecycle.ts uses it, and app/auth/callback/route.ts's
 // ensureUserProfile() (which provisions the initial trial subscription
 // directly, without calling startTrial()) imports it from here instead of
-// re-declaring the same number.
-export const TRIAL_DAYS = 7
+// re-declaring the same number. It follows the 1-month trial the site promises.
+import { STANDARD_TRIAL_DAYS } from "@/lib/products"
+
+export const TRIAL_DAYS = STANDARD_TRIAL_DAYS

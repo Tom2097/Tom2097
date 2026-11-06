@@ -47,6 +47,15 @@ export async function POST(request: Request) {
     }
 
     const normalizedEmail = String(email).trim().toLowerCase()
+    // Supabase accepts addresses like "name@host" and then returns a 500 when
+    // the mail provider rejects them.
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(normalizedEmail)) {
+      return NextResponse.json(
+        { error: "Please enter a valid email address" },
+        { status: 400 }
+      )
+    }
+
     const clientIp = getClientIp(request.headers) ?? "unknown"
     const [ipLimited, emailLimited] = await Promise.all([
       checkTenantRateLimit(`signup-ip:${clientIp}`, 60, 10),

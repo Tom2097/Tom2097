@@ -23,7 +23,7 @@ const YEARLY_MIN_MONTHS = 3
 const YEARLY_REMINDER_MONTH = 4
 
 /**
- * Starts a 7-day free trial for the specified organization and plan
+ * Starts a free trial of TRIAL_DAYS for the specified organization and plan
  * 
  * @param organizationId - The ID of the organization starting the trial
  * @param planId - The ID of the plan being trialed (e.g., "starter", "professional", "enterprise")
@@ -33,7 +33,7 @@ const YEARLY_REMINDER_MONTH = 4
  * @description
  * This function:
  * 1. Creates or updates a subscription record with trial status
- * 2. Sets the trial end date to 7 days from now
+ * 2. Sets the trial end date to TRIAL_DAYS from now
  * 3. Records the trial start in billing analytics
  * 4. Logs the event for audit purposes
  */
@@ -68,7 +68,6 @@ export async function startTrial(
   } else {
     await supabase.from("subscriptions").insert({
       organization_id: organizationId,
-      user_id: userId,
       plan_id: planId,
       status: "trialing",
       trial_ends_at: trialEnd,
@@ -171,11 +170,16 @@ export async function processTrialEnd(organizationId: string): Promise<{ charged
 export async function expireTrialIfDue(organizationId: string): Promise<{ expired: boolean }> {
   const supabase = await createServiceClient()
 
-  const { data: sub } = await supabase
+  const { data: sub, error: readError } = await supabase
     .from("subscriptions")
-    .select("id, status, trial_ends_at, user_id, plan_id")
+    .select("id, status, trial_ends_at, plan_id, locked_price_cents, stripe_subscription_id, razorpay_subscription_id")
     .eq("organization_id", organizationId)
     .maybeSingle()
+
+  if (readError) {
+    console.error("[billing] Failed to read subscription for trial expiry:", readError.message)
+    return { expired: false }
+  }
 
   if (!sub || sub.status !== "trialing" || !sub.trial_ends_at) {
     return { expired: false }
@@ -185,18 +189,41 @@ export async function expireTrialIfDue(organizationId: string): Promise<{ expire
     return { expired: false }
   }
 
-  const { data: updated } = await supabase
+  // Customers who confirmed checkout are billed at trial end by Stripe,
+  // Razorpay or chargeAllDueTrials(), which moves them to active or past_due.
+  // Expiring them here would take them out of that charge.
+  if (sub.locked_price_cents != null || sub.stripe_subscription_id || sub.razorpay_subscription_id) {
+    return { expired: false }
+  }
+
+  const { data: updated, error: updateError } = await supabase
     .from("subscriptions")
     .update({ status: "expired", updated_at: new Date().toISOString() })
     .eq("organization_id", organizationId)
     .eq("status", "trialing")
     .select("id")
 
+  if (updateError) {
+    console.error("[billing] Failed to expire trial:", updateError.message)
+    return { expired: false }
+  }
+
   if (!updated || updated.length === 0) {
     return { expired: false }
   }
 
-  await trackTrialEnded(organizationId, sub.user_id, sub.plan_id)
+  // subscriptions has no user_id, so attribute the event to the org's owner.
+  // An org can have no members left, in which case there is nobody to name.
+  const { data: owner } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .in("role", ["owner", "admin"])
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  await trackTrialEnded(organizationId, owner?.id ?? null, sub.plan_id)
 
   return { expired: true }
 }
