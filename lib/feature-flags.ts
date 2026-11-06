@@ -1,6 +1,6 @@
 
 import { createServiceClient } from '@/lib/supabase/service'
-import { isEntitled, checkFeatureAccess, type FeatureId } from '@/lib/entitlements/gate'
+import { ENTITLED_STATUSES, isEntitled, checkFeatureAccess, type FeatureId } from '@/lib/entitlements/gate'
 
 // Default feature flags (can be overridden by database)
 export const DEFAULT_FEATURE_FLAGS = {
@@ -52,7 +52,7 @@ export async function getFeatureFlags(organizationId: string): Promise<Record<Fe
       .eq("organization_id", organizationId)
       .maybeSingle()
     
-    const planId = sub?.status === "active" ? sub.plan_id : null
+    const planId = sub && ENTITLED_STATUSES.includes(sub.status) ? sub.plan_id : null
     
     // Override flags based on entitlement gating (subscription plan)
     for (const flag of Object.keys(merged) as FeatureFlag[]) {

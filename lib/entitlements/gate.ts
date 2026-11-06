@@ -66,7 +66,7 @@ export function isEntitled(tierId: string | undefined | null, feature: FeatureId
  * trialing org authenticated fine but was denied every gated feature for
  * their entire trial.
  */
-const ENTITLED_STATUSES = ["active", "trialing"]
+export const ENTITLED_STATUSES = ["active", "trialing"]
 
 export async function checkFeatureAccess(organizationId: string, feature: FeatureId): Promise<EntitlementResult> {
   try {

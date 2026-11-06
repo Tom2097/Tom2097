@@ -4,7 +4,7 @@ import { logAuthEvent, type AuthAuditAction } from "@/lib/auth/audit"
 interface BillingAnalyticsEvent {
   eventType: "trial_started" | "trial_ended" | "first_payment" | "refund_requested" | "refund_processed" | "subscription_cancelled"
   organizationId: string
-  userId: string
+  userId: string | null
   planId: string
   metadata?: Record<string, unknown>
 }
@@ -62,7 +62,7 @@ export async function trackTrialStarted(
 
 export async function trackTrialEnded(
   organizationId: string,
-  userId: string,
+  userId: string | null,
   planId: string,
 ): Promise<void> {
   await trackBillingEvent({
