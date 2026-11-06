@@ -43,3 +43,6 @@ NEXT_PUBLIC_SITE_URL=https://your-app.vercel.app
 ## Razorpay (alternative payment provider)
 RAZORPAY_KEY_ID=your_razorpay_key_id_here
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret_here
+
+## Inbound email (required by /api/v1/operations/ingest-email)
+INBOUND_EMAIL_SECRET=your_long_random_secret_here

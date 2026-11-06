@@ -30,6 +30,8 @@ export async function deliverWebhook(delivery: WebhookDelivery, secret?: string)
         headers,
         body: JSON.stringify(current.payload),
         signal: controller.signal,
+        // A redirect could point at an internal address the caller's URL check never saw.
+        redirect: "manual",
       })
       clearTimeout(timeout)
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
