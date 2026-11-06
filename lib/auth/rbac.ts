@@ -30,7 +30,7 @@ export interface Role {
  * Uses the get_user_permissions SQL helper (SECURITY DEFINER).
  */
 export async function getUserPermissions(userId: string): Promise<string[]> {
-  const supabase = await createClient()
+  const supabase = createServiceClient()
   const { data, error } = await supabase.rpc("get_user_permissions", {
     p_user_id: userId,
   })
@@ -48,7 +48,7 @@ export async function getUserPermissions(userId: string): Promise<string[]> {
  * Uses the user_has_permission SQL helper (SECURITY DEFINER).
  */
 export async function hasPermission(userId: string, permissionKey: string): Promise<boolean> {
-  const supabase = await createClient()
+  const supabase = createServiceClient()
   const { data, error } = await supabase.rpc("user_has_permission", {
     p_user_id: userId,
     p_permission_key: permissionKey,
@@ -120,7 +120,7 @@ export async function listPermissions(): Promise<Permission[]> {
  * Delegates to the seed_default_roles SQL function.
  */
 export async function ensureDefaultRoles(organizationId: string): Promise<void> {
-  const supabase = await createClient()
+  const supabase = createServiceClient()
   const { error } = await supabase.rpc("seed_default_roles", {
     p_org_id: organizationId,
   })
