@@ -67,7 +67,14 @@ describe("anonymous callers are refused", () => {
 })
 
 describe("permissions are enforced", () => {
-  it("blocks a WhatsApp send without crm:create", async () => {
+  it("allows a WhatsApp send with crm:write, a permission that exists in production", async () => {
+    signedInAs("org-a", ["crm:write"])
+    const res = await whatsappRoute.POST(post("/api/v1/crm/whatsapp", { to: "+14155550100", body: "x" }))
+    expect(res.status).toBe(200)
+    expect(whatsapp.send).toHaveBeenCalledOnce()
+  })
+
+  it("blocks a WhatsApp send without crm:write", async () => {
     signedInAs("org-a", ["crm:read"])
     const res = await whatsappRoute.POST(post("/api/v1/crm/whatsapp", { to: "+14155550100", body: "x" }))
     expect(res.status).toBe(403)

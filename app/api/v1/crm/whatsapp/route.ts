@@ -82,7 +82,7 @@ export const POST = withAuth(
       );
     }
   },
-  { requireAll: ["crm:create"] },
+  { requireAll: ["crm:write"] },
 );
 
 // PATCH /api/v1/crm/whatsapp - Log a WhatsApp message to a deal
@@ -111,5 +111,5 @@ export const PATCH = withAuth(
 
     return NextResponse.json({ success: true });
   },
-  { requireAll: ["crm:update"] },
+  { requireAll: ["crm:write"] },
 );
