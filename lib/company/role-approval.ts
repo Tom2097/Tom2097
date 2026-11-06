@@ -1,7 +1,18 @@
 "use server"
 
+import { getAuthenticatedUser } from "@/lib/auth/server-auth"
 import { createServiceClient } from "@/lib/supabase/service"
 import { logger } from "@/lib/logging"
+
+// These are Server Actions, so user ids passed as arguments come from the
+// browser and are never trusted on their own.
+async function getSessionUserId(): Promise<string | null> {
+  try {
+    return (await getAuthenticatedUser()).id
+  } catch {
+    return null
+  }
+}
 
 interface RoleApprovalRequest {
   id: string
@@ -30,6 +41,10 @@ export async function requestRoleApproval(
     return { success: true }
   }
 
+  if ((await getSessionUserId()) !== userId) {
+    return { success: false }
+  }
+
   try {
     // Check if there are existing owners/admins who can approve
     const { count: approverCount } = await db
@@ -50,6 +65,17 @@ export async function requestRoleApproval(
         // First user in the company - auto-approve
         return { success: true }
       }
+    }
+
+    // Only an existing member of this organization can request a role in it.
+    const { count: membership } = await db
+      .from("organization_members")
+      .select("*", { count: "exact", head: true })
+      .eq("organization_id", companyId)
+      .eq("user_id", userId)
+
+    if ((membership || 0) === 0) {
+      return { success: false }
     }
 
     // Create approval request
@@ -83,6 +109,10 @@ export async function processRoleApproval(
   action: "approve" | "reject",
   notes?: string
 ): Promise<{ success: boolean }> {
+  if ((await getSessionUserId()) !== approverId) {
+    return { success: false }
+  }
+
   const db = createServiceClient()
 
   try {
@@ -146,9 +176,21 @@ export async function processRoleApproval(
  * Get pending role approval requests for a company
  */
 export async function getPendingRoleApprovals(companyId: string): Promise<RoleApprovalRequest[]> {
+  const callerId = await getSessionUserId()
+  if (!callerId) return []
+
   const db = createServiceClient()
 
   try {
+    const { data: caller } = await db
+      .from("organization_members")
+      .select("role")
+      .eq("organization_id", companyId)
+      .eq("user_id", callerId)
+      .maybeSingle()
+
+    if (caller?.role !== "owner" && caller?.role !== "admin") return []
+
     const { data: approvals } = await db
       .from("role_approval_requests")
       .select("*")
@@ -173,6 +215,10 @@ export async function roleRequiresApproval(
 ): Promise<boolean> {
   // Members never require approval
   if (requestedRole === "member") return false
+
+  // Early onboarding calls this before a session exists. Answering false is safe:
+  // this only decides whether to ask, and requestRoleApproval enforces the session.
+  if ((await getSessionUserId()) !== userId) return false
 
   const db = createServiceClient()
 

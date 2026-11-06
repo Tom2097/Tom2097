@@ -27,6 +27,7 @@ verify-production-build:
   script:
     - pnpm install --frozen-lockfile
     - pnpm lint
+    - pnpm test
     - pnpm build
   cache:
     # Multiple independent cache entries so a dependency bump (which changes
