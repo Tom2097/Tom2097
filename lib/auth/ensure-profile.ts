@@ -2,7 +2,7 @@ import { createServiceClient } from "@/lib/supabase/service"
 import { canCreateTenant } from "@/lib/platform/capacity-service"
 import { isPlatformOwnerEmail } from "@/lib/platform/owner"
 import { getValidatedPlanId } from "@/lib/products"
-import { TRIAL_DAYS } from "@/lib/billing/constants"
+import { trialDaysAt } from "@/lib/products"
 import type { User } from "@supabase/supabase-js"
 import { NextResponse } from "next/server"
 
@@ -163,7 +163,7 @@ export async function ensureUserProfile(
   // startTrial() so the trial length is consistent everywhere rather than a
   // second, possibly-diverging hardcoded number.
   const planId = getValidatedPlanId(user.user_metadata?.selected_plan_id)
-  const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000).toISOString()
+  const trialEndsAt = new Date(Date.now() + trialDaysAt() * 24 * 60 * 60 * 1000).toISOString()
 
   const { error: subError } = await db
     .from("subscriptions")

@@ -1,5 +1,6 @@
 "use client"
 import { T } from "@/components/i18n/t"
+import { TrialLengthLabel } from "@/components/digit/diwali-offer"
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
@@ -147,7 +148,7 @@ export default function CheckoutPage() {
             <h1 className="text-2xl font-bold text-foreground mb-2"><T>Start your free trial</T></h1>
             <p className="text-muted-foreground mb-6">
               {formatPrice(plan.annualPriceInCents)}/year or {formatPrice(plan.priceInCents)}/month, cancel anytime.
-              {" "}1-month free trial. Your card is authorized now but not charged until the trial ends.
+              {" "}<TrialLengthLabel />. Your card is authorized now but not charged until the trial ends.
             </p>
 
             <Card className="p-6 space-y-4">

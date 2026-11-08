@@ -29,6 +29,7 @@ import { HeroSignalPanel } from "@/components/digit/hero-signal-panel"
 import { WaveDivider } from "@/components/digit/wave-divider"
 import { SUBSCRIPTION_PLANS, formatPrice } from "@/lib/products"
 import { LANDING_FAQ, DEMO_MAILTO } from "@/components/digit/landing-faq"
+import { DiwaliOfferBanner, TrialLengthLabel } from "@/components/digit/diwali-offer"
 
 const plan = SUBSCRIPTION_PLANS[0]
 
@@ -58,6 +59,8 @@ export async function LandingPage() {
       <AuroraBackground />
 
       <div className="relative">
+        <DiwaliOfferBanner />
+
         {/* Header */}
         <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
           <div className="container mx-auto flex items-center justify-between px-6 py-4">
@@ -214,7 +217,7 @@ export async function LandingPage() {
               </p>
 
               <div className="flex items-center gap-4 text-sm text-muted-foreground my-6">
-                <span><T>1-month free trial</T></span>
+                <span><TrialLengthLabel /></span>
                 <span aria-hidden>·</span>
                 <span><T>No card charged until trial ends</T></span>
               </div>

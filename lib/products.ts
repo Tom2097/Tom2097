@@ -18,6 +18,14 @@ export const ANNUAL_PRICE_CENTS = 49_900 // USD 499/year
 export const MONTHLY_PRICE_CENTS = 4_449 // USD 44.49/month, cancel anytime
 export const STANDARD_TRIAL_DAYS = 30 // 1 month, both intervals
 
+// Diwali 2026 offer: sign-ups until the end of 11 Nov 2026 (IST) get 90 days.
+// Must match the window in the handle_new_user() database trigger.
+export const DIWALI_OFFER_ENDS_AT = new Date("2026-11-12T00:00:00+05:30")
+export const DIWALI_OFFER_TRIAL_DAYS = 90
+export function trialDaysAt(now: Date = new Date()): number {
+  return now < DIWALI_OFFER_ENDS_AT ? DIWALI_OFFER_TRIAL_DAYS : STANDARD_TRIAL_DAYS
+}
+
 // FX-derived placeholder (499 * ~83), NOT a confirmed real INR price.
 // Razorpay (kept for Indian domestic collection) needs SOME INR number to
 // charge; this is here so that path doesn't hard-fail, but it needs a real

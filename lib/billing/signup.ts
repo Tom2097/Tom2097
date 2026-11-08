@@ -1,5 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service"
-import { ANNUAL_PRICE_CENTS, MONTHLY_PRICE_CENTS, STANDARD_TRIAL_DAYS } from "@/lib/products"
+import { ANNUAL_PRICE_CENTS, MONTHLY_PRICE_CENTS, STANDARD_TRIAL_DAYS, trialDaysAt } from "@/lib/products"
 import { applyDiscount, type DiscountConfig } from "@/lib/billing/discounts"
 
 export type BillingInterval = "year" | "month"
@@ -35,7 +35,7 @@ export async function activateTrial(
   const basePriceCents = billingInterval === "month" ? MONTHLY_PRICE_CENTS : ANNUAL_PRICE_CENTS
   const lockedPriceCents = discount ? applyDiscount(basePriceCents, discount) : basePriceCents
   const now = new Date()
-  const trialEndsAt = new Date(now.getTime() + STANDARD_TRIAL_DAYS * 24 * 60 * 60 * 1000)
+  const trialEndsAt = new Date(now.getTime() + trialDaysAt(now) * 24 * 60 * 60 * 1000)
 
   await db
     .from("subscriptions")
