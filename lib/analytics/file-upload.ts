@@ -518,13 +518,18 @@ export async function uploadToBlobStorage(
       return null
     }
     
-    // Get the public URL
-    const { data: urlData } = db.storage
+    // The bucket is private: hand out a short-lived signed URL, never a public one.
+    const { data: urlData, error: urlError } = await db.storage
       .from('analytics')
-      .getPublicUrl(path)
-    
+      .createSignedUrl(path, 60 * 60)
+
+    if (urlError || !urlData) {
+      console.error("[File Upload] Error creating signed URL:", urlError?.message)
+      return null
+    }
+
     return {
-      url: urlData.publicUrl,
+      url: urlData.signedUrl,
       path,
     }
     

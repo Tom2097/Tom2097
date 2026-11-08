@@ -50,6 +50,10 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  poweredByHeader: false,
+  async redirects() {
+    return [{ source: '/pricing', destination: '/#pricing', permanent: true }]
+  },
   images: {
     unoptimized: true,
   },
