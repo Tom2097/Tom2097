@@ -60,7 +60,7 @@ export default function CheckoutPage() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        router.push("/auth/login?redirect=/checkout")
+        router.push("/auth/sign-up")
         return
       }
       // /billing/plans links here as /checkout?code=XXXX after validating one.
