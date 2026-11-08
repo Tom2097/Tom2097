@@ -14,6 +14,7 @@ import { getPlanById } from "@/lib/products"
 import { calculateProration, executePlanChange } from "./proration"
 import { recordFailedPayment, retryDunning, getDunningStatus } from "./dunning"
 import { TRIAL_DAYS } from "./constants"
+import { trialDaysAt } from "@/lib/products"
 
 import type { SubscriptionRecord } from "./types"
 
@@ -44,7 +45,8 @@ export async function startTrial(
 ): Promise<{ success: boolean }> {
   const supabase = await createServiceClient()
 
-  const trialEnd = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000).toISOString()
+  const trialDays = trialDaysAt()
+  const trialEnd = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toISOString()
   const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
 
   const { data: existing } = await supabase
@@ -77,7 +79,7 @@ export async function startTrial(
     })
   }
 
-  await trackTrialStarted(organizationId, userId, planId, TRIAL_DAYS)
+  await trackTrialStarted(organizationId, userId, planId, trialDays)
 
   return { success: true }
 }

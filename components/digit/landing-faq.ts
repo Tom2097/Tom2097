@@ -15,7 +15,7 @@ export const LANDING_FAQ: ReadonlyArray<{ q: string; a: string }> = [
   },
   {
     q: "How does the free trial work?",
-    a: "Every subscription starts with a 1-month free trial with every module included. You add a card at checkout so it can be verified, but nothing is charged until the trial ends.",
+    a: "Every subscription starts with a 1-month free trial with every module included (3 months for sign-ups until 11 November 2026, as part of our Diwali offer). You add a card at checkout so it can be verified, but nothing is charged until the trial ends.",
   },
   {
     q: "Can I cancel?",
