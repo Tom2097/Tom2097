@@ -2,6 +2,19 @@ import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
 export async function updateSession(request: NextRequest) {
+  return (await updateSessionWithUser(request)).response
+}
+
+/** Same as updateSession, also returning the verified signed-in user's id (or null). */
+export async function updateSessionWithUser(
+  request: NextRequest,
+): Promise<{ response: NextResponse; userId: string | null }> {
+  return refreshSession(request)
+}
+
+async function refreshSession(
+  request: NextRequest,
+): Promise<{ response: NextResponse; userId: string | null }> {
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -30,17 +43,17 @@ export async function updateSession(request: NextRequest) {
   // than served anonymously.
   if (!supabaseUrl || !supabaseAnonKey) {
     if (request.nextUrl.pathname.startsWith('/api/')) {
-      return NextResponse.json(
+      return { userId: null, response: NextResponse.json(
         { error: "Service Unavailable", message: "Authentication is not configured" },
         { status: 503 },
-      )
+      ) }
     }
     if (isProtectedPath) {
       const url = request.nextUrl.clone()
       url.pathname = "/auth/login"
-      return NextResponse.redirect(url)
+      return { userId: null, response: NextResponse.redirect(url) }
     }
-    return supabaseResponse
+    return { userId: null, response: supabaseResponse }
   }
 
   const supabase = createServerClient(
@@ -78,7 +91,7 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = "/auth/login"
     url.searchParams.set("redirect", request.nextUrl.pathname)
-    return NextResponse.redirect(url)
+    return { userId: null, response: NextResponse.redirect(url) }
   }
 
   // Redirect logged-in users away from auth pages
@@ -88,8 +101,8 @@ export async function updateSession(request: NextRequest) {
   if (isAuthPath && user) {
     const url = request.nextUrl.clone()
     url.pathname = "/"
-    return NextResponse.redirect(url)
+    return { userId: user?.id ?? null, response: NextResponse.redirect(url) }
   }
 
-  return supabaseResponse
+  return { userId: user?.id ?? null, response: supabaseResponse }
 }

@@ -2225,7 +2225,8 @@
       "roles": "Roles",
       "payouts": "Payouts",
       "security": "Security",
-      "visitors": "Visitors"
+      "visitors": "Visitors",
+      "activity": "Activity log"
     },
     "dashboard": {
       "title": "Platform Dashboard",
