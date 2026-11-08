@@ -1427,5 +1427,9 @@
   "or {price}/month, cancel anytime.": "या {price}/माह, कभी भी रद्द करें।",
   "proposed": "प्रस्तावित",
   "vs": "बनाम",
-  "{count} tasks in the last 24 hours": "पिछले 24 घंटों में {count} कार्य"
+  "{count} tasks in the last 24 hours": "पिछले 24 घंटों में {count} कार्य",
+  "Every subscription starts with a 1-month free trial with every module included (3 months for sign-ups until 11 November 2026, as part of our Diwali offer). You add a card at checkout so it can be verified, but nothing is charged until the trial ends.": "हर सदस्यता सभी मॉड्यूल के साथ 1 महीने के मुफ़्त ट्रायल (दिवाली ऑफ़र के तहत 11 नवंबर 2026 तक साइन अप करने वालों के लिए 3 महीने) से शुरू होती है। चेकआउट पर आप एक कार्ड जोड़ते हैं ताकि उसे सत्यापित किया जा सके, लेकिन ट्रायल समाप्त होने तक कोई शुल्क नहीं लिया जाता।",
+  "Diwali offer: sign up by 11 November and get a 3-month free trial.": "दिवाली ऑफ़र: 11 नवंबर तक साइन अप करें और 3 महीने का मुफ़्त ट्रायल पाएँ।",
+  "Start now": "अभी शुरू करें",
+  "3-month free trial (Diwali offer)": "3 महीने का मुफ़्त ट्रायल (दिवाली ऑफ़र)"
 }
