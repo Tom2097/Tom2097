@@ -2225,7 +2225,8 @@
       "roles": "ਭੂਮਿਕਾਵਾਂ",
       "payouts": "ਭੁਗਤਾਨ",
       "security": "ਸੁਰੱਖਿਆ",
-      "visitors": "आगंतुक"
+      "visitors": "आगंतुक",
+      "activity": "ਗਤੀਵਿਧੀ ਲੌਗ"
     },
     "dashboard": {
       "title": "ਪਲੇਟਫਾਰਮ ਡੈਸ਼ਬੋਰਡ",

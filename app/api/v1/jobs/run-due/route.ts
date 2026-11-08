@@ -3,6 +3,7 @@ import { isAuthorizedCronRequest } from "@/lib/cron/auth"
 import { claimDueJobs, completeJob, failJob } from "@/lib/jobs/queue"
 import { getJobHandler } from "@/lib/jobs/handlers"
 import "@/lib/jobs/register-handlers"
+import { createServiceClient } from "@/lib/supabase/service"
 
 /**
  * The background jobs layer's poller. Hit every minute by a Coolify
@@ -38,6 +39,12 @@ export async function GET(req: NextRequest) {
       if (job.attempts < job.max_attempts) summary.requeued++
       else summary.failed++
     }
+  }
+
+  // Once an hour: drop activity_logs rows older than 90 days.
+  if (new Date().getUTCMinutes() === 0) {
+    const { error } = await createServiceClient().rpc("purge_old_activity_logs")
+    if (error) console.error("[jobs] purge_old_activity_logs failed:", error.message)
   }
 
   return NextResponse.json({ success: true, ...summary })

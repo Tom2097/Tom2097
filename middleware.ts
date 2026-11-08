@@ -1,5 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
+import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server'
+import { updateSessionWithUser } from '@/lib/supabase/middleware'
+import { buildEntry, getSessionUserId, isPrefetch, shouldLogApi, writeActivity } from '@/lib/activity/log'
 
 // digit-ai.in is a second domain pointed at the same app, permanently
 // redirected to the canonical digit-ai.org (founder's call: one canonical
@@ -16,10 +17,11 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt
-     * - api routes
      * - files with extensions (e.g. .svg, .png)
+     * API routes are matched only so signed-in API calls can be written to
+     * the activity log; session handling below still skips them.
      */
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/|.*\\..*).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)',
   ],
 }
 
@@ -37,11 +39,24 @@ function parseAcceptLanguage(header: string | null): string[] {
     .map((item) => item.lang)
 }
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest, event: NextFetchEvent) {
   const host = request.headers.get('host')?.split(':')[0].toLowerCase()
   if (host && REDIRECT_HOSTS.has(host)) {
     const target = new URL(request.nextUrl.pathname + request.nextUrl.search, 'https://digit-ai.org')
     return NextResponse.redirect(target, 308)
+  }
+
+  // API routes: no session handling here (each route authenticates itself).
+  // Only record the call in the activity log, after the response is sent.
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    if (shouldLogApi(request.nextUrl.pathname)) {
+      event.waitUntil(
+        getSessionUserId(request).then((userId) =>
+          userId ? writeActivity(buildEntry(request, userId, 'api')) : undefined,
+        ),
+      )
+    }
+    return NextResponse.next()
   }
 
   // Auth/session handling runs first: it fail-closed redirects unauthenticated
@@ -49,7 +64,13 @@ export async function middleware(request: NextRequest) {
   // refreshes the Supabase session cookie. Previously this function existed
   // but was never wired into middleware.ts, so protected routes were only
   // ever gated by client-side (bypassable) checks.
-  const sessionResponse = await updateSession(request)
+  const { response: sessionResponse, userId } = await updateSessionWithUser(request)
+
+  // Activity log: signed-in page visits (prefetches are the router warming
+  // its cache, not the user doing anything).
+  if (userId && request.method === 'GET' && !isPrefetch(request)) {
+    event.waitUntil(writeActivity(buildEntry(request, userId, 'page')))
+  }
 
   // A redirect (e.g. to /auth/login, or away from /auth/* when already
   // signed in) takes priority -- don't layer locale/region cookies onto it.

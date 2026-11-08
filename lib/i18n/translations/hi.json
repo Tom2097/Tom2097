@@ -2225,7 +2225,8 @@
       "roles": "भूमिकाएँ",
       "payouts": "भुगतान",
       "security": "सुरक्षा",
-      "visitors": "आगंतुक"
+      "visitors": "आगंतुक",
+      "activity": "गतिविधि लॉग"
     },
     "dashboard": {
       "title": "प्लेटफ़ॉर्म डैशबोर्ड",
